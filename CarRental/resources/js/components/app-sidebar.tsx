@@ -4,6 +4,7 @@ import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+import { Building } from 'lucide-react';
 import {
     Sidebar,
     SidebarContent,
@@ -37,6 +38,11 @@ const mainNavItems: NavItem[] = [
     href: '/customers',
     icon: LayoutGrid,
     },
+    {
+    title: 'Branches',
+    href: '/branches',
+    icon: Building,
+},
 ];
 
 const footerNavItems: NavItem[] = [

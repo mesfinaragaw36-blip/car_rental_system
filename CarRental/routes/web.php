@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CarTypeController;
 use App\Http\Controllers\BrandController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\BranchController;
 
 Route::inertia('/', 'Welcome')->name('home');
 
@@ -35,6 +36,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
     ->name('customers.destroy');
+
+    Route::get('/branches', [BranchController::class, 'index'])
+    ->name('branches.index');
+
+Route::post('/branches', [BranchController::class, 'store'])
+    ->name('branches.store');
+
+Route::put('/branches/{branch}', [BranchController::class, 'update'])
+    ->name('branches.update');
+
+Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])
+    ->name('branches.destroy');
 });
 
 require __DIR__.'/settings.php';
