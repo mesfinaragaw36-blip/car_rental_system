@@ -4,48 +4,59 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Car extends Model
 {
+    use SoftDeletes;
+
     protected $fillable = [
-        'branch_id',
-        'car_type_id',
-        'brand_id',
-        'car_model_id',
-        'car_code_id',
+        'owner_id',
+        'brand',
+        'model',
+        'year',
         'plate_number',
+        'category',
         'color',
-        'manufacture_year',
-        'status',
+        'fuel_type',
+        'transmission',
+        'engine_size',
+        'mileage',
+        'seats',
+        'daily_price',
+        'description',
+        'approval_status',
+        'availability_status',
     ];
 
-
-    public function branch(): BelongsTo
+    protected function casts(): array
     {
-        return $this->belongsTo(Branch::class);
+        return [
+            'year' => 'integer',
+            'mileage' => 'integer',
+            'seats' => 'integer',
+            'daily_price' => 'decimal:2',
+        ];
     }
 
-
-    public function carType(): BelongsTo
+    public function owner(): BelongsTo
     {
-        return $this->belongsTo(CarType::class);
+        return $this->belongsTo(User::class, 'owner_id');
     }
 
-
-    public function brand(): BelongsTo
+    public function images(): HasMany
     {
-        return $this->belongsTo(Brand::class);
+        return $this->hasMany(CarImage::class);
     }
 
-
-    public function carModel(): BelongsTo
+    public function documents(): HasMany
     {
-        return $this->belongsTo(CarModel::class);
+        return $this->hasMany(VehicleDocument::class);
     }
 
-
-    public function carCode(): BelongsTo
+    public function bookings(): HasMany
     {
-        return $this->belongsTo(CarCode::class);
+        return $this->hasMany(Booking::class);
     }
 }
