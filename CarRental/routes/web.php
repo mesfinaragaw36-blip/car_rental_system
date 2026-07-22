@@ -1,53 +1,44 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\CarTypeController;
-use App\Http\Controllers\BrandController;
-use App\Http\Controllers\CustomerController;
-use App\Http\Controllers\BranchController;
+use App\Http\Controllers\OwnerProfileController;
+use App\Http\Controllers\DriverProfileController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\CarImageController;
+use App\Http\Controllers\VehicleDocumentController;
+use App\Http\Controllers\OwnerVehicleController;
 
 Route::inertia('/', 'Welcome')->name('home');
 
-Route::get('/cartype', [CarTypeController::class, 'index'])
-    ->name('cartype.index');
-
 Route::inertia('/cars', 'Cars')->name('cars');
+
 Route::middleware(['auth', 'verified'])->group(function () {
-    
+
     Route::inertia('/dashboard', 'Dashboard')->name('dashboard');
 
-    Route::post('/cartype', [CarTypeController::class, 'store'])
-    ->name('cartype.store');
+    Route::get('/owner/profile', [OwnerProfileController::class, 'show'])
+        ->name('owner.profile');
 
-    Route::post('/brands', [BrandController::class, 'store'])
-    ->name('brands.store');
+        Route::get('/driver/profile', [DriverProfileController::class, 'show'])
+    ->name('driver.profile');
 
-    Route::get('/customers', [CustomerController::class, 'index'])
-    ->name('customers.index');
+    Route::get('/vehicles', [VehicleController::class, 'index'])
+    ->name('vehicles.index');
 
-    Route::post('/customers', [CustomerController::class, 'store'])
-    ->name('customers.store');
+    Route::get('/vehicle-images', [CarImageController::class, 'index'])
+    ->name('vehicle-images.index');
 
-    Route::delete('/cartype/{carType}', [CarTypeController::class, 'destroy'])
-    ->name('cartype.destroy');
+Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])
+    ->name('vehicle-documents.index');
 
-    Route::put('/cartype/{carType}', [CarTypeController::class, 'update'])
-    ->name('cartype.update');
+    Route::get('/owner/vehicles', [OwnerVehicleController::class, 'index'])
+    ->name('owner.vehicles');
 
-    Route::delete('/customers/{customer}', [CustomerController::class, 'destroy'])
-    ->name('customers.destroy');
+    Route::get('/owner/vehicles/create', [OwnerVehicleController::class, 'create'])
+    ->name('owner.vehicles.create');
 
-    Route::get('/branches', [BranchController::class, 'index'])
-    ->name('branches.index');
-
-Route::post('/branches', [BranchController::class, 'store'])
-    ->name('branches.store');
-
-Route::put('/branches/{branch}', [BranchController::class, 'update'])
-    ->name('branches.update');
-
-Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])
-    ->name('branches.destroy');
+Route::post('/owner/vehicles', [OwnerVehicleController::class, 'store'])
+    ->name('owner.vehicles.store');
 });
 
 require __DIR__.'/settings.php';

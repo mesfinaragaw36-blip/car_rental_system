@@ -4,7 +4,6 @@ import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
-import { Building } from 'lucide-react';
 import {
     Sidebar,
     SidebarContent,
@@ -24,24 +23,34 @@ const mainNavItems: NavItem[] = [
         icon: LayoutGrid,
     },
     {
-        title: 'Car Types',
-        href: '/cartype',
+        title: 'Owner Profile',
+        href: '/owner/profile',
         icon: LayoutGrid,
     },
     {
-        title: 'Cars',
-        href: '/cars',
+        title: 'Driver Profile',
+        href: '/driver/profile',
         icon: LayoutGrid,
     },
     {
-    title: 'Customers',
-    href: '/customers',
+        title: 'Vehicles',
+        href: '/vehicles',
+        icon: LayoutGrid,
+    },
+    {
+    title: 'Vehicle Images',
+    href: '/vehicle-images',
     icon: LayoutGrid,
-    },
-    {
-    title: 'Branches',
-    href: '/branches',
-    icon: Building,
+},
+{
+    title: 'Vehicle Documents',
+    href: '/vehicle-documents',
+    icon: LayoutGrid,
+},
+{
+    title: 'My Vehicles',
+    href: '/owner/vehicles',
+    icon: LayoutGrid,
 },
 ];
 
@@ -74,7 +83,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-               <NavMain items={mainNavItems} />
+                <NavMain items={mainNavItems} />
             </SidebarContent>
 
             <SidebarFooter>
