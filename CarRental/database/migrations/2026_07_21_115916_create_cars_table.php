@@ -6,51 +6,34 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-       Schema::create('cars', function (Blueprint $table) {
-
-    $table->id();
-
-    $table->foreignId('branch_id')
-        ->constrained()
-        ->cascadeOnDelete();
-
-    $table->foreignId('car_type_id')
-        ->constrained()
-        ->cascadeOnDelete();
-
-    $table->foreignId('brand_id')
-        ->constrained()
-        ->cascadeOnDelete();
-
-    $table->foreignId('car_model_id')
-        ->constrained()
-        ->cascadeOnDelete();
-
-    $table->foreignId('car_code_id')
-        ->constrained()
-        ->cascadeOnDelete();
-
-    $table->string('plate_number')->unique();
-
-    $table->string('color')->nullable();
-
-    $table->year('manufacture_year')->nullable();
-
-    $table->boolean('status')->default(true);
-
-    $table->timestamps();
-
-});
+        Schema::create('cars', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('owner_id')
+                ->constrained('users')
+                ->cascadeOnUpdate()
+                ->restrictOnDelete();
+            $table->string('brand');
+            $table->string('model');
+            $table->unsignedSmallInteger('year');
+            $table->string('plate_number')->unique();
+            $table->string('category');
+            $table->string('color');
+            $table->string('fuel_type');
+            $table->string('transmission');
+            $table->string('engine_size');
+            $table->unsignedInteger('mileage')->default(0);
+            $table->unsignedTinyInteger('seats');
+            $table->decimal('daily_price', 10, 2);
+            $table->text('description')->nullable();
+            $table->string('approval_status')->default('pending');
+            $table->string('availability_status')->default('available');
+            $table->softDeletes();
+            $table->timestamps();
+        });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('cars');
