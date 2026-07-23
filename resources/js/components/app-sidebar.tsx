@@ -1,5 +1,16 @@
 import { Link, usePage } from '@inertiajs/react';
-import { LayoutGrid } from 'lucide-react';
+import {
+    LayoutGrid,
+    Car,
+    Users,
+    FileText,
+    CreditCard,
+    UserCircle,
+    List,
+    Plus,
+    CheckCircle,
+    ClipboardList,
+} from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -14,6 +25,40 @@ import {
 } from '@/components/ui/sidebar';
 import type { Auth, NavItem } from '@/types';
 
+function getNavItems(role: string): NavItem[] {
+    switch (role) {
+        case 'admin':
+            return [
+                { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
+                { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
+                { title: 'Vehicle Images', href: '/admin/vehicle-images', icon: FileText },
+                { title: 'Vehicle Documents', href: '/admin/vehicle-documents', icon: ClipboardList },
+            ];
+
+        case 'owner':
+            return [
+                { title: 'Dashboard', href: '/owner/dashboard', icon: LayoutGrid },
+                { title: 'My Vehicles', href: '/owner/vehicles', icon: Car },
+                { title: 'Add Vehicle', href: '/owner/vehicles/create', icon: Plus },
+                { title: 'Profile', href: '/owner/profile', icon: UserCircle },
+            ];
+
+        case 'driver':
+            return [
+                { title: 'Dashboard', href: '/driver/dashboard', icon: LayoutGrid },
+                { title: 'Profile', href: '/driver/profile', icon: UserCircle },
+            ];
+
+        default:
+            return [
+                { title: 'Dashboard', href: '/customer/dashboard', icon: LayoutGrid },
+                { title: 'Browse Cars', href: '/customer/cars', icon: Car },
+                { title: 'My Bookings', href: '/customer/bookings', icon: List },
+                { title: 'Profile', href: '/customer/profile', icon: UserCircle },
+            ];
+    }
+}
+
 function getDashboardUrl(role: string): string {
     switch (role) {
         case 'admin':  return '/admin/dashboard';
@@ -27,10 +72,7 @@ export function AppSidebar() {
     const { auth } = usePage<{ auth: Auth }>().props;
     const role = auth.user?.role ?? 'customer';
     const dashboardUrl = getDashboardUrl(role);
-
-    const mainNavItems: NavItem[] = [
-        { title: 'Dashboard', href: dashboardUrl, icon: LayoutGrid },
-    ];
+    const navItems = getNavItems(role);
 
     return (
         <Sidebar collapsible="icon" variant="inset">
@@ -47,7 +89,7 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain items={navItems} />
             </SidebarContent>
 
             <SidebarFooter>
