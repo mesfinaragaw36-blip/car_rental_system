@@ -22,6 +22,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/driver/profile', [DriverProfileController::class, 'show'])
     ->name('driver.profile');
 
+    Route::put('/driver/profile', [DriverProfileController::class, 'update'])
+    ->name('driver.profile.update');
+
     Route::get('/vehicles', [VehicleController::class, 'index'])
     ->name('vehicles.index');
 
@@ -39,6 +42,13 @@ Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])
 
 Route::post('/owner/vehicles', [OwnerVehicleController::class, 'store'])
     ->name('owner.vehicles.store');
+
+    Route::get('/owner/profile', [OwnerProfileController::class, 'show'])
+        ->name('owner.profile');
+
+    Route::put('/owner/profile', [OwnerProfileController::class, 'update'])
+        ->name('owner.profile.update');
+
 });
 
 require __DIR__.'/settings.php';
