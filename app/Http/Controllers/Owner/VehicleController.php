@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Car;
+use App\Models\CarImage;
+use App\Models\VehicleDocument;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 
@@ -39,14 +41,59 @@ class VehicleController extends Controller
             'mileage' => 'nullable|integer|min:0',
             'seats' => 'nullable|integer|min:1|max:10',
             'description' => 'nullable|string',
+            'photos' => 'nullable',
+            'photos.*' => 'image|max:10240',
+            'primary_photo_index' => 'nullable|integer|min:0',
+            'registration_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'registration_expiry' => 'nullable|date',
+            'ownership_document' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:10240',
+            'ownership_expiry' => 'nullable|date',
         ]);
 
-        Car::create([
+        $car = Car::create([
             ...$validated,
             'owner_id' => auth()->id(),
             'approval_status' => 'pending',
             'availability_status' => 'available',
         ]);
+
+        $primaryPhotoIndex = $validated['primary_photo_index'] ?? 0;
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $index => $photo) {
+                $path = $photo->store('car-photos', 'public');
+
+                CarImage::create([
+                    'car_id' => $car->id,
+                    'image_path' => $path,
+                    'is_primary' => (int) $index === (int) $primaryPhotoIndex,
+                ]);
+            }
+        }
+
+        if ($request->hasFile('registration_document')) {
+            $path = $request->file('registration_document')->store('vehicle-documents', 'public');
+
+            VehicleDocument::create([
+                'car_id' => $car->id,
+                'document_type' => 'Registration',
+                'document_path' => $path,
+                'expiry_date' => $validated['registration_expiry'] ?? null,
+                'verification_status' => 'pending',
+            ]);
+        }
+
+        if ($request->hasFile('ownership_document')) {
+            $path = $request->file('ownership_document')->store('vehicle-documents', 'public');
+
+            VehicleDocument::create([
+                'car_id' => $car->id,
+                'document_type' => 'Ownership',
+                'document_path' => $path,
+                'expiry_date' => $validated['ownership_expiry'] ?? null,
+                'verification_status' => 'pending',
+            ]);
+        }
 
         return redirect()->route('owner.vehicles');
     }
