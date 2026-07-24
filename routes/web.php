@@ -39,6 +39,9 @@ Route::middleware(['auth', 'role:owner'])
         Route::get('/vehicles', [OwnerVehicle::class, 'index'])->name('vehicles');
         Route::get('/vehicles/create', [OwnerVehicle::class, 'create'])->name('vehicles.create');
         Route::post('/vehicles', [OwnerVehicle::class, 'store'])->name('vehicles.store');
+        Route::get('/vehicles/{car}/edit', [OwnerVehicle::class, 'edit'])->name('vehicles.edit');
+        Route::put('/vehicles/{car}', [OwnerVehicle::class, 'update'])->name('vehicles.update');
+        Route::delete('/vehicles/{car}', [OwnerVehicle::class, 'destroy'])->name('vehicles.destroy');
     });
 
 // Customer routes
