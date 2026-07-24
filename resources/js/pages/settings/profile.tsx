@@ -11,10 +11,12 @@ import type { Auth } from '@/types';
 
 type PageProps = {
     auth: Auth;
+    profile?: Record<string, string | number | null>;
 };
 
 export default function Profile() {
-    const { auth } = usePage<PageProps>().props;
+    const { auth, profile } = usePage<PageProps>().props;
+    const role = auth.user.role;
 
     return (
         <>
@@ -26,7 +28,7 @@ export default function Profile() {
                 <Heading
                     variant="small"
                     title="Profile"
-                    description="Update your name and email address"
+                    description="Update your profile information"
                 />
 
                 <Form
@@ -76,6 +78,213 @@ export default function Profile() {
                                     message={errors.email}
                                 />
                             </div>
+
+                            {role === 'customer' && (
+                                <div className="space-y-6">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="phone">Phone number</Label>
+
+                                        <Input
+                                            id="phone"
+                                            className="mt-1 block w-full"
+                                            defaultValue={auth.user.phone ?? ''}
+                                            name="phone"
+                                            required
+                                            autoComplete="tel"
+                                            placeholder="Phone number"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.phone}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="address">Address</Label>
+
+                                        <Input
+                                            id="address"
+                                            className="mt-1 block w-full"
+                                            defaultValue={auth.user.address ?? ''}
+                                            name="address"
+                                            required
+                                            autoComplete="street-address"
+                                            placeholder="Address"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.address}
+                                        />
+                                    </div>
+                                </div>
+                            )}
+
+                            {role === 'owner' && (
+                                <div className="space-y-6">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="business_name">
+                                            Business name
+                                        </Label>
+
+                                        <Input
+                                            id="business_name"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.business_name ?? ''
+                                            }
+                                            name="business_name"
+                                            required
+                                            placeholder="Business name"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.business_name}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id">
+                                            National ID
+                                        </Label>
+
+                                        <Input
+                                            id="national_id"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.national_id ?? ''
+                                            }
+                                            name="national_id"
+                                            required
+                                            placeholder="National ID"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.national_id}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="trade_license_number">
+                                            Trade license number
+                                        </Label>
+
+                                        <Input
+                                            id="trade_license_number"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.trade_license_number ?? ''
+                                            }
+                                            name="trade_license_number"
+                                            required
+                                            placeholder="Trade license number"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.trade_license_number}
+                                        />
+                                    </div>
+
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Verification status
+                                        </p>
+                                        <p className="mt-2 text-base font-semibold">
+                                            {profile?.verification_status ?? 'pending'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {role === 'driver' && (
+                                <div className="space-y-6">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="license_number">
+                                            License number
+                                        </Label>
+
+                                        <Input
+                                            id="license_number"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.license_number ?? ''
+                                            }
+                                            name="license_number"
+                                            required
+                                            placeholder="License number"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.license_number}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="experience_years">
+                                            Years of experience
+                                        </Label>
+
+                                        <Input
+                                            id="experience_years"
+                                            type="number"
+                                            min={0}
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.experience_years ?? ''
+                                            }
+                                            name="experience_years"
+                                            required
+                                            placeholder="Years of experience"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.experience_years}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="availability">
+                                            Availability
+                                        </Label>
+
+                                        <select
+                                            id="availability"
+                                            name="availability"
+                                            defaultValue={
+                                                profile?.availability ?? 'available'
+                                            }
+                                            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                        >
+                                            <option value="available">
+                                                Available
+                                            </option>
+                                            <option value="unavailable">
+                                                Unavailable
+                                            </option>
+                                        </select>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.availability}
+                                        />
+                                    </div>
+
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Verification status
+                                        </p>
+                                        <p className="mt-2 text-base font-semibold">
+                                            {profile?.verification_status ?? 'pending'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex items-center gap-4">
                                 <Button
