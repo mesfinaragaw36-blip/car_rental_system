@@ -7,7 +7,6 @@ import {
     CreditCard,
     UserCircle,
     List,
-    Plus,
     CheckCircle,
     ClipboardList,
 } from 'lucide-react';
@@ -39,7 +38,6 @@ function getNavItems(role: string): NavItem[] {
             return [
                 { title: 'Dashboard', href: '/owner/dashboard', icon: LayoutGrid },
                 { title: 'My Vehicles', href: '/owner/vehicles', icon: Car },
-                { title: 'Add Vehicle', href: '/owner/vehicles/create', icon: Plus },
             ];
 
         case 'driver':
