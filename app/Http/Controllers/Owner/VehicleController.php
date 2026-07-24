@@ -50,4 +50,58 @@ class VehicleController extends Controller
 
         return redirect()->route('owner.vehicles');
     }
+
+    
+    public function edit(Car $car)
+    {
+        if ($car->owner_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        return Inertia::render('owner/edit-vehicle', [
+            'vehicle' => $car,
+        ]);
+    }
+
+
+    public function update(Request $request, Car $car)
+    {
+        if ($car->owner_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        $validated = $request->validate([
+            'brand' => 'required|string|max:100',
+            'model' => 'required|string|max:100',
+            'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
+            'plate_number' => 'required|string|max:50|unique:cars,plate_number,'.$car->id,
+            'category' => 'required|string|max:100',
+            'color' => 'required|string|max:50',
+            'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
+            'transmission' => 'required|in:Manual,Automatic',
+            'daily_price' => 'required|numeric|min:0',
+            'engine_size' => 'nullable|string|max:50',
+            'mileage' => 'nullable|integer|min:0',
+            'seats' => 'nullable|integer|min:1|max:10',
+            'description' => 'nullable|string',
+        ]);
+
+        $car->update($validated);
+
+        return redirect()->route('owner.vehicles')->with('success', 'Vehicle updated successfully!');
+    }
+
+   
+public function destroy(Car $car)
+{
+    if ($car->owner_id !== auth()->id()) {
+        abort(403);
+    }
+
+    $car->delete();
+
+    return redirect()
+        ->back()
+        ->with('success', 'Vehicle deleted successfully.');
+}
 }

@@ -1,6 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { router } from '@inertiajs/react';
 
 interface Vehicle {
     id: number;
@@ -58,15 +59,40 @@ export default function OwnerVehicles({ vehicles = [] }: Props) {
                                             </p>
                                         </div>
 
-                                        <div className="flex gap-2">
-                                            <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-                                                {vehicle.approval_status}
-                                            </span>
+                          <div className="flex items-center gap-4">
+    <div className="flex gap-2">
+        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
+            {vehicle.approval_status}
+        </span>
 
-                                            <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                                {vehicle.availability_status}
-                                            </span>
-                                        </div>
+        <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
+            {vehicle.availability_status}
+        </span>
+    </div>
+
+    <Button
+    variant="outline"
+    size="sm"
+    onClick={() => {
+        console.log(vehicle.id);
+        router.get(`/owner/vehicles/${vehicle.id}/edit`);
+    }}
+>
+    Edit
+</Button>
+
+    <Button
+        variant="destructive"
+        size="sm"
+        onClick={() => {
+            if (confirm('Are you sure you want to delete this vehicle?')) {
+             router.delete(`/owner/vehicles/${vehicle.id}`);   
+            }
+        }}
+    >
+        Delete
+    </Button>
+</div>
                                     </div>
                                 ))}
                             </div>
