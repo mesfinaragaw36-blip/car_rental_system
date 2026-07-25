@@ -61,9 +61,17 @@ export default function OwnerVehicles({ vehicles = [] }: Props) {
 
                           <div className="flex items-center gap-4">
     <div className="flex gap-2">
-        <span className="rounded-full bg-yellow-100 px-3 py-1 text-xs font-medium text-yellow-800">
-            {vehicle.approval_status}
-        </span>
+       <span
+    className={`rounded-full px-3 py-1 text-xs font-medium ${
+        vehicle.approval_status === 'approved'
+            ? 'bg-green-100 text-green-800'
+            : vehicle.approval_status === 'rejected'
+            ? 'bg-red-100 text-red-800'
+            : 'bg-yellow-100 text-yellow-800'
+    }`}
+>
+    {vehicle.approval_status}
+</span>
 
         <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
             {vehicle.availability_status}
