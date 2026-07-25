@@ -46,7 +46,7 @@ function getNavItems(role: string): NavItem[] {
         default:
             return [
                 { title: 'Dashboard', href: '/customer/dashboard', icon: LayoutGrid },
-                { title: 'Browse Cars', href: '/customer/cars', icon: Car },
+                { title: 'Browse Cars',  href: '/customer/browse-cars', icon: Car },
                 { title: 'My Bookings', href: '/customer/bookings', icon: List },
             ];
     }
