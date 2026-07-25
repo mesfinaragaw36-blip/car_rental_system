@@ -106,7 +106,7 @@ export default function Profile() {
                                         <Input
                                             id="address"
                                             className="mt-1 block w-full"
-                                            defaultValue={auth.user.address ?? ''}
+                                            defaultValue={String(auth.user.address ?? '')}
                                             name="address"
                                             required
                                             autoComplete="street-address"

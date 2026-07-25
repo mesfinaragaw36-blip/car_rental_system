@@ -35,6 +35,8 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles');
         Route::post('/vehicles/{car}/approve', [VehicleController::class, 'approve'])->name('vehicles.approve');
         Route::post('/vehicles/{car}/reject', [VehicleController::class, 'reject'])->name('vehicles.reject');
+        Route::post('/vehicles/{car}/documents/approve', [VehicleController::class, 'approveDocument'])->name('vehicles.documents.approve');
+        Route::post('/vehicles/{car}/documents/reject', [VehicleController::class, 'rejectDocument'])->name('vehicles.documents.reject');
         Route::get('/vehicle-images', [CarImageController::class, 'index'])->name('vehicle-images');
         Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])->name('vehicle-documents');
     });

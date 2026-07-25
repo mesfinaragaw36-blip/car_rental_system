@@ -32,20 +32,11 @@ import { UserMenuContent } from '@/components/user-menu-content';
 import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useInitials } from '@/hooks/use-initials';
 import { cn, toUrl } from '@/lib/utils';
-import { dashboard } from '@/routes';
 import type { BreadcrumbItem, NavItem } from '@/types';
 
 type Props = {
     breadcrumbs?: BreadcrumbItem[];
 };
-
-const mainNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: dashboard(),
-        icon: LayoutGrid,
-    },
-];
 
 const rightNavItems: NavItem[] = [
     {
@@ -63,11 +54,30 @@ const rightNavItems: NavItem[] = [
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
+function getDashboardUrl(role: string): string {
+    switch (role) {
+        case 'admin':  return '/admin/dashboard';
+        case 'owner':  return '/owner/dashboard';
+        case 'driver': return '/driver/dashboard';
+        default:       return '/customer/dashboard';
+    }
+}
+
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
     const { auth } = page.props;
+    const role = (auth.user as { role?: string } | undefined)?.role ?? 'customer';
+    const dashboardUrl = getDashboardUrl(role);
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
+
+    const mainNavItems: NavItem[] = [
+        {
+            title: 'Dashboard',
+            href: dashboardUrl,
+            icon: LayoutGrid,
+        },
+    ];
 
     return (
         <>
@@ -135,7 +145,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                     </div>
 
                     <Link
-                        href={dashboard()}
+                        href={dashboardUrl}
                         prefetch
                         className="flex items-center space-x-2"
                     >

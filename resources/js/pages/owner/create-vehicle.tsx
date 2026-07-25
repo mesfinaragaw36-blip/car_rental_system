@@ -1,4 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -22,11 +23,43 @@ export default function CreateVehicle() {
         seats: '',
         daily_price: '',
         description: '',
+        photos: [] as File[],
+        primary_photo_index: 0,
+        registration_document: null as File | null,
+        registration_expiry: '',
+        ownership_document: null as File | null,
+        ownership_expiry: '',
     });
+
+    const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+
+    const primaryPhotoIndex = Number(data.primary_photo_index ?? 0);
+
+    function handlePhotosChange(files: FileList | null) {
+        if (!files) {
+            setData('photos', []);
+            setData('primary_photo_index', 0);
+            setPhotoPreviews([]);
+            return;
+        }
+
+        const fileArray: File[] = [];
+        const previews: string[] = [];
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            fileArray.push(file);
+            previews.push(URL.createObjectURL(file));
+        }
+
+        setData('photos', fileArray);
+        setData('primary_photo_index', 0);
+        setPhotoPreviews(previews);
+    }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
-        post('/owner/vehicles');
+        post('/owner/vehicles', { forceFormData: true });
     }
 
     return (
@@ -36,13 +69,13 @@ export default function CreateVehicle() {
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Add Vehicle</h1>
 
-                <Card>
-                    <CardHeader>
-                        <CardTitle>Vehicle Information</CardTitle>
-                    </CardHeader>
+                <form onSubmit={submit} className="space-y-6">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Vehicle Information</CardTitle>
+                        </CardHeader>
 
-                    <CardContent>
-                        <form onSubmit={submit} className="space-y-4">
+                        <CardContent className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <Label htmlFor="brand">Brand</Label>
@@ -199,13 +232,133 @@ export default function CreateVehicle() {
                                 />
                                 <InputError message={errors.description} />
                             </div>
+                        </CardContent>
+                    </Card>
 
-                            <Button type="submit" disabled={processing}>
-                                {processing ? 'Saving...' : 'Save Vehicle'}
-                            </Button>
-                        </form>
-                    </CardContent>
-                </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Vehicle Photos</CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                            <div>
+                                <Label htmlFor="photos">Upload photos</Label>
+                                <Input
+                                    id="photos"
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    className="mt-1"
+                                    onChange={(e) => handlePhotosChange(e.target.files)}
+                                />
+                                <p className="text-sm text-muted-foreground mt-1">
+                                    Upload one or more photos. You will pick the main photo below.
+                                </p>
+                                <InputError message={errors.photos} />
+                                <InputError message={errors.primary_photo_index} />
+                            </div>
+
+                            {photoPreviews.length > 0 && (
+                                <div className="space-y-3">
+                                    <p className="text-sm font-medium">Pick the main photo</p>
+
+                                    <div className="grid gap-4 md:grid-cols-3">
+                                        {photoPreviews.map((src, index) => (
+                                            <label
+                                                key={src}
+                                                className={`group cursor-pointer rounded-lg border-2 p-2 transition-colors ${
+                                                    primaryPhotoIndex === index
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-muted hover:border-primary/50'
+                                                }`}
+                                            >
+                                                <img
+                                                    src={src}
+                                                    alt={`Preview ${index + 1}`}
+                                                    className="h-32 w-full rounded-md object-cover"
+                                                />
+                                                <div className="mt-2 flex items-center gap-2">
+                                                    <input
+                                                        type="radio"
+                                                        name="primary_photo_index"
+                                                        value={index}
+                                                        checked={primaryPhotoIndex === index}
+                                                        onChange={() => setData('primary_photo_index', index)}
+                                                    />
+                                                    <span className="text-sm">
+                                                        {primaryPhotoIndex === index ? 'Main photo' : 'Select as main'}
+                                                    </span>
+                                                </div>
+                                            </label>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+
+                    <Card>
+                        <CardHeader>
+                            <CardTitle>Documents</CardTitle>
+                        </CardHeader>
+
+                        <CardContent className="space-y-6">
+                            <div className="rounded-lg border border-muted p-4 space-y-3">
+                                <Label htmlFor="registration_document">Registration Document</Label>
+                                <Input
+                                    id="registration_document"
+                                    type="file"
+                                    accept="image/*,application/pdf"
+                                    onChange={(e) =>
+                                        setData('registration_document', e.target.files?.[0] ?? null)
+                                    }
+                                />
+                                <InputError message={errors.registration_document} />
+
+                                <div>
+                                    <Label htmlFor="registration_expiry">Registration Expiry Date</Label>
+                                    <Input
+                                        id="registration_expiry"
+                                        type="date"
+                                        className="mt-1"
+                                        value={data.registration_expiry}
+                                        onChange={(e) => setData('registration_expiry', e.target.value)}
+                                    />
+                                    <InputError message={errors.registration_expiry} />
+                                </div>
+                            </div>
+
+                            <div className="rounded-lg border border-muted p-4 space-y-3">
+                                <Label htmlFor="ownership_document">Ownership Document</Label>
+                                <Input
+                                    id="ownership_document"
+                                    type="file"
+                                    accept="image/*,application/pdf"
+                                    onChange={(e) =>
+                                        setData('ownership_document', e.target.files?.[0] ?? null)
+                                    }
+                                />
+                                <InputError message={errors.ownership_document} />
+
+                                <div>
+                                    <Label htmlFor="ownership_expiry">Ownership Expiry Date</Label>
+                                    <Input
+                                        id="ownership_expiry"
+                                        type="date"
+                                        className="mt-1"
+                                        value={data.ownership_expiry}
+                                        onChange={(e) => setData('ownership_expiry', e.target.value)}
+                                    />
+                                    <InputError message={errors.ownership_expiry} />
+                                </div>
+                            </div>
+                        </CardContent>
+                    </Card>
+
+                    <Button type="submit" disabled={processing}>
+                        {processing ? 'Saving...' : 'Save Vehicle'}
+                    </Button>
+                </form>
             </div>
         </>
     );

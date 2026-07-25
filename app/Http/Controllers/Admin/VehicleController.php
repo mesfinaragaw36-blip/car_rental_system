@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Car;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class VehicleController extends Controller
 {
     public function index()
     {
-        $vehicles = Car::with('owner')->latest()->get();
+        $vehicles = Car::with(['owner', 'images', 'documents'])->latest()->get();
 
         return Inertia::render('admin/vehicles', [
             'vehicles' => $vehicles,
@@ -27,6 +28,30 @@ class VehicleController extends Controller
     public function reject(Car $car)
     {
         $car->update(['approval_status' => 'rejected']);
+
+        return redirect()->back();
+    }
+
+    public function approveDocument(Request $request, Car $car)
+    {
+        $request->validate([
+            'document_id' => 'required|integer|exists:vehicle_documents,id',
+        ]);
+
+        $document = $car->documents()->findOrFail($request->input('document_id'));
+        $document->update(['verification_status' => 'approved']);
+
+        return redirect()->back();
+    }
+
+    public function rejectDocument(Request $request, Car $car)
+    {
+        $request->validate([
+            'document_id' => 'required|integer|exists:vehicle_documents,id',
+        ]);
+
+        $document = $car->documents()->findOrFail($request->input('document_id'));
+        $document->update(['verification_status' => 'rejected']);
 
         return redirect()->back();
     }
