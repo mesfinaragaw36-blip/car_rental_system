@@ -8,6 +8,7 @@ use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
 use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
 use App\Http\Controllers\Owner\VehicleController as OwnerVehicle;
+use App\Http\Controllers\Customer\VehicleController as CustomerVehicle;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -62,6 +63,8 @@ Route::middleware(['auth', 'role:customer'])
     ->name('customer.')
     ->group(function () {
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
+        Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('customer.cars.index');
+        Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('customer.cars.show');
     });
 
 // Driver routes
