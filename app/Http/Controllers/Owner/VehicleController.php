@@ -41,13 +41,11 @@ class VehicleController extends Controller
             'mileage' => 'nullable|integer|min:0',
             'seats' => 'nullable|integer|min:1|max:10',
             'description' => 'nullable|string',
-            'photos' => 'nullable|array',
+            'photos' => 'nullable',
             'photos.*' => 'image|max:5120',
             'primary_photo_index' => 'nullable|integer|min:0',
-            'registration_document' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
-            'registration_expiry' => 'nullable|date|after:today',
-            'ownership_document' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
-            'ownership_expiry' => 'nullable|date|after:today',
+            'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
+            'ownership_expiry' => 'nullable|date',
         ]);
 
         $car = Car::create([
@@ -84,18 +82,6 @@ class VehicleController extends Controller
             }
         }
 
-        if ($request->hasFile('registration_document')) {
-            $path = $request->file('registration_document')->store('vehicle-documents', 'public');
-
-            VehicleDocument::create([
-                'car_id' => $car->id,
-                'document_type' => 'Registration',
-                'document_path' => $path,
-                'expiry_date' => $validated['registration_expiry'] ?? null,
-                'verification_status' => 'pending',
-            ]);
-        }
-
         if ($request->hasFile('ownership_document')) {
             $path = $request->file('ownership_document')->store('vehicle-documents', 'public');
 
@@ -103,7 +89,7 @@ class VehicleController extends Controller
                 'car_id' => $car->id,
                 'document_type' => 'Ownership',
                 'document_path' => $path,
-                'expiry_date' => $validated['ownership_expiry'] ?? null,
+                'expiry_date' => ! empty($validated['ownership_expiry']) ? $validated['ownership_expiry'] : null,
                 'verification_status' => 'pending',
             ]);
         }
