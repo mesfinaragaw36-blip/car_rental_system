@@ -39,6 +39,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/vehicles/{car}/documents/reject', [VehicleController::class, 'rejectDocument'])->name('vehicles.documents.reject');
         Route::get('/vehicle-images', [CarImageController::class, 'index'])->name('vehicle-images');
         Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])->name('vehicle-documents');
+        Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])->name('vehicle-documents.store');
     });
 
 // Owner routes

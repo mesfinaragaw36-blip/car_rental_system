@@ -44,11 +44,13 @@ class VehicleController extends Controller
             'photos' => 'nullable|array',
             'photos.*' => 'image|max:5120',
             'primary_photo_index' => 'nullable|integer|min:0',
-            'registration_document' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
-            'registration_expiry' => 'nullable|date|after:today',
-            'ownership_document' => 'nullable|file|image|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
+            'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
             'ownership_expiry' => 'nullable|date|after:today',
         ]);
+        if ($request->hasFile('ownership_document')) {
+         $validated['ownership_document'] = $request->file('ownership_document')
+        ->store('vehicle_documents', 'public');
+                }
 
         $car = Car::create([
             'brand' => $validated['brand'],
@@ -68,6 +70,19 @@ class VehicleController extends Controller
             'approval_status' => 'pending',
             'availability_status' => 'available',
         ]);
+            if ($request->hasFile('ownership_document')) {
+
+            $path = $request->file('ownership_document')
+             ->store('vehicle_documents', 'public');
+
+            VehicleDocument::create([
+             'car_id' => $car->id,
+            'document_type' => 'Ownership',
+            'document_path' => $path,
+            'expiry_date' => $request->ownership_expiry,
+            'verification_status' => 'pending',
+                ]);
+                    }
 
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;

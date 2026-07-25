@@ -25,13 +25,13 @@ export default function CreateVehicle() {
         description: '',
         photos: [] as File[],
         primary_photo_index: 0,
-        registration_document: null as File | null,
-        registration_expiry: '',
         ownership_document: null as File | null,
         ownership_expiry: '',
     });
 
     const [photoPreviews, setPhotoPreviews] = useState<string[]>([]);
+
+    const [step, setStep] = useState(1);
 
     const primaryPhotoIndex = Number(data.primary_photo_index ?? 0);
 
@@ -70,6 +70,7 @@ export default function CreateVehicle() {
                 <h1 className="text-3xl font-bold">Add Vehicle</h1>
 
                 <form onSubmit={submit} className="space-y-6">
+                    {step === 1 && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Vehicle Information</CardTitle>
@@ -234,7 +235,8 @@ export default function CreateVehicle() {
                             </div>
                         </CardContent>
                     </Card>
-
+                    )}
+                     {step === 2 && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Vehicle Photos</CardTitle>
@@ -296,37 +298,13 @@ export default function CreateVehicle() {
                             )}
                         </CardContent>
                     </Card>
-
+                     )}
+                    {step === 3 && (
                     <Card>
                         <CardHeader>
                             <CardTitle>Documents</CardTitle>
                         </CardHeader>
-
                         <CardContent className="space-y-6">
-                            <div className="rounded-lg border border-muted p-4 space-y-3">
-                                <Label htmlFor="registration_document">Registration Document</Label>
-                                <Input
-                                    id="registration_document"
-                                    type="file"
-                                    accept="image/*,application/pdf"
-                                    onChange={(e) =>
-                                        setData('registration_document', e.target.files?.[0] ?? null)
-                                    }
-                                />
-                                <InputError message={errors.registration_document} />
-
-                                <div>
-                                    <Label htmlFor="registration_expiry">Registration Expiry Date</Label>
-                                    <Input
-                                        id="registration_expiry"
-                                        type="date"
-                                        className="mt-1"
-                                        value={data.registration_expiry}
-                                        onChange={(e) => setData('registration_expiry', e.target.value)}
-                                    />
-                                    <InputError message={errors.registration_expiry} />
-                                </div>
-                            </div>
 
                             <div className="rounded-lg border border-muted p-4 space-y-3">
                                 <Label htmlFor="ownership_document">Ownership Document</Label>
@@ -354,10 +332,37 @@ export default function CreateVehicle() {
                             </div>
                         </CardContent>
                     </Card>
+                    )}
 
-                    <Button type="submit" disabled={processing}>
-                        {processing ? 'Saving...' : 'Save Vehicle'}
-                    </Button>
+                    <div className="flex justify-between">
+
+                        {step > 1 && (
+                            <Button
+                                 type="button"
+                                     variant="outline"
+                                         onClick={() => setStep(step - 1)}
+                                            >
+                                                 Back
+                                                     </Button>
+                                                        )}
+
+                                                         {step < 3 ? (
+                                                         <Button
+                                                       type="button"
+                                                     onClick={() => setStep(step + 1)}
+                                                    >
+                                                Next
+                                        </Button>
+                                    ) : (
+                              <Button
+                         type="submit"
+                    disabled={processing}
+                    >
+                {processing ? 'Saving...' : 'Save Vehicle'}
+        </Button>
+    )}
+
+                </div>
                 </form>
             </div>
         </>
