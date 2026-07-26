@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CarImageController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
+use App\Http\Controllers\Customer\BookingController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
 use App\Http\Controllers\Customer\VehicleController as CustomerVehicle;
 use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
@@ -34,6 +35,7 @@ Route::middleware(['auth', 'role:admin'])
     ->group(function () {
         Route::get('/dashboard', [AdminDashboard::class, 'index'])->name('dashboard');
         Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles');
+        Route::get('/vehicles/{car}', [VehicleController::class, 'show'])->name('vehicles.show');
         Route::post('/vehicles/{car}/approve', [VehicleController::class, 'approve'])->name('vehicles.approve');
         Route::post('/vehicles/{car}/reject', [VehicleController::class, 'reject'])->name('vehicles.reject');
         Route::post('/vehicles/{car}/documents/approve', [VehicleController::class, 'approveDocument'])->name('vehicles.documents.approve');
@@ -65,6 +67,8 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
         Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
         Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
+        Route::get('/cars/{car}/book', [BookingController::class, 'create'])->name('cars.book');
+        Route::post('/cars/{car}/book', [BookingController::class, 'store'])->name('cars.book.store');
     });
 
 // Driver routes

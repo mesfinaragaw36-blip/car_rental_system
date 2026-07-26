@@ -18,6 +18,15 @@ class VehicleController extends Controller
         ]);
     }
 
+    public function show(Car $car)
+    {
+        $car->load(['owner', 'images', 'documents']);
+
+        return Inertia::render('admin/vehicle-details', [
+            'vehicle' => $car,
+        ]);
+    }
+
     public function approve(Car $car)
     {
         $car->update(['approval_status' => 'approved']);
