@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
+use App\Http\Controllers\Customer\BookingController as CustomerBooking;
 use App\Http\Controllers\Customer\VehicleController as CustomerVehicle;
 use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
@@ -65,6 +66,8 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
         Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
         Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
+        Route::post('/cars/{car}/bookings', [CustomerBooking::class, 'store'])->name('cars.bookings.store');
+        Route::get('/bookings', [CustomerBooking::class, 'index'])->name('bookings.index');
     });
 
 // Driver routes

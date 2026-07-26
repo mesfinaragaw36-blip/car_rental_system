@@ -1,6 +1,10 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { useMemo } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 
 interface CarImage {
     id: number;
@@ -10,6 +14,7 @@ interface CarImage {
 
 interface Car {
     id: number;
+    owner_id: number;
     brand: string;
     model: string;
     year: number;
@@ -31,6 +36,42 @@ interface Props {
 
 export default function CarDetails({ car }: Props) {
     const primaryImage = car.images?.find((img) => img.is_primary) ?? car.images?.[0];
+
+    const form = useForm({
+        pickup_date: '',
+        return_date: '',
+        pickup_location: '',
+        return_location: '',
+        need_driver: false,
+    });
+
+    const totalPrice = useMemo(() => {
+        if (!form.data.pickup_date || !form.data.return_date) {
+            return '0.00';
+        }
+
+        const pickup = new Date(form.data.pickup_date);
+        const returnDate = new Date(form.data.return_date);
+        const diff = Math.ceil((returnDate.getTime() - pickup.getTime()) / (1000 * 60 * 60 * 24));
+
+        if (diff < 0) {
+            return '0.00';
+        }
+
+        const dailyPrice = Number(car.daily_price);
+        return (dailyPrice * (diff + 1)).toFixed(2);
+    }, [form.data.pickup_date, form.data.return_date, car.daily_price]);
+
+    function submit(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault();
+
+        form.post(`/customer/cars/${car.id}/bookings`, {
+            preserveScroll: true,
+            onSuccess: () => {
+                form.reset('pickup_date', 'return_date', 'pickup_location', 'return_location', 'need_driver');
+            },
+        });
+    }
 
     return (
         <>
@@ -94,6 +135,75 @@ export default function CarDetails({ car }: Props) {
                                 </div>
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+
+                <Card>
+                    <CardContent className="space-y-4 p-6">
+                        <h2 className="text-2xl font-semibold">Book this vehicle</h2>
+
+                        <form onSubmit={submit} className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="pickup_date">Pickup Date</Label>
+                                    <Input
+                                        id="pickup_date"
+                                        type="date"
+                                        value={form.data.pickup_date}
+                                        onChange={(event) => form.setData('pickup_date', event.target.value)}
+                                    />
+                                    {form.errors.pickup_date && <p className="text-sm text-destructive">{form.errors.pickup_date}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="return_date">Return Date</Label>
+                                    <Input
+                                        id="return_date"
+                                        type="date"
+                                        value={form.data.return_date}
+                                        onChange={(event) => form.setData('return_date', event.target.value)}
+                                    />
+                                    {form.errors.return_date && <p className="text-sm text-destructive">{form.errors.return_date}</p>}
+                                </div>
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <Label htmlFor="pickup_location">Pickup Location</Label>
+                                    <Input
+                                        id="pickup_location"
+                                        value={form.data.pickup_location}
+                                        onChange={(event) => form.setData('pickup_location', event.target.value)}
+                                    />
+                                    {form.errors.pickup_location && <p className="text-sm text-destructive">{form.errors.pickup_location}</p>}
+                                </div>
+
+                                <div>
+                                    <Label htmlFor="return_location">Return Location</Label>
+                                    <Input
+                                        id="return_location"
+                                        value={form.data.return_location}
+                                        onChange={(event) => form.setData('return_location', event.target.value)}
+                                    />
+                                    {form.errors.return_location && <p className="text-sm text-destructive">{form.errors.return_location}</p>}
+                                </div>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                                <Checkbox
+                                    checked={form.data.need_driver}
+                                    onCheckedChange={(value) => form.setData('need_driver', value)}
+                                />
+                                <Label htmlFor="need_driver">Need a driver?</Label>
+                            </div>
+
+                            <div className="rounded-lg border border-border bg-muted p-4">
+                                <p className="text-sm text-muted-foreground">Total price</p>
+                                <p className="text-xl font-semibold">{totalPrice} ETB</p>
+                            </div>
+
+                            <Button type="submit" disabled={form.processing}>Submit Booking Request</Button>
+                        </form>
                     </CardContent>
                 </Card>
             </div>
