@@ -31,7 +31,6 @@ export default function CreateVehicle() {
     const [primaryPhotoIndex, setPrimaryPhotoIndex] = useState(0);
     const [ownershipDocument, setOwnershipDocument] = useState<File | null>(null);
     const [ownershipExpiry, setOwnershipExpiry] = useState('');
-    const [submitting, setSubmitting] = useState(false);
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
     const step1Fields = ['brand', 'model', 'year', 'plate_number', 'category', 'color', 'fuel_type', 'transmission', 'daily_price'];
@@ -60,7 +59,6 @@ export default function CreateVehicle() {
     function submit(e: React.FormEvent) {
         e.preventDefault();
         setServerErrors({});
-        setSubmitting(true);
 
         const formData = new FormData();
         formData.append('brand', data.brand);
@@ -93,8 +91,7 @@ export default function CreateVehicle() {
         router.post('/owner/vehicles', formData, {
             forceFormData: true,
             preserveState: true,
-            onStart: () => setSubmitting(true),
-            onFinish: () => setSubmitting(false),
+            onStart: () => {},
             onError: (err) => {
                 setServerErrors(err);
                 if (step1Fields.some((field) => err[field])) {
@@ -417,8 +414,8 @@ export default function CreateVehicle() {
                             )}
 
                             {step === 2 && (
-                                <Button type="submit" disabled={submitting}>
-                                    {submitting ? 'Saving...' : 'Save Vehicle'}
+                                <Button type="submit" disabled={processing}>
+                                    {processing ? 'Saving...' : 'Save Vehicle'}
                                 </Button>
                             )}
                         </div>

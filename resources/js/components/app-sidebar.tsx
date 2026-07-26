@@ -30,8 +30,6 @@ function getNavItems(role: string): NavItem[] {
             return [
                 { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
                 { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
-                { title: 'Vehicle Images', href: '/admin/vehicle-images', icon: FileText },
-                { title: 'Vehicle Documents', href: '/admin/vehicle-documents', icon: ClipboardList },
             ];
 
         case 'owner':
@@ -48,7 +46,7 @@ function getNavItems(role: string): NavItem[] {
         default:
             return [
                 { title: 'Dashboard', href: '/customer/dashboard', icon: LayoutGrid },
-                { title: 'Browse Cars', href: '/customer/cars', icon: Car },
+                { title: 'Browse Cars',  href: '/customer/browse-cars', icon: Car },
                 { title: 'My Bookings', href: '/customer/bookings', icon: List },
             ];
     }

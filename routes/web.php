@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\VehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
+use App\Http\Controllers\Customer\VehicleController as CustomerVehicle;
 use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
 use App\Http\Controllers\Owner\VehicleController as OwnerVehicle;
@@ -39,6 +40,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::post('/vehicles/{car}/documents/reject', [VehicleController::class, 'rejectDocument'])->name('vehicles.documents.reject');
         Route::get('/vehicle-images', [CarImageController::class, 'index'])->name('vehicle-images');
         Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])->name('vehicle-documents');
+        Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])->name('vehicle-documents.store');
     });
 
 // Owner routes
@@ -61,6 +63,8 @@ Route::middleware(['auth', 'role:customer'])
     ->name('customer.')
     ->group(function () {
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
+        Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
+        Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
     });
 
 // Driver routes
