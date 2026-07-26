@@ -36,6 +36,7 @@ function getNavItems(role: string): NavItem[] {
             return [
                 { title: 'Dashboard', href: '/owner/dashboard', icon: LayoutGrid },
                 { title: 'My Vehicles', href: '/owner/vehicles', icon: Car },
+                { title: 'Bookings', href: '/owner/bookings', icon: ClipboardList },
             ];
 
         case 'driver':
