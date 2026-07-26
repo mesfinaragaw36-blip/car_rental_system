@@ -10,6 +10,18 @@ use Inertia\Inertia;
 
 class BookingController extends Controller
 {
+    public function index()
+    {
+        $bookings = Booking::with('car')
+            ->where('customer_id', auth()->id())
+            ->latest()
+            ->get();
+
+        return Inertia::render('customer/my-bookings', [
+            'bookings' => $bookings,
+        ]);
+    }
+
     public function create(Car $car)
     {
         return Inertia::render('customer/book-vehicle', [

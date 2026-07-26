@@ -69,6 +69,7 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
         Route::get('/cars/{car}/book', [BookingController::class, 'create'])->name('cars.book');
         Route::post('/cars/{car}/book', [BookingController::class, 'store'])->name('cars.book.store');
+        Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     });
 
 // Driver routes

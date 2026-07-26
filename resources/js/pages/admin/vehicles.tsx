@@ -1,6 +1,7 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Eye } from 'lucide-react';
 
 interface Vehicle {
     id: number;
@@ -97,6 +98,12 @@ export default function Vehicles({ vehicles = [] }: Props) {
                                                 <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
                                                     {vehicle.availability_status}
                                                 </span>
+
+                                                <Link href={`/admin/vehicles/${vehicle.id}`}>
+                                                    <Button size="sm" variant="outline">
+                                                        <Eye className="h-4 w-4" />
+                                                    </Button>
+                                                </Link>
 
                                                 {vehicle.approval_status === 'pending' && (
                                                     <div className="flex gap-2 ml-2">
