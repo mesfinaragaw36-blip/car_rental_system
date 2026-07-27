@@ -5,71 +5,88 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Payment;
+use Carbon\Carbon;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class BookingController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $bookings = Booking::with('car')
+        $bookings = Booking::with(['car', 'payment'])
             ->where('customer_id', auth()->id())
             ->latest()
-            ->get();
+            ->get()
+            ->map(fn (Booking $booking) => [
+                'id' => $booking->id,
+                'status' => $booking->status,
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'pickup_location' => $booking->pickup_location,
+                'return_location' => $booking->return_location,
+                'total_price' => $booking->total_price,
+                'need_driver' => $booking->need_driver,
+                'notes' => $booking->notes,
+                'car' => [
+                    'id' => $booking->car->id,
+                    'brand' => $booking->car->brand,
+                    'model' => $booking->car->model,
+                    'year' => $booking->car->year,
+                    'plate_number' => $booking->car->plate_number,
+                ],
+                'payment' => $booking->payment
+                    ? [
+                        'payment_method' => $booking->payment->payment_method,
+                        'payment_status' => $booking->payment->payment_status,
+                        'paid_at' => $booking->payment->paid_at?->toDateTimeString(),
+                    ]
+                    : null,
+            ]);
 
         return Inertia::render('customer/my-bookings', [
             'bookings' => $bookings,
         ]);
     }
 
-    public function create(Car $car)
+    public function store(Request $request, Car $car): RedirectResponse
     {
-        return Inertia::render('customer/book-vehicle', [
-            'car' => $car,
-        ]);
-    }
-
-    public function store(Request $request, Car $car)
-    {
-        $validated = $request->validate([
-            'pickup_date' => 'required|date|after:today',
-            'return_date' => 'required|date|after:pickup_date',
-            'pickup_location' => 'required|string|max:255',
-            'return_location' => 'required|string|max:255',
-            'need_driver' => 'boolean',
-        ]);
-
-        // Check 1: customer is not the owner of the car
-        if ($car->owner_id === auth()->id()) {
-            return back()->withErrors([
-                'car' => 'You cannot book your own vehicle.',
-            ]);
+        if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
+            abort(404);
         }
 
-        // Check 2: no overlapping bookings for these dates
-        $overlapping = Booking::where('car_id', $car->id)
-            ->whereIn('status', ['pending', 'approved', 'paid', 'picked_up'])
-            ->where(function ($query) use ($validated) {
-                $query->whereBetween('pickup_date', [$validated['pickup_date'], $validated['return_date']])
-                    ->orWhereBetween('return_date', [$validated['pickup_date'], $validated['return_date']])
-                    ->orWhere(function ($q) use ($validated) {
-                        $q->where('pickup_date', '<=', $validated['pickup_date'])
-                            ->where('return_date', '>=', $validated['return_date']);
-                    });
-            })
+        if ($car->owner_id === auth()->id()) {
+            return back()->withErrors(['car' => 'You cannot book your own vehicle.']);
+        }
+
+        $validated = $request->validate([
+            'pickup_date' => ['required', 'date', 'after_or_equal:today'],
+            'return_date' => ['required', 'date', 'after:pickup_date'],
+            'pickup_location' => ['required', 'string', 'max:255'],
+            'return_location' => ['required', 'string', 'max:255'],
+            'need_driver' => ['boolean'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $pickupDate = Carbon::parse($validated['pickup_date']);
+        $returnDate = Carbon::parse($validated['return_date']);
+
+        $hasOverlap = Booking::where('car_id', $car->id)
+            ->whereNotIn('status', ['rejected', 'cancelled'])
+            ->where('pickup_date', '<', $returnDate)
+            ->where('return_date', '>', $pickupDate)
             ->exists();
 
-        if ($overlapping) {
+        if ($hasOverlap) {
             return back()->withErrors([
-                'pickup_date' => 'This vehicle is already booked for the selected dates.',
+                'car' => 'This vehicle is already booked for the selected dates. Please choose different dates.',
             ]);
         }
 
-        // Calculate total price
-        $days = \Carbon\Carbon::parse($validated['pickup_date'])
-            ->diffInDays(\Carbon\Carbon::parse($validated['return_date']));
-        $days = max($days, 1);
-        $totalPrice = $car->daily_price * $days;
+        $days = $pickupDate->diffInDays($returnDate);
+        $totalPrice = $days * $car->daily_price;
 
         Booking::create([
             'customer_id' => auth()->id(),
@@ -82,8 +99,54 @@ class BookingController extends Controller
             'need_driver' => $validated['need_driver'] ?? false,
             'total_price' => $totalPrice,
             'status' => 'pending',
+            'notes' => $validated['notes'] ?? null,
         ]);
 
-        return redirect()->route('customer.dashboard')->with('success', 'Booking request submitted successfully!');
+        return redirect()->route('customer.bookings.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Booking request submitted! The owner will review it shortly.',
+        ]);
+    }
+
+    public function pay(Request $request, Booking $booking): RedirectResponse
+    {
+        if ($booking->customer_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($booking->status !== 'approved') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only approved bookings can be paid.',
+            ]);
+        }
+
+        if ($booking->payment) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This booking has already been paid.',
+            ]);
+        }
+
+        $validated = $request->validate([
+            'payment_method' => ['required', 'in:Cash,Bank Transfer,Telebirr,CBE Birr'],
+            'transaction_reference' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => $booking->total_price,
+            'payment_method' => $validated['payment_method'],
+            'transaction_reference' => $validated['transaction_reference'] ?? null,
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        $booking->update(['status' => 'paid']);
+
+        return redirect()->route('customer.bookings.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Payment submitted successfully! Your booking is confirmed.',
+        ]);
     }
 }
