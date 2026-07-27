@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\VehicleDocumentController;
 use App\Http\Controllers\Customer\BookingController as CustomerBooking;
 use App\Http\Controllers\Customer\DashboardController as CustomerDashboard;
 use App\Http\Controllers\Customer\VehicleController as CustomerVehicle;
+use App\Http\Controllers\Driver\AssignmentController as DriverAssignment;
 use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
 use App\Http\Controllers\Owner\BookingController as OwnerBooking;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
@@ -94,6 +95,9 @@ Route::middleware(['auth', 'role:driver'])
     ->name('driver.')
     ->group(function () {
         Route::get('/dashboard', [DriverDashboard::class, 'index'])->name('dashboard');
+        Route::get('/assignments', [DriverAssignment::class, 'index'])->name('assignments');
+        Route::post('/assignments/{assignment}/accept', [DriverAssignment::class, 'accept'])->name('assignments.accept');
+        Route::post('/assignments/{assignment}/complete', [DriverAssignment::class, 'complete'])->name('assignments.complete');
     });
 
 require __DIR__.'/settings.php';

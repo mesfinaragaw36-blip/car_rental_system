@@ -1,25 +1,112 @@
-import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
+import { Head, Link } from '@inertiajs/react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { CalendarCheck, History, CalendarClock } from 'lucide-react';
 
-export default function CustomerDashboard() {
+interface UpcomingReturn {
+    id: number;
+    vehicle: string;
+    return_date: string;
+}
+
+interface Stats {
+    active_bookings: number;
+    past_bookings: number;
+    upcoming_returns: UpcomingReturn[];
+}
+
+interface Props {
+    stats: Stats;
+}
+
+interface StatCardProps {
+    title: string;
+    value: string | number;
+    icon: React.ReactNode;
+    description?: string;
+}
+
+function StatCard({ title, value, icon, description }: StatCardProps) {
+    return (
+        <Card>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">
+                    {title}
+                </CardTitle>
+                <span className="text-muted-foreground">{icon}</span>
+            </CardHeader>
+            <CardContent>
+                <p className="text-3xl font-bold">{value}</p>
+                {description && (
+                    <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+                )}
+            </CardContent>
+        </Card>
+    );
+}
+
+export default function CustomerDashboard({ stats }: Props) {
     return (
         <>
             <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                    </div>
+
+            <div className="p-6 space-y-6">
+                <h1 className="text-3xl font-bold">My Dashboard</h1>
+
+                <div className="grid gap-4 md:grid-cols-2">
+                    <StatCard
+                        title="Active Bookings"
+                        value={stats.active_bookings}
+                        icon={<CalendarCheck className="h-4 w-4" />}
+                        description="Pending, approved, paid, or picked up"
+                    />
+                    <StatCard
+                        title="Past Bookings"
+                        value={stats.past_bookings}
+                        icon={<History className="h-4 w-4" />}
+                        description="Returned or completed trips"
+                    />
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
-                </div>
+
+                {/* Upcoming returns */}
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium text-muted-foreground">
+                            Upcoming Return Dates
+                        </CardTitle>
+                        <span className="text-muted-foreground">
+                            <CalendarClock className="h-4 w-4" />
+                        </span>
+                    </CardHeader>
+                    <CardContent>
+                        {stats.upcoming_returns.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">
+                                No upcoming returns.
+                            </p>
+                        ) : (
+                            <ul className="space-y-2">
+                                {stats.upcoming_returns.map((item) => (
+                                    <li
+                                        key={item.id}
+                                        className="flex items-center justify-between rounded-lg border px-3 py-2 text-sm"
+                                    >
+                                        <span className="font-medium">{item.vehicle}</span>
+                                        <span className="text-muted-foreground">
+                                            {item.return_date}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        <div className="mt-3">
+                            <Link
+                                href="/customer/bookings"
+                                className="text-xs text-blue-600 hover:underline"
+                            >
+                                View all bookings →
+                            </Link>
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

@@ -55,6 +55,7 @@ interface FormErrors {
     pickup_location?: string;
     return_location?: string;
     notes?: string;
+    car?: string;
 }
 
 function calculateTotal(dailyPrice: string, pickupDate: string, returnDate: string): string | null {
@@ -99,7 +100,14 @@ export default function CarDetails({ car }: Props) {
         setSubmitting(true);
         router.post(
             `/customer/cars/${car.id}/book`,
-            { ...form },
+            {
+                pickup_date: form.pickup_date,
+                return_date: form.return_date,
+                pickup_location: form.pickup_location,
+                return_location: form.return_location,
+                need_driver: form.need_driver ? 1 : 0,
+                notes: form.notes,
+            },
             {
                 onError: (errs) => {
                     setErrors(errs as FormErrors);
@@ -296,6 +304,10 @@ export default function CarDetails({ car }: Props) {
                         >
                             {submitting ? 'Submitting…' : 'Submit Booking Request'}
                         </Button>
+
+                        {errors.car && (
+                            <p className="text-sm text-red-600 text-center">{errors.car}</p>
+                        )}
                     </CardContent>
                 </Card>
             </div>
