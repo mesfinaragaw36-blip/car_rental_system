@@ -1,4 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
+import { Mail, Lock } from 'lucide-react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -21,16 +22,24 @@ export default function Login({ status, canResetPassword }: Props) {
         <>
             <Head title="Log in" />
 
+            {status && (
+                <div className="mb-5 rounded-lg bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-700 dark:bg-green-950/50 dark:text-green-400">
+                    {status}
+                </div>
+            )}
+
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-4"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="email"
                                     type="email"
@@ -39,76 +48,82 @@ export default function Login({ status, canResetPassword }: Props) {
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="email"
-                                    placeholder="email@example.com"
+                                    placeholder="you@example.com"
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.email} />
                             </div>
+                            <InputError message={errors.email} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <div className="flex items-center">
-                                    <Label htmlFor="password">Password</Label>
-                                    {canResetPassword && (
-                                        <TextLink
-                                            href={request()}
-                                            className="ml-auto text-sm"
-                                            tabIndex={5}
-                                        >
-                                            Forgot your password?
-                                        </TextLink>
-                                    )}
-                                </div>
+                        {/* Password */}
+                        <div className="space-y-1.5">
+                            <div className="flex items-center justify-between">
+                                <Label htmlFor="password">Password</Label>
+                                {canResetPassword && (
+                                    <TextLink
+                                        href={request()}
+                                        className="text-xs text-muted-foreground no-underline hover:text-foreground"
+                                        tabIndex={5}
+                                    >
+                                        Forgot password?
+                                    </TextLink>
+                                )}
+                            </div>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <PasswordInput
                                     id="password"
                                     name="password"
                                     required
                                     tabIndex={2}
                                     autoComplete="current-password"
-                                    placeholder="Password"
+                                    placeholder="••••••••"
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.password} />
                             </div>
-
-                            <div className="flex items-center space-x-3">
-                                <Checkbox
-                                    id="remember"
-                                    name="remember"
-                                    tabIndex={3}
-                                />
-                                <Label htmlFor="remember">Remember me</Label>
-                            </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-4 w-full"
-                                tabIndex={4}
-                                disabled={processing}
-                                data-test="login-button"
-                            >
-                                {processing && <Spinner />}
-                                Log in
-                            </Button>
+                            <InputError message={errors.password} />
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        {/* Remember */}
+                        <div className="flex items-center gap-2">
+                            <Checkbox id="remember" name="remember" tabIndex={3} />
+                            <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer select-none">
+                                Keep me signed in
+                            </Label>
+                        </div>
+
+                        {/* Submit */}
+                        <Button
+                            type="submit"
+                            className="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-primary/20"
+                            tabIndex={4}
+                            disabled={processing}
+                        >
+                            {processing ? <><Spinner /> Signing in…</> : 'Sign in'}
+                        </Button>
+
+                        {/* Divider */}
+                        <div className="relative my-1 flex items-center gap-3">
+                            <div className="h-px flex-1 bg-border/60" />
+                            <span className="text-xs text-muted-foreground">or</span>
+                            <div className="h-px flex-1 bg-border/60" />
+                        </div>
+
+                        {/* Footer */}
+                        <p className="text-center text-sm text-muted-foreground">
                             Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={5}>
-                                Sign up
+                            <TextLink href={register()} tabIndex={6} className="font-semibold text-foreground no-underline hover:underline">
+                                Create one free
                             </TextLink>
-                        </div>
+                        </p>
                     </>
                 )}
             </Form>
-
-            {status && (
-                <div className="mb-4 text-center text-sm font-medium text-green-600">
-                    {status}
-                </div>
-            )}
         </>
     );
 }
 
 Login.layout = {
-    title: 'Log in to your account',
-    description: 'Enter your email and password below to log in',
+    title: 'Welcome back',
+    description: 'Sign in to continue to DriveEasy',
 };

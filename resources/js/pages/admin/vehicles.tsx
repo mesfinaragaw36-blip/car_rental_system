@@ -1,7 +1,13 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Eye } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Eye, Search } from 'lucide-react';
+import type { Auth } from '@/types';
+
+interface CarImage { id: number; is_primary: boolean; image_path: string; }
+interface Owner { name: string; }
 
 interface Vehicle {
     id: number;
@@ -10,42 +16,49 @@ interface Vehicle {
     year: number;
     plate_number: string;
     category: string;
-    color: string;
-    fuel_type: string;
-    transmission: string;
-    daily_price: number;
+    daily_price: string;
     approval_status: string;
     availability_status: string;
-    owner: {
-        name: string;
-    };
+    owner: Owner;
+    images: CarImage[];
+}
+
+interface Paginated {
+    data: Vehicle[];
+    links: { url: string | null; label: string; active: boolean }[];
 }
 
 interface Props {
-    vehicles: Vehicle[];
+    vehicles: Paginated;
+    filters: { status?: string; search?: string };
 }
 
-function statusBadgeClass(status: string) {
-    switch (status) {
-        case 'approved':
-            return 'bg-green-100 text-green-800';
-        case 'rejected':
-            return 'bg-red-100 text-red-800';
-        default:
-            return 'bg-yellow-100 text-yellow-800';
+interface FlashProps { toast?: { type: 'success' | 'error'; message: string } }
+
+const APPROVAL_STYLES: Record<string, string> = {
+    approved: 'bg-green-100 text-green-800',
+    rejected: 'bg-red-100 text-red-800',
+    pending:  'bg-yellow-100 text-yellow-800',
+};
+
+export default function AdminVehicles({ vehicles, filters }: Props) {
+    const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
+    const toast = props.flash?.toast;
+
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [status, setStatus] = useState(filters.status ?? '');
+
+    function applyFilters() {
+        router.get('/admin/vehicles', { search: search || undefined, status: status || undefined }, { preserveState: true, replace: true });
     }
-}
 
-export default function Vehicles({ vehicles = [] }: Props) {
-    const handleApprove = (id: number) => {
+    function handleApprove(id: number) {
         router.post(`/admin/vehicles/${id}/approve`, {}, { preserveScroll: true });
-    };
+    }
 
-    const handleReject = (id: number) => {
-        if (confirm('Are you sure you want to reject this vehicle?')) {
-            router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
-        }
-    };
+    function handleReject(id: number) {
+        if (confirm('Reject this vehicle?')) router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
+    }
 
     return (
         <>
@@ -54,77 +67,105 @@ export default function Vehicles({ vehicles = [] }: Props) {
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Vehicle Management</h1>
 
+                {toast && (
+                    <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                        {toast.message}
+                    </div>
+                )}
+
+                {/* Filters */}
                 <Card>
-                    <CardHeader>
-                        <CardTitle>All Vehicles</CardTitle>
-                    </CardHeader>
+                    <CardContent className="p-4">
+                        <form onSubmit={(e) => { e.preventDefault(); applyFilters(); }} className="flex flex-col gap-3 md:flex-row md:items-end">
+                            <div className="relative flex-1">
+                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search by brand, model, plate or owner..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="pl-9"
+                                />
+                            </div>
+                            <select
+                                value={status}
+                                onChange={(e) => setStatus(e.target.value)}
+                                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                            >
+                                <option value="">All Statuses</option>
+                                <option value="pending">Pending</option>
+                                <option value="approved">Approved</option>
+                                <option value="rejected">Rejected</option>
+                            </select>
+                            <Button type="submit" variant="secondary">Filter</Button>
+                        </form>
+                    </CardContent>
+                </Card>
 
+                {/* Table */}
+                <Card>
+                    <CardHeader><CardTitle>All Vehicles</CardTitle></CardHeader>
                     <CardContent>
-                        {vehicles.length === 0 ? (
-                            <p className="text-muted-foreground">
-                                No vehicles available.
-                            </p>
+                        {vehicles.data.length === 0 ? (
+                            <p className="text-muted-foreground">No vehicles found.</p>
                         ) : (
-                            <div className="space-y-4">
-                                {vehicles.map((vehicle) => (
-                                    <div
-                                        key={vehicle.id}
-                                        className="rounded-lg border p-4"
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <p className="font-semibold">
-                                                    {vehicle.brand}{' '}
-                                                    {vehicle.model}
-                                                </p>
-
-                                                <p className="text-sm text-muted-foreground">
-                                                    {vehicle.year} &middot;{' '}
-                                                    {vehicle.plate_number}{' '}
-                                                    &middot; Owner:{' '}
-                                                    {vehicle.owner.name}
-                                                </p>
-                                            </div>
-
-                                            <div className="flex items-center gap-2">
-                                                <span
-                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(
-                                                        vehicle.approval_status
-                                                    )}`}
-                                                >
-                                                    {vehicle.approval_status}
-                                                </span>
-
-                                                <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-medium text-green-800">
-                                                    {vehicle.availability_status}
-                                                </span>
-
-                                                <Link href={`/admin/vehicles/${vehicle.id}`}>
-                                                    <Button size="sm" variant="outline">
-                                                        <Eye className="h-4 w-4" />
-                                                    </Button>
-                                                </Link>
-
-                                                {vehicle.approval_status === 'pending' && (
-                                                    <div className="flex gap-2 ml-2">
-                                                        <Button
-                                                            size="sm"
-                                                            onClick={() => handleApprove(vehicle.id)}
-                                                        >
-                                                            Approve
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            onClick={() => handleReject(vehicle.id)}
-                                                        >
-                                                            Reject
-                                                        </Button>
+                            <div className="overflow-x-auto">
+                                <table className="w-full text-sm">
+                                    <thead>
+                                        <tr className="border-b text-left text-muted-foreground">
+                                            <th className="pb-3 font-medium">Vehicle</th>
+                                            <th className="pb-3 font-medium">Plate</th>
+                                            <th className="pb-3 font-medium">Owner</th>
+                                            <th className="pb-3 font-medium">Category</th>
+                                            <th className="pb-3 font-medium">Price/Day</th>
+                                            <th className="pb-3 font-medium">Availability</th>
+                                            <th className="pb-3 font-medium">Status</th>
+                                            <th className="pb-3 font-medium text-right">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {vehicles.data.map((v) => (
+                                            <tr key={v.id} className="border-b last:border-0">
+                                                <td className="py-3 font-medium">{v.brand} {v.model} <span className="text-muted-foreground font-normal">({v.year})</span></td>
+                                                <td className="py-3 text-muted-foreground">{v.plate_number}</td>
+                                                <td className="py-3">{v.owner.name}</td>
+                                                <td className="py-3 text-muted-foreground capitalize">{v.category}</td>
+                                                <td className="py-3">ETB {v.daily_price}</td>
+                                                <td className="py-3">
+                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${v.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                        {v.availability_status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3">
+                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[v.approval_status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                                        {v.approval_status}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 text-right">
+                                                    <div className="flex items-center justify-end gap-1">
+                                                        <Link href={`/admin/vehicles/${v.id}`}>
+                                                            <Button size="sm" variant="outline"><Eye className="h-4 w-4" /></Button>
+                                                        </Link>
+                                                        {v.approval_status === 'pending' && (
+                                                            <>
+                                                                <Button size="sm" onClick={() => handleApprove(v.id)}>Approve</Button>
+                                                                <Button size="sm" variant="destructive" onClick={() => handleReject(v.id)}>Reject</Button>
+                                                            </>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        )}
+
+                        {vehicles.links.length > 3 && (
+                            <div className="mt-4 flex flex-wrap gap-2">
+                                {vehicles.links.map((link) => (
+                                    <Button key={link.label} variant={link.active ? 'secondary' : 'outline'} size="sm" asChild disabled={!link.url}>
+                                        <a href={link.url ?? '#'} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                    </Button>
                                 ))}
                             </div>
                         )}
@@ -134,3 +175,10 @@ export default function Vehicles({ vehicles = [] }: Props) {
         </>
     );
 }
+
+AdminVehicles.layout = {
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/admin/dashboard' },
+        { title: 'Vehicles', href: '/admin/vehicles' },
+    ],
+};

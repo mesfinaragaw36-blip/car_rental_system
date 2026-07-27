@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +20,7 @@ class User extends Authenticatable
         'phone',
         'password',
         'role',
+        'staff_role_id',
         'status',
         'address',
         'profile_photo',
@@ -45,6 +47,11 @@ class User extends Authenticatable
     public function driverProfile(): HasOne
     {
         return $this->hasOne(DriverProfile::class);
+    }
+
+    public function staffRole(): BelongsTo
+    {
+        return $this->belongsTo(Role::class, 'staff_role_id');
     }
 
     public function cars(): HasMany

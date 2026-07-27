@@ -4,6 +4,8 @@ export type User = {
     email: string;
     phone: string;
     role: 'admin' | 'owner' | 'customer' | 'driver';
+    staff_role_id: number | null;
+    permissions: string[] | null;
     status: string;
     avatar?: string;
     email_verified_at: string | null;

@@ -9,12 +9,27 @@ use Inertia\Inertia;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $vehicles = Car::with(['owner', 'images', 'documents'])->latest()->get();
+        $query = Car::with(['owner', 'images'])->latest();
+
+        if ($request->filled('status')) {
+            $query->where('approval_status', $request->input('status'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(fn ($q) => $q->where('brand', 'like', "%{$search}%")
+                ->orWhere('model', 'like', "%{$search}%")
+                ->orWhere('plate_number', 'like', "%{$search}%")
+                ->orWhereHas('owner', fn ($q2) => $q2->where('name', 'like', "%{$search}%")));
+        }
+
+        $vehicles = $query->paginate(15)->withQueryString();
 
         return Inertia::render('admin/vehicles', [
             'vehicles' => $vehicles,
+            'filters'  => $request->only(['status', 'search']),
         ]);
     }
 

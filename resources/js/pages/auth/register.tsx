@@ -1,4 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
+import { Mail, Lock, Phone, User, ChevronDown } from 'lucide-react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -9,131 +10,163 @@ import { Spinner } from '@/components/ui/spinner';
 import { login } from '@/routes';
 import { store } from '@/routes/register';
 
-type Props = {
-    passwordRules: string;
-};
+type Props = { passwordRules: string };
 
 export default function Register({ passwordRules }: Props) {
     return (
         <>
-            <Head title="Register" />
+            <Head title="Create account" />
+
             <Form
                 {...store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
                 disableWhileProcessing
-                className="flex flex-col gap-6"
+                className="flex flex-col gap-4"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
+                        {/* Name */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="name">Full name</Label>
+                            <div className="relative">
+                                <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="name"
                                     type="text"
+                                    name="name"
                                     required
                                     autoFocus
                                     tabIndex={1}
                                     autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
+                                    placeholder="John Doe"
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.name} />
                             </div>
+                            <InputError message={errors.name} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
+                        {/* Email */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="email">Email</Label>
+                            <div className="relative">
+                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="email"
                                     type="email"
+                                    name="email"
                                     required
                                     tabIndex={2}
                                     autoComplete="email"
-                                    name="email"
-                                    placeholder="email@example.com"
+                                    placeholder="you@example.com"
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.email} />
                             </div>
+                            <InputError message={errors.email} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="phone">Phone number</Label>
+                        {/* Phone */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="phone">Phone number</Label>
+                            <div className="relative">
+                                <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="phone"
                                     type="tel"
+                                    name="phone"
                                     required
                                     tabIndex={3}
                                     autoComplete="tel"
-                                    name="phone"
                                     placeholder="09xxxxxxxx"
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.phone} />
                             </div>
+                            <InputError message={errors.phone} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="role">Register as</Label>
+                        {/* Role */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="role">I want to</Label>
+                            <div className="relative">
                                 <select
                                     id="role"
                                     name="role"
                                     required
                                     tabIndex={4}
                                     defaultValue=""
-                                    className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                                    className="h-11 w-full appearance-none rounded-xl border border-border/60 bg-muted/50 pl-3 pr-9 text-sm shadow-sm transition-colors focus-visible:bg-background focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                                 >
-                                    <option value="" disabled>Select a role</option>
+                                    <option value="" disabled>Select a role…</option>
                                     <option value="customer">Customer</option>
                                     <option value="owner">Owner</option>
                                     <option value="driver">Driver</option>
                                 </select>
-                                <InputError message={errors.role} />
+                                <ChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             </div>
+                            <InputError message={errors.role} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
+                        {/* Password */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password">Password</Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <PasswordInput
                                     id="password"
+                                    name="password"
                                     required
                                     tabIndex={5}
                                     autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Password"
+                                    placeholder="••••••••"
                                     passwordrules={passwordRules}
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.password} />
                             </div>
+                            <InputError message={errors.password} />
+                        </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
+                        {/* Confirm Password */}
+                        <div className="space-y-1.5">
+                            <Label htmlFor="password_confirmation">Confirm password</Label>
+                            <div className="relative">
+                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <PasswordInput
                                     id="password_confirmation"
+                                    name="password_confirmation"
                                     required
                                     tabIndex={6}
                                     autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
+                                    placeholder="••••••••"
                                     passwordrules={passwordRules}
+                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
                                 />
-                                <InputError message={errors.password_confirmation} />
                             </div>
-
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={7}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Create account
-                            </Button>
+                            <InputError message={errors.password_confirmation} />
                         </div>
 
-                        <div className="text-center text-sm text-muted-foreground">
+                        {/* Submit */}
+                        <Button
+                            type="submit"
+                            className="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-primary/20"
+                            tabIndex={7}
+                            data-test="register-user-button"
+                        >
+                            {processing ? <><Spinner /> Creating account…</> : 'Create account'}
+                        </Button>
+
+                        {/* Divider */}
+                        <div className="relative my-1 flex items-center gap-3">
+                            <div className="h-px flex-1 bg-border/60" />
+                            <span className="text-xs text-muted-foreground">or</span>
+                            <div className="h-px flex-1 bg-border/60" />
+                        </div>
+
+                        {/* Footer */}
+                        <p className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={8}>
-                                Log in
+                            <TextLink href={login()} tabIndex={8} className="font-semibold text-foreground no-underline hover:underline">
+                                Sign in
                             </TextLink>
-                        </div>
+                        </p>
                     </>
                 )}
             </Form>
@@ -143,5 +176,5 @@ export default function Register({ passwordRules }: Props) {
 
 Register.layout = {
     title: 'Create an account',
-    description: 'Enter your details below to create your account',
+    description: 'Join DriveEasy — it only takes a minute',
 };

@@ -1,0 +1,160 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Role;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class RoleController extends Controller
+{
+    /**
+     * All available permissions that can be assigned to roles.
+     */
+    public const AVAILABLE_PERMISSIONS = [
+        'bookings' => [
+            'label' => 'Bookings',
+            'items' => [
+                'bookings.view'   => 'View Bookings',
+                'bookings.cancel' => 'Cancel Bookings',
+            ],
+        ],
+        'drivers' => [
+            'label' => 'Drivers',
+            'items' => [
+                'drivers.view'    => 'View Drivers',
+                'drivers.manage'  => 'Suspend / Activate Drivers',
+            ],
+        ],
+        'users' => [
+            'label' => 'Users',
+            'items' => [
+                'users.view' => 'View Users',
+                'users.create' => 'Create Users',
+                'users.edit' => 'Edit Users',
+                'users.delete' => 'Delete Users',
+            ],
+        ],
+        'vehicles' => [
+            'label' => 'Vehicles',
+            'items' => [
+                'vehicles.view' => 'View Vehicles',
+                'vehicles.approve' => 'Approve / Reject Vehicles',
+                'vehicles.documents' => 'Manage Vehicle Documents',
+            ],
+        ],
+        'staff' => [
+            'label' => 'Staff',
+            'items' => [
+                'staff.view' => 'View Staff',
+                'staff.create' => 'Create Staff',
+            ],
+        ],
+        'payments' => [
+            'label' => 'Payments',
+            'items' => [
+                'payments.view' => 'View Payments',
+            ],
+        ],
+        'profiles' => [
+            'label' => 'Profile Verification',
+            'items' => [
+                'owner_profiles.verify' => 'Verify Owner Profiles',
+                'driver_profiles.verify' => 'Verify Driver Profiles',
+            ],
+        ],
+    ];
+
+    public function index(): Response
+    {
+        $roles = Role::withCount('staff')->latest()->get();
+
+        return Inertia::render('admin/roles/index', [
+            'roles' => $roles,
+            'availablePermissions' => self::AVAILABLE_PERMISSIONS,
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('admin/roles/create', [
+            'availablePermissions' => self::AVAILABLE_PERMISSIONS,
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name'],
+            'permissions' => ['required', 'array', 'min:1'],
+            'permissions.*' => ['string'],
+        ]);
+
+        Role::create([
+            'name' => $validated['name'],
+            'permissions' => $validated['permissions'],
+        ]);
+
+        return redirect()->route('admin.roles.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Role created successfully.',
+        ]);
+    }
+
+    public function show(Role $role): Response
+    {
+        $role->loadCount('staff');
+
+        return Inertia::render('admin/roles/show', [
+            'role' => $role,
+            'availablePermissions' => self::AVAILABLE_PERMISSIONS,
+        ]);
+    }
+
+    public function edit(Role $role): Response
+    {
+        return Inertia::render('admin/roles/edit', [
+            'role' => $role,
+            'availablePermissions' => self::AVAILABLE_PERMISSIONS,
+        ]);
+    }
+
+    public function update(Request $request, Role $role): RedirectResponse
+    {
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255', 'unique:roles,name,'.$role->id],
+            'permissions' => ['required', 'array', 'min:1'],
+            'permissions.*' => ['string'],
+        ]);
+
+        $role->update([
+            'name' => $validated['name'],
+            'permissions' => $validated['permissions'],
+        ]);
+
+        return redirect()->route('admin.roles.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Role updated successfully.',
+        ]);
+    }
+
+    public function destroy(Role $role): RedirectResponse
+    {
+        if ($role->staff()->count() > 0) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Cannot delete role that has staff members assigned. Reassign them first.',
+            ]);
+        }
+
+        $role->delete();
+
+        return redirect()->route('admin.roles.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Role deleted successfully.',
+        ]);
+    }
+}
