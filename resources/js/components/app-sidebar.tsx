@@ -30,6 +30,7 @@ function getNavItems(role: string): NavItem[] {
             return [
                 { title: 'Dashboard', href: '/admin/dashboard', icon: LayoutGrid },
                 { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
+                {title: 'Payments',href: '/admin/payments',icon: CreditCard},
             ];
 
         case 'owner':
@@ -37,6 +38,7 @@ function getNavItems(role: string): NavItem[] {
                 { title: 'Dashboard', href: '/owner/dashboard', icon: LayoutGrid },
                 { title: 'My Vehicles', href: '/owner/vehicles', icon: Car },
                 { title: 'Bookings', href: '/owner/bookings', icon: ClipboardList },
+                {title: 'Received Payments',href: '/owner/payments',icon: CreditCard},
             ];
 
         case 'driver':
@@ -49,6 +51,7 @@ function getNavItems(role: string): NavItem[] {
                 { title: 'Dashboard', href: '/customer/dashboard', icon: LayoutGrid },
                 { title: 'Browse Cars',  href: '/customer/browse-cars', icon: Car },
                 { title: 'My Bookings', href: '/customer/bookings', icon: List },
+                { title: 'Payment History',href: '/customer/payments',icon: CreditCard},
             ];
     }
 }

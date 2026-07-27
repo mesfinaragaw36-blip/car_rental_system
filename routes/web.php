@@ -11,6 +11,9 @@ use App\Http\Controllers\Driver\DashboardController as DriverDashboard;
 use App\Http\Controllers\Owner\BookingController as OwnerBooking;
 use App\Http\Controllers\Owner\DashboardController as OwnerDashboard;
 use App\Http\Controllers\Owner\VehicleController as OwnerVehicle;
+use App\Http\Controllers\Customer\PaymentController;
+use App\Http\Controllers\Owner\PaymentController as OwnerPaymentController;
+use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -44,6 +47,7 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/vehicle-images', [CarImageController::class, 'index'])->name('vehicle-images');
         Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])->name('vehicle-documents');
         Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])->name('vehicle-documents.store');
+        Route::get('/payments', [AdminPaymentController::class, 'index'])->name('payments.index');
     });
 
 // Owner routes
@@ -63,6 +67,8 @@ Route::middleware(['auth', 'role:owner'])
         Route::post('/bookings/{booking}/approve', [OwnerBooking::class, 'approve'])->name('bookings.approve');
         Route::post('/bookings/{booking}/reject', [OwnerBooking::class, 'reject'])->name('bookings.reject');
         Route::post('/bookings/{booking}/assign-driver', [OwnerBooking::class, 'assignDriver'])->name('bookings.assign-driver');
+
+       Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
     });
 
 // Customer routes
@@ -73,9 +79,13 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
         Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
         Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
+
         Route::post('/cars/{car}/book', [CustomerBooking::class, 'store'])->name('bookings.store');
         Route::get('/bookings', [CustomerBooking::class, 'index'])->name('bookings.index');
         Route::post('/bookings/{booking}/pay', [CustomerBooking::class, 'pay'])->name('bookings.pay');
+        Route::get('/bookings/{booking}/payment', [PaymentController::class, 'create'])->name('payments.create');
+        Route::post('/bookings/{booking}/payment', [PaymentController::class, 'store'])->name('payments.store');
+        Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     });
 
 // Driver routes
