@@ -42,6 +42,7 @@ function getNavItems(role: string): NavItem[] {
         case 'driver':
             return [
                 { title: 'Dashboard', href: '/driver/dashboard', icon: LayoutGrid },
+                { title: 'My Assignments', href: '/driver/assignments', icon: ClipboardList },
             ];
 
         default:

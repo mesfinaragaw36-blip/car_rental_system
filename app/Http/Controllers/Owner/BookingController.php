@@ -52,7 +52,6 @@ class BookingController extends Controller
 
         $availableDrivers = User::where('role', 'driver')
             ->whereHas('driverProfile', fn ($query) => $query
-                ->where('verification_status', 'approved')
                 ->where('availability', 'available')
             )
             ->get(['id', 'name', 'phone']);
@@ -125,7 +124,6 @@ class BookingController extends Controller
         $driver = User::where('id', $validated['driver_id'])
             ->where('role', 'driver')
             ->whereHas('driverProfile', fn ($query) => $query
-                ->where('verification_status', 'approved')
                 ->where('availability', 'available')
             )
             ->firstOrFail();
