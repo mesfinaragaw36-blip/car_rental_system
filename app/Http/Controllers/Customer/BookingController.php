@@ -67,6 +67,13 @@ class BookingController extends Controller
             abort(404);
         }
 
+        if ($car->owner_id === auth()->id()) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'You cannot book your own vehicle.',
+            ]);
+        }
+
         $validated = $request->validate([
             'pickup_date' => ['required', 'date', 'after_or_equal:today'],
             'return_date' => ['required', 'date', 'after:pickup_date'],
@@ -78,6 +85,25 @@ class BookingController extends Controller
 
         $pickupDate = Carbon::parse($validated['pickup_date']);
         $returnDate = Carbon::parse($validated['return_date']);
+
+        $hasOverlap = Booking::where('car_id', $car->id)
+            ->whereNotIn('status', ['rejected', 'cancelled'])
+            ->where(function ($query) use ($pickupDate, $returnDate) {
+                $query->whereBetween('pickup_date', [$pickupDate, $returnDate])
+                    ->orWhereBetween('return_date', [$pickupDate, $returnDate])
+                    ->orWhere(function ($q) use ($pickupDate, $returnDate) {
+                        $q->where('pickup_date', '<=', $pickupDate)
+                            ->where('return_date', '>=', $returnDate);
+                    });
+            })
+            ->exists();
+
+        if ($hasOverlap) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'The selected dates overlap with an existing booking.',
+            ]);
+        }
 
         $days = $pickupDate->diffInDays($returnDate);
         $totalPrice = $days * $car->daily_price;
