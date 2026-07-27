@@ -13,6 +13,7 @@ interface CarImage {
 
 interface Car {
     id: number;
+    owner_id: number;
     brand: string;
     model: string;
     year: number;

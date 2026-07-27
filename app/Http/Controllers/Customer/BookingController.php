@@ -16,11 +16,11 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['car', 'payment'])
+        $bookings = Booking::with(['car', 'payment', 'driverAssignment.driver'])
             ->where('customer_id', auth()->id())
             ->latest()
-            ->get()
-            ->map(fn (Booking $booking) => [
+            ->paginate(10)
+            ->through(fn (Booking $booking) => [
                 'id' => $booking->id,
                 'status' => $booking->status,
                 'pickup_date' => $booking->pickup_date->toDateString(),
@@ -44,9 +44,19 @@ class BookingController extends Controller
                         'paid_at' => $booking->payment->paid_at?->toDateTimeString(),
                     ]
                     : null,
+                'driver_assignment' => $booking->driverAssignment
+                    ? [
+                        'driver' => $booking->driverAssignment->driver
+                            ? [
+                                'id' => $booking->driverAssignment->driver->id,
+                                'name' => $booking->driverAssignment->driver->name,
+                            ]
+                            : null,
+                    ]
+                    : null,
             ]);
 
-        return Inertia::render('customer/my-bookings', [
+        return Inertia::render('customer/bookings', [
             'bookings' => $bookings,
         ]);
     }
