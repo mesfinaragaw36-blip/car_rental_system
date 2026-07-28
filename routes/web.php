@@ -2,8 +2,8 @@
 
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\CarImageController;
-use App\Http\Controllers\Admin\DriverController as AdminDriverController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
+use App\Http\Controllers\Admin\DriverController as AdminDriverController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
@@ -121,6 +121,8 @@ Route::middleware(['auth', 'role:owner'])
         Route::post('/bookings/{booking}/approve', [OwnerBooking::class, 'approve'])->name('bookings.approve');
         Route::post('/bookings/{booking}/reject', [OwnerBooking::class, 'reject'])->name('bookings.reject');
         Route::post('/bookings/{booking}/assign-driver', [OwnerBooking::class, 'assignDriver'])->name('bookings.assign-driver');
+        Route::post('/bookings/{booking}/picked-up', [OwnerBooking::class, 'markPickedUp'])->name('bookings.picked-up');
+        Route::post('/bookings/{booking}/returned', [OwnerBooking::class, 'markReturned'])->name('bookings.returned');
 
         Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
     });
@@ -136,7 +138,7 @@ Route::middleware(['auth', 'role:customer'])
 
         Route::post('/cars/{car}/book', [CustomerBooking::class, 'store'])->name('bookings.store');
         Route::get('/bookings', [CustomerBooking::class, 'index'])->name('bookings.index');
-        Route::post('/bookings/{booking}/pay', [CustomerBooking::class, 'pay'])->name('bookings.pay');
+        Route::post('/bookings/{booking}/cancel', [CustomerBooking::class, 'cancel'])->name('bookings.cancel');
         Route::get('/bookings/{booking}/payment', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/bookings/{booking}/payment', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

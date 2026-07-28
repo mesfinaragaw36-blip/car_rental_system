@@ -15,7 +15,7 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['customer', 'car', 'driverAssignment.driver'])
+        $bookings = Booking::with(['customer', 'car', 'driverAssignment.driver', 'payment'])
             ->where('owner_id', auth()->id())
             ->latest()
             ->get()
@@ -46,6 +46,13 @@ class BookingController extends Controller
                     ? [
                         'id' => $booking->driverAssignment->driver->id,
                         'name' => $booking->driverAssignment->driver->name,
+                    ]
+                    : null,
+                'payment' => $booking->payment
+                    ? [
+                        'payment_method' => $booking->payment->payment_method,
+                        'payment_status' => $booking->payment->payment_status,
+                        'paid_at' => $booking->payment->paid_at?->toDateTimeString(),
                     ]
                     : null,
             ]);
@@ -141,6 +148,48 @@ class BookingController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Driver assigned successfully.',
+        ]);
+    }
+
+    public function markPickedUp(Booking $booking): RedirectResponse
+    {
+        if ($booking->owner_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($booking->status !== 'paid') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only paid bookings can be marked as picked up.',
+            ]);
+        }
+
+        $booking->update(['status' => 'picked_up']);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Vehicle marked as picked up.',
+        ]);
+    }
+
+    public function markReturned(Booking $booking): RedirectResponse
+    {
+        if ($booking->owner_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($booking->status !== 'picked_up') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only picked up bookings can be marked as returned.',
+            ]);
+        }
+
+        $booking->update(['status' => 'returned']);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Vehicle marked as returned.',
         ]);
     }
 }

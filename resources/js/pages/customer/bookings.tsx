@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
@@ -13,6 +13,12 @@ interface Driver {
     name: string;
 }
 
+interface Payment {
+    payment_method: string;
+    payment_status: string;
+    paid_at: string | null;
+}
+
 interface Booking {
     id: number;
     pickup_date: string;
@@ -23,6 +29,7 @@ interface Booking {
     total_price: string;
     status: string;
     car: Car;
+    payment: Payment | null;
     driver_assignment: {
         driver: Driver | null;
     } | null;
@@ -35,13 +42,53 @@ interface Props {
     };
 }
 
+interface FlashProps {
+    toast?: {
+        type: 'success' | 'error';
+        message: string;
+    };
+}
+
+const STATUS_STYLES: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    approved: 'bg-blue-100 text-blue-800',
+    rejected: 'bg-red-100 text-red-800',
+    paid: 'bg-green-100 text-green-800',
+    picked_up: 'bg-purple-100 text-purple-800',
+    returned: 'bg-indigo-100 text-indigo-800',
+    completed: 'bg-green-100 text-green-800',
+    cancelled: 'bg-gray-100 text-gray-800',
+};
+
 export default function Bookings({ bookings }: Props) {
+    const { props } = usePage<{ flash: FlashProps }>();
+    const toast = props.flash?.toast;
+
+    function handleCancel(bookingId: number) {
+        if (!confirm('Are you sure you want to cancel this booking?')) {
+            return;
+        }
+        router.post(`/customer/bookings/${bookingId}/cancel`);
+    }
+
     return (
         <>
             <Head title="My Bookings" />
 
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">My Bookings</h1>
+
+                {toast && (
+                    <div
+                        className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                            toast.type === 'success'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
+                        }`}
+                    >
+                        {toast.message}
+                    </div>
+                )}
 
                 {bookings.data.length === 0 ? (
                     <Card>
@@ -57,7 +104,16 @@ export default function Bookings({ bookings }: Props) {
                                     <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
                                         <div>
                                             <h2 className="text-xl font-semibold">{booking.car.brand} {booking.car.model}</h2>
-                                            <p className="text-sm text-muted-foreground">Status: {booking.status}</p>
+                                            <div className="flex items-center gap-2 mt-1">
+                                                <span className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[booking.status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                                    {booking.status.replace('_', ' ')}
+                                                </span>
+                                                {booking.payment && (
+                                                    <span className="text-xs text-muted-foreground">
+                                                        Paid via {booking.payment.payment_method}
+                                                    </span>
+                                                )}
+                                            </div>
                                         </div>
                                         <p className="font-semibold">{booking.total_price} ETB</p>
                                     </div>
@@ -95,6 +151,24 @@ export default function Bookings({ bookings }: Props) {
                                             <p>{booking.driver_assignment.driver.name}</p>
                                         </div>
                                     )}
+
+                                    <div className="flex flex-wrap gap-2 pt-2 border-t">
+                                        {booking.status === 'approved' && !booking.payment && (
+                                            <Link href={`/customer/bookings/${booking.id}/payment`}>
+                                                <Button size="sm">Pay Now</Button>
+                                            </Link>
+                                        )}
+
+                                        {(booking.status === 'pending' || booking.status === 'approved') && (
+                                            <Button
+                                                size="sm"
+                                                variant="destructive"
+                                                onClick={() => handleCancel(booking.id)}
+                                            >
+                                                Cancel Booking
+                                            </Button>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))}

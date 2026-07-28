@@ -24,6 +24,12 @@ interface AssignedDriver {
     name: string;
 }
 
+interface Payment {
+    payment_method: string;
+    payment_status: string;
+    paid_at: string | null;
+}
+
 interface Booking {
     id: number;
     status: string;
@@ -37,6 +43,7 @@ interface Booking {
     customer: Customer;
     car: Car;
     assigned_driver: AssignedDriver | null;
+    payment: Payment | null;
 }
 
 interface AvailableDriver {
@@ -109,6 +116,30 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
         );
     }
 
+    function handleMarkPickedUp(bookingId: number): void {
+        if (!confirm('Confirm the vehicle has been picked up by the customer?')) {
+            return;
+        }
+        setProcessingId(bookingId);
+        router.post(
+            `/owner/bookings/${bookingId}/picked-up`,
+            {},
+            { onFinish: () => setProcessingId(null) },
+        );
+    }
+
+    function handleMarkReturned(bookingId: number): void {
+        if (!confirm('Confirm the vehicle has been returned by the customer?')) {
+            return;
+        }
+        setProcessingId(bookingId);
+        router.post(
+            `/owner/bookings/${bookingId}/returned`,
+            {},
+            { onFinish: () => setProcessingId(null) },
+        );
+    }
+
     return (
         <>
             <Head title="Booking Requests" />
@@ -145,7 +176,6 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                         key={booking.id}
                                         className="rounded-lg border p-4 space-y-3"
                                     >
-                                        {/* Top row: car + status */}
                                         <div className="flex items-start justify-between">
                                             <div>
                                                 <p className="font-semibold">
@@ -159,17 +189,23 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                                 </p>
                                             </div>
 
-                                            <span
-                                                className={`rounded-full px-3 py-1 text-xs font-medium ${
-                                                    STATUS_STYLES[booking.status] ??
-                                                    'bg-gray-100 text-gray-800'
-                                                }`}
-                                            >
-                                                {booking.status}
-                                            </span>
+                                            <div className="flex items-center gap-2">
+                                                {booking.payment && (
+                                                    <span className="rounded-full bg-green-100 text-green-800 px-3 py-1 text-xs font-medium">
+                                                        Paid ({booking.payment.payment_method})
+                                                    </span>
+                                                )}
+                                                <span
+                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                                        STATUS_STYLES[booking.status] ??
+                                                        'bg-gray-100 text-gray-800'
+                                                    }`}
+                                                >
+                                                    {booking.status.replace('_', ' ')}
+                                                </span>
+                                            </div>
                                         </div>
 
-                                        {/* Customer info */}
                                         <div className="text-sm space-y-0.5">
                                             <p>
                                                 <span className="font-medium">Customer: </span>
@@ -181,7 +217,6 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                             </p>
                                         </div>
 
-                                        {/* Dates + price */}
                                         <div className="text-sm space-y-0.5">
                                             <p>
                                                 <span className="font-medium">Pickup: </span>
@@ -199,14 +234,12 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                             </p>
                                         </div>
 
-                                        {/* Driver requested badge */}
                                         {booking.need_driver && (
                                             <p className="text-xs font-medium text-blue-700 bg-blue-50 inline-block rounded-full px-2 py-0.5">
                                                 Driver requested
                                             </p>
                                         )}
 
-                                        {/* Actions */}
                                         <div className="flex flex-wrap items-center gap-2 pt-1">
                                             {booking.status === 'pending' && (
                                                 <>
@@ -216,7 +249,7 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                                         onClick={() => handleApprove(booking.id)}
                                                     >
                                                         {processingId === booking.id
-                                                            ? 'Processing…'
+                                                            ? 'Processing\u2026'
                                                             : 'Approve'}
                                                     </Button>
 
@@ -231,7 +264,30 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                                 </>
                                             )}
 
-                                            {/* Assign driver — only when driver was requested */}
+                                            {booking.status === 'paid' && (
+                                                <Button
+                                                    size="sm"
+                                                    disabled={processingId === booking.id}
+                                                    onClick={() => handleMarkPickedUp(booking.id)}
+                                                >
+                                                    {processingId === booking.id
+                                                        ? 'Processing\u2026'
+                                                        : 'Mark Picked Up'}
+                                                </Button>
+                                            )}
+
+                                            {booking.status === 'picked_up' && (
+                                                <Button
+                                                    size="sm"
+                                                    disabled={processingId === booking.id}
+                                                    onClick={() => handleMarkReturned(booking.id)}
+                                                >
+                                                    {processingId === booking.id
+                                                        ? 'Processing\u2026'
+                                                        : 'Mark Returned'}
+                                                </Button>
+                                            )}
+
                                             {booking.need_driver && (
                                                 <div className="flex items-center gap-2 w-full mt-1">
                                                     {booking.assigned_driver ? (
@@ -286,7 +342,6 @@ export default function OwnerBookings({ bookings = [], availableDrivers = [] }: 
                                             )}
                                         </div>
 
-                                        {/* Notes */}
                                         {booking.notes && (
                                             <p className="text-sm text-muted-foreground border-t pt-2">
                                                 <span className="font-medium">Notes: </span>

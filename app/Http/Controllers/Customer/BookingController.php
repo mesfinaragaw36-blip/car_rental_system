@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Car;
-use App\Models\Payment;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -128,45 +127,24 @@ class BookingController extends Controller
         ]);
     }
 
-    public function pay(Request $request, Booking $booking): RedirectResponse
+    public function cancel(Booking $booking): RedirectResponse
     {
         if ($booking->customer_id !== auth()->id()) {
             abort(403, 'Unauthorized action.');
         }
 
-        if ($booking->status !== 'approved') {
+        if (! in_array($booking->status, ['pending', 'approved'])) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' => 'Only approved bookings can be paid.',
+                'message' => 'Only pending or approved bookings can be cancelled.',
             ]);
         }
 
-        if ($booking->payment) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'message' => 'This booking has already been paid.',
-            ]);
-        }
+        $booking->update(['status' => 'cancelled']);
 
-        $validated = $request->validate([
-            'payment_method' => ['required', 'in:Cash,Bank Transfer,Telebirr,CBE Birr'],
-            'transaction_reference' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        Payment::create([
-            'booking_id' => $booking->id,
-            'amount' => $booking->total_price,
-            'payment_method' => $validated['payment_method'],
-            'transaction_reference' => $validated['transaction_reference'] ?? null,
-            'payment_status' => 'paid',
-            'paid_at' => now(),
-        ]);
-
-        $booking->update(['status' => 'paid']);
-
-        return redirect()->route('customer.bookings.index')->with('toast', [
+        return back()->with('toast', [
             'type' => 'success',
-            'message' => 'Payment submitted successfully! Your booking is confirmed.',
+            'message' => 'Booking cancelled successfully.',
         ]);
     }
 }

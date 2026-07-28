@@ -82,6 +82,11 @@ class AssignmentController extends Controller
 
         $assignment->update(['status' => 'completed']);
 
+        $booking = $assignment->booking;
+        if ($booking->status === 'picked_up') {
+            $booking->update(['status' => 'returned']);
+        }
+
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Trip marked as completed.',
