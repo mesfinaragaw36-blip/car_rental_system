@@ -36,6 +36,7 @@ export default function CreateVehicle() {
     const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
     const MAX_DOC_SIZE = 10 * 1024 * 1024;
     const [photoErrors, setPhotoErrors] = useState<string[]>([]);
+    const [uploadFailed, setUploadFailed] = useState(false);
 
     const step1Fields = ['brand', 'model', 'year', 'plate_number', 'category', 'color', 'fuel_type', 'transmission', 'daily_price'];
 
@@ -82,6 +83,7 @@ export default function CreateVehicle() {
     function submit(e: React.FormEvent) {
         e.preventDefault();
         setServerErrors({});
+        setUploadFailed(false);
 
         if (ownershipDocument && ownershipDocument.size > MAX_DOC_SIZE) {
             setServerErrors({ ownership_document: `Document exceeds 10MB limit (uploaded ${formatSize(ownershipDocument.size)})` });
@@ -123,10 +125,14 @@ export default function CreateVehicle() {
             onStart: () => {},
             onError: (err) => {
                 setServerErrors(err);
+                if (Object.keys(err).length === 0) {
+                    setUploadFailed(true);
+                }
                 if (step1Fields.some((field) => err[field])) {
                     setStep(1);
                 }
             },
+            onFinish: () => {},
             onSuccess: () => {
                 setServerErrors({});
             },
@@ -156,6 +162,13 @@ export default function CreateVehicle() {
                                 <li key={field}>{String(message)}</li>
                             ))}
                         </ul>
+                    </div>
+                )}
+
+                {uploadFailed && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                        <p className="font-medium">Upload failed</p>
+                        <p className="mt-1">The server rejected the upload. This usually means the files exceed the server's upload size limit. Try uploading fewer or smaller images.</p>
                     </div>
                 )}
 
