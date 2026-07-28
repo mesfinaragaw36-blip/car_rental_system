@@ -9,6 +9,9 @@ import {
     Shield,
     UserCog,
     BookOpen,
+    Settings,
+    Building2,
+    Wrench,
 } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
@@ -32,7 +35,6 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
 };
 
 function getNavItems(role: string, staffRoleId: number | null, permissions: string[] | null): NavItem[] {
-    // Staff members see sidebar based on their role's permissions
     if (role === 'admin' && staffRoleId !== null && permissions) {
         const allowedRoutes = new Set<string>();
 
@@ -68,9 +70,12 @@ function getNavItems(role: string, staffRoleId: number | null, permissions: stri
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
                 { title: 'Staff', href: '/admin/staff', icon: UserCog },
                 { title: 'Roles & Permissions', href: '/admin/roles', icon: Shield },
-                { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
+                { title: 'Car Types', href: '/admin/car-types/type-names', icon: Settings },
+                { title: 'Vehicles', href: '/admin/vehicles', icon: Building2 },
+                { title: 'Browse Cars', href: '/customer/browse-cars', icon: Car },
                 { title: 'Bookings', href: '/admin/bookings', icon: BookOpen },
                 { title: 'Payments', href: '/admin/payments', icon: CreditCard },
+                { title: 'My Assignments', href: '/driver/assignments', icon: Wrench },
             ];
 
         case 'owner':

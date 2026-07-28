@@ -33,9 +33,9 @@ class BookingController extends Controller
             'bookings' => $bookings,
             'filters' => $request->only(['status', 'search']),
             'stats' => [
-                'total'     => Booking::count(),
-                'pending'   => Booking::where('status', 'pending')->count(),
-                'active'    => Booking::where('status', 'approved')->count(),
+                'total' => Booking::count(),
+                'pending' => Booking::where('status', 'pending')->count(),
+                'active' => Booking::where('status', 'approved')->count(),
                 'completed' => Booking::where('status', 'completed')->count(),
                 'cancelled' => Booking::whereIn('status', ['cancelled', 'rejected'])->count(),
             ],
@@ -49,7 +49,7 @@ class BookingController extends Controller
         $booking->update(['status' => 'cancelled']);
 
         return back()->with('toast', [
-            'type'    => 'success',
+            'type' => 'success',
             'message' => 'Booking cancelled.',
         ]);
     }

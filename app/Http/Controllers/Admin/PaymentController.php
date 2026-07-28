@@ -23,13 +23,13 @@ class PaymentController extends Controller
             $query->whereHas('booking.customer', fn ($q) => $q->where('name', 'like', "%{$search}%"));
         }
 
-        $payments  = $query->paginate(15)->withQueryString();
+        $payments = $query->paginate(15)->withQueryString();
         $totalRevenue = Payment::where('payment_status', 'paid')->sum('amount');
 
         return Inertia::render('admin/payments', [
-            'payments'     => $payments,
+            'payments' => $payments,
             'totalRevenue' => $totalRevenue,
-            'filters'      => $request->only(['status', 'search']),
+            'filters' => $request->only(['status', 'search']),
         ]);
     }
 }

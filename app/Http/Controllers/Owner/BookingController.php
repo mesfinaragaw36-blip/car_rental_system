@@ -15,9 +15,13 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['customer', 'car', 'driverAssignment.driver', 'payment'])
-            ->where('owner_id', auth()->id())
-            ->latest()
+        $query = Booking::with(['customer', 'car', 'driverAssignment.driver', 'payment']);
+
+        if (auth()->user()->role !== 'admin') {
+            $query->where('owner_id', auth()->id());
+        }
+
+        $bookings = $query->latest()
             ->get()
             ->map(fn (Booking $booking) => [
                 'id' => $booking->id,
@@ -71,7 +75,7 @@ class BookingController extends Controller
 
     public function approve(Booking $booking): RedirectResponse
     {
-        if ($booking->owner_id !== auth()->id()) {
+        if ($booking->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -92,7 +96,7 @@ class BookingController extends Controller
 
     public function reject(Booking $booking): RedirectResponse
     {
-        if ($booking->owner_id !== auth()->id()) {
+        if ($booking->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -113,7 +117,7 @@ class BookingController extends Controller
 
     public function assignDriver(Request $request, Booking $booking): RedirectResponse
     {
-        if ($booking->owner_id !== auth()->id()) {
+        if ($booking->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -153,7 +157,7 @@ class BookingController extends Controller
 
     public function markPickedUp(Booking $booking): RedirectResponse
     {
-        if ($booking->owner_id !== auth()->id()) {
+        if ($booking->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -174,7 +178,7 @@ class BookingController extends Controller
 
     public function markReturned(Booking $booking): RedirectResponse
     {
-        if ($booking->owner_id !== auth()->id()) {
+        if ($booking->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 

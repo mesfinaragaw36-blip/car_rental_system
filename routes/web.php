@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\CarImageController;
+use App\Http\Controllers\Admin\CarTypeNameController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboard;
 use App\Http\Controllers\Admin\DriverController as AdminDriverController;
 use App\Http\Controllers\Admin\PaymentController as AdminPaymentController;
@@ -102,6 +103,14 @@ Route::middleware(['auth', 'role:admin'])
         Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])->name('roles.edit');
         Route::put('/roles/{role}', [RoleController::class, 'update'])->name('roles.update');
         Route::delete('/roles/{role}', [RoleController::class, 'destroy'])->name('roles.destroy');
+
+        // Car Types management
+        Route::prefix('car-types')->name('car-types.')->group(function () {
+            Route::get('/type-names', [CarTypeNameController::class, 'index'])->name('type-names');
+            Route::post('/type-names', [CarTypeNameController::class, 'store'])->name('type-names.store');
+            Route::put('/type-names/{carTypeName}', [CarTypeNameController::class, 'update'])->name('type-names.update');
+            Route::delete('/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])->name('type-names.destroy');
+        });
     });
 
 // Owner routes
@@ -127,14 +136,12 @@ Route::middleware(['auth', 'role:owner'])
         Route::get('/payments', [OwnerPaymentController::class, 'index'])->name('payments.index');
     });
 
-// Customer routes
+// Customer routes (customer only)
 Route::middleware(['auth', 'role:customer'])
     ->prefix('customer')
     ->name('customer.')
     ->group(function () {
         Route::get('/dashboard', [CustomerDashboard::class, 'index'])->name('dashboard');
-        Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
-        Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
 
         Route::post('/cars/{car}/book', [CustomerBooking::class, 'store'])->name('bookings.store');
         Route::get('/bookings', [CustomerBooking::class, 'index'])->name('bookings.index');
@@ -142,6 +149,15 @@ Route::middleware(['auth', 'role:customer'])
         Route::get('/bookings/{booking}/payment', [PaymentController::class, 'create'])->name('payments.create');
         Route::post('/bookings/{booking}/payment', [PaymentController::class, 'store'])->name('payments.store');
         Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
+    });
+
+// Browse cars — accessible by customers and admins
+Route::middleware(['auth', 'role:customer,admin'])
+    ->prefix('customer')
+    ->name('customer.')
+    ->group(function () {
+        Route::get('/browse-cars', [CustomerVehicle::class, 'index'])->name('cars.index');
+        Route::get('/cars/{car}', [CustomerVehicle::class, 'show'])->name('cars.show');
     });
 
 // Driver routes

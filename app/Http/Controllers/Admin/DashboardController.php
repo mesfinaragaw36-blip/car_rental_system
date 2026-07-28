@@ -9,7 +9,6 @@ use App\Models\DriverProfile;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\User;
-use App\Models\Role;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -32,18 +31,18 @@ class DashboardController extends Controller
 
         return Inertia::render('admin/dashboard', [
             'stats' => [
-                'total_users'        => $totalUsers,
-                'active_users'       => $activeUsers,
-                'total_vehicles'     => $totalVehicles,
-                'pending_vehicles'   => $pendingVehicles,
-                'total_bookings'     => $totalBookings,
-                'pending_bookings'   => $pendingBookings,
-                'active_bookings'    => $activeBookings,
+                'total_users' => $totalUsers,
+                'active_users' => $activeUsers,
+                'total_vehicles' => $totalVehicles,
+                'pending_vehicles' => $pendingVehicles,
+                'total_bookings' => $totalBookings,
+                'pending_bookings' => $pendingBookings,
+                'active_bookings' => $activeBookings,
                 'completed_bookings' => $completedBookings,
-                'total_revenue'      => number_format((float) $totalRevenue, 2),
-                'pending_owners'     => $pendingOwners,
-                'pending_drivers'    => $pendingDrivers,
-                'total_staff'        => $totalStaff,
+                'total_revenue' => number_format((float) $totalRevenue, 2),
+                'pending_owners' => $pendingOwners,
+                'pending_drivers' => $pendingDrivers,
+                'total_staff' => $totalStaff,
             ],
         ]);
     }

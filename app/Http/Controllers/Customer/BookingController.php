@@ -15,9 +15,13 @@ class BookingController extends Controller
 {
     public function index(): Response
     {
-        $bookings = Booking::with(['car', 'payment', 'driverAssignment.driver'])
-            ->where('customer_id', auth()->id())
-            ->latest()
+        $query = Booking::with(['car', 'payment', 'driverAssignment.driver']);
+
+        if (auth()->user()->role !== 'admin') {
+            $query->where('customer_id', auth()->id());
+        }
+
+        $bookings = $query->latest()
             ->paginate(10)
             ->through(fn (Booking $booking) => [
                 'id' => $booking->id,
@@ -129,7 +133,7 @@ class BookingController extends Controller
 
     public function cancel(Booking $booking): RedirectResponse
     {
-        if ($booking->customer_id !== auth()->id()) {
+        if ($booking->customer_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 

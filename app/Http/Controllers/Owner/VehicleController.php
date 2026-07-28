@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\CarImage;
+use App\Models\CarTypeName;
 use App\Models\VehicleDocument;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -22,7 +23,9 @@ class VehicleController extends Controller
 
     public function create()
     {
-        return Inertia::render('owner/create-vehicle');
+        return Inertia::render('owner/create-vehicle', [
+            'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+        ]);
     }
 
     public function store(Request $request)
@@ -36,6 +39,7 @@ class VehicleController extends Controller
             'color' => 'required|string|max:50',
             'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
             'transmission' => 'required|in:Manual,Automatic',
+            'car_type_name_id' => 'nullable|exists:car_type_names,id',
             'daily_price' => 'required|numeric|min:0',
             'engine_size' => 'nullable|string|max:50',
             'mileage' => 'nullable|integer|min:0',
@@ -52,10 +56,6 @@ class VehicleController extends Controller
             'ownership_document.max' => 'The ownership document must be smaller than 10MB.',
             'ownership_document.mimes' => 'The ownership document must be a JPEG, PNG, GIF, WebP, or PDF file.',
         ]);
-        if ($request->hasFile('ownership_document')) {
-            $validated['ownership_document'] = $request->file('ownership_document')
-                ->store('vehicle_documents', 'public');
-        }
 
         $car = Car::create([
             'brand' => $validated['brand'],
@@ -63,6 +63,7 @@ class VehicleController extends Controller
             'year' => $validated['year'],
             'plate_number' => $validated['plate_number'],
             'category' => $validated['category'],
+            'car_type_name_id' => $validated['car_type_name_id'] ?? null,
             'color' => $validated['color'],
             'fuel_type' => $validated['fuel_type'],
             'transmission' => $validated['transmission'],
@@ -75,6 +76,7 @@ class VehicleController extends Controller
             'approval_status' => 'pending',
             'availability_status' => 'available',
         ]);
+
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
             $photos = $request->file('photos');
@@ -107,20 +109,21 @@ class VehicleController extends Controller
 
     public function edit(Car $car)
     {
-        if ($car->owner_id !== auth()->id()) {
+        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
-        $car->load(['images', 'documents']);
+        $car->load(['images', 'documents', 'carTypeName']);
 
         return Inertia::render('owner/edit-vehicle', [
             'vehicle' => $car,
+            'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
     public function update(Request $request, Car $car)
     {
-        if ($car->owner_id !== auth()->id()) {
+        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -133,6 +136,7 @@ class VehicleController extends Controller
             'color' => 'required|string|max:50',
             'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
             'transmission' => 'required|in:Manual,Automatic',
+            'car_type_name_id' => 'nullable|exists:car_type_names,id',
             'daily_price' => 'required|numeric|min:0',
             'engine_size' => 'nullable|string|max:50',
             'mileage' => 'nullable|integer|min:0',
@@ -147,7 +151,7 @@ class VehicleController extends Controller
 
     public function destroy(Car $car)
     {
-        if ($car->owner_id !== auth()->id()) {
+        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403);
         }
 

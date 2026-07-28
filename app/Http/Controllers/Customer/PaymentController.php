@@ -12,7 +12,7 @@ class PaymentController extends Controller
 {
     public function create(Booking $booking)
     {
-        if ($booking->customer_id !== auth()->id()) {
+        if ($booking->customer_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -37,7 +37,7 @@ class PaymentController extends Controller
 
     public function store(Request $request, Booking $booking)
     {
-        if ($booking->customer_id !== auth()->id()) {
+        if ($booking->customer_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -74,11 +74,15 @@ class PaymentController extends Controller
 
     public function index()
     {
-        $payments = Payment::whereHas('booking', function ($query) {
-            $query->where('customer_id', auth()->id());
-        })
-            ->with('booking.car')
-            ->latest()
+        $query = Payment::with('booking.car');
+
+        if (auth()->user()->role !== 'admin') {
+            $query->whereHas('booking', function ($q) {
+                $q->where('customer_id', auth()->id());
+            });
+        }
+
+        $payments = $query->latest()
             ->get();
 
         return Inertia::render('customer/payment-history', [

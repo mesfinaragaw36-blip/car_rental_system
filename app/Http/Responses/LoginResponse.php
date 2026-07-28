@@ -12,10 +12,10 @@ class LoginResponse implements LoginResponseContract
         $role = $request->user()->role;
 
         $route = match ($role) {
-            'admin'    => '/admin/dashboard',
-            'owner'    => '/owner/dashboard',
-            'driver'   => '/driver/dashboard',
-            default    => '/customer/dashboard',
+            'admin' => '/admin/dashboard',
+            'owner' => '/owner/dashboard',
+            'driver' => '/driver/dashboard',
+            default => '/customer/dashboard',
         };
 
         return redirect()->intended($route);

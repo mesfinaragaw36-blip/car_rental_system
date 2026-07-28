@@ -7,6 +7,11 @@ import InputError from '@/components/input-error';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 
+interface Option {
+    id: number;
+    name: string;
+}
+
 interface Vehicle {
     id: number;
     brand: string;
@@ -17,18 +22,23 @@ interface Vehicle {
     color: string;
     fuel_type: string;
     transmission: string;
+    car_type_name_id?: number | null;
     engine_size?: string;
     mileage?: number;
     seats?: number;
     daily_price: number;
     description?: string;
+    images?: { id: number; image_path: string; is_primary: boolean }[];
+    documents?: { id: number; document_path: string }[];
+    carTypeName?: { id: number; name: string } | null;
 }
 
 interface Props {
     vehicle: Vehicle;
+    carTypeNames: Option[];
 }
 
-export default function EditVehicle({ vehicle }: Props) {
+export default function EditVehicle({ vehicle, carTypeNames }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         brand: vehicle.brand || '',
         model: vehicle.model || '',
@@ -38,6 +48,7 @@ export default function EditVehicle({ vehicle }: Props) {
         color: vehicle.color || '',
         fuel_type: vehicle.fuel_type || '',
         transmission: vehicle.transmission || '',
+        car_type_name_id: vehicle.car_type_name_id?.toString() || '',
         engine_size: vehicle.engine_size || '',
         mileage: vehicle.mileage?.toString() || '',
         seats: vehicle.seats?.toString() || '',
@@ -119,6 +130,30 @@ export default function EditVehicle({ vehicle }: Props) {
                                         onChange={(e) => setData('category', e.target.value)}
                                     />
                                     <InputError message={errors.category} />
+                                </div>
+
+                                <div>
+                                    <Label>Car Type</Label>
+                                    <Select
+                                        value={data.car_type_name_id}
+                                        onValueChange={(value) => {
+                                            const option = carTypeNames.find((t) => String(t.id) === value);
+                                            setData('car_type_name_id', value);
+                                            if (option) setData('category', option.name);
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select car type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {carTypeNames.map((type) => (
+                                                <SelectItem key={type.id} value={String(type.id)}>
+                                                    {type.name}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.car_type_name_id} />
                                 </div>
 
                                 <div>

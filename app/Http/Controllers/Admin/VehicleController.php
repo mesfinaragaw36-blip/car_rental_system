@@ -29,7 +29,7 @@ class VehicleController extends Controller
 
         return Inertia::render('admin/vehicles', [
             'vehicles' => $vehicles,
-            'filters'  => $request->only(['status', 'search']),
+            'filters' => $request->only(['status', 'search']),
         ]);
     }
 

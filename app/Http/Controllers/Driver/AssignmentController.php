@@ -12,9 +12,14 @@ class AssignmentController extends Controller
 {
     public function index(): Response
     {
-        $assignments = BookingDriver::with(['booking.customer', 'booking.car'])
-            ->where('driver_id', auth()->id())
-            ->whereIn('status', ['assigned', 'accepted', 'completed'])
+        $query = BookingDriver::with(['booking.customer', 'booking.car'])
+            ->whereIn('status', ['assigned', 'accepted', 'completed']);
+
+        if (auth()->user()->role !== 'admin') {
+            $query->where('driver_id', auth()->id());
+        }
+
+        $assignments = $query
             ->latest('assigned_at')
             ->get()
             ->map(fn (BookingDriver $assignment) => [
@@ -48,7 +53,7 @@ class AssignmentController extends Controller
 
     public function accept(BookingDriver $assignment): RedirectResponse
     {
-        if ($assignment->driver_id !== auth()->id()) {
+        if ($assignment->driver_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 
@@ -69,7 +74,7 @@ class AssignmentController extends Controller
 
     public function complete(BookingDriver $assignment): RedirectResponse
     {
-        if ($assignment->driver_id !== auth()->id()) {
+        if ($assignment->driver_id !== auth()->id() && auth()->user()->role !== 'admin') {
             abort(403, 'Unauthorized action.');
         }
 

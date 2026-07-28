@@ -18,15 +18,15 @@ class RoleController extends Controller
         'bookings' => [
             'label' => 'Bookings',
             'items' => [
-                'bookings.view'   => 'View Bookings',
+                'bookings.view' => 'View Bookings',
                 'bookings.cancel' => 'Cancel Bookings',
             ],
         ],
         'drivers' => [
             'label' => 'Drivers',
             'items' => [
-                'drivers.view'    => 'View Drivers',
-                'drivers.manage'  => 'Suspend / Activate Drivers',
+                'drivers.view' => 'View Drivers',
+                'drivers.manage' => 'Suspend / Activate Drivers',
             ],
         ],
         'users' => [
