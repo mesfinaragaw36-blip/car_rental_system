@@ -152,6 +152,7 @@ Route::middleware(['auth', 'role:driver'])
         Route::get('/dashboard', [DriverDashboard::class, 'index'])->name('dashboard');
         Route::get('/assignments', [DriverAssignment::class, 'index'])->name('assignments');
         Route::post('/assignments/{assignment}/accept', [DriverAssignment::class, 'accept'])->name('assignments.accept');
+        Route::post('/assignments/{assignment}/reject', [DriverAssignment::class, 'reject'])->name('assignments.reject');
         Route::post('/assignments/{assignment}/complete', [DriverAssignment::class, 'complete'])->name('assignments.complete');
     });
 

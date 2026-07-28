@@ -73,6 +73,18 @@ export default function DriverAssignments({ assignments = [] }: Props) {
         );
     }
 
+    function handleReject(assignmentId: number): void {
+        if (!confirm('Reject this assignment? It will be sent back to the owner.')) {
+            return;
+        }
+        setProcessingId(assignmentId);
+        router.post(
+            `/driver/assignments/${assignmentId}/reject`,
+            {},
+            { onFinish: () => setProcessingId(null) },
+        );
+    }
+
     function handleComplete(assignmentId: number): void {
         if (!confirm('Mark this trip as completed?')) {
             return;
@@ -180,15 +192,27 @@ export default function DriverAssignments({ assignments = [] }: Props) {
                                         {/* Action buttons */}
                                         <div className="flex gap-2 pt-1">
                                             {assignment.status === 'assigned' && (
-                                                <Button
-                                                    size="sm"
-                                                    disabled={processingId === assignment.id}
-                                                    onClick={() => handleAccept(assignment.id)}
-                                                >
-                                                    {processingId === assignment.id
-                                                        ? 'Processing…'
-                                                        : 'Accept Trip'}
-                                                </Button>
+                                                <>
+                                                    <Button
+                                                        size="sm"
+                                                        disabled={processingId === assignment.id}
+                                                        onClick={() => handleAccept(assignment.id)}
+                                                    >
+                                                        {processingId === assignment.id
+                                                            ? 'Processing…'
+                                                            : 'Accept Trip'}
+                                                    </Button>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        disabled={processingId === assignment.id}
+                                                        onClick={() => handleReject(assignment.id)}
+                                                    >
+                                                        {processingId === assignment.id
+                                                            ? 'Processing…'
+                                                            : 'Reject'}
+                                                    </Button>
+                                                </>
                                             )}
 
                                             {assignment.status === 'accepted' && (

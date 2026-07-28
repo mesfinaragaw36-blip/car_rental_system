@@ -46,6 +46,7 @@ class BookingController extends Controller
                     ? [
                         'id' => $booking->driverAssignment->driver->id,
                         'name' => $booking->driverAssignment->driver->name,
+                        'status' => $booking->driverAssignment->status,
                     ]
                     : null,
                 'payment' => $booking->payment

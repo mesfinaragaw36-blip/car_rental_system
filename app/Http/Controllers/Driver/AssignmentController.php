@@ -67,6 +67,27 @@ class AssignmentController extends Controller
         ]);
     }
 
+    public function reject(BookingDriver $assignment): RedirectResponse
+    {
+        if ($assignment->driver_id !== auth()->id()) {
+            abort(403, 'Unauthorized action.');
+        }
+
+        if ($assignment->status !== 'assigned') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Only pending assignments can be rejected.',
+            ]);
+        }
+
+        $assignment->update(['status' => 'rejected']);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Assignment rejected. The owner will reassign this trip.',
+        ]);
+    }
+
     public function complete(BookingDriver $assignment): RedirectResponse
     {
         if ($assignment->driver_id !== auth()->id()) {
