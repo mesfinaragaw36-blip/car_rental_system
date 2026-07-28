@@ -33,6 +33,10 @@ export default function CreateVehicle() {
     const [ownershipExpiry, setOwnershipExpiry] = useState('');
     const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
 
+    const MAX_PHOTO_SIZE = 10 * 1024 * 1024;
+    const MAX_DOC_SIZE = 10 * 1024 * 1024;
+    const [photoErrors, setPhotoErrors] = useState<string[]>([]);
+
     const step1Fields = ['brand', 'model', 'year', 'plate_number', 'category', 'color', 'fuel_type', 'transmission', 'daily_price'];
 
     function handlePhotosChange(files: FileList | null) {
@@ -40,25 +44,50 @@ export default function CreateVehicle() {
             setPhotos([]);
             setPhotoPreviews([]);
             setPrimaryPhotoIndex(0);
+            setPhotoErrors([]);
             return;
         }
 
         const fileArray: File[] = [];
         const previews: string[] = [];
+        const errors: string[] = [];
 
         for (let i = 0; i < files.length; i++) {
-            fileArray.push(files[i]);
-            previews.push(URL.createObjectURL(files[i]));
+            const file = files[i];
+            if (file.size > MAX_PHOTO_SIZE) {
+                errors.push(`${file.name} — ${formatSize(file.size)} exceeds 10MB limit`);
+                continue;
+            }
+            if (!file.type.startsWith('image/')) {
+                errors.push(`${file.name} is not an image`);
+                continue;
+            }
+            fileArray.push(file);
+            previews.push(URL.createObjectURL(file));
         }
 
         setPhotos(fileArray);
         setPhotoPreviews(previews);
         setPrimaryPhotoIndex(0);
+        setPhotoErrors(errors);
+    }
+
+    function formatSize(bytes: number): string {
+        if (bytes >= 1024 * 1024) {
+            return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
+        }
+        return (bytes / 1024).toFixed(0) + 'KB';
     }
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
         setServerErrors({});
+
+        if (ownershipDocument && ownershipDocument.size > MAX_DOC_SIZE) {
+            setServerErrors({ ownership_document: `Document exceeds 10MB limit (uploaded ${formatSize(ownershipDocument.size)})` });
+            setStep(2);
+            return;
+        }
 
         const formData = new FormData();
         formData.append('brand', data.brand);
@@ -311,14 +340,21 @@ export default function CreateVehicle() {
                                         <Input
                                             id="photos"
                                             type="file"
-                                            accept="image/*"
+                                            accept="image/jpeg,image/png,image/webp,image/gif"
                                             multiple
                                             className="mt-1"
                                             onChange={(e) => handlePhotosChange(e.target.files)}
                                         />
                                         <p className="text-sm text-muted-foreground mt-1">
-                                            Upload one or more photos. Pick the main photo below.
+                                            JPEG, PNG, GIF, or WebP — max 10MB each. Pick the main photo below.
                                         </p>
+                                        {photoErrors.length > 0 && (
+                                            <ul className="mt-2 text-sm text-red-600 dark:text-red-400 list-disc list-inside space-y-0.5">
+                                                {photoErrors.map((err) => (
+                                                    <li key={err}>{err}</li>
+                                                ))}
+                                            </ul>
+                                        )}
                                         <InputError message={serverErrors.photos} />
                                     </div>
 
@@ -352,6 +388,9 @@ export default function CreateVehicle() {
                                                             <span className="text-sm">
                                                                 {primaryPhotoIndex === index ? 'Main photo' : 'Select as main'}
                                                             </span>
+                                                            <span className="ml-auto text-xs text-muted-foreground">
+                                                                {formatSize(photos[index]?.size ?? 0)}
+                                                            </span>
                                                         </div>
                                                     </label>
                                                 ))}
@@ -372,12 +411,20 @@ export default function CreateVehicle() {
                                         <Input
                                             id="ownership_document"
                                             type="file"
-                                            accept="image/*,application/pdf"
+                                            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
                                             className="mt-1"
                                             onChange={(e) =>
                                                 setOwnershipDocument(e.target.files?.[0] ?? null)
                                             }
                                         />
+                                        <p className="text-sm text-muted-foreground mt-1">
+                                            JPEG, PNG, WebP, GIF, or PDF — max 10MB.
+                                        </p>
+                                        {ownershipDocument && ownershipDocument.size > MAX_DOC_SIZE && (
+                                            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                                                {ownershipDocument.name} — {formatSize(ownershipDocument.size)} exceeds 10MB limit
+                                            </p>
+                                        )}
                                         <InputError message={serverErrors.ownership_document} />
                                     </div>
 
@@ -414,7 +461,7 @@ export default function CreateVehicle() {
                             )}
 
                             {step === 2 && (
-                                <Button type="submit" disabled={processing}>
+                                <Button type="submit" disabled={processing || photoErrors.length > 0}>
                                     {processing ? 'Saving...' : 'Save Vehicle'}
                                 </Button>
                             )}

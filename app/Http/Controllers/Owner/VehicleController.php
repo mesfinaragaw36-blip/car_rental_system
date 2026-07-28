@@ -42,10 +42,15 @@ class VehicleController extends Controller
             'seats' => 'nullable|integer|min:1|max:10',
             'description' => 'nullable|string',
             'photos' => 'nullable',
-            'photos.*' => 'image|max:5120',
+            'photos.*' => 'image|max:10240',
             'primary_photo_index' => 'nullable|integer|min:0',
             'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
             'ownership_expiry' => 'nullable|date|after:today',
+        ], [
+            'photos.*.image' => 'Each photo must be a valid image (JPEG, PNG, GIF, or WebP).',
+            'photos.*.max' => 'Each photo must be smaller than 10MB. You uploaded :value kilobytes.',
+            'ownership_document.max' => 'The ownership document must be smaller than 10MB.',
+            'ownership_document.mimes' => 'The ownership document must be a JPEG, PNG, GIF, WebP, or PDF file.',
         ]);
         if ($request->hasFile('ownership_document')) {
             $validated['ownership_document'] = $request->file('ownership_document')
@@ -70,20 +75,6 @@ class VehicleController extends Controller
             'approval_status' => 'pending',
             'availability_status' => 'available',
         ]);
-        if ($request->hasFile('ownership_document')) {
-
-            $path = $request->file('ownership_document')
-                ->store('vehicle_documents', 'public');
-
-            VehicleDocument::create([
-                'car_id' => $car->id,
-                'document_type' => 'Ownership',
-                'document_path' => $path,
-                'expiry_date' => $request->ownership_expiry,
-                'verification_status' => 'pending',
-            ]);
-        }
-
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
             $photos = $request->file('photos');
@@ -100,7 +91,7 @@ class VehicleController extends Controller
         }
 
         if ($request->hasFile('ownership_document')) {
-            $path = $request->file('ownership_document')->store('vehicle-documents', 'public');
+            $path = $request->file('ownership_document')->store('vehicle_documents', 'public');
 
             VehicleDocument::create([
                 'car_id' => $car->id,

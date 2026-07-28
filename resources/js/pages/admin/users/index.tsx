@@ -67,6 +67,15 @@ export default function Users({ users, filters }: Props) {
     const [roleFilter, setRoleFilter] = useState(filters.role ?? '');
     const [statusFilter, setStatusFilter] = useState(filters.status ?? '');
 
+    function applyFilters() {
+        const params: Record<string, string> = {};
+        if (search) params.search = search;
+        if (roleFilter) params.role = roleFilter;
+        if (statusFilter) params.status = statusFilter;
+
+        router.get('/admin/users', params, { preserveState: true, replace: true });
+    }
+
     function handleSearchSubmit(e: React.FormEvent): void {
         e.preventDefault();
         applyFilters();
