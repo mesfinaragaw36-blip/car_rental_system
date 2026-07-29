@@ -1,9 +1,10 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Pencil, Trash2, Plus } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/input-error';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
     Dialog,
@@ -12,6 +13,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
     Table,
     TableBody,
@@ -20,9 +23,6 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
-import { Badge } from '@/components/ui/badge';
-import InputError from '@/components/input-error';
-import { Pencil, Trash2, Plus } from 'lucide-react';
 
 interface TypeName {
     id: number;
@@ -71,6 +71,7 @@ export default function TypeNamesIndex({ items }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
         if (editingItem) {
             put(`/admin/car-types/type-names/${editingItem.id}`, {
                 onSuccess: () => {
@@ -172,7 +173,13 @@ export default function TypeNamesIndex({ items }: Props) {
                 )}
             </div>
 
-            <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) { setEditingItem(null); reset(); } }}>
+            <Dialog open={dialogOpen} onOpenChange={(v) => {
+ setDialogOpen(v);
+
+ if (!v) {
+ setEditingItem(null); reset(); 
+} 
+}}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
                         <DialogTitle>{editingItem ? 'Edit Type Name' : 'Add Type Name'}</DialogTitle>
@@ -212,7 +219,9 @@ export default function TypeNamesIndex({ items }: Props) {
                         {errors.is_active && <InputError message={errors.is_active} />}
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => { setDialogOpen(false); setEditingItem(null); reset(); }}>
+                            <Button type="button" variant="outline" onClick={() => {
+ setDialogOpen(false); setEditingItem(null); reset(); 
+}}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>

@@ -1,7 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { RotateCcw } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { Auth } from '@/types';
 
 interface User {
@@ -26,7 +26,9 @@ export default function TrashedUsers({ users }: Props) {
     const toast = props.flash?.toast;
 
     function handleRestore(id: number, name: string) {
-        if (confirm(`Restore "${name}"?`)) router.post(`/admin/users/${id}/restore`);
+        if (confirm(`Restore "${name}"?`)) {
+router.post(`/admin/users/${id}/restore`);
+}
     }
 
     return (

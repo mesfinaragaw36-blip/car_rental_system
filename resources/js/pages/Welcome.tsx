@@ -1,7 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
+import { Car, Shield, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { login, register } from '@/routes';
 import type { Auth } from '@/types';
-import { Car, Shield, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react';
 
 function getDashboardUrl(role: string): string {
     switch (role) {

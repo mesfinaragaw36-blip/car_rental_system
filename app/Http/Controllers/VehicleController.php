@@ -1,34 +1,41 @@
 <?php
 
-namespace App\Http\Controllers\Owner;
+namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use App\Models\Car;
 use App\Models\CarImage;
 use App\Models\CarTypeName;
 use App\Models\VehicleDocument;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
+use Inertia\Response;
 
 class VehicleController extends Controller
 {
-    public function index()
+    public function index(): Response
     {
-        $vehicles = Car::where('owner_id', auth()->id())->get();
+        $user = auth()->user();
+        $query = Car::query();
 
-        return Inertia::render('owner/vehicles', [
-            'vehicles' => $vehicles,
+        if ($user->role !== 'admin') {
+            $query->where('owner_id', $user->id);
+        }
+
+        return Inertia::render('vehicles', [
+            'role' => $user->role,
+            'vehicles' => $query->get(),
         ]);
     }
 
-    public function create()
+    public function create(): Response
     {
-        return Inertia::render('owner/create-vehicle', [
+        return Inertia::render('create-vehicle', [
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'brand' => 'required|string|max:100',
@@ -52,7 +59,7 @@ class VehicleController extends Controller
             'ownership_expiry' => 'nullable|date|after:today',
         ], [
             'photos.*.image' => 'Each photo must be a valid image (JPEG, PNG, GIF, or WebP).',
-            'photos.*.max' => 'Each photo must be smaller than 10MB. You uploaded :value kilobytes.',
+            'photos.*.max' => 'Each photo must be smaller than 10MB.',
             'ownership_document.max' => 'The ownership document must be smaller than 10MB.',
             'ownership_document.mimes' => 'The ownership document must be a JPEG, PNG, GIF, WebP, or PDF file.',
         ]);
@@ -79,22 +86,14 @@ class VehicleController extends Controller
 
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
-            $photos = $request->file('photos');
-
-            foreach ($photos as $index => $photo) {
+            foreach ($request->file('photos') as $index => $photo) {
                 $path = $photo->store('car-photos', 'public');
-
-                CarImage::create([
-                    'car_id' => $car->id,
-                    'image_path' => $path,
-                    'is_primary' => $index === $primaryIndex,
-                ]);
+                CarImage::create(['car_id' => $car->id, 'image_path' => $path, 'is_primary' => $index === $primaryIndex]);
             }
         }
 
         if ($request->hasFile('ownership_document')) {
             $path = $request->file('ownership_document')->store('vehicle_documents', 'public');
-
             VehicleDocument::create([
                 'car_id' => $car->id,
                 'document_type' => 'Ownership',
@@ -104,27 +103,28 @@ class VehicleController extends Controller
             ]);
         }
 
-        return redirect()->route('owner.vehicles')->with('success', 'Vehicle submitted for approval.');
+        return redirect()->route('vehicles.index')->with('toast', ['type' => 'success', 'message' => 'Vehicle submitted for approval.']);
     }
 
-    public function edit(Car $car)
+    public function edit(Car $car): Response
     {
-        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
         }
-
         $car->load(['images', 'documents', 'carTypeName']);
 
-        return Inertia::render('owner/edit-vehicle', [
+        return Inertia::render('edit-vehicle', [
             'vehicle' => $car,
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
-    public function update(Request $request, Car $car)
+    public function update(Request $request, Car $car): RedirectResponse
     {
-        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
-            abort(403, 'Unauthorized action.');
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
         }
 
         $validated = $request->validate([
@@ -146,19 +146,17 @@ class VehicleController extends Controller
 
         $car->update($validated);
 
-        return redirect()->route('owner.vehicles')->with('success', 'Vehicle updated successfully!');
+        return redirect()->route('vehicles.index')->with('toast', ['type' => 'success', 'message' => 'Vehicle updated successfully!']);
     }
 
-    public function destroy(Car $car)
+    public function destroy(Car $car): RedirectResponse
     {
-        if ($car->owner_id !== auth()->id() && auth()->user()->role !== 'admin') {
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-
         $car->delete();
 
-        return redirect()
-            ->back()
-            ->with('success', 'Vehicle deleted successfully.');
+        return redirect()->back()->with('toast', ['type' => 'success', 'message' => 'Vehicle deleted.']);
     }
 }

@@ -1,9 +1,9 @@
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
+import { Plus, Eye, Ban, PlayCircle, Trash2, KeyRound } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -11,8 +11,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import InputError from '@/components/input-error';
-import { Plus, Eye, Ban, PlayCircle, Trash2, KeyRound } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { Auth } from '@/types';
 
 const DEFAULT_PASSWORD = '12345678';
@@ -77,7 +77,9 @@ export default function StaffIndex({ staff, roles }: Props) {
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         post('/admin/staff', {
-            onSuccess: () => { setDialogOpen(false); reset(); },
+            onSuccess: () => {
+ setDialogOpen(false); reset(); 
+},
         });
     }
 
@@ -89,11 +91,15 @@ export default function StaffIndex({ staff, roles }: Props) {
     }
 
     function handleDelete(id: number, name: string) {
-        if (confirm(`Are you sure you want to delete "${name}"?`)) router.delete(`/admin/staff/${id}`);
+        if (confirm(`Are you sure you want to delete "${name}"?`)) {
+router.delete(`/admin/staff/${id}`);
+}
     }
 
     function handleSuspend(id: number) {
-        if (confirm('Suspend this staff member?')) router.post(`/admin/staff/${id}/suspend`);
+        if (confirm('Suspend this staff member?')) {
+router.post(`/admin/staff/${id}/suspend`);
+}
     }
 
     function handleActivate(id: number) {
@@ -210,7 +216,13 @@ export default function StaffIndex({ staff, roles }: Props) {
             </div>
 
             {/* Create Staff Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) reset(); }}>
+            <Dialog open={dialogOpen} onOpenChange={(v) => {
+ setDialogOpen(v);
+
+ if (!v) {
+reset();
+} 
+}}>
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Create Staff Member</DialogTitle>
@@ -281,7 +293,9 @@ export default function StaffIndex({ staff, roles }: Props) {
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => { setDialogOpen(false); reset(); }}>
+                            <Button type="button" variant="outline" onClick={() => {
+ setDialogOpen(false); reset(); 
+}}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>

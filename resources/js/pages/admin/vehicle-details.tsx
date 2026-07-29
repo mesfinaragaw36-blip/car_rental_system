@@ -1,7 +1,7 @@
 import { Head, Link, router } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface VehicleDocument {
     id: number;
@@ -56,7 +56,9 @@ export default function VehicleDetails({ vehicle }: Props) {
     }
 
     function handleReject() {
-        if (confirm('Reject this vehicle?')) router.post(`/admin/vehicles/${vehicle.id}/reject`);
+        if (confirm('Reject this vehicle?')) {
+router.post(`/admin/vehicles/${vehicle.id}/reject`);
+}
     }
 
     function handleApproveDoc(docId: number) {
@@ -64,7 +66,9 @@ export default function VehicleDetails({ vehicle }: Props) {
     }
 
     function handleRejectDoc(docId: number) {
-        if (confirm('Reject this document?')) router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: docId });
+        if (confirm('Reject this document?')) {
+router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: docId });
+}
     }
 
     return (

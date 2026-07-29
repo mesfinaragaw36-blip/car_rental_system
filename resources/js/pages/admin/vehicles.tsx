@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Eye, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import type { Auth } from '@/types';
 
 interface CarImage { id: number; is_primary: boolean; image_path: string; }
@@ -57,7 +57,9 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
     }
 
     function handleReject(id: number) {
-        if (confirm('Reject this vehicle?')) router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
+        if (confirm('Reject this vehicle?')) {
+router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
+}
     }
 
     return (
@@ -76,7 +78,9 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <form onSubmit={(e) => { e.preventDefault(); applyFilters(); }} className="flex flex-col gap-3 md:flex-row md:items-end">
+                        <form onSubmit={(e) => {
+ e.preventDefault(); applyFilters(); 
+}} className="flex flex-col gap-3 md:flex-row md:items-end">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input

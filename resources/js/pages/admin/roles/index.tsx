@@ -1,9 +1,13 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+import {
+    Plus, Edit, Trash2, Users, Shield, ChevronDown, ChevronRight,
+    UserCog, Car, CreditCard, FileCheck, UserCheck, Eye,
+} from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
@@ -13,12 +17,8 @@ import {
     DialogTitle,
     DialogFooter,
 } from '@/components/ui/dialog';
-import InputError from '@/components/input-error';
-import {
-    Plus, Edit, Trash2, Users, Shield, ChevronDown, ChevronRight,
-    UserCog, Car, CreditCard, FileCheck, UserCheck, Eye,
-} from 'lucide-react';
-import { Link } from '@inertiajs/react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import type { Auth } from '@/types';
 
 interface Role {
@@ -69,6 +69,7 @@ function PermissionGroups({
     function toggleGroup(groupKey: string, items: Record<string, string>) {
         const keys = Object.keys(items);
         const allChecked = keys.every((k) => permissions.includes(k));
+
         if (allChecked) {
             onChange(permissions.filter((p) => !keys.includes(p)));
         } else {
@@ -194,6 +195,7 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                     <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                         {roles.map((role, i) => {
                             const Icon = ROLE_ICONS[i % ROLE_ICONS.length];
+
                             return (
                                 <Card key={role.id}>
                                     <CardHeader className="pb-2">
@@ -245,7 +247,11 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
             </div>
 
             {/* View Permissions Dialog */}
-            <Dialog open={!!viewRole} onOpenChange={(v) => { if (!v) setViewRole(null); }}>
+            <Dialog open={!!viewRole} onOpenChange={(v) => {
+ if (!v) {
+setViewRole(null);
+} 
+}}>
                 <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
@@ -264,7 +270,13 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
             </Dialog>
 
             {/* Create Role Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) reset(); }}>
+            <Dialog open={dialogOpen} onOpenChange={(v) => {
+ setDialogOpen(v);
+
+ if (!v) {
+reset();
+} 
+}}>
                 <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Create Role</DialogTitle>
@@ -293,7 +305,9 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => { setDialogOpen(false); reset(); }}>
+                            <Button type="button" variant="outline" onClick={() => {
+ setDialogOpen(false); reset(); 
+}}>
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>

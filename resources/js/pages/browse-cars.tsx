@@ -1,34 +1,39 @@
 import { Head, router, Link } from '@inertiajs/react';
 import { useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Input } from '@/components/ui/input';
 
-interface VehicleImage {
+interface CarImage {
     id: number;
     image_path: string;
     is_primary: boolean;
 }
 
-interface Vehicle {
+interface Car {
     id: number;
     brand: string;
     model: string;
     year: number;
-    category: string;
     fuel_type: string;
     transmission: string;
     daily_price: string;
-    images: VehicleImage[];
+    category: string;
+    images: CarImage[];
+    owner: { id: number; name: string; phone: string };
+    car_type_name?: { id: number; name: string };
+}
+
+interface CarTypeName {
+    id: number;
+    name: string;
 }
 
 interface Props {
-    vehicles: {
-        data: Vehicle[];
-        links: { url: string | null; label: string; active: boolean }[];
-    };
+    cars: Car[];
+    carTypeNames: CarTypeName[];
     filters: {
         search?: string;
         category?: string;
@@ -39,16 +44,16 @@ interface Props {
     };
 }
 
-export default function BrowseCars({ vehicles, filters }: Props) {
-    const [search, setSearch] = useState(filters.search || '');
-    const [category, setCategory] = useState(filters.category || '');
-    const [fuelType, setFuelType] = useState(filters.fuel_type || '');
-    const [transmission, setTransmission] = useState(filters.transmission || '');
-    const [minPrice, setMinPrice] = useState(filters.min_price || '');
-    const [maxPrice, setMaxPrice] = useState(filters.max_price || '');
+export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Props) {
+    const [search, setSearch] = useState(filters.search ?? '');
+    const [category, setCategory] = useState(filters.category ?? '');
+    const [fuelType, setFuelType] = useState(filters.fuel_type ?? '');
+    const [transmission, setTransmission] = useState(filters.transmission ?? '');
+    const [minPrice, setMinPrice] = useState(filters.min_price ?? '');
+    const [maxPrice, setMaxPrice] = useState(filters.max_price ?? '');
 
     function applyFilters() {
-        router.get('/customer/browse-cars', {
+        router.get('/browse-cars', {
             search,
             category,
             fuel_type: fuelType,
@@ -61,7 +66,7 @@ export default function BrowseCars({ vehicles, filters }: Props) {
         });
     }
 
-    function getPrimaryImage(vehicle: Vehicle) {
+    function getPrimaryImage(vehicle: Car) {
         return vehicle.images?.find((img) => img.is_primary) ?? vehicle.images?.[0];
     }
 
@@ -84,15 +89,15 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                         </div>
 
                         <div>
-                            <Label>Category</Label>
+                            <Label>Car Type</Label>
                             <Select value={category} onValueChange={setCategory}>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="All Categories" />
+                                    <SelectValue placeholder="All Types" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="Sedan">Sedan</SelectItem>
-                                    <SelectItem value="SUV">SUV</SelectItem>
-                                    <SelectItem value="Hatchback">Hatchback</SelectItem>
+                                    {carTypeNames.map((type) => (
+                                        <SelectItem key={type.id} value={type.name}>{type.name}</SelectItem>
+                                    ))}
                                 </SelectContent>
                             </Select>
                         </div>
@@ -129,7 +134,7 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                             <Label>Min Price (ETB)</Label>
                             <Input
                                 type="number"
-                                placeholder="Minimum price"
+                                placeholder="Min price"
                                 value={minPrice}
                                 onChange={(e) => setMinPrice(e.target.value)}
                             />
@@ -139,7 +144,7 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                             <Label>Max Price (ETB)</Label>
                             <Input
                                 type="number"
-                                placeholder="Maximum price"
+                                placeholder="Max price"
                                 value={maxPrice}
                                 onChange={(e) => setMaxPrice(e.target.value)}
                             />
@@ -149,41 +154,42 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                     <Button onClick={applyFilters}>Search</Button>
                 </div>
 
-                {vehicles.data.length === 0 ? (
-                    <p className="text-muted-foreground">No vehicles available.</p>
+                {cars.length === 0 ? (
+                    <p className="text-muted-foreground">No cars available right now.</p>
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                        {vehicles.data.map((vehicle) => {
-                            const image = getPrimaryImage(vehicle);
+                        {cars.map((car) => {
+                            const image = getPrimaryImage(car);
 
                             return (
-                                <Card key={vehicle.id}>
-                                    <CardContent className="space-y-3 p-4">
-                                        {image && (
-                                            <img
-                                                src={`/storage/${image.image_path}`}
-                                                alt={`${vehicle.brand} ${vehicle.model}`}
-                                                className="h-48 w-full rounded-md object-cover"
-                                            />
-                                        )}
+                                <Card key={car.id} className="overflow-hidden">
+                                    {image && (
+                                        <img
+                                            src={`/storage/${image.image_path}`}
+                                            alt={`${car.brand} ${car.model}`}
+                                            className="w-full h-48 object-cover"
+                                        />
+                                    )}
 
+                                    <CardContent className="space-y-3 p-4">
                                         <h2 className="text-xl font-semibold">
-                                            {vehicle.brand} {vehicle.model}
+                                            {car.brand} {car.model} ({car.year})
                                         </h2>
 
                                         <div className="space-y-1 text-sm text-muted-foreground">
-                                            <p>Year: {vehicle.year}</p>
-                                            <p>Category: {vehicle.category}</p>
-                                            <p>Fuel: {vehicle.fuel_type}</p>
-                                            <p>Transmission: {vehicle.transmission}</p>
+                                            <p>Type: {car.category}</p>
+                                            <p>Fuel: {car.fuel_type}</p>
+                                            <p>Transmission: {car.transmission}</p>
                                         </div>
 
-                                        <p className="text-lg font-bold">
-                                            {vehicle.daily_price} ETB / day
+                                        <p className="text-lg font-bold">ETB {car.daily_price} / day</p>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Owner: {car.owner?.name}
                                         </p>
 
-                                        <Link href={`/customer/cars/${vehicle.id}`}>
-                                            <Button className="w-full">View Details</Button>
+                                        <Link href={`/cars/${car.id}`}>
+                                            <Button className="w-full">View Details & Book</Button>
                                         </Link>
                                     </CardContent>
                                 </Card>
@@ -195,3 +201,7 @@ export default function BrowseCars({ vehicles, filters }: Props) {
         </>
     );
 }
+
+BrowseCars.layout = {
+    breadcrumbs: [{ title: 'Browse Cars', href: '/browse-cars' }],
+};

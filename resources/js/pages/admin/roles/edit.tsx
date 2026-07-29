@@ -1,13 +1,13 @@
 import { Head, Link, useForm } from '@inertiajs/react';
+import { ChevronDown, ChevronRight, Shield, UserCog, Car, CreditCard, FileCheck, Users } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import InputError from '@/components/input-error';
-import { ChevronDown, ChevronRight, Shield, UserCog, Car, CreditCard, FileCheck, Users } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface Role {
     id: number;

@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Eye, Ban, PlayCircle, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import type { Auth } from '@/types';
 
 interface DriverProfile {
@@ -59,7 +59,9 @@ export default function AdminDrivers({ drivers, filters }: Props) {
     }
 
     function handleSuspend(id: number) {
-        if (confirm('Suspend this driver?')) router.post(`/admin/drivers/${id}/suspend`);
+        if (confirm('Suspend this driver?')) {
+router.post(`/admin/drivers/${id}/suspend`);
+}
     }
 
     function handleActivate(id: number) {
@@ -82,7 +84,9 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <form onSubmit={(e) => { e.preventDefault(); applyFilters(); }} className="flex flex-col gap-3 md:flex-row md:items-end">
+                        <form onSubmit={(e) => {
+ e.preventDefault(); applyFilters(); 
+}} className="flex flex-col gap-3 md:flex-row md:items-end">
                             <div className="relative flex-1">
                                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input

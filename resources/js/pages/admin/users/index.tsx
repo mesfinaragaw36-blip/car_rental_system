@@ -1,9 +1,9 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { Eye, Search, Edit } from 'lucide-react';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import type { Auth } from '@/types';
 
 interface User {
@@ -69,9 +69,18 @@ export default function Users({ users, filters }: Props) {
 
     function applyFilters() {
         const params: Record<string, string> = {};
-        if (search) params.search = search;
-        if (roleFilter) params.role = roleFilter;
-        if (statusFilter) params.status = statusFilter;
+
+        if (search) {
+params.search = search;
+}
+
+        if (roleFilter) {
+params.role = roleFilter;
+}
+
+        if (statusFilter) {
+params.status = statusFilter;
+}
 
         router.get('/admin/users', params, { preserveState: true, replace: true });
     }
