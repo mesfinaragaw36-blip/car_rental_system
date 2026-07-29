@@ -38,6 +38,7 @@ class DashboardController extends Controller
             'stats' => [
                 'active_bookings' => $activeBookings,
                 'past_bookings' => $pastBookings,
+                'total_bookings' => $activeBookings + $pastBookings,
                 'upcoming_returns' => $upcomingReturns,
             ],
         ]);

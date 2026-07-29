@@ -72,7 +72,7 @@ export default function BrowseCars({ vehicles, filters }: Props) {
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Browse Available Cars</h1>
 
-                <div className="rounded-lg border p-4 space-y-4">
+                <div className="rounded-2xl border bg-white p-6 shadow-md space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
                         <div>
                             <Label>Search</Label>
@@ -146,7 +146,32 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                         </div>
                     </div>
 
-                    <Button onClick={applyFilters}>Search</Button>
+                 <div className="flex justify-end gap-3">
+    <Button
+        variant="outline"
+        size="lg"
+        onClick={() => {
+            setSearch('');
+            setCategory('');
+            setFuelType('');
+            setTransmission('');
+            setMinPrice('');
+            setMaxPrice('');
+
+            router.get('/customer/browse-cars');
+        }}
+    >
+        Reset
+    </Button>
+
+    <Button
+        size="lg"
+        className="px-8"
+        onClick={applyFilters}
+    >
+        Search Cars
+    </Button>
+</div>
                 </div>
 
                 {vehicles.data.length === 0 ? (
@@ -157,33 +182,88 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                             const image = getPrimaryImage(vehicle);
 
                             return (
-                                <Card key={vehicle.id}>
+                                <Card
+    key={vehicle.id}
+    className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition duration-300"
+>
                                     <CardContent className="space-y-3 p-4">
                                         {image && (
                                             <img
+                                            
                                                 src={`/storage/${image.image_path}`}
                                                 alt={`${vehicle.brand} ${vehicle.model}`}
-                                                className="h-48 w-full rounded-md object-cover"
+                                                className="h-56 w-full object-cover"
                                             />
                                         )}
+                                        <div className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+    Available
+</div>
 
-                                        <h2 className="text-xl font-semibold">
+                                        <h2 className="text-2xl font-bold">
                                             {vehicle.brand} {vehicle.model}
                                         </h2>
 
-                                        <div className="space-y-1 text-sm text-muted-foreground">
-                                            <p>Year: {vehicle.year}</p>
-                                            <p>Category: {vehicle.category}</p>
-                                            <p>Fuel: {vehicle.fuel_type}</p>
-                                            <p>Transmission: {vehicle.transmission}</p>
-                                        </div>
+                                       <div className="grid grid-cols-2 gap-3 text-sm">
 
-                                        <p className="text-lg font-bold">
-                                            {vehicle.daily_price} ETB / day
-                                        </p>
+    <div className="rounded-lg bg-gray-50 p-3">
+        <p className="text-muted-foreground">
+            Year
+        </p>
+        <p className="font-medium">
+            {vehicle.year}
+        </p>
+    </div>
+
+    <div className="rounded-lg bg-gray-50 p-3">
+        <p className="text-muted-foreground">
+            Category
+        </p>
+        <p className="font-medium">
+            {vehicle.category}
+        </p>
+    </div>
+
+    <div className="rounded-lg bg-gray-50 p-3">
+        <p className="text-muted-foreground">
+            Fuel
+        </p>
+        <p className="font-medium">
+            {vehicle.fuel_type}
+        </p>
+    </div>
+
+    <div className="rounded-lg bg-gray-50 p-3">
+        <p className="text-muted-foreground">
+            Transmission
+        </p>
+        <p className="font-medium">
+            {vehicle.transmission}
+        </p>
+    </div>
+
+</div>
+
+                                        <div className="flex items-center justify-between">
+    <div>
+        <p className="text-sm text-muted-foreground">
+            Starting from
+        </p>
+
+        <p className="text-2xl font-bold text-green-600">
+            ETB {vehicle.daily_price}
+        </p>
+
+        <p className="text-sm text-muted-foreground">
+            per day
+        </p>
+    </div>
+</div>
 
                                         <Link href={`/customer/cars/${vehicle.id}`}>
-                                            <Button className="w-full">View Details</Button>
+                                            <Button className="w-full rounded-xl"size="lg"
+>
+View Vehicle Details
+</Button>
                                         </Link>
                                     </CardContent>
                                 </Card>
@@ -191,6 +271,27 @@ export default function BrowseCars({ vehicles, filters }: Props) {
                         })}
                     </div>
                 )}
+                <div className="flex justify-center gap-2 mt-8">
+    {vehicles.links.map((link, index) => (
+        <button
+            key={index}
+            disabled={!link.url}
+            onClick={() => {
+                if (link.url) {
+                    router.get(link.url);
+                }
+            }}
+            className={`px-4 py-2 rounded-lg text-sm ${
+                link.active
+                    ? 'bg-primary text-primary-foreground'
+                    : 'border hover:bg-gray-100'
+            }`}
+            dangerouslySetInnerHTML={{
+                __html: link.label,
+            }}
+        />
+    ))}
+</div>
             </div>
         </>
     );
