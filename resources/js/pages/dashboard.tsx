@@ -7,11 +7,23 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
     total_users: number; active_users: number; total_vehicles: number;
-    pending_vehicles: number; total_bookings: number; pending_bookings: number;
+    total_bookings: number; pending_bookings: number;
     active_bookings: number; completed_bookings: number; total_revenue: string;
+    total_commission: string; commission_rate: number;
     pending_owners: number; pending_drivers: number; total_staff: number;
 }
-interface OwnerStats { total_vehicles: number; active_bookings: number; total_earnings: string; }
+
+interface MonthlyData {
+    month: string; revenue: number; commission: number;
+}
+interface OwnerStats {
+    total_vehicles: number; active_bookings: number; pending_bookings: number;
+    total_earnings: string; available_vehicles: number; rented_vehicles: number; pending_vehicles: number;
+}
+interface RecentBooking {
+    id: number; status: string; pickup_date: string;
+    customer: { name: string } | null; car: { brand: string; model: string } | null;
+}
 interface CustomerStats {
     active_bookings: number; past_bookings: number;
     upcoming_returns: { id: number; vehicle: string; return_date: string }[];
@@ -25,7 +37,7 @@ interface Assignment {
     car: { brand: string; model: string; year: number; plate_number: string };
 }
 
-interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; recentAssignments?: Assignment[]; }
+interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; recentAssignments?: Assignment[]; recentBookings?: RecentBooking[]; monthlyData?: MonthlyData[]; }
 
 function StatCard({ title, value, icon, href, accent }: {
     title: string; value: string | number; icon: React.ReactNode; href?: string; accent?: string;
@@ -50,7 +62,60 @@ const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
     accepted: 'bg-blue-100 text-blue-800',
 };
 
-export default function Dashboard({ role, stats, recentAssignments = [] }: Props) {
+const BOOKING_STATUS_STYLES: Record<string, string> = {
+    pending: 'bg-yellow-100 text-yellow-800',
+    approved: 'bg-blue-100 text-blue-800',
+    paid: 'bg-green-100 text-green-800',
+    picked_up: 'bg-purple-100 text-purple-800',
+    completed: 'bg-gray-100 text-gray-800',
+    cancelled: 'bg-red-100 text-red-800',
+};
+
+function formatMonth(ym: string): string {
+    const [y, m] = ym.split('-');
+    return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1]} '${y.slice(2)}`;
+}
+
+function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
+    if (data.length === 0) return null;
+
+    return (
+        <>
+            <div className="flex items-end justify-around h-48 relative">
+                {[0.25, 0.5, 0.75, 1].map((pct) => (
+                    <div key={pct} className="absolute left-0 right-0 border-t border-dashed border-gray-200" style={{ bottom: `${pct * 25}%` }} />
+                ))}
+                {data.map((d) => (
+                    <div key={d.month} className="flex items-end gap-1 flex-1 justify-center relative z-10">
+                        <div
+                            className="w-5 rounded-t transition-all hover:opacity-80 cursor-pointer"
+                            style={{ height: `${Math.max((d.revenue / max) * 100, 2)}%`, backgroundColor: '#1A365D' }}
+                            title={`Revenue: ETB ${d.revenue.toLocaleString()}`}
+                        />
+                        <div
+                            className="w-5 rounded-t transition-all hover:opacity-80 cursor-pointer"
+                            style={{ height: `${Math.max((d.commission / max) * 100, 2)}%`, backgroundColor: '#FF6B00' }}
+                            title={`Commission: ETB ${d.commission.toLocaleString()}`}
+                        />
+                    </div>
+                ))}
+                {/* Y-axis labels */}
+                <div className="absolute -left-1 right-0 inset-y-0 flex flex-col justify-between pointer-events-none">
+                    <span className="text-[10px] text-muted-foreground -translate-y-1/2 -ml-14 text-right">ETB {max.toLocaleString()}</span>
+                    <span className="text-[10px] text-muted-foreground -translate-y-1/2 -ml-14 text-right">ETB {(max * 0.5).toFixed(0)}</span>
+                    <span className="text-[10px] text-muted-foreground -translate-y-1/2 -ml-14 text-right">ETB 0</span>
+                </div>
+            </div>
+            <div className="flex justify-around mt-1 ml-0">
+                {data.map((d) => (
+                    <span key={d.month} className="text-[11px] text-muted-foreground flex-1 text-center">{formatMonth(d.month)}</span>
+                ))}
+            </div>
+        </>
+    );
+}
+
+export default function Dashboard({ role, stats, recentAssignments = [], recentBookings = [], monthlyData = [] }: Props) {
     return (
         <>
             <Head title="Dashboard" />
@@ -59,22 +124,116 @@ export default function Dashboard({ role, stats, recentAssignments = [] }: Props
 
                 {role === 'admin' && (() => {
                     const s = stats as AdminStats;
+                    const monthly = monthlyData as MonthlyData[];
+                    const maxRevenue = Math.max(...monthly.map(d => d.revenue), 1);
 
                     return (
-                        <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
-                            <StatCard title="Total Users" value={s.total_users} icon={<Users className="h-4 w-4" />} href="/admin/users" />
-                            <StatCard title="Active Users" value={s.active_users} icon={<UserCog className="h-5 w-5" />} />
-                            <StatCard title="Total Vehicles" value={s.total_vehicles} icon={<Car className="h-4 w-4" />} href="/admin/vehicles" />
-                            <StatCard title="Pending Vehicles" value={s.pending_vehicles} icon={<Clock className="h-4 w-4" />} href="/admin/vehicles" accent="text-yellow-600" />
-                            <StatCard title="Total Bookings" value={s.total_bookings} icon={<BookOpen className="h-4 w-4" />} href="/bookings" />
-                            <StatCard title="Pending Bookings" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} accent="text-yellow-600" />
-                            <StatCard title="Active" value={s.active_bookings} icon={<Activity className="h-4 w-4" />} />
-                            <StatCard title="Completed" value={s.completed_bookings} icon={<CheckCircle className="h-4 w-4" />} />
-                            <StatCard title="Revenue" value={`ETB ${s.total_revenue}`} icon={<CircleDollarSign className="h-4 w-4" />} />
-                            <StatCard title="Pending Owners" value={s.pending_owners} icon={<Shield className="h-4 w-4" />} accent="text-yellow-600" />
-                            <StatCard title="Pending Drivers" value={s.pending_drivers} icon={<Truck className="h-4 w-4" />} accent="text-yellow-600" />
-                            <StatCard title="Staff" value={s.total_staff} icon={<UserCog className="h-4 w-4" />} />
-                        </div>
+                        <>
+                            <div className="rounded-2xl bg-gradient-to-br p-8 text-white" style={{ background: 'linear-gradient(135deg, #1A365D 0%, #2D5B8E 100%)' }}>
+                                <h1 className="text-2xl font-bold tracking-tight">Admin Dashboard</h1>
+                                <p className="mt-1 text-blue-200">Platform overview at a glance.</p>
+                            </div>
+
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                        <StatCard title="Total Revenue" value={`ETB ${s.total_revenue}`} icon={<CircleDollarSign className="h-4 w-4" />} />
+                        <StatCard title="Commission" value={`ETB ${s.total_commission}`} icon={<CircleDollarSign className="h-4 w-4" />} accent="text-orange-600" />
+                        <StatCard title="Active Bookings" value={s.active_bookings} icon={<Activity className="h-4 w-4" />} href="/bookings" />
+                        <StatCard title="Total Users" value={s.total_users} icon={<Users className="h-4 w-4" />} href="/admin/users" />
+                    </div>
+
+                    <div className="grid gap-6 lg:grid-cols-2">
+                        <Card className="overflow-hidden rounded-2xl shadow-sm lg:col-span-2">
+                            <CardHeader className="border-b px-6 py-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <CardTitle className="text-base font-semibold">Revenue & Commission</CardTitle>
+                                        <p className="text-xs text-muted-foreground mt-0.5">Monthly revenue and {s.commission_rate}% platform commission</p>
+                                    </div>
+                                </div>
+                            </CardHeader>
+                            <CardContent className="p-6">
+                                {monthly.length === 0 ? (
+                                    <p className="py-12 text-center text-sm text-muted-foreground">No transaction data yet.</p>
+                                ) : (() => {
+                                    const totalRevenueNum = parseFloat(s.total_revenue);
+                                    const totalCommissionNum = parseFloat(s.total_commission);
+                                    const avgMonthly = monthly.length > 0 ? totalRevenueNum / monthly.length : 0;
+                                    const bestEntry = monthly.reduce((b, c) => c.revenue > b.revenue ? c : b);
+                                    const lastIdx = monthly.length - 1;
+                                    const growth = monthly.length >= 2 ? ((monthly[lastIdx].revenue - monthly[lastIdx - 1].revenue) / monthly[lastIdx - 1].revenue) * 100 : 0;
+                                    return (
+                                        <div className="space-y-6">
+                                            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                                <div className="rounded-lg bg-blue-50/80 p-3"><p className="text-[11px] font-medium text-blue-600">Total Revenue</p><p className="text-lg font-bold text-blue-900">ETB {s.total_revenue}</p></div>
+                                                <div className="rounded-lg bg-orange-50/80 p-3"><p className="text-[11px] font-medium text-orange-600">Total Commission</p><p className="text-lg font-bold text-orange-900">ETB {s.total_commission}</p></div>
+                                                <div className="rounded-lg bg-slate-50/80 p-3"><p className="text-[11px] font-medium text-slate-600">Monthly Avg</p><p className="text-lg font-bold text-slate-900">ETB {avgMonthly.toFixed(2)}</p></div>
+                                                <div className="rounded-lg bg-green-50/80 p-3"><p className="text-[11px] font-medium text-green-600">Best Month</p><p className="text-lg font-bold text-green-800">{formatMonth(bestEntry.month)}</p></div>
+                                                <div className="rounded-lg bg-purple-50/80 p-3"><p className="text-[11px] font-medium text-purple-600">MoM Growth</p><p className={`text-lg font-bold ${growth >= 0 ? 'text-green-600' : 'text-red-600'}`}>{growth >= 0 ? '+' : ''}{growth.toFixed(1)}%</p></div>
+                                            </div>
+                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm" style={{ backgroundColor: '#1A365D' }} /> Revenue</span>
+                                                <span className="flex items-center gap-1.5"><span className="h-3 w-3 rounded-sm" style={{ backgroundColor: '#FF6B00' }} /> Commission</span>
+                                            </div>
+                                            <GroupedBarChart data={monthly} max={maxRevenue} />
+                                        </div>
+                                    );
+                                })()}
+                            </CardContent>
+                        </Card>
+
+                                <Card className="overflow-hidden rounded-2xl shadow-sm">
+                                    <CardHeader className="border-b px-6 py-4 bg-slate-50/50">
+                                        <CardTitle className="text-sm font-semibold">Platform Summary</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-6 space-y-5">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Total Vehicles</span>
+                                            <span className="text-lg font-bold">{s.total_vehicles}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Total Bookings</span>
+                                            <span className="text-lg font-bold">{s.total_bookings}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Pending Bookings</span>
+                                            <span className="text-lg font-bold text-amber-600">{s.pending_bookings}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Completed</span>
+                                            <span className="text-lg font-bold text-emerald-600">{s.completed_bookings}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Commission Rate</span>
+                                            <span className="text-lg font-bold text-orange-600">{s.commission_rate}%</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card className="overflow-hidden rounded-2xl shadow-sm">
+                                    <CardHeader className="border-b px-6 py-4 bg-slate-50/50">
+                                        <CardTitle className="text-sm font-semibold">Verification Queue</CardTitle>
+                                    </CardHeader>
+                                    <CardContent className="p-6 space-y-5">
+                                        <Link href="/admin/drivers" className="flex items-center justify-between group">
+                                            <span className="text-sm text-muted-foreground group-hover:text-foreground">Pending Drivers</span>
+                                            <span className="text-lg font-bold text-amber-600">{s.pending_drivers}</span>
+                                        </Link>
+                                        <Link href="/admin/vehicles" className="flex items-center justify-between group">
+                                            <span className="text-sm text-muted-foreground group-hover:text-foreground">Pending Owners</span>
+                                            <span className="text-lg font-bold text-amber-600">{s.pending_owners}</span>
+                                        </Link>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Active Users</span>
+                                            <span className="text-lg font-bold">{s.active_users}</span>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">Staff</span>
+                                            <span className="text-lg font-bold">{s.total_staff}</span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            </div>
+                        </>
                     );
                 })()}
 
@@ -82,11 +241,51 @@ export default function Dashboard({ role, stats, recentAssignments = [] }: Props
                     const s = stats as OwnerStats;
 
                     return (
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <StatCard title="My Vehicles" value={s.total_vehicles} icon={<Car className="h-4 w-4" />} href="/vehicles" />
-                            <StatCard title="Active Bookings" value={s.active_bookings} icon={<BookOpen className="h-4 w-4" />} href="/bookings" />
-                            <StatCard title="Total Earnings" value={`ETB ${s.total_earnings}`} icon={<CircleDollarSign className="h-4 w-4" />} />
-                        </div>
+                        <>
+                            <div className="rounded-2xl bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-8 text-white">
+                                <h1 className="text-2xl font-bold tracking-tight">Welcome back!</h1>
+                                <p className="mt-1 text-blue-200">Here&apos;s what&apos;s happening with your fleet today.</p>
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                                <StatCard title="Total Vehicles" value={s.total_vehicles} icon={<Car className="h-4 w-4" />} href="/vehicles" />
+                                <StatCard title="Available" value={s.available_vehicles} icon={<CheckCircle className="h-4 w-4" />} accent="text-green-600" />
+                                <StatCard title="Rented" value={s.rented_vehicles} icon={<BookOpen className="h-4 w-4" />} accent="text-blue-600" />
+                                <StatCard title="Pending Approval" value={s.pending_vehicles} icon={<Clock className="h-4 w-4" />} accent="text-yellow-600" />
+                            </div>
+
+                            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                                <StatCard title="Active Bookings" value={s.active_bookings} icon={<Activity className="h-4 w-4" />} href="/bookings" />
+                                <StatCard title="Pending Bookings" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} href="/bookings" accent="text-yellow-600" />
+                                <StatCard title="Total Earnings" value={`ETB ${s.total_earnings}`} icon={<CircleDollarSign className="h-4 w-4" />} />
+                            </div>
+
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardTitle>Recent Bookings</CardTitle>
+                                    <Link href="/bookings" className="text-xs font-medium text-blue-600 hover:underline">View all →</Link>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentBookings.length === 0 ? (
+                                        <p className="py-6 text-center text-sm text-muted-foreground">No bookings yet.</p>
+                                    ) : (
+                                        <div className="divide-y">
+                                            {recentBookings.map((b) => (
+                                                <div key={b.id} className="flex items-center justify-between py-4">
+                                                    <div>
+                                                        <p className="font-semibold">{b.car ? `${b.car.brand} ${b.car.model}` : 'Vehicle'}</p>
+                                                        <p className="text-sm text-muted-foreground">{b.pickup_date} &middot; {b.customer?.name ?? 'N/A'}</p>
+                                                    </div>
+                                                    <span className={`rounded-full px-3 py-1 text-xs font-medium ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                                        {b.status}
+                                                    </span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </>
                     );
                 })()}
 

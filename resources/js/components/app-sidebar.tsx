@@ -55,17 +55,17 @@ routes.forEach((r) => allowedRoutes.add(r));
         case 'admin':
             return [
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
+                { title: 'Car Types', href: '/admin/car-types/type-names', icon: Settings },
+                { title: 'My Vehicles', href: '/vehicles', icon: Car },
+                { title: 'Vehicles (Admin)', href: '/admin/vehicles', icon: Building2 },
                 { title: 'Browse Cars', href: '/browse-cars', icon: Search },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
                 { title: 'Payments', href: '/payments', icon: CreditCard },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
-                { title: 'Users', href: '/admin/users', icon: Users },
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
-                { title: 'Staff', href: '/admin/staff', icon: UserCog },
                 { title: 'Roles & Permissions', href: '/admin/roles', icon: Shield },
-                { title: 'Car Types', href: '/admin/car-types/type-names', icon: Settings },
-                { title: 'Vehicles (Admin)', href: '/admin/vehicles', icon: Building2 },
-                { title: 'My Vehicles', href: '/vehicles', icon: Car },
+                { title: 'Staff', href: '/admin/staff', icon: UserCog },
+                { title: 'Users', href: '/admin/users', icon: Users },
             ];
 
         case 'owner':

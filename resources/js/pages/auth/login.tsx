@@ -125,5 +125,5 @@ export default function Login({ status, canResetPassword }: Props) {
 
 Login.layout = {
     title: 'Welcome back',
-    description: 'Sign in to continue to DriveEasy',
+    description: 'Sign in to continue to Ethio Car Rental',
 };

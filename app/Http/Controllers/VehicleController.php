@@ -16,7 +16,7 @@ class VehicleController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $query = Car::query();
+        $query = Car::with(['images', 'carTypeName']);
 
         if ($user->role !== 'admin') {
             $query->where('owner_id', $user->id);

@@ -54,20 +54,15 @@ const rightNavItems: NavItem[] = [
 const activeItemStyles =
     'text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100';
 
-function getDashboardUrl(role: string): string {
-    switch (role) {
-        case 'admin':  return '/admin/dashboard';
-        case 'owner':  return '/owner/dashboard';
-        case 'driver': return '/driver/dashboard';
-        default:       return '/customer/dashboard';
-    }
+function getDashboardUrl(): string {
+    return '/dashboard';
 }
 
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
     const { auth } = page.props;
     const role = (auth.user as { role?: string } | undefined)?.role ?? 'customer';
-    const dashboardUrl = getDashboardUrl(role);
+    const dashboardUrl = getDashboardUrl();
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();
 
@@ -103,7 +98,7 @@ export function AppHeader({ breadcrumbs = [] }: Props) {
                                     Navigation menu
                                 </SheetTitle>
                                 <SheetHeader className="flex justify-start text-left">
-                                    <AppLogoIcon className="h-6 w-6 fill-current text-black dark:text-white" />
+                                    <AppLogoIcon />
                                 </SheetHeader>
                                 <div className="flex h-full flex-1 flex-col space-y-4 p-4">
                                     <div className="flex h-full flex-col justify-between text-sm">

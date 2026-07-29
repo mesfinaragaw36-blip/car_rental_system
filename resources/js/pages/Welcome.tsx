@@ -1,27 +1,17 @@
 import { Head, Link, usePage } from '@inertiajs/react';
-import { Car, Shield, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react';
+import { Shield, MapPin, Star, ArrowRight, CheckCircle } from 'lucide-react';
 import { login, register } from '@/routes';
 import type { Auth } from '@/types';
 
-function getDashboardUrl(role: string): string {
-    switch (role) {
-        case 'admin':  return '/admin/dashboard';
-        case 'owner':  return '/owner/dashboard';
-        case 'driver': return '/driver/dashboard';
-        default:       return '/customer/dashboard';
-    }
+function getDashboardUrl(): string {
+    return '/dashboard';
 }
 
 const FEATURES = [
     {
-        icon: Car,
-        title: 'Wide Selection',
-        desc: 'Browse hundreds of verified vehicles — sedans, SUVs, trucks and more.',
-    },
-    {
         icon: Shield,
         title: 'Verified & Safe',
-        desc: 'Every owner and vehicle goes through our verification process.',
+        desc: 'Every owner and vehicle goes through our trust verification process.',
     },
     {
         icon: MapPin,
@@ -43,29 +33,28 @@ const STEPS = [
 
 export default function Welcome() {
     const { auth } = usePage<{ auth: Auth }>().props;
-    const dashboardUrl = auth.user ? getDashboardUrl(auth.user.role) : null;
+    const dashboardUrl = auth.user ? getDashboardUrl() : null;
 
     return (
         <>
-            <Head title="Welcome — Car Rental" />
+            <Head title="Welcome — Ethio Car Rental" />
 
-            <div className="min-h-screen bg-background text-foreground">
+            <div className="min-h-screen text-foreground" style={{ backgroundColor: '#F8F9FA' }}>
 
                 {/* Nav */}
-                <header className="fixed inset-x-0 top-0 z-50 border-b border-border/40 bg-background/80 backdrop-blur-md">
+                <header className="fixed inset-x-0 top-0 z-50 border-b" style={{ borderColor: '#E2E4E7', backgroundColor: 'rgba(248, 249, 250, 0.9)' }}>
                     <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-6">
                         <div className="flex items-center gap-2 font-semibold tracking-tight">
-                            <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary">
-                                <Car className="h-4 w-4 text-primary-foreground" />
-                            </div>
-                            DriveEasy
+                            <img src="/images/logo.png" alt="Ethio Car Rental" className="h-7 w-7 rounded-lg object-cover" />
+                            <span style={{ color: '#1A1A1A' }}>Ethio Car Rental</span>
                         </div>
 
                         <nav className="flex items-center gap-2">
                             {dashboardUrl ? (
                                 <Link
                                     href={dashboardUrl}
-                                    className="flex items-center gap-1.5 rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                                    className="flex items-center gap-1.5 rounded-md px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                                    style={{ backgroundColor: '#1A365D' }}
                                 >
                                     Dashboard <ArrowRight className="h-3.5 w-3.5" />
                                 </Link>
@@ -73,13 +62,15 @@ export default function Welcome() {
                                 <>
                                     <Link
                                         href={login()}
-                                        className="rounded-md px-4 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
+                                        className="rounded-md px-4 py-1.5 text-sm font-medium transition-colors hover:text-foreground"
+                                        style={{ color: '#6B7280' }}
                                     >
                                         Log in
                                     </Link>
                                     <Link
                                         href={register()}
-                                        className="rounded-md bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+                                        className="rounded-md px-4 py-1.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+                                        style={{ backgroundColor: '#1A365D' }}
                                     >
                                         Get started
                                     </Link>
@@ -91,31 +82,29 @@ export default function Welcome() {
 
                 {/* Hero */}
                 <section className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden px-6 pt-14 text-center">
-                    {/* subtle grid bg */}
                     <div
-                        className="pointer-events-none absolute inset-0 opacity-[0.03]"
+                        className="pointer-events-none absolute inset-0 opacity-[0.04]"
                         style={{
-                            backgroundImage: 'linear-gradient(to right, currentColor 1px, transparent 1px), linear-gradient(to bottom, currentColor 1px, transparent 1px)',
-                            backgroundSize: '48px 48px',
+                            backgroundImage: 'radial-gradient(circle, #1A365D 1px, transparent 1px)',
+                            backgroundSize: '36px 36px',
                         }}
                     />
-                    {/* glow */}
-                    <div className="pointer-events-none absolute left-1/2 top-1/3 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/10 blur-[120px]" />
+                    <div className="pointer-events-none absolute left-1/2 top-1/3 h-[500px] w-[700px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]" style={{ backgroundColor: 'rgba(255, 107, 0, 0.08)' }} />
 
                     <div className="relative max-w-3xl space-y-6">
-                        <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-muted/60 px-3 py-1 text-xs font-medium text-muted-foreground backdrop-blur-sm">
-                            <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        <div className="inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm" style={{ border: '1px solid rgba(255, 107, 0, 0.2)', backgroundColor: 'rgba(255, 107, 0, 0.06)', color: '#FF6B00' }}>
+                            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: '#FF6B00' }} />
                             Available across Ethiopia
                         </div>
 
-                        <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-6xl">
+                        <h1 className="text-5xl font-bold leading-tight tracking-tight md:text-6xl" style={{ color: '#1A1A1A' }}>
                             Rent a car,{' '}
-                            <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent">
+                            <span className="bg-clip-text text-transparent" style={{ backgroundImage: 'linear-gradient(135deg, #1A365D, #FF6B00)' }}>
                                 your way
                             </span>
                         </h1>
 
-                        <p className="mx-auto max-w-xl text-lg text-muted-foreground">
+                        <p className="mx-auto max-w-xl text-lg" style={{ color: '#6B7280' }}>
                             The simplest way to rent a vehicle or earn by listing yours.
                             Verified owners, flexible bookings, zero hassle.
                         </p>
@@ -124,7 +113,8 @@ export default function Welcome() {
                             {dashboardUrl ? (
                                 <Link
                                     href={dashboardUrl}
-                                    className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-opacity hover:opacity-90"
+                                    className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90"
+                                    style={{ backgroundColor: '#1A365D', boxShadow: '0 4px 14px rgba(26, 54, 93, 0.3)' }}
                                 >
                                     Go to Dashboard <ArrowRight className="h-4 w-4" />
                                 </Link>
@@ -132,13 +122,15 @@ export default function Welcome() {
                                 <>
                                     <Link
                                         href={register()}
-                                        className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-opacity hover:opacity-90"
+                                        className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90"
+                                        style={{ backgroundColor: '#1A365D', boxShadow: '0 4px 14px rgba(26, 54, 93, 0.3)' }}
                                     >
                                         Start for free <ArrowRight className="h-4 w-4" />
                                     </Link>
                                     <Link
                                         href={login()}
-                                        className="rounded-lg border border-border px-6 py-3 text-sm font-medium text-foreground transition-colors hover:bg-muted"
+                                        className="rounded-lg px-6 py-3 text-sm font-medium transition-colors hover:bg-white"
+                                        style={{ border: '1px solid #E2E4E7', color: '#1A1A1A' }}
                                     >
                                         Log in
                                     </Link>
@@ -146,10 +138,10 @@ export default function Welcome() {
                             )}
                         </div>
 
-                        <div className="flex items-center justify-center gap-6 pt-2 text-xs text-muted-foreground">
+                        <div className="flex items-center justify-center gap-6 pt-2 text-xs" style={{ color: '#6B7280' }}>
                             {['No hidden fees', 'Verified vehicles', 'Instant booking'].map((t) => (
                                 <span key={t} className="flex items-center gap-1.5">
-                                    <CheckCircle className="h-3.5 w-3.5 text-green-500" />
+                                    <CheckCircle className="h-3.5 w-3.5" style={{ color: '#FF6B00' }} />
                                     {t}
                                 </span>
                             ))}
@@ -158,24 +150,25 @@ export default function Welcome() {
                 </section>
 
                 {/* Features */}
-                <section className="border-t border-border/40 bg-muted/30 px-6 py-24">
+                <section className="border-t px-6 py-24" style={{ borderColor: '#E2E4E7', backgroundColor: '#FFFFFF' }}>
                     <div className="mx-auto max-w-5xl space-y-12">
-                        <div className="text-center space-y-2">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Why DriveEasy</p>
-                            <h2 className="text-3xl font-bold tracking-tight">Everything you need, nothing you don't</h2>
+                        <div className="space-y-2 text-center">
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#FF6B00' }}>Why Ethio Car Rental</p>
+                            <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#1A1A1A' }}>Everything you need, nothing you don&apos;t</h2>
                         </div>
 
-                        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+                        <div className="grid gap-6 sm:grid-cols-3">
                             {FEATURES.map(({ icon: Icon, title, desc }) => (
                                 <div
                                     key={title}
-                                    className="group rounded-xl border border-border/60 bg-background p-6 transition-shadow hover:shadow-md"
+                                    className="group rounded-xl p-6 transition-all hover:shadow-lg"
+                                    style={{ border: '1px solid #E2E4E7', backgroundColor: '#F8F9FA' }}
                                 >
-                                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/20">
-                                        <Icon className="h-5 w-5 text-primary" />
+                                    <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-lg transition-colors group-hover:opacity-90" style={{ backgroundColor: 'rgba(26, 54, 93, 0.08)' }}>
+                                        <Icon className="h-5 w-5" style={{ color: '#1A365D' }} />
                                     </div>
-                                    <h3 className="mb-1.5 font-semibold">{title}</h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                                    <h3 className="mb-1.5 font-semibold" style={{ color: '#1A1A1A' }}>{title}</h3>
+                                    <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>{desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -183,22 +176,22 @@ export default function Welcome() {
                 </section>
 
                 {/* How it works */}
-                <section className="px-6 py-24">
+                <section className="px-6 py-24" style={{ backgroundColor: '#F8F9FA' }}>
                     <div className="mx-auto max-w-4xl space-y-12">
-                        <div className="text-center space-y-2">
-                            <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">How it works</p>
-                            <h2 className="text-3xl font-bold tracking-tight">Up and running in minutes</h2>
+                        <div className="space-y-2 text-center">
+                            <p className="text-xs font-semibold uppercase tracking-widest" style={{ color: '#FF6B00' }}>How it works</p>
+                            <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#1A1A1A' }}>Up and running in minutes</h2>
                         </div>
 
                         <div className="grid gap-8 md:grid-cols-3">
                             {STEPS.map(({ step, title, desc }, i) => (
-                                <div key={step} className="relative flex flex-col gap-3">
+                                <div key={step} className="relative flex flex-col gap-3 rounded-xl p-6" style={{ backgroundColor: '#FFFFFF', border: '1px solid #E2E4E7' }}>
                                     {i < STEPS.length - 1 && (
-                                        <div className="absolute left-[calc(100%+1rem)] top-5 hidden h-px w-8 bg-border md:block" />
+                                        <div className="absolute left-[calc(100%+1rem)] top-5 hidden h-px w-8 md:block" style={{ backgroundColor: '#E2E4E7' }} />
                                     )}
-                                    <span className="text-4xl font-bold text-primary/20">{step}</span>
-                                    <h3 className="font-semibold">{title}</h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                                    <span className="text-4xl font-bold" style={{ color: 'rgba(255, 107, 0, 0.2)' }}>{step}</span>
+                                    <h3 className="font-semibold" style={{ color: '#1A1A1A' }}>{title}</h3>
+                                    <p className="text-sm leading-relaxed" style={{ color: '#6B7280' }}>{desc}</p>
                                 </div>
                             ))}
                         </div>
@@ -207,22 +200,24 @@ export default function Welcome() {
 
                 {/* CTA banner */}
                 {!dashboardUrl && (
-                    <section className="border-t border-border/40 bg-muted/30 px-6 py-20">
+                    <section className="border-t px-6 py-20" style={{ borderColor: '#E2E4E7', backgroundColor: '#FFFFFF' }}>
                         <div className="mx-auto max-w-2xl space-y-6 text-center">
-                            <h2 className="text-3xl font-bold tracking-tight">Ready to get started?</h2>
-                            <p className="text-muted-foreground">
-                                Join thousands of customers and owners already using DriveEasy.
+                            <h2 className="text-3xl font-bold tracking-tight" style={{ color: '#1A1A1A' }}>Ready to get started?</h2>
+                            <p style={{ color: '#6B7280' }}>
+                                Join thousands of customers and owners already using Ethio Car Rental.
                             </p>
                             <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
                                 <Link
                                     href={register()}
-                                    className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-opacity hover:opacity-90"
+                                    className="flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow-lg transition-opacity hover:opacity-90"
+                                    style={{ backgroundColor: '#1A365D', boxShadow: '0 4px 14px rgba(26, 54, 93, 0.3)' }}
                                 >
                                     Create a free account <ArrowRight className="h-4 w-4" />
                                 </Link>
                                 <Link
                                     href={login()}
-                                    className="rounded-lg border border-border px-6 py-3 text-sm font-medium transition-colors hover:bg-muted"
+                                    className="rounded-lg px-6 py-3 text-sm font-medium transition-colors hover:bg-white"
+                                    style={{ border: '1px solid #E2E4E7', color: '#1A1A1A' }}
                                 >
                                     Log in
                                 </Link>
@@ -232,15 +227,13 @@ export default function Welcome() {
                 )}
 
                 {/* Footer */}
-                <footer className="border-t border-border/40 px-6 py-8">
-                    <div className="mx-auto flex max-w-6xl items-center justify-between text-xs text-muted-foreground">
-                        <div className="flex items-center gap-2 font-medium text-foreground">
-                            <div className="flex h-5 w-5 items-center justify-center rounded bg-primary">
-                                <Car className="h-3 w-3 text-primary-foreground" />
-                            </div>
-                            DriveEasy
+                <footer className="border-t px-6 py-8" style={{ borderColor: '#E2E4E7', backgroundColor: '#1A365D' }}>
+                    <div className="mx-auto flex max-w-6xl items-center justify-between text-xs">
+                        <div className="flex items-center gap-2 font-medium text-white">
+                            <img src="/images/logo.png" alt="Ethio Car Rental" className="h-5 w-5 rounded object-cover" />
+                            Ethio Car Rental
                         </div>
-                        <p>© {new Date().getFullYear()} DriveEasy. All rights reserved.</p>
+                        <p style={{ color: 'rgba(255, 255, 255, 0.6)' }}>&copy; {new Date().getFullYear()} Ethio Car Rental. All rights reserved.</p>
                     </div>
                 </footer>
 

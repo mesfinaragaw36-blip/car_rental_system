@@ -1,9 +1,10 @@
-import { Link } from '@inertiajs/react';
-import { Car } from 'lucide-react';
+import { Link, usePage } from '@inertiajs/react';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
+    const { name } = usePage().props as { name: string };
+
     return (
         <div className="relative flex min-h-svh flex-col items-center justify-center overflow-hidden bg-background px-4 py-12">
 
@@ -23,12 +24,10 @@ export default function AuthSimpleLayout({ children, title, description }: AuthL
             <div className="relative z-10 w-full max-w-[420px] space-y-8">
 
                 {/* Logo */}
-                <div className="flex flex-col items-center gap-3">
-                    <Link
-                        href={home()}
-                        className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary shadow-lg shadow-primary/30 transition-opacity hover:opacity-90"
-                    >
-                        <Car className="h-6 w-6 text-primary-foreground" />
+                <div className="flex flex-col items-center gap-4">
+                    <Link href={home()} className="flex flex-col items-center gap-2 transition-opacity hover:opacity-90">
+                        <img src="/images/logo.png" alt={name} className="h-16 w-auto rounded-2xl object-cover" />
+                        <span className="text-lg font-bold" style={{ color: '#1A365D' }}>{name}</span>
                     </Link>
                     <div className="space-y-1 text-center">
                         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>

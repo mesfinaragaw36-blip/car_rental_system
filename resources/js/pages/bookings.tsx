@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-    CheckCircle, XCircle, Search, Ban, Eye,
+    CheckCircle, XCircle, Search, Ban, Eye, Car, Calendar,
+    MapPin, CircleDollarSign, Clock, User, Activity, CheckCheck,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -36,14 +37,22 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-blue-100 text-blue-800',
-    rejected: 'bg-red-100 text-red-800',
-    paid: 'bg-green-100 text-green-800',
-    picked_up: 'bg-purple-100 text-purple-800',
-    returned: 'bg-indigo-100 text-indigo-800',
-    completed: 'bg-green-100 text-green-800',
-    cancelled: 'bg-gray-100 text-gray-800',
+    pending: 'bg-amber-50 text-amber-700 border-amber-200',
+    approved: 'bg-blue-50 text-blue-700 border-blue-200',
+    rejected: 'bg-red-50 text-red-700 border-red-200',
+    paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    picked_up: 'bg-purple-50 text-purple-700 border-purple-200',
+    returned: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+    completed: 'bg-green-50 text-green-700 border-green-200',
+    cancelled: 'bg-slate-50 text-slate-700 border-slate-200',
+};
+
+const STAT_ICONS: Record<string, React.ReactNode> = {
+    Total: <Activity className="h-5 w-5" />,
+    Pending: <Clock className="h-5 w-5 text-amber-600" />,
+    Active: <Car className="h-5 w-5 text-blue-600" />,
+    Completed: <CheckCheck className="h-5 w-5 text-emerald-600" />,
+    Cancelled: <XCircle className="h-5 w-5 text-slate-600" />,
 };
 
 const hasAssignedDriver = (booking: Booking): boolean => {
@@ -76,17 +85,20 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
     return (
         <>
             <Head title="Bookings" />
-            <div className="p-6 space-y-6">
-                <h1 className="text-3xl font-bold">Bookings</h1>
+            <div className="space-y-8 p-6">
+                <div>
+                    <h1 className="text-3xl font-bold">Bookings</h1>
+                    <p className="mt-2 text-muted-foreground">Track and manage all rental bookings in one place.</p>
+                </div>
 
                 {toast && (
-                    <div className={`p-4 rounded-lg ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
                         {toast.message}
                     </div>
                 )}
 
                 {(role === 'admin' || role === 'owner') && stats && (
-                    <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
                         {([
                             ['Total', stats.total],
                             ['Pending', stats.pending],
@@ -94,24 +106,32 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                             ['Completed', stats.completed],
                             ['Cancelled', stats.cancelled],
                         ] as const).map(([label, value]) => (
-                            <Card key={label}>
-                                <CardHeader className="py-3"><CardTitle className="text-sm">{label}</CardTitle></CardHeader>
-                                <CardContent className="py-2"><p className="text-2xl font-bold">{value}</p></CardContent>
+                            <Card key={label} className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
+                                <CardContent className="flex items-center gap-4 p-5">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50">
+                                        {STAT_ICONS[label]}
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
+                                        <p className="mt-0.5 text-2xl font-bold">{value}</p>
+                                    </div>
+                                </CardContent>
                             </Card>
                         ))}
                     </div>
                 )}
 
-                <div className="flex gap-2">
-                    <Input
-                        placeholder="Search by car or customer..."
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                        className="max-w-xs"
-                    />
-                    <Select value={statusFilter} onValueChange={(v) => {
- setStatusFilter(v); 
-}}>
+                <div className="flex flex-wrap gap-3">
+                    <div className="relative flex-1 max-w-xs">
+                        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Search by car or customer..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="pl-9"
+                        />
+                    </div>
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
                         <SelectTrigger className="w-40"><SelectValue placeholder="All statuses" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="">All</SelectItem>
@@ -121,53 +141,99 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                         </SelectContent>
                     </Select>
                     <Button variant="secondary" onClick={applyFilters}>
-                        <Search className="h-4 w-4 mr-1" /> Filter
+                        <Search className="mr-1.5 h-4 w-4" /> Filter
                     </Button>
                 </div>
 
                 {bookings.data.length === 0 ? (
-                    <p className="text-muted-foreground">No bookings found.</p>
+                    <Card className="overflow-hidden rounded-2xl">
+                        <CardContent className="flex flex-col items-center justify-center py-16">
+                            <Car className="mb-4 h-16 w-16 text-slate-400" />
+                            <h2 className="text-xl font-semibold">No bookings found</h2>
+                            <p className="mt-2 text-center text-muted-foreground">Try adjusting your filters or check back later.</p>
+                        </CardContent>
+                    </Card>
                 ) : (
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                         {bookings.data.map((booking) => (
-                            <Card key={booking.id}>
-                                <CardContent className="pt-6">
-                                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-                                        <div className="space-y-1">
-                                            <p className="text-lg font-semibold">
-                                                {booking.car.brand} {booking.car.model}
-                                                {booking.car.plate_number && <span className="text-sm text-muted-foreground"> ({booking.car.plate_number})</span>}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {booking.customer?.name ?? 'N/A'} &middot; {booking.pickup_date} &rarr; {booking.return_date}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {booking.pickup_location} &rarr; {booking.return_location}
-                                            </p>
-                                            <p className="text-sm font-medium">ETB {booking.total_price}</p>
-                                            {booking.need_driver && <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Driver requested</span>}
-                                            <span className={`inline-block px-2 py-1 text-xs font-medium rounded-full ${STATUS_STYLES[booking.status] ?? 'bg-gray-100'}`}>
-                                                {booking.status}
-                                            </span>
+                            <Card key={booking.id} className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg">
+                                <div className={`h-1.5 w-full ${STATUS_STYLES[booking.status]?.split(' ')[0] ?? 'bg-slate-200'}`} />
+                                <CardContent className="p-6">
+                                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                                        <div className="flex-1 space-y-4">
+                                            <div className="flex items-start justify-between gap-4">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
+                                                        <Car className="h-5 w-5 text-blue-700" />
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-lg font-bold">
+                                                            {booking.car.brand} {booking.car.model}
+                                                        </p>
+                                                        {booking.car.plate_number && (
+                                                            <p className="text-sm text-muted-foreground">{booking.car.plate_number}</p>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                                <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_STYLES[booking.status] ?? 'bg-slate-50 text-slate-700 border-slate-200'}`}>
+                                                    {booking.status}
+                                                </span>
+                                            </div>
+
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <User className="h-4 w-4 shrink-0" />
+                                                    <span>{booking.customer?.name ?? 'N/A'}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <CircleDollarSign className="h-4 w-4 shrink-0" />
+                                                    <span className="font-semibold text-foreground">ETB {booking.total_price}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <Calendar className="h-4 w-4 shrink-0" />
+                                                    <span>{booking.pickup_date} &rarr; {booking.return_date}</span>
+                                                </div>
+                                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                                    <MapPin className="h-4 w-4 shrink-0" />
+                                                    <span className="truncate">{booking.pickup_location} &rarr; {booking.return_location}</span>
+                                                </div>
+                                            </div>
+
+                                            {booking.need_driver && (
+                                                <span className="inline-flex items-center gap-1 rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 border border-blue-200">
+                                                    <User className="h-3 w-3" /> Driver requested
+                                                </span>
+                                            )}
                                         </div>
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button size="sm" variant="ghost" asChild>
-                                                <Link href={`/bookings/${booking.id}`}><Eye className="h-4 w-4" /></Link>
+
+                                        <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-stretch">
+                                            <Button size="sm" variant="outline" asChild>
+                                                <Link href={`/bookings/${booking.id}`}><Eye className="mr-1.5 h-4 w-4" /> Details</Link>
                                             </Button>
                                             {booking.status === 'pending' && (role === 'admin' || role === 'owner') && (
                                                 <>
-                                                    <Button size="sm" onClick={() => handleAction(booking.id, 'approve')}><CheckCircle className="h-4 w-4 mr-1" /> Approve</Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleAction(booking.id, 'reject')}><XCircle className="h-4 w-4 mr-1" /> Reject</Button>
+                                                    <Button size="sm" className="bg-emerald-600 hover:bg-emerald-700" onClick={() => handleAction(booking.id, 'approve')}>
+                                                        <CheckCircle className="mr-1.5 h-4 w-4" /> Approve
+                                                    </Button>
+                                                    <Button size="sm" variant="destructive" onClick={() => handleAction(booking.id, 'reject')}>
+                                                        <XCircle className="mr-1.5 h-4 w-4" /> Reject
+                                                    </Button>
                                                 </>
                                             )}
                                             {booking.status === 'pending' && role === 'customer' && (
-                                                <Button size="sm" variant="destructive" onClick={() => handleAction(booking.id, 'cancel')}><Ban className="h-4 w-4 mr-1" /> Cancel</Button>
+                                                <Button size="sm" variant="destructive" onClick={() => handleAction(booking.id, 'cancel')}>
+                                                    <Ban className="mr-1.5 h-4 w-4" /> Cancel
+                                                </Button>
                                             )}
                                             {booking.status === 'paid' && (role === 'admin' || role === 'owner') && (
-                                                <Button size="sm" onClick={() => handleAction(booking.id, 'picked_up')}>Mark Picked Up</Button>
+                                                <Button size="sm" onClick={() => handleAction(booking.id, 'picked_up')}>
+                                                    Mark Picked Up
+                                                </Button>
                                             )}
                                             {booking.status === 'picked_up' && (role === 'admin' || role === 'owner') && (
-                                                <Button size="sm" onClick={() => handleAction(booking.id, 'returned')}>Mark Returned</Button>
+                                                <Button size="sm" onClick={() => handleAction(booking.id, 'returned')}>
+                                                    Mark Returned
+                                                </Button>
                                             )}
                                             {role === 'customer' && booking.status === 'approved' && !booking.payment && hasAssignedDriver(booking) && (
                                                 <Button size="sm" asChild>
@@ -175,7 +241,9 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                 </Button>
                                             )}
                                             {role === 'customer' && booking.payment?.payment_status === 'paid' && (
-                                                <span className="text-green-600 text-sm font-medium">Paid</span>
+                                                <span className="flex items-center gap-1 text-sm font-medium text-emerald-600">
+                                                    <CheckCircle className="h-4 w-4" /> Paid
+                                                </span>
                                             )}
                                         </div>
                                     </div>
