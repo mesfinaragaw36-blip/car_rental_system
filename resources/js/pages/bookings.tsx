@@ -37,14 +37,14 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-amber-50 text-amber-700 border-amber-200',
-    approved: 'bg-blue-50 text-blue-700 border-blue-200',
-    rejected: 'bg-red-50 text-red-700 border-red-200',
-    paid: 'bg-emerald-50 text-emerald-700 border-emerald-200',
-    picked_up: 'bg-purple-50 text-purple-700 border-purple-200',
-    returned: 'bg-indigo-50 text-indigo-700 border-indigo-200',
-    completed: 'bg-green-50 text-green-700 border-green-200',
-    cancelled: 'bg-slate-50 text-slate-700 border-slate-200',
+    pending: 'bg-amber-50/40 text-amber-700 border-amber-200',
+    approved: 'bg-blue-50/60 text-blue-700 border-blue-200',
+    rejected: 'bg-red-50/60 text-red-700 border-red-200',
+    paid: 'bg-emerald-50/60 text-emerald-700 border-emerald-200',
+    picked_up: 'bg-purple-50/60 text-purple-700 border-purple-200',
+    returned: 'bg-indigo-50/60 text-indigo-700 border-indigo-200',
+    completed: 'bg-green-50/60 text-green-700 border-green-200',
+    cancelled: 'bg-slate-50/60 text-slate-700 border-slate-200',
 };
 
 const STAT_ICONS: Record<string, React.ReactNode> = {

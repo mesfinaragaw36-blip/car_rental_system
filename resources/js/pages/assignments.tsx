@@ -18,11 +18,11 @@ interface DriverAssignment {
 interface Props { role: string; assignments: DriverAssignment[]; }
 
 const STATUS_STYLES: Record<string, string> = {
-    claimed: 'bg-purple-50 text-purple-700 border-purple-200',
-    assigned: 'bg-amber-50 text-amber-700 border-amber-200',
-    accepted: 'bg-blue-50 text-blue-700 border-blue-200',
-    rejected: 'bg-red-50 text-red-700 border-red-200',
-    completed: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    claimed: 'bg-purple-50/60 text-purple-700 border-purple-200',
+    assigned: 'bg-amber-50/40 text-amber-700 border-amber-200',
+    accepted: 'bg-blue-50/60 text-blue-700 border-blue-200',
+    rejected: 'bg-red-50/60 text-red-700 border-red-200',
+    completed: 'bg-emerald-50/60 text-emerald-700 border-emerald-200',
 };
 
 const STATUS_DESCRIPTIONS: Record<string, string> = {
@@ -148,7 +148,7 @@ export default function Assignments({ role, assignments = [] }: Props) {
                                             </span>
                                         </div>
 
-                                        <p className="flex items-center gap-2 text-sm text-muted-foreground bg-slate-50 rounded-lg px-4 py-2.5">
+                                        <p className="text-sm text-muted-foreground">
                                             {STATUS_DESCRIPTIONS[a.status] ?? a.status}
                                         </p>
 
@@ -179,7 +179,7 @@ export default function Assignments({ role, assignments = [] }: Props) {
                                             )}
                                         </div>
 
-                                        <div className="grid gap-3 sm:grid-cols-2 rounded-xl bg-slate-50 p-4">
+                                        <div className="grid gap-3 sm:grid-cols-2 rounded-xl border p-4">
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
                                                 <span className="font-medium">Pickup:</span>
