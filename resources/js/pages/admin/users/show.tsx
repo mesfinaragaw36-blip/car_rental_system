@@ -16,7 +16,9 @@ interface OwnerProfile {
 interface DriverProfile {
     id: number;
     license_number: string;
+    license_type: string;
     experience_years: number;
+    location: string;
     availability: string;
     verification_status: string;
 }
@@ -277,8 +279,16 @@ export default function ShowUser({ user }: Props) {
                                     <p className="font-medium">{user.driver_profile.license_number}</p>
                                 </div>
                                 <div>
+                                    <p className="text-sm text-muted-foreground">License Type</p>
+                                    <p className="font-medium">{user.driver_profile.license_type ?? 'Not specified'}</p>
+                                </div>
+                                <div>
                                     <p className="text-sm text-muted-foreground">Experience</p>
                                     <p className="font-medium">{user.driver_profile.experience_years} years</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Location</p>
+                                    <p className="font-medium">{user.driver_profile.location ?? 'Not specified'}</p>
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground">Availability</p>

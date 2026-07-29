@@ -88,7 +88,7 @@ class DashboardStatisticsTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         User::factory()->count(3)->create(['role' => 'customer']);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertOk();
         $response->assertInertia(
@@ -105,7 +105,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createCar($owner, ['approval_status' => 'pending']);
         $this->createCar($owner, ['approval_status' => 'pending']);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertInertia(fn ($page) => $page
             ->where('stats.total_vehicles', 3)
@@ -123,7 +123,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createBooking($owner, $customer, $car);
         $this->createBooking($owner, $customer, $car, ['status' => 'approved']);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.total_bookings', 2)
@@ -143,7 +143,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createPayment($paid, ['amount' => 200.00, 'payment_status' => 'paid']);
         $this->createPayment($pending, ['amount' => 500.00, 'payment_status' => 'pending']);
 
-        $response = $this->actingAs($admin)->get(route('admin.dashboard'));
+        $response = $this->actingAs($admin)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.total_revenue', '200.00')
@@ -161,7 +161,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createCar($owner);
         $this->createCar($otherOwner);
 
-        $response = $this->actingAs($owner)->get(route('owner.dashboard'));
+        $response = $this->actingAs($owner)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.total_vehicles', 2)
@@ -181,7 +181,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createBooking($owner, $customer, $ownCar, ['status' => 'paid']);
         $this->createBooking($otherOwner, $customer, $otherCar, ['status' => 'approved']);
 
-        $response = $this->actingAs($owner)->get(route('owner.dashboard'));
+        $response = $this->actingAs($owner)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.active_bookings', 2)
@@ -203,7 +203,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createPayment($ownBooking, ['amount' => 300.00]);
         $this->createPayment($otherBooking, ['amount' => 500.00]);
 
-        $response = $this->actingAs($owner)->get(route('owner.dashboard'));
+        $response = $this->actingAs($owner)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.total_earnings', '300.00')
@@ -222,7 +222,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createBooking($owner, $customer, $car, ['status' => 'approved']);
         $this->createBooking($owner, $customer, $car, ['status' => 'completed']);
 
-        $response = $this->actingAs($customer)->get(route('customer.dashboard'));
+        $response = $this->actingAs($customer)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.active_bookings', 2)
@@ -239,7 +239,7 @@ class DashboardStatisticsTest extends TestCase
         $this->createBooking($owner, $customer, $car, ['status' => 'returned']);
         $this->createBooking($owner, $customer, $car, ['status' => 'pending']);
 
-        $response = $this->actingAs($customer)->get(route('customer.dashboard'));
+        $response = $this->actingAs($customer)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.past_bookings', 2)
@@ -261,7 +261,7 @@ class DashboardStatisticsTest extends TestCase
             'return_date' => now()->addDays(3)->toDateString(),
         ]);
 
-        $response = $this->actingAs($customer)->get(route('customer.dashboard'));
+        $response = $this->actingAs($customer)->get(route('dashboard'));
 
         $response->assertInertia(function ($page) {
             $returns = $page->toArray()['props']['stats']['upcoming_returns'];
@@ -283,7 +283,7 @@ class DashboardStatisticsTest extends TestCase
             ]);
         }
 
-        $response = $this->actingAs($customer)->get(route('customer.dashboard'));
+        $response = $this->actingAs($customer)->get(route('dashboard'));
 
         $response->assertInertia(function ($page) {
             $returns = $page->toArray()['props']['stats']['upcoming_returns'];
@@ -318,7 +318,7 @@ class DashboardStatisticsTest extends TestCase
             'status' => 'accepted',
         ]);
 
-        $response = $this->actingAs($driver)->get(route('driver.dashboard'));
+        $response = $this->actingAs($driver)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.pending_assignments', 1)
@@ -350,7 +350,7 @@ class DashboardStatisticsTest extends TestCase
             'status' => 'accepted',
         ]);
 
-        $response = $this->actingAs($driver)->get(route('driver.dashboard'));
+        $response = $this->actingAs($driver)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.active_trips', 2)
@@ -374,7 +374,7 @@ class DashboardStatisticsTest extends TestCase
             'status' => 'completed',
         ]);
 
-        $response = $this->actingAs($driver)->get(route('driver.dashboard'));
+        $response = $this->actingAs($driver)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.completed_trips', 1)
@@ -399,7 +399,7 @@ class DashboardStatisticsTest extends TestCase
             'status' => 'assigned',
         ]);
 
-        $response = $this->actingAs($driver)->get(route('driver.dashboard'));
+        $response = $this->actingAs($driver)->get(route('dashboard'));
 
         $response->assertInertia(
             fn ($page) => $page->where('stats.pending_assignments', 0)

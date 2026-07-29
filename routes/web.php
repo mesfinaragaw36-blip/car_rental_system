@@ -12,6 +12,8 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BrowseCarController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DriverBookingController;
+use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -31,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
 
     // Bookings
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
+    Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
     Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve');
     Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
@@ -56,10 +59,21 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cars/{car}', [BrowseCarController::class, 'show'])->name('cars.show');
     Route::post('/cars/{car}/book', [BrowseCarController::class, 'book'])->name('cars.book');
 
-    // Assignments (driver)
+    // Assignments
     Route::get('/assignments', [AssignmentController::class, 'index'])->name('assignments.index');
     Route::post('/assignments/{assignment}/accept', [AssignmentController::class, 'accept'])->name('assignments.accept');
+    Route::post('/assignments/{assignment}/reject', [AssignmentController::class, 'reject'])->name('assignments.reject');
     Route::post('/assignments/{assignment}/complete', [AssignmentController::class, 'complete'])->name('assignments.complete');
+    Route::post('/assignments/{assignment}/approve-claim', [AssignmentController::class, 'approveClaim'])->name('assignments.approve-claim');
+    Route::post('/assignments/{assignment}/reject-claim', [AssignmentController::class, 'rejectClaim'])->name('assignments.reject-claim');
+
+    // Driver features
+    Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
+    Route::post('/driver/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
+    Route::post('/driver/toggle-availability', [DriverProfileController::class, 'toggleAvailability'])->name('driver.toggle-availability');
+    Route::get('/driver/available-bookings', [DriverBookingController::class, 'available'])->name('driver.available-bookings');
+    Route::post('/driver/claim/{booking}', [DriverBookingController::class, 'claim'])->name('driver.claim');
+    Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
 
     // Admin-only routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {

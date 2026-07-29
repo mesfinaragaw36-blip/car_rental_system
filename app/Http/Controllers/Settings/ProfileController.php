@@ -70,7 +70,10 @@ class ProfileController extends Controller
                 ['user_id' => $user->id],
                 Arr::only($validated, [
                     'license_number',
+                    'license_type',
                     'experience_years',
+                    'daily_rate',
+                    'location',
                     'availability',
                 ])
             );

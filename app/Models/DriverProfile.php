@@ -10,7 +10,10 @@ class DriverProfile extends Model
     protected $fillable = [
         'user_id',
         'license_number',
+        'license_type',
         'experience_years',
+        'daily_rate',
+        'location',
         'availability',
         'verification_status',
     ];
@@ -19,6 +22,7 @@ class DriverProfile extends Model
     {
         return [
             'experience_years' => 'integer',
+            'daily_rate' => 'decimal:2',
         ];
     }
 

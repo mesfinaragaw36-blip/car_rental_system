@@ -3,6 +3,7 @@ import {
     LayoutGrid, Car, Users, CreditCard,
     Shield, UserCog, BookOpen, Settings, Building2, Wrench, Search,
 } from 'lucide-react';
+
 import AppLogo from '@/components/app-logo';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -72,6 +73,7 @@ routes.forEach((r) => allowedRoutes.add(r));
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
                 { title: 'My Vehicles', href: '/vehicles', icon: Car },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
+                { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Received Payments', href: '/payments', icon: CreditCard },
             ];
 
@@ -79,6 +81,8 @@ routes.forEach((r) => allowedRoutes.add(r));
             return [
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
+                { title: 'Available Trips', href: '/driver/available-bookings', icon: Search },
+                { title: 'Trip History', href: '/driver/trip-history', icon: BookOpen },
             ];
 
         default: // customer

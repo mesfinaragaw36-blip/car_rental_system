@@ -88,7 +88,7 @@ class AssignmentActionsTest extends TestCase
 
         $response = $this
             ->actingAs($driver)
-            ->post(route('driver.assignments.accept', ['assignment' => $assignment]));
+            ->post(route('assignments.accept', ['assignment' => $assignment]));
 
         $response->assertRedirect();
 
@@ -109,7 +109,7 @@ class AssignmentActionsTest extends TestCase
 
         $response = $this
             ->actingAs($driver)
-            ->post(route('driver.assignments.complete', ['assignment' => $assignment]));
+            ->post(route('assignments.complete', ['assignment' => $assignment]));
 
         $response->assertRedirect();
 
@@ -131,7 +131,7 @@ class AssignmentActionsTest extends TestCase
 
         $response = $this
             ->actingAs($driver)
-            ->post(route('driver.assignments.accept', ['assignment' => $assignment]));
+            ->post(route('assignments.accept', ['assignment' => $assignment]));
 
         $response->assertForbidden();
 
@@ -152,7 +152,7 @@ class AssignmentActionsTest extends TestCase
 
         $response = $this
             ->actingAs($driver)
-            ->post(route('driver.assignments.complete', ['assignment' => $assignment]));
+            ->post(route('assignments.complete', ['assignment' => $assignment]));
 
         $response->assertRedirect();
         $response->assertSessionHas('toast.type', 'error');
@@ -174,7 +174,7 @@ class AssignmentActionsTest extends TestCase
 
         $response = $this
             ->actingAs($driver)
-            ->post(route('driver.assignments.accept', ['assignment' => $assignment]));
+            ->post(route('assignments.accept', ['assignment' => $assignment]));
 
         $response->assertRedirect();
         $response->assertSessionHas('toast.type', 'error');

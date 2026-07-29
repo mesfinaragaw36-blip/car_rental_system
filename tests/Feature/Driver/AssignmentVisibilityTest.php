@@ -82,10 +82,10 @@ class AssignmentVisibilityTest extends TestCase
     {
         $driver = $this->createDriver();
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page->component('driver/assignments'));
+        $response->assertInertia(fn ($page) => $page->component('assignments'));
     }
 
     public function test_assignment_appears_after_owner_assigns_driver(): void
@@ -98,7 +98,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertOk();
         $response->assertInertia(function ($page) use ($booking) {
@@ -118,7 +118,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignment = $page->toArray()['props']['assignments'][0];
@@ -143,7 +143,7 @@ class AssignmentVisibilityTest extends TestCase
         $this->assignDriver($bookingB, $driver, $owner, 'accepted');
         $this->assignDriver($bookingC, $driver, $owner, 'completed');
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
@@ -162,7 +162,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $otherDriver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
@@ -170,7 +170,7 @@ class AssignmentVisibilityTest extends TestCase
         });
     }
 
-    public function test_rejected_assignments_are_not_shown(): void
+    public function test_rejected_assignments_are_shown_in_history(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -180,11 +180,12 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner, 'rejected');
 
-        $response = $this->actingAs($driver)->get(route('driver.assignments'));
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
-            $this->assertCount(0, $assignments);
+            $this->assertCount(1, $assignments);
+            $this->assertEquals('rejected', $assignments[0]['status']);
         });
     }
 }

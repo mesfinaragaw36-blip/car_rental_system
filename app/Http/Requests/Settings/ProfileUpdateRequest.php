@@ -31,7 +31,10 @@ class ProfileUpdateRequest extends FormRequest
         if ($this->user()->role === 'driver') {
             $rules = array_merge($rules, [
                 'license_number' => ['required', 'string', 'max:255'],
-                'experience_years' => ['required', 'integer', 'min:0'],
+                'license_type' => ['required', 'string', Rule::in(['Light Vehicle', 'Heavy Vehicle', 'Motorcycle', 'Public Service'])],
+                'experience_years' => ['required', 'integer', 'min:0', 'max:50'],
+                'daily_rate' => ['required', 'numeric', 'min:0'],
+                'location' => ['required', 'string', 'max:255'],
                 'availability' => ['required', Rule::in(['available', 'unavailable'])],
             ]);
         }

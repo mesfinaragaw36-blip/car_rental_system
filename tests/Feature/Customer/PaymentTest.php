@@ -63,11 +63,11 @@ class PaymentTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), [
+            ->post(route('payments.store', $booking), [
                 'payment_method' => 'Telebirr',
             ]);
 
-        $response->assertRedirect(route('customer.bookings.index'));
+        $response->assertRedirect(route('bookings.index'));
 
         $this->assertDatabaseHas('payments', [
             'booking_id' => $booking->id,
@@ -91,7 +91,7 @@ class PaymentTest extends TestCase
 
         $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), [
+            ->post(route('payments.store', $booking), [
                 'payment_method' => 'Bank Transfer',
                 'transaction_reference' => 'TXN-999888',
             ]);
@@ -111,7 +111,7 @@ class PaymentTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), [
+            ->post(route('payments.store', $booking), [
                 'payment_method' => 'Cash',
             ]);
 
@@ -138,7 +138,7 @@ class PaymentTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), [
+            ->post(route('payments.store', $booking), [
                 'payment_method' => 'Telebirr',
             ]);
 
@@ -158,7 +158,7 @@ class PaymentTest extends TestCase
 
         $response = $this
             ->actingAs($otherCustomer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), [
+            ->post(route('payments.store', $booking), [
                 'payment_method' => 'Cash',
             ]);
 
@@ -175,7 +175,7 @@ class PaymentTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.pay', ['booking' => $booking]), []);
+            ->post(route('payments.store', $booking), []);
 
         $response->assertSessionHasErrors(['payment_method']);
         $this->assertDatabaseMissing('payments', ['booking_id' => $booking->id]);

@@ -11,7 +11,7 @@ interface Car {
     id: number; brand: string; model: string; year: number;
     daily_rate: string; fuel_type: string; transmission: string;
     category: string; color: string; engine_size?: string; mileage?: number;
-    seats?: number; description?: string; status: string; photo: string | null;
+    seats?: number; description?: string; availability_status: string; photo: string | null;
     car_type_name?: { name: string };
     owner: { id: number; name: string; phone: string; email: string };
     images?: { id: number; image_path: string; is_primary: boolean }[];
@@ -85,7 +85,7 @@ export default function CarDetails({ car, role }: Props) {
                     </div>
                 </div>
 
-                {role === 'customer' && car.status === 'available' && (
+                {role === 'customer' && car.availability_status === 'available' && (
                     <Card>
                         <CardHeader><CardTitle>Book This Car</CardTitle></CardHeader>
                         <CardContent>

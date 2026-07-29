@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\BookingDriver;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -62,8 +63,30 @@ class PaymentController extends Controller
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
         }
 
+        if ($booking->need_driver) {
+            $hasDriver = $booking->driverAssignment()
+                ->whereIn('status', [BookingDriver::STATUS_ASSIGNED, BookingDriver::STATUS_ACCEPTED])
+                ->exists();
+
+            if (! $hasDriver) {
+                return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'Payment is not available until a driver is assigned to this trip.']);
+            }
+        }
+
+        $booking->load('car');
+
         return Inertia::render('payment', [
-            'booking' => $booking->load('car'),
+            'booking' => [
+                'id' => $booking->id,
+                'total_price' => $booking->total_price,
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'car' => $booking->car->only(['brand', 'model', 'plate_number']),
+                'need_driver' => $booking->need_driver,
+                'driver' => $booking->driverAssignment?->driver ? [
+                    'name' => $booking->driverAssignment->driver->name,
+                ] : null,
+            ],
             'role' => $user->role,
         ]);
     }
@@ -78,14 +101,30 @@ class PaymentController extends Controller
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking cannot be paid.']);
         }
 
+        if ($booking->need_driver) {
+            $hasDriver = $booking->driverAssignment()
+                ->whereIn('status', [BookingDriver::STATUS_ASSIGNED, BookingDriver::STATUS_ACCEPTED])
+                ->exists();
+
+            if (! $hasDriver) {
+                return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'Payment is not available until a driver is assigned.']);
+            }
+        }
+
+        if ($booking->payment) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
+        }
+
         $validated = $request->validate([
-            'payment_method' => 'required|in:cash,bank_transfer,telebirr,chapa',
+            'payment_method' => 'required|in:Cash,Bank Transfer,Telebirr,CBE Birr',
+            'transaction_reference' => 'nullable|string|max:255',
         ]);
 
         Payment::create([
             'booking_id' => $booking->id,
             'amount' => $booking->total_price,
             'payment_method' => $validated['payment_method'],
+            'transaction_reference' => $validated['transaction_reference'] ?? null,
             'payment_status' => 'paid',
             'paid_at' => now(),
         ]);

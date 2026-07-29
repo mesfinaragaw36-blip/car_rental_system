@@ -89,11 +89,11 @@ class BookingManagementTest extends TestCase
         $ownedBooking = $this->createBooking($owner, $customer, $ownedCar);
         $otherBooking = $this->createBooking($otherOwner, $customer, $otherCar);
 
-        $response = $this->actingAs($owner)->get(route('owner.bookings'));
+        $response = $this->actingAs($owner)->get(route('bookings.index'));
 
         $response->assertOk();
 
-        $bookings = collect($response->original->getData()['page']['props']['bookings']);
+        $bookings = collect($response->original->getData()['page']['props']['bookings']['data'] ?? $response->original->getData()['page']['props']['bookings']);
 
         $this->assertTrue($bookings->contains('id', $ownedBooking->id));
         $this->assertFalse($bookings->contains('id', $otherBooking->id));
@@ -108,7 +108,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.approve', ['booking' => $booking]));
+            ->post(route('bookings.approve', $booking));
 
         $response->assertRedirect();
 
@@ -127,7 +127,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.reject', ['booking' => $booking]));
+            ->post(route('bookings.reject', $booking));
 
         $response->assertRedirect();
 
@@ -147,7 +147,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.approve', ['booking' => $booking]));
+            ->post(route('bookings.approve', $booking));
 
         $response->assertForbidden();
 
@@ -167,7 +167,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.reject', ['booking' => $booking]));
+            ->post(route('bookings.reject', $booking));
 
         $response->assertForbidden();
 
@@ -186,7 +186,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.approve', ['booking' => $booking]));
+            ->post(route('bookings.approve', $booking));
 
         $response->assertRedirect();
         $response->assertSessionHas('toast.type', 'error');
@@ -202,7 +202,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.assign-driver', ['booking' => $booking]), [
+            ->post(route('bookings.assign-driver', $booking), [
                 'driver_id' => $driver->id,
             ]);
 
@@ -224,7 +224,7 @@ class BookingManagementTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.bookings.assign-driver', ['booking' => $booking]), [
+            ->post(route('bookings.assign-driver', $booking), [
                 'driver_id' => $driver->id,
             ]);
 

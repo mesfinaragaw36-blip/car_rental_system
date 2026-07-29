@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +17,7 @@ class BookingController extends Controller
     {
         $user = auth()->user();
 
-        $query = Booking::with(['customer', 'car', 'payment', 'driverAssignment.driver']);
+        $query = Booking::with(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver']);
 
         if ($user->role === 'admin') {
             if ($request->filled('status')) {
@@ -37,17 +38,9 @@ class BookingController extends Controller
 
         $bookings = $query->latest()->paginate(15)->withQueryString();
 
-        $availableDrivers = collect();
-        if ($user->role === 'owner' || $user->role === 'admin') {
-            $availableDrivers = User::where('role', 'driver')
-                ->whereHas('driverProfile', fn ($q) => $q->where('availability', 'available'))
-                ->get(['id', 'name', 'phone']);
-        }
-
         return Inertia::render('bookings', [
             'role' => $user->role,
             'bookings' => $bookings,
-            'availableDrivers' => $availableDrivers,
             'filters' => $request->only(['status', 'search']),
             'stats' => $user->role === 'admin' ? [
                 'total' => Booking::count(),
@@ -56,6 +49,41 @@ class BookingController extends Controller
                 'completed' => Booking::where('status', 'completed')->count(),
                 'cancelled' => Booking::whereIn('status', ['cancelled', 'rejected'])->count(),
             ] : null,
+        ]);
+    }
+
+    public function show(Booking $booking): Response
+    {
+        $user = auth()->user();
+        if ($booking->customer_id !== $user->id && $booking->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone']);
+
+        $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
+
+        return Inertia::render('booking-details', [
+            'booking' => [
+                'id' => $booking->id,
+                'status' => $booking->status,
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'pickup_location' => $booking->pickup_location,
+                'return_location' => $booking->return_location,
+                'total_price' => $booking->total_price,
+                'need_driver' => $booking->need_driver,
+                'notes' => $booking->notes,
+                'days' => $days,
+                'daily_rate' => $days > 0 ? number_format($booking->total_price / $days, 2) : '0.00',
+                'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'email' => $booking->customer->email] : null,
+                'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
+                'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
+                'payment' => $booking->payment ? ['payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
+                'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
+                'driver_status' => $booking->driverAssignment?->status,
+            ],
+            'role' => $user->role,
         ]);
     }
 

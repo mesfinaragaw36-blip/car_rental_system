@@ -45,7 +45,7 @@ class BookingSubmissionTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(5)->toDateString(),
                 'pickup_location' => 'Bole, Addis Ababa',
@@ -72,7 +72,7 @@ class BookingSubmissionTest extends TestCase
 
         $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(1)->toDateString(),
                 'return_date' => now()->addDays(4)->toDateString(), // 3 days
                 'pickup_location' => 'Addis Ababa',
@@ -93,7 +93,7 @@ class BookingSubmissionTest extends TestCase
 
         $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(4)->toDateString(),
                 'pickup_location' => 'Addis Ababa',
@@ -115,7 +115,7 @@ class BookingSubmissionTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_location' => 'Addis Ababa',
                 'return_location' => 'Addis Ababa',
             ]);
@@ -132,7 +132,7 @@ class BookingSubmissionTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(5)->toDateString(),
                 'return_date' => now()->addDays(3)->toDateString(),
                 'pickup_location' => 'Addis Ababa',
@@ -148,7 +148,7 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $car = $this->createCar($owner);
 
-        $response = $this->post(route('customer.bookings.store', ['car' => $car]), [
+        $response = $this->post(route('cars.book', $car), [
             'pickup_date' => now()->addDays(2)->toDateString(),
             'return_date' => now()->addDays(5)->toDateString(),
             'pickup_location' => 'Addis Ababa',
@@ -169,7 +169,7 @@ class BookingSubmissionTest extends TestCase
 
         $response = $this
             ->actingAs($customer)
-            ->post(route('customer.bookings.store', ['car' => $car]), [
+            ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(5)->toDateString(),
                 'pickup_location' => 'Addis Ababa',

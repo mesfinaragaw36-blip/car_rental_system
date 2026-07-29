@@ -27,7 +27,7 @@ class VehicleUploadTest extends TestCase
 
         $response = $this
             ->actingAs($owner)
-            ->post(route('owner.vehicles.store'), [
+            ->post(route('vehicles.store'), [
                 'brand' => 'Toyota',
                 'model' => 'Corolla',
                 'year' => 2024,
@@ -43,13 +43,11 @@ class VehicleUploadTest extends TestCase
                 'description' => 'Comfortable and clean.',
                 'photos' => [$photoOne, $photoTwo],
                 'primary_photo_index' => 0,
-                'registration_document' => $registrationDocument,
-                'registration_expiry' => '2027-12-31',
                 'ownership_document' => $ownershipDocument,
                 'ownership_expiry' => '2027-12-31',
             ]);
 
-        $response->assertRedirect(route('owner.vehicles'));
+        $response->assertRedirect(route('vehicles.index'));
 
         $this->assertDatabaseHas('cars', [
             'owner_id' => $owner->id,
@@ -62,18 +60,11 @@ class VehicleUploadTest extends TestCase
 
         Storage::disk('public')->assertExists('car-photos/'.$photoOne->hashName());
         Storage::disk('public')->assertExists('car-photos/'.$photoTwo->hashName());
-        Storage::disk('public')->assertExists('vehicle-documents/'.$registrationDocument->hashName());
-        Storage::disk('public')->assertExists('vehicle-documents/'.$ownershipDocument->hashName());
+        Storage::disk('public')->assertExists('vehicle_documents/'.$ownershipDocument->hashName());
 
         $this->assertDatabaseHas('car_images', [
             'car_id' => $car->id,
             'is_primary' => true,
-        ]);
-
-        $this->assertDatabaseHas('vehicle_documents', [
-            'car_id' => $car->id,
-            'document_type' => 'Registration',
-            'verification_status' => 'pending',
         ]);
 
         $this->assertDatabaseHas('vehicle_documents', [

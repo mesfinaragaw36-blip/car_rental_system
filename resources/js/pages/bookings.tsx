@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
-    CheckCircle, XCircle, Search, Ban,
+    CheckCircle, XCircle, Search, Ban, Eye,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -9,7 +9,7 @@ import { Input } from '@/components/ui/input';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { index as bookingsIndex, approve, reject, cancel, assignDriver, pickedUp, returned } from '@/routes/bookings';
+import { index as bookingsIndex, approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
 
 interface Booking {
     id: number;
@@ -25,16 +25,12 @@ interface Booking {
     owner?: { id: number; name: string };
     car: { id: number; brand: string; model: string; year?: number; plate_number?: string };
     payment: { payment_method: string; payment_status: string; paid_at: string | null } | null;
-    assigned_driver?: { id: number; name: string } | null;
-    driver_assignment?: { driver: { id: number; name: string } | null } | null;
+    driver_assignment?: { driver: { id: number; name: string } | null; status?: string } | null;
 }
-
-interface AvailableDriver { id: number; name: string; phone: string; }
 
 interface Props {
     role: string;
     bookings: { data: Booking[]; links: { url: string | null; label: string; active: boolean }[] };
-    availableDrivers?: AvailableDriver[];
     filters?: { status?: string; search?: string };
     stats?: { total: number; pending: number; active: number; completed: number; cancelled: number };
 }
@@ -50,13 +46,17 @@ const STATUS_STYLES: Record<string, string> = {
     cancelled: 'bg-gray-100 text-gray-800',
 };
 
-export default function Bookings({ role, bookings, availableDrivers = [], filters, stats }: Props) {
+const hasAssignedDriver = (booking: Booking): boolean => {
+    if (!booking.need_driver) return true;
+    const status = booking.driver_assignment?.status;
+    return status === 'assigned' || status === 'accepted';
+};
+
+export default function Bookings({ role, bookings, filters, stats }: Props) {
     const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
     const toast = p.toast;
     const [searchTerm, setSearchTerm] = useState(filters?.search ?? '');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? '');
-    const [assigningId, setAssigningId] = useState<number | null>(null);
-    const [selectedDriver, setSelectedDriver] = useState('');
 
     const handleAction = (bookingId: number, action: string) => {
         const routeMap: Record<string, any> = {
@@ -69,21 +69,8 @@ export default function Bookings({ role, bookings, availableDrivers = [], filter
         router.post(routeMap[action](), {}, { preserveScroll: true });
     };
 
-    const handleAssignDriver = (bookingId: number) => {
-        if (!selectedDriver) {
-return;
-}
-
-        router.post(assignDriver.url({ booking: bookingId }), { driver_id: selectedDriver }, {
-            preserveScroll: true,
-            onSuccess: () => {
- setAssigningId(null); setSelectedDriver(''); 
-},
-        });
-    };
-
     const applyFilters = () => {
-        router.get(bookingsIndex.url({ query: { search: searchTerm, status: statusFilter } }), {}, { preserveState: true });
+        router.get('/bookings', { search: searchTerm || undefined, status: statusFilter || undefined }, { preserveState: true, replace: true });
     };
 
     return (
@@ -164,6 +151,9 @@ return;
                                             </span>
                                         </div>
                                         <div className="flex flex-wrap gap-2">
+                                            <Button size="sm" variant="ghost" asChild>
+                                                <Link href={`/bookings/${booking.id}`}><Eye className="h-4 w-4" /></Link>
+                                            </Button>
                                             {booking.status === 'pending' && (role === 'admin' || role === 'owner') && (
                                                 <>
                                                     <Button size="sm" onClick={() => handleAction(booking.id, 'approve')}><CheckCircle className="h-4 w-4 mr-1" /> Approve</Button>
@@ -173,40 +163,18 @@ return;
                                             {booking.status === 'pending' && role === 'customer' && (
                                                 <Button size="sm" variant="destructive" onClick={() => handleAction(booking.id, 'cancel')}><Ban className="h-4 w-4 mr-1" /> Cancel</Button>
                                             )}
-                                            {booking.status === 'approved' && (role === 'admin' || role === 'owner') && (
-                                                <>
-                                                    {assigningId === booking.id ? (
-                                                        <div className="flex gap-1 items-center">
-                                                            <Select value={selectedDriver} onValueChange={setSelectedDriver}>
-                                                                <SelectTrigger className="w-40"><SelectValue placeholder="Select driver" /></SelectTrigger>
-                                                                <SelectContent>
-                                                                    {availableDrivers.map((d) => (
-                                                                        <SelectItem key={d.id} value={String(d.id)}>{d.name}</SelectItem>
-                                                                    ))}
-                                                                </SelectContent>
-                                                            </Select>
-                                                            <Button size="sm" onClick={() => handleAssignDriver(booking.id)}>Assign</Button>
-                                                            <Button size="sm" variant="ghost" onClick={() => {
- setAssigningId(null); setSelectedDriver(''); 
-}}>Cancel</Button>
-                                                        </div>
-                                                    ) : (
-                                                        <Button size="sm" variant="outline" onClick={() => setAssigningId(booking.id)}>Assign Driver</Button>
-                                                    )}
-                                                </>
-                                            )}
                                             {booking.status === 'paid' && (role === 'admin' || role === 'owner') && (
                                                 <Button size="sm" onClick={() => handleAction(booking.id, 'picked_up')}>Mark Picked Up</Button>
                                             )}
                                             {booking.status === 'picked_up' && (role === 'admin' || role === 'owner') && (
                                                 <Button size="sm" onClick={() => handleAction(booking.id, 'returned')}>Mark Returned</Button>
                                             )}
-                                            {role === 'customer' && booking.status === 'approved' && booking.payment?.payment_status === 'pending' && (
+                                            {role === 'customer' && booking.status === 'approved' && !booking.payment && hasAssignedDriver(booking) && (
                                                 <Button size="sm" asChild>
                                                     <Link href={`/bookings/${booking.id}/payment`}>Pay Now</Link>
                                                 </Button>
                                             )}
-                                            {role === 'customer' && booking.payment?.payment_status === 'completed' && (
+                                            {role === 'customer' && booking.payment?.payment_status === 'paid' && (
                                                 <span className="text-green-600 text-sm font-medium">Paid</span>
                                             )}
                                         </div>

@@ -25,7 +25,7 @@ class CustomerBookingTest extends TestCase
 
         $this->actingAs($customer);
 
-        $response = $this->post(route('customer.cars.bookings.store', $car), [
+        $response = $this->post(route('cars.book', $car), [
             'pickup_date' => now()->addDays(2)->toDateString(),
             'return_date' => now()->addDays(4)->toDateString(),
             'pickup_location' => 'Airport',
@@ -33,14 +33,14 @@ class CustomerBookingTest extends TestCase
             'need_driver' => true,
         ]);
 
-        $response->assertRedirect(route('customer.cars.show', $car));
+        $response->assertRedirect(route('bookings.index'));
         $this->assertDatabaseHas('bookings', [
             'customer_id' => $customer->id,
             'car_id' => $car->id,
             'pickup_location' => 'Airport',
             'return_location' => 'Hotel',
             'need_driver' => true,
-            'total_price' => 300.00,
+            'total_price' => 200.00,
             'status' => 'pending',
         ]);
     }

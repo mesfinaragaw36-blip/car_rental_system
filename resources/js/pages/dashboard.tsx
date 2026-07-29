@@ -18,7 +18,14 @@ interface CustomerStats {
 }
 interface DriverStats { pending_assignments: number; active_trips: number; completed_trips: number; }
 
-interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; }
+interface Assignment {
+    id: number; status: string; assigned_at: string | null;
+    booking: { id: number; pickup_date: string; return_date: string; pickup_location: string; return_location: string };
+    customer: { name: string; phone: string };
+    car: { brand: string; model: string; year: number; plate_number: string };
+}
+
+interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; recentAssignments?: Assignment[]; }
 
 function StatCard({ title, value, icon, href, accent }: {
     title: string; value: string | number; icon: React.ReactNode; href?: string; accent?: string;
@@ -38,7 +45,12 @@ function StatCard({ title, value, icon, href, accent }: {
     return href ? <Link href={href}>{inner}</Link> : inner;
 }
 
-export default function Dashboard({ role, stats }: Props) {
+const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
+    assigned: 'bg-yellow-100 text-yellow-800',
+    accepted: 'bg-blue-100 text-blue-800',
+};
+
+export default function Dashboard({ role, stats, recentAssignments = [] }: Props) {
     return (
         <>
             <Head title="Dashboard" />
@@ -110,11 +122,49 @@ export default function Dashboard({ role, stats }: Props) {
                     const s = stats as DriverStats;
 
                     return (
-                        <div className="grid gap-4 md:grid-cols-3">
-                            <StatCard title="Pending" value={s.pending_assignments} icon={<Clock className="h-4 w-4" />} href="/assignments" accent="text-yellow-600" />
-                            <StatCard title="Active Trips" value={s.active_trips} icon={<Truck className="h-4 w-4" />} href="/assignments" />
-                            <StatCard title="Completed" value={s.completed_trips} icon={<CheckCircle className="h-4 w-4" />} />
-                        </div>
+                        <>
+                            <div className="grid gap-4 md:grid-cols-3">
+                                <StatCard title="Pending" value={s.pending_assignments} icon={<Clock className="h-4 w-4" />} href="/assignments" accent="text-yellow-600" />
+                                <StatCard title="Active Trips" value={s.active_trips} icon={<Truck className="h-4 w-4" />} href="/assignments" />
+                                <StatCard title="Completed" value={s.completed_trips} icon={<CheckCircle className="h-4 w-4" />} />
+                            </div>
+                            <Card>
+                                <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardTitle>Current Assignments</CardTitle>
+                                    <Link href="/assignments" className="text-xs text-blue-600 hover:underline">View all →</Link>
+                                </CardHeader>
+                                <CardContent>
+                                    {recentAssignments.length === 0 ? (
+                                        <p className="text-sm text-muted-foreground">
+                                            No active assignments. The owner will assign you once a customer books a vehicle with a driver.
+                                        </p>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {recentAssignments.map((assignment) => (
+                                                <div key={assignment.id} className="rounded-lg border p-4 space-y-2">
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <p className="font-semibold">
+                                                                {assignment.car.brand} {assignment.car.model} ({assignment.car.year})
+                                                            </p>
+                                                            <p className="text-sm text-muted-foreground">{assignment.car.plate_number}</p>
+                                                        </div>
+                                                        <span className={`rounded-full px-3 py-1 text-xs font-medium ${ASSIGNMENT_STATUS_STYLES[assignment.status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                                            {assignment.status}
+                                                        </span>
+                                                    </div>
+                                                    <p className="text-sm"><span className="font-medium">Customer: </span>{assignment.customer.name} &middot; {assignment.customer.phone}</p>
+                                                    <div className="text-sm space-y-0.5">
+                                                        <p><span className="font-medium">Pickup: </span>{assignment.booking.pickup_date} — {assignment.booking.pickup_location}</p>
+                                                        <p><span className="font-medium">Return: </span>{assignment.booking.return_date} — {assignment.booking.return_location}</p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </CardContent>
+                            </Card>
+                        </>
                     );
                 })()}
             </div>
