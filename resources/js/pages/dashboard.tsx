@@ -1,8 +1,20 @@
 import { Head, Link } from '@inertiajs/react';
 import {
-    Users, Car, Clock, BookOpen, CircleDollarSign, UserCog,
-    CheckCircle, Activity, Truck, Shield,
-} from 'lucide-react';
+    Users,
+    Car,
+    Clock,
+    BookOpen,
+    CircleDollarSign,
+    UserCog,
+    CheckCircle,
+    Activity,
+    Truck,
+    Shield,
+    CalendarDays,
+    CarFront,
+    CreditCard,
+    ArrowRight,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
@@ -289,33 +301,206 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                     );
                 })()}
 
-                {role === 'customer' && (() => {
-                    const s = stats as CustomerStats;
+            {role === "customer" && (() => {
+    const s = stats as CustomerStats;
 
-                    return (
-                        <>
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <StatCard title="Active Bookings" value={s.active_bookings} icon={<BookOpen className="h-4 w-4" />} href="/bookings" />
-                                <StatCard title="Past Bookings" value={s.past_bookings} icon={<CheckCircle className="h-4 w-4" />} href="/bookings" />
+    return (
+        <>
+            {/* Welcome Banner */}
+
+            <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-blue-700 to-sky-600 p-8 text-white">
+
+                <h1 className="text-3xl font-bold">
+                    Welcome Back 
+                </h1>
+
+                <p className="mt-2 text-blue-100">
+                    Browse cars, manage bookings and enjoy your next journey.
+                </p>
+
+            </div>
+
+            {/* Statistics */}
+
+            <div className="grid gap-5 md:grid-cols-3">
+
+                <StatCard
+                    title="Active Bookings"
+                    value={s.active_bookings}
+                    icon={<BookOpen className="h-5 w-5" />}
+                    href="/bookings"
+                />
+
+                <StatCard
+                    title="Completed Trips"
+                    value={s.past_bookings}
+                    icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+                    href="/bookings"
+                />
+
+                <StatCard
+                    title="Upcoming Returns"
+                    value={s.upcoming_returns.length}
+                    icon={<CalendarDays className="h-5 w-5 text-orange-600" />}
+                />
+
+            </div>
+
+            {/* Quick Actions */}
+
+            <div className="grid gap-5 lg:grid-cols-3">
+
+                <Link href="/browse-cars">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-blue-100 w-14 h-14 flex items-center justify-center">
+                                <CarFront className="h-7 w-7 text-blue-700" />
                             </div>
-                            {s.upcoming_returns.length > 0 && (
-                                <Card>
-                                    <CardHeader><CardTitle>Upcoming Returns</CardTitle></CardHeader>
-                                    <CardContent>
-                                        <ul className="space-y-2">
-                                            {s.upcoming_returns.map((r) => (
-                                                <li key={r.id} className="flex justify-between text-sm">
-                                                    <span>{r.vehicle}</span>
-                                                    <span className="text-muted-foreground">Return: {r.return_date}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </>
-                    );
-                })()}
+
+                            <h3 className="text-xl font-bold">
+                                Browse Cars
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                Discover available vehicles for your next trip.
+                            </p>
+
+                            <div className="flex items-center text-blue-700 font-medium">
+                                Browse Now
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+                <Link href="/bookings">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-green-100 w-14 h-14 flex items-center justify-center">
+                                <BookOpen className="h-7 w-7 text-green-700" />
+                            </div>
+
+                            <h3 className="text-xl font-bold">
+                                My Bookings
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                View or manage all your reservations.
+                            </p>
+
+                            <div className="flex items-center text-green-700 font-medium">
+                                View Bookings
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+                <Link href="/payment-history">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-purple-100 w-14 h-14 flex items-center justify-center">
+                                <CreditCard className="h-7 w-7 text-purple-700" />
+                            </div>
+
+                            <h3 className="text-xl font-bold">
+                                Payments
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                Review your payment history and receipts.
+                            </p>
+
+                            <div className="flex items-center text-purple-700 font-medium">
+                                View Payments
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+            </div>
+
+            {/* Upcoming Returns */}
+
+            <Card className="rounded-2xl">
+
+                <CardHeader>
+
+                    <CardTitle>
+                        Upcoming Returns
+                    </CardTitle>
+
+                </CardHeader>
+
+                <CardContent>
+
+                    {s.upcoming_returns.length === 0 ? (
+
+                        <div className="py-10 text-center text-muted-foreground">
+                            No upcoming returns.
+                        </div>
+
+                    ) : (
+
+                        <div className="space-y-4">
+
+                            {s.upcoming_returns.map((r) => (
+
+                                <div
+                                    key={r.id}
+                                    className="flex items-center justify-between rounded-xl border p-5 hover:bg-slate-50 transition"
+                                >
+
+                                    <div>
+
+                                        <h3 className="font-semibold">
+                                            {r.vehicle}
+                                        </h3>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Scheduled Return
+                                        </p>
+
+                                    </div>
+
+                                    <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-700">
+                                        {r.return_date}
+                                    </span>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    )}
+
+                </CardContent>
+
+            </Card>
+
+        </>
+    );
+})()}
 
                 {role === 'driver' && (() => {
                     const s = stats as DriverStats;
