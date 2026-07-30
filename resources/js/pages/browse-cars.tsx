@@ -77,7 +77,7 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Browse Available Cars</h1>
 
-                <div className="rounded-lg border p-4 space-y-4">
+                <div className="rounded-2xl border bg-white p-6 shadow-md space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
                         <div>
                             <Label>Search</Label>
@@ -151,7 +151,31 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                         </div>
                     </div>
 
-                    <Button onClick={applyFilters}>Search</Button>
+                    <div className="flex justify-end gap-3">
+                        <Button
+                            variant="outline"
+                            size="lg"
+                            onClick={() => {
+                                setSearch('');
+                                setCategory('');
+                                setFuelType('');
+                                setTransmission('');
+                                setMinPrice('');
+                                setMaxPrice('');
+                                router.get('/browse-cars');
+                            }}
+                        >
+                            Reset
+                        </Button>
+
+                        <Button
+                            size="lg"
+                            className="px-8"
+                            onClick={applyFilters}
+                        >
+                            Search Cars
+                        </Button>
+                    </div>
                 </div>
 
                 {cars.length === 0 ? (
@@ -162,7 +186,7 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                             const image = getPrimaryImage(car);
 
                             return (
-                                <Card key={car.id} className="overflow-hidden">
+                                <Card key={car.id} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition duration-300">
                                     {image && (
                                         <img
                                             src={`/storage/${image.image_path}`}
@@ -170,26 +194,42 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                                             className="w-full h-48 object-cover"
                                         />
                                     )}
-
-                                    <CardContent className="space-y-3 p-4">
-                                        <h2 className="text-xl font-semibold">
-                                            {car.brand} {car.model} ({car.year})
-                                        </h2>
-
-                                        <div className="space-y-1 text-sm text-muted-foreground">
-                                            <p>Type: {car.category}</p>
-                                            <p>Fuel: {car.fuel_type}</p>
-                                            <p>Transmission: {car.transmission}</p>
+                                    <CardContent className="space-y-4 p-4">
+                                        <div className="inline-flex rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                            Available
                                         </div>
 
-                                        <p className="text-lg font-bold">ETB {car.daily_price} / day</p>
+                                        <h2 className="text-xl font-bold">
+                                            {car.brand} {car.model}
+                                        </h2>
 
-                                        <p className="text-sm text-muted-foreground">
-                                            Owner: {car.owner?.name}
-                                        </p>
+                                        <div className="grid grid-cols-2 gap-2 text-sm">
+                                            <div className="rounded-lg bg-gray-50 p-2.5">
+                                                <p className="text-muted-foreground">Year</p>
+                                                <p className="font-medium">{car.year}</p>
+                                            </div>
+                                            <div className="rounded-lg bg-gray-50 p-2.5">
+                                                <p className="text-muted-foreground">Category</p>
+                                                <p className="font-medium">{car.category}</p>
+                                            </div>
+                                            <div className="rounded-lg bg-gray-50 p-2.5">
+                                                <p className="text-muted-foreground">Fuel</p>
+                                                <p className="font-medium">{car.fuel_type}</p>
+                                            </div>
+                                            <div className="rounded-lg bg-gray-50 p-2.5">
+                                                <p className="text-muted-foreground">Transmission</p>
+                                                <p className="font-medium">{car.transmission}</p>
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">Starting from</p>
+                                            <p className="text-2xl font-bold text-green-600">ETB {car.daily_price}</p>
+                                            <p className="text-sm text-muted-foreground">per day</p>
+                                        </div>
 
                                         <Link href={`/cars/${car.id}`}>
-                                            <Button className="w-full">View Details & Book</Button>
+                                            <Button className="w-full rounded-xl" size="lg">View Vehicle Details</Button>
                                         </Link>
                                     </CardContent>
                                 </Card>
