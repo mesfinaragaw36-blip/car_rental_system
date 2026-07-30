@@ -52,8 +52,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/vehicles', [VehicleController::class, 'store'])->name('vehicles.store');
     Route::get('/vehicles/{car}/edit', [VehicleController::class, 'edit'])->name('vehicles.edit');
     Route::put('/vehicles/{car}', [VehicleController::class, 'update'])->name('vehicles.update');
+    Route::put('/vehicles/{car}/images/{image}/primary', [VehicleController::class, 'setPrimaryImage'])->name('vehicles.images.primary');
     Route::delete('/vehicles/{car}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
-
+    Route::delete('/vehicles/{car}/images/{image}', [VehicleController::class, 'deleteImage'])->name('vehicles.images.delete');
+    Route::delete('/vehicles/{car}/documents/{document}', [VehicleController::class, 'destroyDocument'])->name('vehicles.documents.destroy');
     // Browse cars
     Route::get('/browse-cars', [BrowseCarController::class, 'index'])->name('cars.index');
     Route::get('/cars/{car}', [BrowseCarController::class, 'show'])->name('cars.show');

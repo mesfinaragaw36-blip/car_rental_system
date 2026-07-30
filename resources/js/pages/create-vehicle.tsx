@@ -248,6 +248,7 @@ setData('category', option.name);
                                             <SelectContent>
                                                 <SelectItem value="Manual">Manual</SelectItem>
                                                 <SelectItem value="Automatic">Automatic</SelectItem>
+                                                <SelectItem value="Semi">Semi</SelectItem>
                                             </SelectContent>
                                         </Select>
                                         <InputError message={serverErrors.transmission ?? errors.transmission} />

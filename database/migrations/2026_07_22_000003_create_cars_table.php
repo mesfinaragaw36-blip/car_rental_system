@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('category', 100);
             $table->string('color', 50);
             $table->enum('fuel_type', ['Petrol', 'Diesel', 'Hybrid', 'Electric']);
-            $table->enum('transmission', ['Manual', 'Automatic']);
+            $table->enum('transmission', ['Manual', 'Automatic', 'Semi']);
             $table->string('engine_size', 50);
             $table->integer('mileage');
             $table->integer('seats');

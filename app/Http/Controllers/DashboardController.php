@@ -80,6 +80,23 @@ class DashboardController extends Controller
 
         $vehicles = Car::where('owner_id', $ownerId);
 
+        $dateFormat = DB::getDriverName() === 'sqlite'
+    ? "strftime('%Y-%m', paid_at)"
+    : "DATE_FORMAT(paid_at, '%Y-%m')";
+
+        $monthlyData = Payment::where('payment_status', 'paid')
+    ->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))
+    ->whereNotNull('paid_at')
+    ->selectRaw("{$dateFormat} as month, SUM(amount) as revenue")
+    ->groupBy('month')
+    ->orderBy('month')
+    ->get()
+    ->map(fn ($m) => [
+        'month' => $m->month,
+        'revenue' => round((float) $m->revenue, 2),
+        'commission' => 0,
+    ]);
+
         $recentBookings = Booking::with('car:id,brand,model', 'customer:id,name')
             ->where('owner_id', $ownerId)
             ->latest()
@@ -104,6 +121,7 @@ class DashboardController extends Controller
                 'rented_vehicles' => (clone $vehicles)->where('availability_status', 'rented')->count(),
                 'pending_vehicles' => (clone $vehicles)->where('approval_status', 'pending')->count(),
             ],
+            'monthlyData' => $monthlyData,
             'recentBookings' => $recentBookings,
         ]);
     }
