@@ -1,13 +1,13 @@
 import { Head, Link } from '@inertiajs/react';
 import {
-    Users, Car, Clock, BookOpen, CircleDollarSign, UserCog,
-    CheckCircle, Activity, Truck, Shield,
+    Users, Car, Clock, BookOpen, CircleDollarSign,
+    CheckCircle, Activity, Truck,
 } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {LineChart, Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,
     Pie,
     Cell,
 } from 'recharts';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
     total_users: number; active_users: number; total_vehicles: number;
@@ -83,11 +83,14 @@ const BOOKING_STATUS_STYLES: Record<string, string> = {
 
 function formatMonth(ym: string): string {
     const [y, m] = ym.split('-');
+
     return `${['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][parseInt(m) - 1]} '${y.slice(2)}`;
 }
 
 function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
-    if (data.length === 0) return null;
+    if (data.length === 0) {
+return null;
+}
 
     return (
         <>
@@ -166,11 +169,11 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                                     <p className="py-12 text-center text-sm text-muted-foreground">No transaction data yet.</p>
                                 ) : (() => {
                                     const totalRevenueNum = parseFloat(s.total_revenue);
-                                    const totalCommissionNum = parseFloat(s.total_commission);
                                     const avgMonthly = monthly.length > 0 ? totalRevenueNum / monthly.length : 0;
                                     const bestEntry = monthly.reduce((b, c) => c.revenue > b.revenue ? c : b);
                                     const lastIdx = monthly.length - 1;
                                     const growth = monthly.length >= 2 ? ((monthly[lastIdx].revenue - monthly[lastIdx - 1].revenue) / monthly[lastIdx - 1].revenue) * 100 : 0;
+
                                     return (
                                         <div className="space-y-6">
                                             <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
@@ -254,7 +257,6 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                     { name: 'Rented', value: s.rented_vehicles },
                     { name: 'Pending', value: s.pending_vehicles },
                 ];
-                const monthlyEarnings = s.monthlyEarnings ?? [];
 
                     return (
                         <>

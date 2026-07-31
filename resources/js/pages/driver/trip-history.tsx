@@ -1,6 +1,6 @@
 import { Head } from '@inertiajs/react';
+import { CalendarDays, MapPin, Clock, CheckCircle, XCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { CalendarDays, MapPin, CarFront, Clock, CheckCircle, XCircle } from 'lucide-react';
 
 interface Trip {
     id: number;

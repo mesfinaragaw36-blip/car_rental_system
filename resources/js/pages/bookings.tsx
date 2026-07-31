@@ -5,12 +5,12 @@ import {
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { index as bookingsIndex, approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
+import { approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
 
 interface Booking {
     id: number;
@@ -56,8 +56,12 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
 };
 
 const hasAssignedDriver = (booking: Booking): boolean => {
-    if (!booking.need_driver) return true;
+    if (!booking.need_driver) {
+return true;
+}
+
     const status = booking.driver_assignment?.status;
+
     return status === 'assigned' || status === 'accepted';
 };
 

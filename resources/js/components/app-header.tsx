@@ -61,7 +61,6 @@ function getDashboardUrl(): string {
 export function AppHeader({ breadcrumbs = [] }: Props) {
     const page = usePage();
     const { auth } = page.props;
-    const role = (auth.user as { role?: string } | undefined)?.role ?? 'customer';
     const dashboardUrl = getDashboardUrl();
     const getInitials = useInitials();
     const { isCurrentUrl, whenCurrentUrl } = useCurrentUrl();

@@ -1,7 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Car, Fuel, Settings2, Users, Pencil, Trash2, Plus } from 'lucide-react';
+import { Car, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { CarDetailsModal } from '@/components/car-details-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { GlareCard } from '@/components/ui/glare-card';
 import { destroy } from '@/routes/vehicles';
 
 interface CarImage {
@@ -25,6 +28,11 @@ interface Vehicle {
     fuel_type: string;
     transmission: string;
     seats: number | null;
+    category: string;
+    color: string;
+    engine_size: string | null;
+    mileage: number | null;
+    description: string | null;
     approval_status: string;
     availability_status: string;
     images: CarImage[];
@@ -36,6 +44,8 @@ interface Props { role: string; vehicles: Vehicle[]; }
 export default function Vehicles({ role, vehicles = [] }: Props) {
     const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
     const toast = p.toast;
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    const [detailsOpen, setDetailsOpen] = useState(false);
 
     const handleDelete = (id: number) => {
         if (confirm('Are you sure you want to delete this vehicle?')) {
@@ -83,73 +93,84 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid gap-6 lg:grid-cols-2">
+                    <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {vehicles.map((vehicle) => {
-                            const image = vehicle.images?.find(i => i.is_primary)?.image_path ?? vehicle.images?.[0]?.image_path;
+                            const image = vehicle.images?.find((img) => img.is_primary)?.image_path ?? vehicle.images?.[0]?.image_path;
 
                             return (
-                                <Card key={vehicle.id} className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg">
-                                    <CardContent className="p-0">
-                                        <div className="flex flex-col md:flex-row">
-                                            <div className="h-56 w-full bg-slate-100 md:w-64">
-                                                {image ? (
-                                                    <img src={`/storage/${image}`} alt={`${vehicle.brand} ${vehicle.model}`} className="h-full w-full object-cover" />
-                                                ) : (
-                                                    <div className="flex h-full items-center justify-center">
-                                                        <Car className="h-12 w-12 text-slate-400" />
-                                                    </div>
-                                                )}
+                                <GlareCard
+                                    key={vehicle.id}
+                                    className="w-full cursor-pointer"
+                                    onClick={() => {
+                                        setSelectedVehicle(vehicle);
+                                        setDetailsOpen(true);
+                                    }}
+                                >
+                                    <div className="w-full p-2.5">
+                                        <div className="aspect-[4/3] w-full overflow-hidden rounded-[14px]">
+                                            {image ? (
+                                                <img
+                                                    src={`/storage/${image}`}
+                                                    alt={`${vehicle.brand} ${vehicle.model}`}
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <div className="flex h-full items-center justify-center">
+                                                    <Car className="h-12 w-12 text-slate-400" />
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="mt-3 flex items-start justify-between gap-3 px-1 pb-1">
+                                            <div className="min-w-0">
+                                                <h3 className="truncate text-base font-bold text-slate-900">{vehicle.brand} {vehicle.model}</h3>
+                                                <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
+                                                    <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                                                    {vehicle.transmission}
+                                                </p>
                                             </div>
-                                            <div className="flex flex-1 flex-col justify-between p-6">
-                                                <div>
-                                                    <div className="flex items-start justify-between">
-                                                        <div>
-                                                            <h2 className="text-xl font-bold">{vehicle.brand} {vehicle.model}</h2>
-                                                            <p className="mt-1 text-sm text-muted-foreground">{vehicle.year} &bull; {vehicle.plate_number}</p>
-                                                        </div>
-                                                        <p className="text-xl font-bold text-blue-900">
-                                                            ETB {vehicle.daily_price}<span className="text-sm font-normal text-muted-foreground">/day</span>
-                                                        </p>
-                                                    </div>
-                                                    <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted-foreground">
-                                                        <span className="flex items-center gap-1"><Settings2 className="h-4 w-4" /> {vehicle.transmission}</span>
-                                                        <span className="flex items-center gap-1"><Fuel className="h-4 w-4" /> {vehicle.fuel_type}</span>
-                                                        {vehicle.seats && (
-                                                            <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {vehicle.seats} Seats</span>
-                                                        )}
-                                                    </div>
-                                                    <div className="mt-5 flex gap-2">
-                                                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                                            vehicle.approval_status === 'approved' ? 'bg-green-100 text-green-700' :
-                                                            vehicle.approval_status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
-                                                            'bg-red-100 text-red-700'
-                                                        }`}>
-                                                            {vehicle.approval_status}
-                                                        </span>
-                                                        <span className={`rounded-full px-3 py-1 text-xs font-semibold ${
-                                                            vehicle.availability_status === 'available' ? 'bg-blue-100 text-blue-700' :
-                                                            'bg-slate-200 text-slate-700'
-                                                        }`}>
-                                                            {vehicle.availability_status}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                <div className="mt-6 flex gap-3">
-                                                    <Button variant="outline" onClick={() => router.get(`/vehicles/${vehicle.id}/edit`)}>
-                                                        <Pencil className="mr-2 h-4 w-4" /> Edit
-                                                    </Button>
-                                                    <Button variant="destructive" onClick={() => handleDelete(vehicle.id)}>
-                                                        <Trash2 className="mr-2 h-4 w-4" /> Delete
-                                                    </Button>
-                                                </div>
+                                            <div className="shrink-0 text-right">
+                                                <p className="text-lg font-bold text-slate-900">ETB {Number(vehicle.daily_price).toLocaleString()}</p>
+                                                <p className="text-xs font-medium text-slate-400">per day</p>
                                             </div>
                                         </div>
-                                    </CardContent>
-                                </Card>
+                                    </div>
+                                </GlareCard>
                             );
                         })}
                     </div>
                 )}
+
+                <CarDetailsModal
+                    open={detailsOpen}
+                    onClose={() => setDetailsOpen(false)}
+                    car={selectedVehicle}
+                    actions={
+                        <>
+                            <Button
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => {
+                                    if (selectedVehicle) {
+                                        router.get(`/vehicles/${selectedVehicle.id}/edit`);
+                                    }
+                                }}
+                            >
+                                <Pencil className="mr-2 h-4 w-4" /> Edit
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                className="flex-1"
+                                onClick={() => {
+                                    if (selectedVehicle) {
+                                        handleDelete(selectedVehicle.id);
+                                    }
+                                }}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" /> Delete
+                            </Button>
+                        </>
+                    }
+                />
             </div>
         </>
     );

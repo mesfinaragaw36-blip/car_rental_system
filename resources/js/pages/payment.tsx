@@ -1,4 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
+import { CreditCard, ArrowLeft, Hash } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -6,8 +8,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Link } from '@inertiajs/react';
-import { CreditCard, ArrowLeft, Hash } from 'lucide-react';
 
 interface Booking {
     id: number;
@@ -42,8 +42,19 @@ export default function PaymentForm({ booking }: Props) {
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        if (!method) { setError('Please select a payment method.'); return; }
-        if (showRefInput && !transactionRef.trim()) { setError('Transaction reference is required.'); return; }
+
+        if (!method) {
+ setError('Please select a payment method.');
+
+ return; 
+}
+
+        if (showRefInput && !transactionRef.trim()) {
+ setError('Transaction reference is required.');
+
+ return; 
+}
+
         setError('');
         setProcessing(true);
         router.post(
@@ -52,7 +63,9 @@ export default function PaymentForm({ booking }: Props) {
             {
                 onFinish: () => setProcessing(false),
                 onError: (errs) => setError(Object.values(errs).join(' ') || 'Something went wrong.'),
-                onSuccess: () => { setTransactionRef(''); setMethod(''); },
+                onSuccess: () => {
+ setTransactionRef(''); setMethod(''); 
+},
             },
         );
     }
@@ -110,7 +123,9 @@ export default function PaymentForm({ booking }: Props) {
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="space-y-1.5">
                                 <Label>Select Payment Method</Label>
-                                <Select value={method} onValueChange={(v) => { setMethod(v); setTransactionRef(''); }}>
+                                <Select value={method} onValueChange={(v) => {
+ setMethod(v); setTransactionRef(''); 
+}}>
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Choose a method…" />
                                     </SelectTrigger>

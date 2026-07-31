@@ -1,6 +1,6 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { Car, User, Phone, Calendar, Clock, CheckCircle, XCircle, ShieldCheck, Truck } from 'lucide-react';
 import { useState } from 'react';
-import { Car, User, Phone, Calendar, MapPin, Clock, CheckCircle, XCircle, ShieldCheck, Truck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { accept, approveClaim, complete, reject, rejectClaim } from '@/routes/assignments';
@@ -47,9 +47,18 @@ export default function Assignments({ role, assignments = [] }: Props) {
     const [processingId, setProcessingId] = useState<number | null>(null);
 
     const handleAction = (id: number, action: 'accept' | 'reject' | 'complete' | 'approveClaim' | 'rejectClaim') => {
-        if (action === 'reject' && !confirm('Reject this assignment?')) return;
-        if (action === 'rejectClaim' && !confirm('Reject this driver claim?')) return;
-        if (action === 'complete' && !confirm('Mark this trip as completed?')) return;
+        if (action === 'reject' && !confirm('Reject this assignment?')) {
+return;
+}
+
+        if (action === 'rejectClaim' && !confirm('Reject this driver claim?')) {
+return;
+}
+
+        if (action === 'complete' && !confirm('Mark this trip as completed?')) {
+return;
+}
+
         setProcessingId(id);
         const routeMap = { accept, reject, complete, approveClaim, rejectClaim };
         router.post(routeMap[action].url({ assignment: id }), {}, {

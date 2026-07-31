@@ -9,12 +9,15 @@ export type UseAppearanceReturn = {
 };
 
 const applyTheme = (): void => {
-    if (typeof document === 'undefined') return;
+    if (typeof document === 'undefined') {
+        return;
+    }
+
     document.documentElement.classList.remove('dark');
     document.documentElement.style.colorScheme = 'light';
 };
 
-const subscribe = (_callback: () => void) => () => {};
+const subscribe = () => () => {};
 
 export function initializeTheme(): void {
     applyTheme();
@@ -22,5 +25,6 @@ export function initializeTheme(): void {
 
 export function useAppearance(): UseAppearanceReturn {
     useSyncExternalStore(subscribe, () => 'light', () => 'light');
+
     return { appearance: 'light', resolvedAppearance: 'light' } as const;
 }

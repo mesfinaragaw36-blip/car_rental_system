@@ -1,9 +1,9 @@
 import { Head, usePage } from '@inertiajs/react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-    CircleDollarSign, Car, User, CreditCard, CheckCircle,
+    CircleDollarSign, Car, CreditCard, CheckCircle,
     Clock, XCircle, Banknote, Smartphone, Building,
 } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Payment {
     id: number;

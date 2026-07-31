@@ -1,10 +1,10 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { MapPin, CalendarDays, CarFront, Eye, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { MapPin, CalendarDays, CircleDollarSign, User, CarFront, Eye, Phone, ShieldAlert, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface AvailableBooking {
     id: number;
@@ -57,6 +57,7 @@ export default function AvailableBookings({ bookings = [], filters, profileStatu
         const pickup = new Date(b.pickup_date);
         const ret = new Date(b.return_date);
         const days = Math.max(1, Math.ceil((ret.getTime() - pickup.getTime()) / (1000 * 60 * 60 * 24)));
+
         return (Number(b.driver_daily_rate) * days).toFixed(2);
     }
 
