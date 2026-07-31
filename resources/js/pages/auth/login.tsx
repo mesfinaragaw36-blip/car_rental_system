@@ -1,5 +1,5 @@
 import { Form, Head } from '@inertiajs/react';
-import { Mail, Lock } from 'lucide-react';
+import { Lock, Mail } from 'lucide-react';
 import InputError from '@/components/input-error';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
@@ -23,7 +23,7 @@ export default function Login({ status, canResetPassword }: Props) {
             <Head title="Log in" />
 
             {status && (
-                <div className="mb-5 rounded-lg bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-700 dark:bg-green-950/50 dark:text-green-400">
+                <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-700">
                     {status}
                 </div>
             )}
@@ -37,7 +37,9 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         {/* Email */}
                         <div className="space-y-1.5">
-                            <Label htmlFor="email">Email</Label>
+                            <Label htmlFor="email" className="font-semibold">
+                                Email
+                            </Label>
                             <div className="relative">
                                 <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
@@ -49,7 +51,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="you@example.com"
-                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
+                                    className="h-11 rounded-xl border-border/60 bg-muted/50 pl-9 focus-visible:bg-background"
                                 />
                             </div>
                             <InputError message={errors.email} />
@@ -58,7 +60,9 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Password */}
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password">Password</Label>
+                                <Label htmlFor="password" className="font-semibold">
+                                    Password
+                                </Label>
                                 {canResetPassword && (
                                     <TextLink
                                         href={request()}
@@ -78,7 +82,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="••••••••"
-                                    className="pl-9 h-11 rounded-xl bg-muted/50 border-border/60 focus-visible:bg-background"
+                                    className="h-11 rounded-xl border-border/60 bg-muted/50 pl-9 focus-visible:bg-background"
                                 />
                             </div>
                             <InputError message={errors.password} />
@@ -87,7 +91,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Remember */}
                         <div className="flex items-center gap-2">
                             <Checkbox id="remember" name="remember" tabIndex={3} />
-                            <Label htmlFor="remember" className="text-sm font-normal text-muted-foreground cursor-pointer select-none">
+                            <Label htmlFor="remember" className="cursor-pointer text-sm font-normal text-muted-foreground select-none">
                                 Keep me signed in
                             </Label>
                         </div>
@@ -95,7 +99,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Submit */}
                         <Button
                             type="submit"
-                            className="mt-1 h-11 w-full rounded-xl text-sm font-semibold shadow-md shadow-primary/20"
+                            className="mt-1 h-11 w-full rounded-full text-sm font-semibold shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                             tabIndex={4}
                             disabled={processing}
                         >
@@ -111,8 +115,8 @@ export default function Login({ status, canResetPassword }: Props) {
 
                         {/* Footer */}
                         <p className="text-center text-sm text-muted-foreground">
-                            Don't have an account?{' '}
-                            <TextLink href={register()} tabIndex={6} className="font-semibold text-foreground no-underline hover:underline">
+                            Don&apos;t have an account?{' '}
+                            <TextLink href={register()} tabIndex={6} className="font-semibold text-accent no-underline hover:underline">
                                 Create one free
                             </TextLink>
                         </p>
