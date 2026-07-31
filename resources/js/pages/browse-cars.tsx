@@ -5,6 +5,19 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Car,
+    Tags,
+    CircleDollarSign,
+} from "lucide-react";
+import {
+    Fuel,
+    Settings2,
+    Calendar,
+    Tag,
+    User,
+    ArrowRight,
+} from "lucide-react";
 
 interface CarImage {
     id: number;
@@ -69,6 +82,10 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
     function getPrimaryImage(vehicle: Car) {
         return vehicle.images?.find((img) => img.is_primary) ?? vehicle.images?.[0];
     }
+const prices = cars.map((car) => Number(car.daily_price));
+
+const lowestPrice = prices.length ? Math.min(...prices) : 0;
+const highestPrice = prices.length ? Math.max(...prices) : 0;
 
     return (
         <>
@@ -76,7 +93,74 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
 
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Browse Available Cars</h1>
+                <p className="text-muted-foreground">
+    {cars.length} vehicle{cars.length !== 1 ? "s" : ""} available for rent
+</p>
+<div className="grid gap-4 md:grid-cols-4">
+    <Card>
+        <CardContent className="flex items-center justify-between p-5">
+            <div>
+                <p className="text-sm text-muted-foreground">
+                    Available Cars
+                </p>
 
+                <h2 className="text-3xl font-bold">
+                    {cars.length}
+                </h2>
+            </div>
+
+            <Car className="h-10 w-10 text-blue-600" />
+        </CardContent>
+    </Card>
+
+    <Card>
+        <CardContent className="flex items-center justify-between p-5">
+            <div>
+                <p className="text-sm text-muted-foreground">
+                    Car Types
+                </p>
+
+                <h2 className="text-3xl font-bold">
+                    {carTypeNames.length}
+                </h2>
+            </div>
+
+            <Tags className="h-10 w-10 text-green-600" />
+        </CardContent>
+    </Card>
+
+    <Card>
+        <CardContent className="flex items-center justify-between p-5">
+            <div>
+                <p className="text-sm text-muted-foreground">
+                    Lowest Price
+                </p>
+
+                <h2 className="text-2xl font-bold text-green-600">
+                    ETB {lowestPrice}
+                </h2>
+            </div>
+
+            <CircleDollarSign className="h-10 w-10 text-green-600" />
+        </CardContent>
+    </Card>
+
+    <Card>
+        <CardContent className="flex items-center justify-between p-5">
+            <div>
+                <p className="text-sm text-muted-foreground">
+                    Highest Price
+                </p>
+
+                <h2 className="text-2xl font-bold text-blue-600">
+                    ETB {highestPrice}
+                </h2>
+            </div>
+
+            <CircleDollarSign className="h-10 w-10 text-blue-600" />
+        </CardContent>
+    </Card>
+</div>
                 <div className="rounded-2xl border bg-white p-6 shadow-md space-y-6">
                     <div className="grid gap-4 md:grid-cols-3">
                         <div>
@@ -186,7 +270,10 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                             const image = getPrimaryImage(car);
 
                             return (
-                                <Card key={car.id} className="overflow-hidden rounded-2xl shadow-md hover:shadow-xl transition duration-300">
+                               <Card
+    key={car.id}
+    className="overflow-hidden rounded-2xl shadow-md hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+>
                                     {image && (
                                         <img
                                             src={`/storage/${image.image_path}`}
@@ -203,34 +290,65 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                                             {car.brand} {car.model}
                                         </h2>
 
-                                        <div className="grid grid-cols-2 gap-2 text-sm">
-                                            <div className="rounded-lg bg-gray-50 p-2.5">
-                                                <p className="text-muted-foreground">Year</p>
-                                                <p className="font-medium">{car.year}</p>
-                                            </div>
-                                            <div className="rounded-lg bg-gray-50 p-2.5">
-                                                <p className="text-muted-foreground">Category</p>
-                                                <p className="font-medium">{car.category}</p>
-                                            </div>
-                                            <div className="rounded-lg bg-gray-50 p-2.5">
-                                                <p className="text-muted-foreground">Fuel</p>
-                                                <p className="font-medium">{car.fuel_type}</p>
-                                            </div>
-                                            <div className="rounded-lg bg-gray-50 p-2.5">
-                                                <p className="text-muted-foreground">Transmission</p>
-                                                <p className="font-medium">{car.transmission}</p>
-                                            </div>
-                                        </div>
+                            <div className="space-y-3 text-sm">
 
-                                        <div>
-                                            <p className="text-sm text-muted-foreground">Starting from</p>
-                                            <p className="text-2xl font-bold text-green-600">ETB {car.daily_price}</p>
-                                            <p className="text-sm text-muted-foreground">per day</p>
-                                        </div>
+    <div className="flex items-center gap-2">
+        <Calendar className="h-4 w-4 text-blue-600" />
+        <span>{car.year}</span>
+    </div>
 
-                                        <Link href={`/cars/${car.id}`}>
-                                            <Button className="w-full rounded-xl" size="lg">View Vehicle Details</Button>
-                                        </Link>
+    <div className="flex items-center gap-2">
+        <Tag className="h-4 w-4 text-green-600" />
+        <span>{car.category}</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+        <Fuel className="h-4 w-4 text-orange-600" />
+        <span>{car.fuel_type}</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+        <Settings2 className="h-4 w-4 text-purple-600" />
+        <span>{car.transmission}</span>
+    </div>
+
+    <div className="flex items-center gap-2">
+        <User className="h-4 w-4 text-slate-600" />
+        <span>{car.owner.name}</span>
+    </div>
+
+</div>
+
+                                       <div className="rounded-xl bg-green-50 border border-green-100 p-4">
+    <p className="text-sm text-green-700">
+        Rental Price
+    </p>
+
+    <p className="text-3xl font-bold text-green-700">
+        ETB {car.daily_price}
+    </p>
+
+    <p className="text-xs text-green-600">
+        Per day
+    </p>
+</div>
+
+                                        <div className="flex gap-2">
+    <Link href={`/cars/${car.id}`} className="flex-1">
+        <Button
+            variant="outline"
+            className="w-full rounded-xl"
+        >
+            View Details
+        </Button>
+    </Link>
+
+    <Link href={`/cars/${car.id}`} className="flex-1">
+        <Button className="w-full rounded-xl">
+            Book Now
+        </Button>
+    </Link>
+</div>
                                     </CardContent>
                                 </Card>
                             );

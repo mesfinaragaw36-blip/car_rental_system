@@ -126,7 +126,56 @@ function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
         </>
     );
 }
+function PieChart({
+    active,
+    completed,
+}: {
+    active: number;
+    completed: number;
+}) {
+    const total = active + completed;
 
+    if (total === 0) {
+        return (
+            <div className="flex h-52 items-center justify-center text-sm text-muted-foreground">
+                No booking data available
+            </div>
+        );
+    }
+
+    const activePercent = (active / total) * 100;
+    const completedPercent = 100 - activePercent;
+
+    return (
+        <div className="flex flex-col items-center">
+            <div
+                className="h-52 w-52 rounded-full"
+                style={{
+                    background: `conic-gradient(
+                        #2563eb 0% ${activePercent}%,
+                        #22c55e ${activePercent}% 100%
+                    )`,
+                }}
+            />
+
+            <div className="mt-6 flex gap-6">
+                <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-blue-600"></span>
+                    <span className="text-sm">
+                        Active ({active})
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-green-500"></span>
+                    <span className="text-sm">
+                        Completed ({completed})
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
 export default function Dashboard({ role, stats, recentAssignments = [], recentBookings = [], monthlyData = [] }: Props) {
     return (
         <>
@@ -345,7 +394,18 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                 />
 
             </div>
+ <Card className="rounded-2xl">
+    <CardHeader>
+        <CardTitle>Booking Overview</CardTitle>
+    </CardHeader>
 
+    <CardContent>
+        <PieChart
+            active={s.active_bookings}
+            completed={s.past_bookings}
+        />
+    </CardContent>
+</Card>
             {/* Quick Actions */}
 
             <div className="grid gap-5 lg:grid-cols-3">

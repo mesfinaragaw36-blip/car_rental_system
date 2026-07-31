@@ -4,7 +4,9 @@ import {
     CircleDollarSign, Car, User, CreditCard, CheckCircle,
     Clock, XCircle, Banknote, Smartphone, Building,
 } from 'lucide-react';
-
+import { useState } from 'react';
+import { Input } from '@/components/ui/input';
+import { Search } from 'lucide-react';
 interface Payment {
     id: number;
     payment_method: string;
@@ -47,14 +49,22 @@ const METHOD_LABELS: Record<string, string> = {
 export default function Payments({ role, payments = [] }: Props) {
     const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
     const toast = p.toast;
-
+const [search, setSearch] = useState('');
     const totalPaidAmount = payments
         .filter((p) => p.payment_status === 'paid')
         .reduce((sum, p) => sum + parseFloat(p.amount), 0);
 
     const paidCount = payments.filter(p => p.payment_status === 'paid').length;
     const pendingCount = payments.filter(p => p.payment_status === 'pending').length;
+const filteredPayments = payments.filter((payment) => {
+    const keyword = search.toLowerCase();
 
+    return (
+        payment.booking_id.toString().includes(keyword) ||
+        payment.customer?.name.toLowerCase().includes(keyword) ||
+        `${payment.car?.brand} ${payment.car?.model}`.toLowerCase().includes(keyword)
+    );
+});
     return (
         <>
             <Head title="Payment History" />
@@ -72,8 +82,8 @@ export default function Payments({ role, payments = [] }: Props) {
                     </div>
                 )}
 
-                <div className="grid gap-4 sm:grid-cols-3">
-                    <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
+                <div className="mb-8 grid gap-5 md:grid-cols-3">
+                    <Card className="rounded-3xl border-0 bg-gradient-to-br from-white to-slate-50 shadow-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50">
                                 <CircleDollarSign className="h-6 w-6 text-emerald-600" />
@@ -84,6 +94,8 @@ export default function Payments({ role, payments = [] }: Props) {
                             </div>
                         </CardContent>
                     </Card>
+                  
+
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-50">
@@ -95,7 +107,7 @@ export default function Payments({ role, payments = [] }: Props) {
                             </div>
                         </CardContent>
                     </Card>
-                    <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
+                                <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50">
                                 <Clock className="h-6 w-6 text-amber-600" />
@@ -107,9 +119,28 @@ export default function Payments({ role, payments = [] }: Props) {
                         </CardContent>
                     </Card>
                 </div>
+                <div className="mb-6 flex items-center justify-between rounded-2xl border bg-white p-4 shadow-sm">
+    <div>
+        <h3 className="font-semibold">Transactions</h3>
+        <p className="text-sm text-muted-foreground">
+            Search and manage payment records
+        </p>
+    </div>
+
+    <div className="relative w-80">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+
+        <Input
+            placeholder="Search..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-10"
+        />
+    </div>
+</div>
 
                 <Card className="overflow-hidden rounded-2xl shadow-sm">
-                    <CardHeader className="border-b bg-slate-50/50 px-6 py-4">
+                    <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
                         <CardTitle>All Transactions</CardTitle>
                     </CardHeader>
                     <CardContent className="p-0">
@@ -119,6 +150,7 @@ export default function Payments({ role, payments = [] }: Props) {
                                 <h2 className="text-xl font-semibold">No payment records found</h2>
                                 <p className="mt-2 text-center text-muted-foreground">Payments will appear here once customers complete their bookings.</p>
                             </div>
+                            
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
@@ -135,9 +167,14 @@ export default function Payments({ role, payments = [] }: Props) {
                                     </thead>
                                     <tbody>
                                         {payments.map((payment) => (
-                                            <tr key={payment.id} className="border-b last:border-0 transition hover:bg-slate-50/50">
+                                            <tr
+    key={payment.id}
+    className="border-b last:border-0 transition-all duration-200 hover:bg-blue-50/40"
+>
                                                 <td className="px-6 py-4">
-                                                    <span className="font-mono text-xs text-muted-foreground">#{payment.booking_id}</span>
+                                                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+    #{payment.booking_id}
+</span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2.5">
