@@ -1,12 +1,18 @@
 import { Head, Link } from '@inertiajs/react';
 import {
-    Users, Car, Clock, BookOpen, CircleDollarSign,
-    CheckCircle, Activity, Truck,
-} from 'lucide-react';
-import {LineChart, Line,XAxis,YAxis,CartesianGrid,Tooltip,ResponsiveContainer,PieChart,
-    Pie,
-    Cell,
-} from 'recharts';
+    Users,
+    Car,
+    Clock,
+    BookOpen,
+    CircleDollarSign,
+    CheckCircle,
+    Activity,
+    Truck,
+    CalendarDays,
+    CarFront,
+    CreditCard,
+    ArrowRight,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
@@ -20,15 +26,9 @@ interface AdminStats {
 interface MonthlyData {
     month: string; revenue: number; commission: number;
 }
-
-interface MonthlyEarning {
-    month: string;
-    earnings: number;
-}
 interface OwnerStats {
     total_vehicles: number; active_bookings: number; pending_bookings: number;
     total_earnings: string; available_vehicles: number; rented_vehicles: number; pending_vehicles: number;
-    monthlyEarnings: MonthlyEarning[];
 }
 interface RecentBooking {
     id: number; status: string; pickup_date: string;
@@ -47,7 +47,7 @@ interface Assignment {
     car: { brand: string; model: string; year: number; plate_number: string };
 }
 
-interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; recentAssignments?: Assignment[]; recentBookings?: RecentBooking[]; monthlyData?: MonthlyData[]; monthlyEarnings?: MonthlyEarning[]; }
+interface Props { role: string; stats: AdminStats | OwnerStats | CustomerStats | DriverStats; recentAssignments?: Assignment[]; recentBookings?: RecentBooking[]; monthlyData?: MonthlyData[]; }
 
 function StatCard({ title, value, icon, href, accent }: {
     title: string; value: string | number; icon: React.ReactNode; href?: string; accent?: string;
@@ -127,7 +127,55 @@ return null;
         </>
     );
 }
+function PieChart({
+    active,
+    completed,
+}: {
+    active: number;
+    completed: number;
+}) {
+    const total = active + completed;
 
+    if (total === 0) {
+        return (
+            <div className="flex h-52 items-center justify-center text-sm text-muted-foreground">
+                No booking data available
+            </div>
+        );
+    }
+
+    const activePercent = (active / total) * 100;
+
+    return (
+        <div className="flex flex-col items-center">
+            <div
+                className="h-52 w-52 rounded-full"
+                style={{
+                    background: `conic-gradient(
+                        #2563eb 0% ${activePercent}%,
+                        #22c55e ${activePercent}% 100%
+                    )`,
+                }}
+            />
+
+            <div className="mt-6 flex gap-6">
+                <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-blue-600"></span>
+                    <span className="text-sm">
+                        Active ({active})
+                    </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-green-500"></span>
+                    <span className="text-sm">
+                        Completed ({completed})
+                    </span>
+                </div>
+            </div>
+        </div>
+    );
+}
 export default function Dashboard({ role, stats, recentAssignments = [], recentBookings = [], monthlyData = [] }: Props) {
     return (
         <>
@@ -193,7 +241,7 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                                 })()}
                             </CardContent>
                         </Card>
-            
+
                                 <Card className="overflow-hidden rounded-2xl shadow-sm">
                                     <CardHeader className="border-b px-6 py-4 bg-slate-50/50">
                                         <CardTitle className="text-sm font-semibold">Platform Summary</CardTitle>
@@ -252,11 +300,6 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
 
                 {role === 'owner' && (() => {
                     const s = stats as OwnerStats;
-                    const vehicleStatusData = [
-                    { name: 'Available', value: s.available_vehicles },
-                    { name: 'Rented', value: s.rented_vehicles },
-                    { name: 'Pending', value: s.pending_vehicles },
-                ];
 
                     return (
                         <>
@@ -277,105 +320,6 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                                 <StatCard title="Pending Bookings" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} href="/bookings" accent="text-yellow-600" />
                                 <StatCard title="Total Earnings" value={`ETB ${s.total_earnings}`} icon={<CircleDollarSign className="h-4 w-4" />} />
                             </div>
-                            <div className="grid gap-4 lg:grid-cols-2">
-                                        <Card>
-                                            <CardHeader>
-                                                <CardTitle>Fleet Status</CardTitle>
-                                            </CardHeader>
-
-                                            <CardContent>
-                                                <div className="h-72">
-                                                    <ResponsiveContainer width="100%" height="100%">
-                                                        <PieChart>
-                                                            <Pie
-                                                                data={vehicleStatusData}
-                                                                cx="50%"
-                                                                cy="50%"
-                                                                innerRadius={60}
-                                                                outerRadius={90}
-                                                                dataKey="value"
-                                                                nameKey="name"
-                                                            >
-                                                               {vehicleStatusData.map((entry, index) => (
-                                                                    <Cell
-                                                                        key={`cell-${index}`}
-                                                                        fill={[
-                                                                            '#22C55E', // Available
-                                                                            '#2563EB', // Booked
-                                                                            '#F59E0B', // Maintenance
-                                                                            '#EF4444', // Unavailable
-                                                                        ][index]}
-                                                                    />
-   
-                                                                ))}
-                                                            </Pie>
-
-                                                            <Tooltip />
-                                                        </PieChart>
-                                                    </ResponsiveContainer>
-                                                </div>
-
-                                                <div className="flex justify-center gap-5 text-sm">
-                                                    {vehicleStatusData.map((item) => (
-                                                        <div key={item.name}>
-                                                            {item.name}: {item.value}
-                                                        </div>
-                                                    ))}
-                                                </div>
-                                            </CardContent>
-                                        </Card>
-
-                                         <Card>
-                                            <CardHeader>
-                                                <CardTitle>Monthly Earnings</CardTitle>
-                                                <p className="text-sm text-muted-foreground">
-                                                    Your earnings from paid bookings
-                                                </p>
-                                            </CardHeader>
-
-                                            <CardContent>
-                                                {monthlyData.length === 0 ? (
-                                                    <p className="py-10 text-center text-sm text-muted-foreground">
-                                                        No earnings data available yet.
-                                                    </p>
-                                                ) : (
-                                                    <div className="h-[300px] w-full">
-                                                        <ResponsiveContainer width="100%" height="100%">
-                                                            <LineChart data={monthlyData}>
-                                                                <CartesianGrid strokeDasharray="3 3" />
-
-                                                                <XAxis
-                                                                    dataKey="month"
-                                                                    tick={{ fontSize: 12 }}
-                                                                />
-
-                                                                <YAxis
-                                                                    tick={{ fontSize: 12 }}
-                                                                />
-
-                                                                <Tooltip
-                                                                    formatter={(value) => [
-                                                                        `ETB ${Number(value).toLocaleString()}`,
-                                                                        'Revenue',
-                                                                    ]}
-                                                                />
-
-                                                                <Line
-                                                                    type="monotone"
-                                                                    dataKey="revenue"
-                                                                    strokeWidth={2}
-                                                                    dot={{ r: 4 }}
-                                                                />
-                                                            </LineChart>
-                                                        </ResponsiveContainer>
-                                                    </div>
-                                                )}
-                                            </CardContent>
-                                        </Card>
-
-                                    </div>
-
-                
 
                             <Card>
                                 <CardHeader className="flex flex-row items-center justify-between">
@@ -406,33 +350,217 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                     );
                 })()}
 
-                {role === 'customer' && (() => {
-                    const s = stats as CustomerStats;
+            {role === "customer" && (() => {
+    const s = stats as CustomerStats;
 
-                    return (
-                        <>
-                            <div className="grid gap-4 md:grid-cols-2">
-                                <StatCard title="Active Bookings" value={s.active_bookings} icon={<BookOpen className="h-4 w-4" />} href="/bookings" />
-                                <StatCard title="Past Bookings" value={s.past_bookings} icon={<CheckCircle className="h-4 w-4" />} href="/bookings" />
+    return (
+        <>
+            {/* Welcome Banner */}
+
+            <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-blue-700 to-sky-600 p-8 text-white">
+
+                <h1 className="text-3xl font-bold">
+                    Welcome Back 
+                </h1>
+
+                <p className="mt-2 text-blue-100">
+                    Browse cars, manage bookings and enjoy your next journey.
+                </p>
+
+            </div>
+
+            {/* Statistics */}
+
+            <div className="grid gap-5 md:grid-cols-3">
+
+                <StatCard
+                    title="Active Bookings"
+                    value={s.active_bookings}
+                    icon={<BookOpen className="h-5 w-5" />}
+                    href="/bookings"
+                />
+
+                <StatCard
+                    title="Completed Trips"
+                    value={s.past_bookings}
+                    icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+                    href="/bookings"
+                />
+
+                <StatCard
+                    title="Upcoming Returns"
+                    value={s.upcoming_returns.length}
+                    icon={<CalendarDays className="h-5 w-5 text-orange-600" />}
+                />
+
+            </div>
+ <Card className="rounded-2xl">
+    <CardHeader>
+        <CardTitle>Booking Overview</CardTitle>
+    </CardHeader>
+
+    <CardContent>
+        <PieChart
+            active={s.active_bookings}
+            completed={s.past_bookings}
+        />
+    </CardContent>
+</Card>
+            {/* Quick Actions */}
+
+            <div className="grid gap-5 lg:grid-cols-3">
+
+                <Link href="/browse-cars">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-blue-100 w-14 h-14 flex items-center justify-center">
+                                <CarFront className="h-7 w-7 text-blue-700" />
                             </div>
-                            {s.upcoming_returns.length > 0 && (
-                                <Card>
-                                    <CardHeader><CardTitle>Upcoming Returns</CardTitle></CardHeader>
-                                    <CardContent>
-                                        <ul className="space-y-2">
-                                            {s.upcoming_returns.map((r) => (
-                                                <li key={r.id} className="flex justify-between text-sm">
-                                                    <span>{r.vehicle}</span>
-                                                    <span className="text-muted-foreground">Return: {r.return_date}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </>
-                    );
-                })()}
+
+                            <h3 className="text-xl font-bold">
+                                Browse Cars
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                Discover available vehicles for your next trip.
+                            </p>
+
+                            <div className="flex items-center text-blue-700 font-medium">
+                                Browse Now
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+                <Link href="/bookings">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-green-100 w-14 h-14 flex items-center justify-center">
+                                <BookOpen className="h-7 w-7 text-green-700" />
+                            </div>
+
+                            <h3 className="text-xl font-bold">
+                                My Bookings
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                View or manage all your reservations.
+                            </p>
+
+                            <div className="flex items-center text-green-700 font-medium">
+                                View Bookings
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+                <Link href="/payment-history">
+
+                    <Card className="rounded-2xl hover:shadow-xl transition cursor-pointer">
+
+                        <CardContent className="p-6 space-y-4">
+
+                            <div className="rounded-full bg-purple-100 w-14 h-14 flex items-center justify-center">
+                                <CreditCard className="h-7 w-7 text-purple-700" />
+                            </div>
+
+                            <h3 className="text-xl font-bold">
+                                Payments
+                            </h3>
+
+                            <p className="text-sm text-muted-foreground">
+                                Review your payment history and receipts.
+                            </p>
+
+                            <div className="flex items-center text-purple-700 font-medium">
+                                View Payments
+                                <ArrowRight className="ml-2 h-4 w-4" />
+                            </div>
+
+                        </CardContent>
+
+                    </Card>
+
+                </Link>
+
+            </div>
+
+            {/* Upcoming Returns */}
+
+            <Card className="rounded-2xl">
+
+                <CardHeader>
+
+                    <CardTitle>
+                        Upcoming Returns
+                    </CardTitle>
+
+                </CardHeader>
+
+                <CardContent>
+
+                    {s.upcoming_returns.length === 0 ? (
+
+                        <div className="py-10 text-center text-muted-foreground">
+                            No upcoming returns.
+                        </div>
+
+                    ) : (
+
+                        <div className="space-y-4">
+
+                            {s.upcoming_returns.map((r) => (
+
+                                <div
+                                    key={r.id}
+                                    className="flex items-center justify-between rounded-xl border p-5 hover:bg-slate-50 transition"
+                                >
+
+                                    <div>
+
+                                        <h3 className="font-semibold">
+                                            {r.vehicle}
+                                        </h3>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Scheduled Return
+                                        </p>
+
+                                    </div>
+
+                                    <span className="rounded-full bg-orange-100 px-4 py-2 text-sm font-medium text-orange-700">
+                                        {r.return_date}
+                                    </span>
+
+                                </div>
+
+                            ))}
+
+                        </div>
+
+                    )}
+
+                </CardContent>
+
+            </Card>
+
+        </>
+    );
+})()}
 
                 {role === 'driver' && (() => {
                     const s = stats as DriverStats;

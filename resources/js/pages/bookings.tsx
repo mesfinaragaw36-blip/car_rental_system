@@ -24,7 +24,14 @@ interface Booking {
     notes?: string | null;
     customer?: { id: number; name: string; email?: string; phone?: string };
     owner?: { id: number; name: string };
-    car: { id: number; brand: string; model: string; year?: number; plate_number?: string };
+    car: { 
+    id: number; 
+    brand: string; 
+    model: string; 
+    year?: number; 
+    plate_number?: string;
+    image?: string;
+};
     payment: { payment_method: string; payment_status: string; paid_at: string | null } | null;
     driver_assignment?: { driver: { id: number; name: string } | null; status?: string } | null;
 }
@@ -94,7 +101,41 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                     <h1 className="text-3xl font-bold">Bookings</h1>
                     <p className="mt-2 text-muted-foreground">Track and manage all rental bookings in one place.</p>
                 </div>
+<div className="mb-6 grid gap-4 md:grid-cols-4">
+    <Card>
+        <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Total</p>
+            <p className="text-3xl font-bold">{bookings.data.length}</p>
+        </CardContent>
+    </Card>
 
+    <Card>
+        <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Pending</p>
+            <p className="text-3xl font-bold text-yellow-600">
+                {bookings.data.filter(b => b.status === "pending").length}
+            </p>
+        </CardContent>
+    </Card>
+
+    <Card>
+        <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Approved</p>
+            <p className="text-3xl font-bold text-blue-600">
+                {bookings.data.filter(b => b.status === "approved").length}
+            </p>
+        </CardContent>
+    </Card>
+
+    <Card>
+        <CardContent className="p-4">
+            <p className="text-sm text-muted-foreground">Completed</p>
+            <p className="text-3xl font-bold text-green-600">
+                {bookings.data.filter(b => b.status === "completed").length}
+            </p>
+        </CardContent>
+    </Card>
+</div>
                 {toast && (
                     <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}`}>
                         {toast.message}
@@ -125,18 +166,18 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                     </div>
                 )}
 
-                <div className="flex flex-wrap gap-3">
-                    <div className="relative flex-1 max-w-xs">
+                <div className="flex flex-wrap items-center gap-3 rounded-2xl border bg-white p-4 shadow-sm">
+                    <div className="relative w-full md:max-w-md">
                         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             placeholder="Search by car or customer..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="pl-9"
+                            className="h-11 rounded-xl pl-10"
                         />
                     </div>
                     <Select value={statusFilter} onValueChange={setStatusFilter}>
-                        <SelectTrigger className="w-40"><SelectValue placeholder="All statuses" /></SelectTrigger>
+                        <SelectTrigger className="h-11 w-44 rounded-xl"><SelectValue placeholder="All statuses" /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="">All</SelectItem>
                             {Object.keys(STATUS_STYLES).map((s) => (
@@ -144,9 +185,13 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                             ))}
                         </SelectContent>
                     </Select>
-                    <Button variant="secondary" onClick={applyFilters}>
-                        <Search className="mr-1.5 h-4 w-4" /> Filter
-                    </Button>
+                    <Button
+    onClick={applyFilters}
+    className="rounded-xl bg-blue-600 px-6 hover:bg-blue-700"
+>
+    <Search className="mr-2 h-4 w-4" />
+    Filter
+</Button>
                 </div>
 
                 {bookings.data.length === 0 ? (
@@ -162,14 +207,24 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                         {bookings.data.map((booking) => (
                             <Card key={booking.id} className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg">
                                 <div className={`h-1.5 w-full ${STATUS_STYLES[booking.status]?.split(' ')[0] ?? 'bg-slate-200'}`} />
-                                <CardContent className="p-6">
-                                    <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                                <CardContent className="p-5">
+                                       <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                                         <div className="flex-1 space-y-4">
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                                                        <Car className="h-5 w-5 text-blue-700" />
-                                                    </div>
+                                                    <div className="h-16 w-24 overflow-hidden rounded-xl bg-gray-100">
+    {booking.car.image ? (
+        <img
+            src={`/storage/${booking.car.image}`}
+            alt={`${booking.car.brand} ${booking.car.model}`}
+            className="h-full w-full object-cover"
+        />
+    ) : (
+        <div className="flex h-full items-center justify-center">
+            <Car className="h-6 w-6 text-gray-400" />
+        </div>
+    )}
+</div>
                                                     <div>
                                                         <p className="text-lg font-bold">
                                                             {booking.car.brand} {booking.car.model}
@@ -195,7 +250,19 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                     <Calendar className="h-4 w-4 shrink-0" />
-                                                    <span>{booking.pickup_date} &rarr; {booking.return_date}</span>
+                                                    <span>
+    {new Date(booking.pickup_date).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    })}
+    {' → '}
+    {new Date(booking.return_date).toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+    })}
+</span>
                                                 </div>
                                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                     <MapPin className="h-4 w-4 shrink-0" />
@@ -208,6 +275,42 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     <User className="h-3 w-3" /> Driver requested
                                                 </span>
                                             )}
+                                            <div className="mt-4 flex items-center gap-2 text-xs">
+    {[
+        'pending',
+        'approved',
+        'paid',
+        'picked_up',
+        'returned'
+    ].map((step, index) => {
+        const statuses = [
+            'pending',
+            'approved',
+            'paid',
+            'picked_up',
+            'returned'
+        ];
+
+        const active =
+            statuses.indexOf(booking.status) >= index;
+
+        return (
+            <div key={step} className="flex items-center gap-2">
+                <div
+                    className={`h-3 w-3 rounded-full ${
+                        active
+                            ? 'bg-blue-600'
+                            : 'bg-gray-300'
+                    }`}
+                />
+
+                {index < 4 && (
+                    <div className="h-1 w-8 bg-gray-200" />
+                )}
+            </div>
+        );
+    })}
+</div>
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-stretch">
