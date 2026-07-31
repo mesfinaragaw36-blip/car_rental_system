@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 import { login, register } from '@/routes';
 import type { Auth } from '@/types';
 
-const HERO_CAR_IMAGE = '/storage/car-photos/JnB7OuAlISot685AOkmhAR0lEh7sC3oaFi9gSiJC.png';
+const HERO_CAR_IMAGE = '/images/hero-car.png';
 
 const NAV_ITEMS = [
     { name: 'Features', link: '#features' },
@@ -70,7 +70,7 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 1,
         className: 'md:col-span-2',
-        thumbnail: '/storage/car-photos/cpYz3rulvoMZwyaZUSl6Pz6Cfsws6phD3Zf7DohR.png',
+        thumbnail: '/images/fleet-sedan.png',
         content: (
             <div>
                 <p className="text-xl font-bold text-white md:text-2xl">Sedans</p>
@@ -83,7 +83,7 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 2,
         className: 'md:col-span-1',
-        thumbnail: '/storage/car-photos/9Ko8Iekyv9PeSndzQu0zKVpTMPDNiZ2J3WhX696p.jpg',
+        thumbnail: '/images/fleet-suv.jpg',
         content: (
             <div>
                 <p className="text-xl font-bold text-white md:text-2xl">SUVs</p>
@@ -96,7 +96,7 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 3,
         className: 'md:col-span-1',
-        thumbnail: '/storage/car-photos/WIkELLhk48ZUciHPA629t7I5fq4xzExaMqbLwSfl.png',
+        thumbnail: '/images/fleet-luxury.png',
         content: (
             <div>
                 <p className="text-xl font-bold text-white md:text-2xl">Luxury</p>
@@ -109,7 +109,7 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 4,
         className: 'md:col-span-2',
-        thumbnail: '/storage/car-photos/MDRP6EAGn29PnFWqPYsa6t8HEtBg19bqmhaXguV6.jpg',
+        thumbnail: '/images/fleet-pickup.jpg',
         content: (
             <div>
                 <p className="text-xl font-bold text-white md:text-2xl">Pickups & Vans</p>

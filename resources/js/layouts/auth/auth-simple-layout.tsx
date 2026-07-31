@@ -4,7 +4,7 @@ import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
 const TRUST_POINTS = ['No hidden fees', 'Verified vehicles', 'Instant booking'];
-const HERO_CAR_IMAGE = '/storage/car-photos/JnB7OuAlISot685AOkmhAR0lEh7sC3oaFi9gSiJC.png';
+const HERO_CAR_IMAGE = '/images/hero-car.png';
 
 export default function AuthSimpleLayout({ children, title, description }: AuthLayoutProps) {
     const { name } = usePage().props as { name: string };
