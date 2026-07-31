@@ -79,9 +79,11 @@ class BookingController extends Controller
                 'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'email' => $booking->customer->email] : null,
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
                 'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
-                'payment' => $booking->payment ? ['payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
+                'payment' => $booking->payment ? ['id' => $booking->payment->id, 'payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
                 'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
                 'driver_status' => $booking->driverAssignment?->status,
+                'picked_up_at' => $booking->picked_up_at?->toDateTimeString(),
+                'returned_at' => $booking->returned_at?->toDateTimeString(),
             ],
             'role' => $user->role,
         ]);
@@ -154,7 +156,10 @@ class BookingController extends Controller
         if ($booking->status !== 'paid') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Only paid bookings can be marked as picked up.']);
         }
-        $booking->update(['status' => 'picked_up']);
+        $booking->update([
+    'status' => 'picked_up',
+    'picked_up_at' => now(),
+]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as picked up.']);
     }
@@ -168,8 +173,35 @@ class BookingController extends Controller
         if ($booking->status !== 'picked_up') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Only picked up bookings can be marked as returned.']);
         }
-        $booking->update(['status' => 'returned']);
+        $booking->update([
+    'status' => 'returned',
+    'returned_at' => now(),
+]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as returned.']);
     }
+    public function complete(Booking $booking): RedirectResponse
+{
+    $user = auth()->user();
+
+    if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
+        abort(403);
+    }
+
+    if ($booking->status !== 'returned') {
+        return back()->with('toast', [
+            'type' => 'error',
+            'message' => 'Only returned bookings can be completed.',
+        ]);
+    }
+
+    $booking->update([
+        'status' => 'completed',
+    ]);
+
+    return back()->with('toast', [
+        'type' => 'success',
+        'message' => 'Booking completed.',
+    ]);
+}
 }

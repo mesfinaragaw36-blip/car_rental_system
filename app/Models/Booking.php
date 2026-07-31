@@ -16,6 +16,8 @@ class Booking extends Model
         'return_date',
         'pickup_location',
         'return_location',
+        'picked_up_at',
+        'returned_at',
         'need_driver',
         'total_price',
         'status',
@@ -27,6 +29,8 @@ class Booking extends Model
         return [
             'pickup_date' => 'date',
             'return_date' => 'date',
+            'picked_up_at' => 'datetime',
+            'returned_at' => 'datetime',
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
         ];
