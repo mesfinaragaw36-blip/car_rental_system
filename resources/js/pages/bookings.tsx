@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { index as bookingsIndex, approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
+import { index as bookingsIndex, approve, reject, cancel, pickedUp, returned, completed } from '@/routes/bookings';
 
 interface Booking {
     id: number;
@@ -74,6 +74,7 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
             cancel: () => cancel.url({ booking: bookingId }),
             picked_up: () => pickedUp.url({ booking: bookingId }),
             returned: () => returned.url({ booking: bookingId }),
+            completed: () => completed.url({ booking: bookingId }),
         };
         router.post(routeMap[action](), {}, { preserveScroll: true });
     };
@@ -235,6 +236,12 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     Mark Returned
                                                 </Button>
                                             )}
+
+                                              {booking.status === 'returned' && (role === 'admin' || role === 'owner') && (
+                                                <Button size="sm" onClick={() => handleAction(booking.id, 'completed')}>
+                                                    Mark Completed
+                                                     </Button>
+                                        )}
                                             {role === 'customer' && booking.status === 'approved' && !booking.payment && hasAssignedDriver(booking) && (
                                                 <Button size="sm" asChild>
                                                     <Link href={`/bookings/${booking.id}/payment`}>Pay Now</Link>

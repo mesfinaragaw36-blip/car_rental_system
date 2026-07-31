@@ -61,14 +61,15 @@ class BookingController extends Controller
 
         $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone']);
 
-        $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
+        $days = max(1,Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date))
+);
 
         return Inertia::render('booking-details', [
             'booking' => [
                 'id' => $booking->id,
                 'status' => $booking->status,
-                'pickup_date' => $booking->pickup_date->toDateString(),
-                'return_date' => $booking->return_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateTimeString(),
+                'return_date' => $booking->return_date->toDateTimeString(),
                 'pickup_location' => $booking->pickup_location,
                 'return_location' => $booking->return_location,
                 'total_price' => $booking->total_price,
@@ -154,7 +155,8 @@ class BookingController extends Controller
         if ($booking->status !== 'paid') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Only paid bookings can be marked as picked up.']);
         }
-        $booking->update(['status' => 'picked_up']);
+        $booking->update(['status' => 'picked_up','picked_up_at' => now(),
+]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as picked up.']);
     }
@@ -168,8 +170,34 @@ class BookingController extends Controller
         if ($booking->status !== 'picked_up') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Only picked up bookings can be marked as returned.']);
         }
-        $booking->update(['status' => 'returned']);
+        $booking->update(['status' => 'returned', 'returned_at' => now(),
+]);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as returned.']);
     }
+
+    public function markCompleted(Booking $booking): RedirectResponse
+{
+    $user = auth()->user();
+
+    if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
+        abort(403);
+    }
+
+    if ($booking->status !== 'returned') {
+        return back()->with('toast', [
+            'type' => 'error',
+            'message' => 'Only returned bookings can be completed.'
+        ]);
+    }
+
+    $booking->update([
+        'status' => 'completed',
+    ]);
+
+    return back()->with('toast', [
+        'type' => 'success',
+        'message' => 'Booking completed.'
+    ]);
+}
 }

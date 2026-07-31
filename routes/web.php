@@ -40,6 +40,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/assign-driver', [BookingController::class, 'assignDriver'])->name('bookings.assign-driver');
     Route::post('/bookings/{booking}/picked-up', [BookingController::class, 'markPickedUp'])->name('bookings.picked-up');
     Route::post('/bookings/{booking}/returned', [BookingController::class, 'markReturned'])->name('bookings.returned');
+    Route::post('/bookings/{booking}/completed', [BookingController::class, 'markCompleted'])->name('bookings.completed');
 
     // Payments
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

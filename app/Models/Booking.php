@@ -16,6 +16,8 @@ class Booking extends Model
         'return_date',
         'pickup_location',
         'return_location',
+        'picked_up_at',
+        'returned_at',
         'need_driver',
         'total_price',
         'status',
@@ -25,8 +27,10 @@ class Booking extends Model
     protected function casts(): array
     {
         return [
-            'pickup_date' => 'date',
-            'return_date' => 'date',
+            'pickup_date' => 'datetime',
+            'return_date' => 'datetime',
+            'picked_up_at' => 'datetime',
+            'returned_at' => 'datetime',
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
         ];

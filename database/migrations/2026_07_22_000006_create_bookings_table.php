@@ -22,12 +22,14 @@ return new class extends Migration
                 ->constrained('cars')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-            $table->date('pickup_date');
-            $table->date('return_date');
+            $table->dateTime('pickup_date');
+            $table->dateTime('return_date');
             $table->string('pickup_location');
             $table->string('return_location');
             $table->boolean('need_driver')->default(false);
             $table->decimal('total_price', 10, 2);
+            $table->timestamp('picked_up_at')->nullable();
+            $table->timestamp('returned_at')->nullable();
             $table->enum('status', [
                 'pending', 'approved', 'rejected', 'paid',
                 'picked_up', 'returned', 'completed', 'cancelled',
