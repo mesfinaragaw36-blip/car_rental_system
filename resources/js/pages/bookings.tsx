@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
-import { approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
+import { approve, reject, cancel, pickedUp, returned, complete } from '@/routes/bookings';
 
 interface Booking {
     id: number;
@@ -19,20 +19,22 @@ interface Booking {
     return_date: string;
     pickup_location: string;
     return_location: string;
+    picked_up_at: string | null;
+    returned_at: string | null;
     total_price: string;
     need_driver: boolean;
     notes?: string | null;
     customer?: { id: number; name: string; email?: string; phone?: string };
     owner?: { id: number; name: string };
-    car: { 
-    id: number; 
-    brand: string; 
-    model: string; 
-    year?: number; 
-    plate_number?: string;
-    image?: string;
-};
-    payment: { payment_method: string; payment_status: string; paid_at: string | null } | null;
+    car: {
+        id: number;
+        brand: string;
+        model: string;
+        year?: number;
+        plate_number?: string;
+        image?: string;
+    };
+    payment: { id: number; payment_method: string; payment_status: string; paid_at: string | null } | null;
     driver_assignment?: { driver: { id: number; name: string } | null; status?: string } | null;
 }
 
@@ -85,6 +87,8 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
             cancel: () => cancel.url({ booking: bookingId }),
             picked_up: () => pickedUp.url({ booking: bookingId }),
             returned: () => returned.url({ booking: bookingId }),
+
+            complete: () => complete.url({ booking: bookingId }),
         };
         router.post(routeMap[action](), {}, { preserveScroll: true });
     };
@@ -342,15 +346,28 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     Mark Returned
                                                 </Button>
                                             )}
+                                                {booking.status === 'returned' && (role === 'admin' || role === 'owner') && (
+                                                    <Button size="sm" onClick={() => handleAction(booking.id, 'complete')}>
+                                                        Mark Completed
+                                                    </Button>
+                                                )}
                                             {role === 'customer' && booking.status === 'approved' && !booking.payment && hasAssignedDriver(booking) && (
                                                 <Button size="sm" asChild>
                                                     <Link href={`/bookings/${booking.id}/payment`}>Pay Now</Link>
                                                 </Button>
                                             )}
                                             {role === 'customer' && booking.payment?.payment_status === 'paid' && (
-                                                <span className="flex items-center gap-1 text-sm font-medium text-emerald-600">
-                                                    <CheckCircle className="h-4 w-4" /> Paid
-                                                </span>
+                                                <>
+                                                    <span className="flex items-center gap-1 text-sm font-medium text-emerald-600">
+                                                        <CheckCircle className="h-4 w-4" /> Paid
+                                                    </span>
+
+                                                    <Button size="sm" variant="outline" asChild>
+                                                        <Link href={`/payments/${booking.payment.id}/receipt`}>
+                                                            View Receipt
+                                                        </Link>
+                                                    </Button>
+                                                </>
                                             )}
                                         </div>
                                     </div>

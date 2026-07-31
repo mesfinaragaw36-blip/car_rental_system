@@ -2,7 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { ArrowLeft, Car, User, CalendarDays, MapPin, CreditCard, CircleDollarSign, UserCircle, Files, CheckCircle, XCircle, Ban } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { approve, reject, cancel, pickedUp, returned } from '@/routes/bookings';
+import { approve, reject, cancel, pickedUp, returned, complete} from '@/routes/bookings';
 
 interface BookingDetails {
     id: number; status: string; pickup_date: string; return_date: string;
@@ -11,9 +11,11 @@ interface BookingDetails {
     customer: { id: number; name: string; phone: string; email: string } | null;
     owner: { id: number; name: string; phone: string } | null;
     car: { id: number; brand: string; model: string; year: number; plate_number: string };
-    payment: { payment_method: string; payment_status: string; paid_at: string | null } | null;
+    payment: {id: number; payment_method: string; payment_status: string; paid_at: string | null } | null;
     driver: { id: number; name: string; phone: string } | null;
     driver_status: string | null;
+    picked_up_at: string | null;
+    returned_at: string | null;
 }
 
 interface Props { booking: BookingDetails; role: string; }
@@ -30,7 +32,7 @@ export default function BookingDetails({ booking, role }: Props) {
     const toast = p.toast;
 
     const handleAction = (action: string) => {
-        const routeMap: Record<string, any> = { approve, reject, cancel, picked_up: pickedUp, returned };
+        const routeMap: Record<string, any> = { approve, reject, cancel, picked_up: pickedUp, returned, complete };
         router.post(routeMap[action].url({ booking: booking.id }), {}, { preserveScroll: true });
     };
 
@@ -74,6 +76,20 @@ export default function BookingDetails({ booking, role }: Props) {
                         <CardContent className="space-y-2 text-sm">
                             <p><span className="text-muted-foreground">Pickup: </span>{booking.pickup_date}</p>
                             <p><span className="text-muted-foreground">Return: </span>{booking.return_date}</p>
+
+                            {booking.picked_up_at && (
+                                <p>
+                                    <span className="text-muted-foreground">Picked up at: </span>
+                                    {booking.picked_up_at}
+                                </p>
+                            )}
+
+                            {booking.returned_at && (
+                                <p>
+                                    <span className="text-muted-foreground">Returned at: </span>
+                                    {booking.returned_at}
+                                </p>
+                            )}
                         </CardContent>
                     </Card>
 
@@ -103,14 +119,37 @@ export default function BookingDetails({ booking, role }: Props) {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader><CardTitle className="flex items-center gap-2"><CreditCard className="h-5 w-5" /> Payment</CardTitle></CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            {booking.payment ? (
-                                <><p>Method: {booking.payment.payment_method}</p><p>Status: {booking.payment.payment_status}</p><p className="text-muted-foreground">Paid: {booking.payment.paid_at ?? 'N/A'}</p></>
-                            ) : <p className="text-muted-foreground">Not paid yet</p>}
-                        </CardContent>
-                    </Card>
+                                                    <Card>
+                                        <CardHeader>
+                                            <CardTitle className="flex items-center gap-2">
+                                                <CreditCard className="h-5 w-5" /> Payment
+                                            </CardTitle>
+                                        </CardHeader>
+
+                                        <CardContent className="space-y-2 text-sm">
+                                            {booking.payment ? (
+                                                <>
+                                                    <p>Method: {booking.payment.payment_method}</p>
+
+                                                    <p>Status: {booking.payment.payment_status}</p>
+
+                                                    <p className="text-muted-foreground">
+                                                        Paid: {booking.payment.paid_at ?? 'N/A'}
+                                                    </p>
+
+                                                    {booking.payment.payment_status === 'paid' && (
+                                                        <Button asChild className="mt-3">
+                                                            <Link href={`/payments/${booking.payment.id}/receipt`}>
+                                                                View Receipt
+                                                            </Link>
+                                                        </Button>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                <p className="text-muted-foreground">Not paid yet</p>
+                                            )}
+                                        </CardContent>
+                                    </Card>
 
                     <Card>
                         <CardHeader><CardTitle className="flex items-center gap-2"><Files className="h-5 w-5" /> Driver</CardTitle></CardHeader>
@@ -144,6 +183,11 @@ export default function BookingDetails({ booking, role }: Props) {
                     )}
                     {booking.status === 'picked_up' && (role === 'admin' || role === 'owner') && (
                         <Button onClick={() => handleAction('returned')}>Mark Returned</Button>
+                    )}
+                    {booking.status === 'returned' && (role === 'admin' || role === 'owner') && (
+                        <Button onClick={() => handleAction('complete')}>
+                            Mark Completed
+                        </Button>
                     )}
                     {role === 'customer' && booking.status === 'approved' && !booking.payment && (
                         !booking.need_driver || (booking.driver_status === 'assigned' || booking.driver_status === 'accepted')
