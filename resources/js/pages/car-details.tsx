@@ -15,6 +15,8 @@ interface Car {
     car_type_name?: { name: string };
     owner: { id: number; name: string; phone: string; email: string };
     images?: { id: number; image_path: string; is_primary: boolean }[];
+    average_rating?: number;
+    review_count?: number;
 }
 
 interface Props { car: Car; role: string; }
@@ -68,8 +70,15 @@ export default function CarDetails({ car, role }: Props) {
                         )}
                     </div>
                     <div className="space-y-4">
-                        <h1 className="text-3xl font-bold">{car.brand} {car.model} ({car.year})</h1>
-                        <p className="text-2xl font-bold text-primary">ETB {car.daily_rate}/day</p>
+                        <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-1">
+                                <h1 className="text-3xl font-bold">{car.brand} {car.model} ({car.year})</h1>
+                                {car.average_rating !== undefined && (
+                                    <p className="text-sm text-muted-foreground">{car.average_rating} ★ · {car.review_count ?? 0} review{(car.review_count ?? 0) === 1 ? '' : 's'}</p>
+                                )}
+                            </div>
+                            <p className="text-2xl font-bold text-primary">ETB {car.daily_rate}/day</p>
+                        </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
                             <span className="text-muted-foreground">Fuel:</span><span>{car.fuel_type}</span>
                             <span className="text-muted-foreground">Transmission:</span><span>{car.transmission}</span>

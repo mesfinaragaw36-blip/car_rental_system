@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingDriver;
+use App\Models\Car;
+use App\Models\Review;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
@@ -61,6 +63,92 @@ class BookingController extends Controller
 
         $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone']);
 
+        $userReviews = Review::where('booking_id', $booking->id)
+            ->where('reviewer_id', $user->id)
+            ->get();
+
+        $reviewed = [
+            'car' => false,
+            'owner' => false,
+            'driver' => false,
+            'customer' => false,
+        ];
+
+        foreach ($userReviews as $review) {
+            if ($review->reviewable_type === Car::class) {
+                $reviewed['car'] = true;
+            }
+
+            if ($review->reviewable_type === User::class) {
+                if ($review->reviewable_id === $booking->owner_id) {
+                    $reviewed['owner'] = true;
+                }
+                if ($review->reviewable_id === $booking->driverAssignment?->driver_id) {
+                    $reviewed['driver'] = true;
+                }
+                if ($review->reviewable_id === $booking->customer_id) {
+                    $reviewed['customer'] = true;
+                }
+            }
+        }
+
+        $reviewTargets = [];
+
+        if (in_array($booking->status, ['returned', 'completed'], true)) {
+            if ($user->role === 'customer') {
+                $reviewTargets[] = [
+                    'key' => 'car',
+                    'label' => 'Vehicle',
+                    'type' => 'car',
+                    'id' => $booking->car->id,
+                    'name' => $booking->car->brand.' '.$booking->car->model,
+                    'alreadyReviewed' => $reviewed['car'],
+                ];
+
+                $reviewTargets[] = [
+                    'key' => 'owner',
+                    'label' => 'Owner',
+                    'type' => 'user',
+                    'id' => $booking->owner->id,
+                    'name' => $booking->owner->name,
+                    'alreadyReviewed' => $reviewed['owner'],
+                ];
+
+                if ($booking->driverAssignment?->driver) {
+                    $reviewTargets[] = [
+                        'key' => 'driver',
+                        'label' => 'Driver',
+                        'type' => 'user',
+                        'id' => $booking->driverAssignment->driver->id,
+                        'name' => $booking->driverAssignment->driver->name,
+                        'alreadyReviewed' => $reviewed['driver'],
+                    ];
+                }
+            }
+
+            if ($user->role === 'owner' && $booking->customer) {
+                $reviewTargets[] = [
+                    'key' => 'customer',
+                    'label' => 'Customer',
+                    'type' => 'user',
+                    'id' => $booking->customer->id,
+                    'name' => $booking->customer->name,
+                    'alreadyReviewed' => $reviewed['customer'],
+                ];
+            }
+
+            if ($user->role === 'driver' && $booking->customer) {
+                $reviewTargets[] = [
+                    'key' => 'customer',
+                    'label' => 'Customer',
+                    'type' => 'user',
+                    'id' => $booking->customer->id,
+                    'name' => $booking->customer->name,
+                    'alreadyReviewed' => $reviewed['customer'],
+                ];
+            }
+        }
+
         $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
 
         return Inertia::render('booking-details', [
@@ -82,6 +170,9 @@ class BookingController extends Controller
                 'payment' => $booking->payment ? ['payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
                 'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
                 'driver_status' => $booking->driverAssignment?->status,
+                'reviewed' => $reviewed,
+                'review_targets' => $reviewTargets,
+                'can_review' => count($reviewTargets) > 0,
             ],
             'role' => $user->role,
         ]);

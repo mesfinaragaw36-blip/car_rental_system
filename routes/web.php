@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -40,6 +41,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/assign-driver', [BookingController::class, 'assignDriver'])->name('bookings.assign-driver');
     Route::post('/bookings/{booking}/picked-up', [BookingController::class, 'markPickedUp'])->name('bookings.picked-up');
     Route::post('/bookings/{booking}/returned', [BookingController::class, 'markReturned'])->name('bookings.returned');
+    Route::post('/bookings/{booking}/reviews', [ReviewController::class, 'store'])->name('bookings.reviews.store');
 
     // Payments
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');

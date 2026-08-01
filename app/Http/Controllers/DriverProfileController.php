@@ -12,18 +12,14 @@ class DriverProfileController extends Controller
 {
     public function show(): Response
     {
-        $profile = auth()->user()->driverProfile;
+        $driver = auth()->user();
+        $profile = $driver->driverProfile;
 
         return Inertia::render('driver/profile', [
-            'profile' => $profile ? [
-                'id' => $profile->id,
-                'license_number' => $profile->license_number,
-                'license_type' => $profile->license_type,
-                'experience_years' => $profile->experience_years,
-                'location' => $profile->location,
-                'availability' => $profile->availability,
-                'verification_status' => $profile->verification_status,
-            ] : null,
+            'profile' => $profile ? array_merge($profile->toArray(), [
+                'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $driver->reviews()->count(),
+            ]) : null,
         ]);
     }
 
