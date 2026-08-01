@@ -35,6 +35,7 @@ export default function Profile() {
                     {...ProfileController.update.form()}
                     options={{
                         preserveScroll: true,
+                        forceFormData: true,
                     }}
                     className="space-y-6"
                 >
@@ -321,10 +322,53 @@ export default function Profile() {
                                         <InputError className="mt-2" message={errors.availability} />
                                     </div>
 
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="license_file">Upload license file</Label>
+
+                                        <Input
+                                            id="license_file"
+                                            type="file"
+                                            className="mt-1 block w-full"
+                                            name="license_file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                        />
+
+                                        {profile?.license_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Existing file: <a className="text-primary underline" href={`/storage/${profile.license_file_path}`} target="_blank" rel="noreferrer">View license</a>
+                                            </p>
+                                        )}
+
+                                        <InputError className="mt-2" message={errors.license_file} />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id_file">Upload national ID</Label>
+
+                                        <Input
+                                            id="national_id_file"
+                                            type="file"
+                                            className="mt-1 block w-full"
+                                            name="national_id_file"
+                                            accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                        />
+
+                                        {profile?.national_id_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Existing file: <a className="text-primary underline" href={`/storage/${profile.national_id_file_path}`} target="_blank" rel="noreferrer">View national ID</a>
+                                            </p>
+                                        )}
+
+                                        <InputError className="mt-2" message={errors.national_id_file} />
+                                    </div>
+
                                     <div className="rounded-2xl border border-muted p-4">
                                         <p className="text-sm font-medium text-muted-foreground">Verification status</p>
                                         <p className="mt-2 text-base font-semibold capitalize">
                                             {profile?.verification_status ?? 'pending'}
+                                        </p>
+                                        <p className="mt-2 text-sm text-muted-foreground">
+                                            Uploads and driver profile changes will be reviewed by an administrator.
                                         </p>
                                     </div>
                                 </div>

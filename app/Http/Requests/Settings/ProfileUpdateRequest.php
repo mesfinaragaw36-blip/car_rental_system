@@ -36,6 +36,8 @@ class ProfileUpdateRequest extends FormRequest
                 'daily_rate' => ['required', 'numeric', 'min:0'],
                 'location' => ['required', 'string', 'max:255'],
                 'availability' => ['required', Rule::in(['available', 'unavailable'])],
+                'license_file' => ['sometimes', 'file', 'mimes:jpeg,png,jpg,gif,webp,pdf', 'max:10240'],
+                'national_id_file' => ['sometimes', 'file', 'mimes:jpeg,png,jpg,gif,webp,pdf', 'max:10240'],
             ]);
         }
 

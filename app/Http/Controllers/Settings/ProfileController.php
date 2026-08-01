@@ -12,6 +12,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -66,16 +67,28 @@ class ProfileController extends Controller
         }
 
         if ($user->role === 'driver') {
+            $driverProfileData = Arr::only($validated, [
+                'license_number',
+                'license_type',
+                'experience_years',
+                'daily_rate',
+                'location',
+                'availability',
+            ]);
+
+            if ($request->hasFile('license_file')) {
+                $driverProfileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
+            }
+
+            if ($request->hasFile('national_id_file')) {
+                $driverProfileData['national_id_file_path'] = $request->file('national_id_file')->store('driver_documents', 'public');
+            }
+
+            $driverProfileData['verification_status'] = 'pending';
+
             DriverProfile::updateOrCreate(
                 ['user_id' => $user->id],
-                Arr::only($validated, [
-                    'license_number',
-                    'license_type',
-                    'experience_years',
-                    'daily_rate',
-                    'location',
-                    'availability',
-                ])
+                $driverProfileData
             );
         }
 
