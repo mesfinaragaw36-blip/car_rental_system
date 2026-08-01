@@ -97,7 +97,6 @@ class PaymentController extends Controller
     }
    public function receipt(Payment $payment): Response
 {
-{
     $user = auth()->user();
 
     $payment->load([
@@ -146,5 +145,13 @@ class PaymentController extends Controller
         ] : null,
     ]);
 }
+public function create(Booking $booking): Response
+{
+    $booking->load('car', 'customer');
+
+    return Inertia::render('payment', [
+        'booking' => $booking,
+    ]);
 }
- }
+}
+ 
