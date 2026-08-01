@@ -13,6 +13,18 @@ import {
     CreditCard,
     ArrowRight,
 } from "lucide-react";
+import {
+    LineChart,
+    Line,
+    XAxis,
+    YAxis,
+    Tooltip,
+    ResponsiveContainer,
+    PieChart as RechartsPieChart,
+    Pie,
+    Cell,
+    CartesianGrid,
+} from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
@@ -300,6 +312,11 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
 
                 {role === 'owner' && (() => {
                     const s = stats as OwnerStats;
+                    const vehicleStatusData = [
+                        { name: 'Available', value: s.available_vehicles },
+                        { name: 'Rented', value: s.rented_vehicles },
+                        { name: 'Pending', value: s.pending_vehicles },
+                    ];
 
                     return (
                         <>
@@ -319,6 +336,102 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                                 <StatCard title="Active Bookings" value={s.active_bookings} icon={<Activity className="h-4 w-4" />} href="/bookings" />
                                 <StatCard title="Pending Bookings" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} href="/bookings" accent="text-yellow-600" />
                                 <StatCard title="Total Earnings" value={`ETB ${s.total_earnings}`} icon={<CircleDollarSign className="h-4 w-4" />} />
+                            </div>
+
+                            <div className="grid gap-4 lg:grid-cols-2">
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Fleet Status</CardTitle>
+                                    </CardHeader>
+
+                                    <CardContent>
+                                        <div className="h-72">
+                                            <ResponsiveContainer width="100%" height="100%">
+                                                <RechartsPieChart>
+                                                    <Pie
+                                                        data={vehicleStatusData}
+                                                        cx="50%"
+                                                        cy="50%"
+                                                        innerRadius={60}
+                                                        outerRadius={90}
+                                                        dataKey="value"
+                                                        nameKey="name"
+                                                    >
+                                                        {vehicleStatusData.map((entry, index) => (
+                                                            <Cell
+                                                                key={`cell-${index}`}
+                                                                fill={[
+                                                                    '#22C55E',
+                                                                    '#2563EB',
+                                                                    '#F59E0B',
+                                                                    '#EF4444',
+                                                                ][index]}
+                                                            />
+                                                        ))}
+                                                    </Pie>
+
+                                                    <Tooltip />
+                                                </RechartsPieChart>
+                                            </ResponsiveContainer>
+                                        </div>
+
+                                        <div className="flex justify-center gap-5 text-sm">
+                                            {vehicleStatusData.map((item) => (
+                                                <div key={item.name}>
+                                                    {item.name}: {item.value}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+
+                                <Card>
+                                    <CardHeader>
+                                        <CardTitle>Monthly Earnings</CardTitle>
+                                        <p className="text-sm text-muted-foreground">
+                                            Your earnings from paid bookings
+                                        </p>
+                                    </CardHeader>
+
+                                    <CardContent>
+                                        {monthlyData.length === 0 ? (
+                                            <p className="py-10 text-center text-sm text-muted-foreground">
+                                                No earnings data available yet.
+                                            </p>
+                                        ) : (
+                                            <div className="h-[300px] w-full">
+                                                <ResponsiveContainer width="100%" height="100%">
+                                                    <LineChart data={monthlyData}>
+                                                        <CartesianGrid strokeDasharray="3 3" />
+
+                                                        <XAxis
+                                                            dataKey="month"
+                                                            tick={{ fontSize: 12 }}
+                                                        />
+
+                                                        <YAxis
+                                                            tick={{ fontSize: 12 }}
+                                                        />
+
+                                                        <Tooltip
+                                                            formatter={(value) => [
+                                                                `ETB ${Number(value).toLocaleString()}`,
+                                                                'Revenue',
+                                                            ]}
+                                                        />
+
+                                                        <Line
+                                                            type="monotone"
+                                                            dataKey="revenue"
+                                                            strokeWidth={2}
+                                                            dot={{ r: 4 }}
+                                                        />
+                                                    </LineChart>
+                                                </ResponsiveContainer>
+                                            </div>
+                                        )}
+                                    </CardContent>
+                                </Card>
                             </div>
 
                             <Card>
