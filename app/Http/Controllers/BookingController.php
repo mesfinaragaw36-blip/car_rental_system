@@ -61,7 +61,7 @@ class BookingController extends Controller
             abort(403);
         }
 
-        $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone']);
+        $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer']);
 
         $userReviews = Review::where('booking_id', $booking->id)
             ->where('reviewer_id', $user->id)
@@ -151,6 +151,25 @@ class BookingController extends Controller
 
         $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
 
+        $reviewList = $booking->reviews->map(function (Review $review) use ($booking) {
+            $targetName = $review->reviewable_type === Car::class
+                ? $booking->car->brand.' '.$booking->car->model
+                : match ($review->reviewable_id) {
+                    $booking->owner_id => $booking->owner->name,
+                    $booking->driverAssignment?->driver_id => $booking->driverAssignment->driver->name,
+                    $booking->customer_id => $booking->customer->name,
+                    default => 'Unknown',
+                };
+
+            return [
+                'id' => $review->id,
+                'reviewer' => ['id' => $review->reviewer->id, 'name' => $review->reviewer->name],
+                'target' => $review->reviewable_type === Car::class ? 'Vehicle' : $targetName,
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+            ];
+        })->toArray();
+
         return Inertia::render('booking-details', [
             'booking' => [
                 'id' => $booking->id,
@@ -173,6 +192,7 @@ class BookingController extends Controller
                 'reviewed' => $reviewed,
                 'review_targets' => $reviewTargets,
                 'can_review' => count($reviewTargets) > 0,
+                'reviews' => $reviewList,
             ],
             'role' => $user->role,
         ]);

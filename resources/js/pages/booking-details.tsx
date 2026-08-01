@@ -30,6 +30,13 @@ interface BookingDetails {
     reviewed?: Record<string, boolean>;
     review_targets?: ReviewTarget[];
     can_review?: boolean;
+    reviews?: {
+        id: number;
+        reviewer: { id: number; name: string };
+        target: string;
+        rating: number;
+        review_text: string | null;
+    }[];
 }
 
 interface Props { booking: BookingDetails; role: string; }
@@ -177,6 +184,26 @@ export default function BookingDetails({ booking, role }: Props) {
                     <Card>
                         <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
                         <CardContent><p className="text-sm">{booking.notes}</p></CardContent>
+                    </Card>
+                )}
+
+                {role === 'admin' && booking.reviews && booking.reviews.length > 0 && (
+                    <Card>
+                        <CardHeader><CardTitle>Booking Reviews</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            {booking.reviews.map((review) => (
+                                <div key={review.id} className="rounded-2xl border border-slate-200 p-4">
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                        <div>
+                                            <p className="font-semibold">{review.target}</p>
+                                            <p className="text-sm text-muted-foreground">Reviewed by {review.reviewer.name}</p>
+                                        </div>
+                                        <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium">{review.rating} ★</span>
+                                    </div>
+                                    {review.review_text && <p className="mt-3 text-sm text-muted-foreground">{review.review_text}</p>}
+                                </div>
+                            ))}
+                        </CardContent>
                     </Card>
                 )}
 
