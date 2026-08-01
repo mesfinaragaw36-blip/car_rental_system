@@ -15,6 +15,8 @@ interface DriverProfile {
     location: string;
     availability: string;
     verification_status: string;
+    license_file_path?: string | null;
+    national_id_file_path?: string | null;
 }
 
 interface Props { profile: DriverProfile | null; }
@@ -27,19 +29,29 @@ export default function DriverProfilePage({ profile }: Props) {
     const [licenseNumber, setLicenseNumber] = useState(profile?.license_number ?? '');
     const [licenseType, setLicenseType] = useState(profile?.license_type ?? '');
     const [experienceYears, setExperienceYears] = useState(String(profile?.experience_years ?? ''));
+    const [dailyRate, setDailyRate] = useState(String(profile?.daily_rate ?? ''));
     const [location, setLocation] = useState(profile?.location ?? '');
+    const [availability, setAvailability] = useState(profile?.availability ?? 'available');
+    const [licenseFile, setLicenseFile] = useState<File | null>(null);
+    const [nationalIdFile, setNationalIdFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setProcessing(true);
+
         router.post('/driver/profile', {
             license_number: licenseNumber,
             license_type: licenseType,
             experience_years: experienceYears,
+            daily_rate: dailyRate,
             location,
+            availability,
+            license_file: licenseFile,
+            national_id_file: nationalIdFile,
         }, {
+            forceFormData: true,
             onFinish: () => setProcessing(false),
             onError: (errs) => setErrors(errs),
             onSuccess: () => setErrors({}),
@@ -102,6 +114,65 @@ export default function DriverProfilePage({ profile }: Props) {
                                 <Label htmlFor="location">Location / City</Label>
                                 <Input id="location" placeholder="e.g. Addis Ababa" value={location} onChange={(e) => setLocation(e.target.value)} required />
                                 <InputError message={errors.location} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="daily_rate">Daily Rate (ETB)</Label>
+                                <Input
+                                    id="daily_rate"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="e.g. 500"
+                                    value={dailyRate}
+                                    onChange={(e) => setDailyRate(e.target.value)}
+                                    required
+                                />
+                                <InputError message={errors.daily_rate} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="availability">Availability</Label>
+                                <Select value={availability} onValueChange={setAvailability}>
+                                    <SelectTrigger><SelectValue placeholder="Select availability" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="available">Available</SelectItem>
+                                        <SelectItem value="unavailable">Unavailable</SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.availability} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="license_file">Upload license file</Label>
+                                <Input
+                                    id="license_file"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                    onChange={(e) => setLicenseFile(e.target.files?.[0] ?? null)}
+                                />
+                                {profile?.license_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Existing file: <a className="text-primary underline" href={`/storage/${profile.license_file_path}`} target="_blank" rel="noreferrer">View license</a>
+                                    </p>
+                                )}
+                                <InputError message={errors.license_file} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="national_id_file">Upload national ID</Label>
+                                <Input
+                                    id="national_id_file"
+                                    type="file"
+                                    accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                    onChange={(e) => setNationalIdFile(e.target.files?.[0] ?? null)}
+                                />
+                                {profile?.national_id_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Existing file: <a className="text-primary underline" href={`/storage/${profile.national_id_file_path}`} target="_blank" rel="noreferrer">View national ID</a>
+                                    </p>
+                                )}
+                                <InputError message={errors.national_id_file} />
                             </div>
 
                             <Button type="submit" className="w-full" disabled={processing}>
