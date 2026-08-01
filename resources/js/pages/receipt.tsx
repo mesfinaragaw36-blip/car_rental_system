@@ -18,6 +18,8 @@ interface Props {
         pickup_location: string;
         return_location: string;
         total_price: string;
+         days: number;
+        daily_rate: string;
     };
     customer: {
         name: string;
@@ -114,6 +116,34 @@ export default function Receipt({ payment, booking, customer, car }: Props) {
                         </span>
                     </div>
                 </div>
+                                            
+                                            <div className="py-6 space-y-4 border-t">
+                                <h2 className="font-semibold text-lg">
+                                    Cost Breakdown
+                                </h2>
+
+                                <div className="flex justify-between">
+                                    <span>Daily Rate</span>
+                                    <span>ETB {booking.daily_rate}</span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span>Rental Days</span>
+                                    <span>{booking.days}</span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span>Calculation</span>
+                                    <span>
+                                        ETB {booking.daily_rate} × {booking.days}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between text-xl font-bold border-t pt-4">
+                                    <span>Total Paid</span>
+                                    <span>ETB {payment.amount}</span>
+                                </div>
+                            </div>
 
 
                 <div className="py-6 space-y-4">

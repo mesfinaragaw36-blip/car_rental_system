@@ -115,7 +115,10 @@ class PaymentController extends Controller
     ) {
         abort(403);
     }
-
+    $days = $booking->pickup_date->diffInDays($booking->return_date);
+    $dailyRate = $days > 0
+    ? number_format($booking->total_price / $days, 2)
+    : '0.00';
     return Inertia::render('receipt', [
         'payment' => [
             'id' => $payment->id,
@@ -132,6 +135,10 @@ class PaymentController extends Controller
             'pickup_location' => $booking->pickup_location,
             'return_location' => $booking->return_location,
             'total_price' => $booking->total_price,
+            'days' => $days,
+             'daily_rate' => $days > 0
+             ? number_format($booking->total_price / $days, 2)
+        :        '0.00',
         ],
         'customer' => $booking->customer ? [
             'name' => $booking->customer->name,
