@@ -16,7 +16,6 @@ interface DriverProfile {
     availability: string;
     verification_status: string;
     license_file_path?: string | null;
-    national_id_file_path?: string | null;
 }
 
 interface Props { profile: DriverProfile | null; }
@@ -33,7 +32,6 @@ export default function DriverProfilePage({ profile }: Props) {
     const [location, setLocation] = useState(profile?.location ?? '');
     const [availability, setAvailability] = useState(profile?.availability ?? 'available');
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
-    const [nationalIdFile, setNationalIdFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -49,7 +47,6 @@ export default function DriverProfilePage({ profile }: Props) {
             location,
             availability,
             license_file: licenseFile,
-            national_id_file: nationalIdFile,
         }, {
             forceFormData: true,
             onFinish: () => setProcessing(false),
@@ -144,35 +141,22 @@ export default function DriverProfilePage({ profile }: Props) {
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="license_file">Upload license file</Label>
+                                <Label htmlFor="license_file">Upload necessary documents</Label>
+                                <p className="text-sm text-muted-foreground">
+                                    Upload necessary files: license, national ID, and years of experience evidence all combined in one PDF.
+                                </p>
                                 <Input
                                     id="license_file"
                                     type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
+                                    accept="application/pdf"
                                     onChange={(e) => setLicenseFile(e.target.files?.[0] ?? null)}
                                 />
                                 {profile?.license_file_path && (
                                     <p className="text-sm text-muted-foreground">
-                                        Existing file: <a className="text-primary underline" href={`/storage/${profile.license_file_path}`} target="_blank" rel="noreferrer">View license</a>
+                                        Existing file: <a className="text-primary underline" href={`/storage/${profile.license_file_path}`} target="_blank" rel="noreferrer">View upload</a>
                                     </p>
                                 )}
                                 <InputError message={errors.license_file} />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="national_id_file">Upload national ID</Label>
-                                <Input
-                                    id="national_id_file"
-                                    type="file"
-                                    accept="image/jpeg,image/png,image/webp,image/gif,application/pdf"
-                                    onChange={(e) => setNationalIdFile(e.target.files?.[0] ?? null)}
-                                />
-                                {profile?.national_id_file_path && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Existing file: <a className="text-primary underline" href={`/storage/${profile.national_id_file_path}`} target="_blank" rel="noreferrer">View national ID</a>
-                                    </p>
-                                )}
-                                <InputError message={errors.national_id_file} />
                             </div>
 
                             <Button type="submit" className="w-full" disabled={processing}>

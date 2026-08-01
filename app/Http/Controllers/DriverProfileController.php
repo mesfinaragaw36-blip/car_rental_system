@@ -25,7 +25,6 @@ class DriverProfileController extends Controller
                 'availability' => $profile->availability,
                 'verification_status' => $profile->verification_status,
                 'license_file_path' => $profile->license_file_path,
-                'national_id_file_path' => $profile->national_id_file_path,
             ] : null,
         ]);
     }
@@ -41,21 +40,17 @@ class DriverProfileController extends Controller
             'daily_rate' => 'required|numeric|min:0',
             'location' => 'required|string|max:255',
             'availability' => 'sometimes|in:available,unavailable',
-            'license_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
-            'national_id_file' => 'sometimes|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
+            'license_file' => 'sometimes|file|mimes:pdf|max:10240',
         ]);
 
         $profileData = $validated;
 
-        unset($profileData['license_file'], $profileData['national_id_file']);
+        unset($profileData['license_file']);
 
         if ($request->hasFile('license_file')) {
             $profileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
         }
 
-        if ($request->hasFile('national_id_file')) {
-            $profileData['national_id_file_path'] = $request->file('national_id_file')->store('driver_documents', 'public');
-        }
 
         DriverProfile::updateOrCreate(
             ['user_id' => $user->id],

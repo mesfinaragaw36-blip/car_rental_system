@@ -21,6 +21,7 @@ interface DriverProfile {
     location: string;
     availability: string;
     verification_status: string;
+    license_file_path?: string | null;
 }
 
 interface UserData {
@@ -297,6 +298,22 @@ export default function ShowUser({ user }: Props) {
                                             user.driver_profile.availability.slice(1)}
                                     </p>
                                 </div>
+                            </div>
+
+                            <div className="rounded-2xl border border-muted p-4">
+                                <p className="text-sm text-muted-foreground">Uploaded verification document</p>
+                                {user.driver_profile.license_file_path ? (
+                                    <a
+                                        href={`/storage/${user.driver_profile.license_file_path}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-primary underline"
+                                    >
+                                        View uploaded document
+                                    </a>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No verification document uploaded yet.</p>
+                                )}
                             </div>
 
                             {user.driver_profile.verification_status === 'pending' && (

@@ -80,10 +80,6 @@ class ProfileController extends Controller
                 $driverProfileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
             }
 
-            if ($request->hasFile('national_id_file')) {
-                $driverProfileData['national_id_file_path'] = $request->file('national_id_file')->store('driver_documents', 'public');
-            }
-
             $driverProfileData['verification_status'] = 'pending';
 
             DriverProfile::updateOrCreate(

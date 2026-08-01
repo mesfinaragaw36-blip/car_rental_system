@@ -13,7 +13,7 @@ class DriverProfileUploadTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_driver_can_upload_license_and_national_id_files()
+    public function test_driver_can_upload_driver_verification_document()
     {
         Storage::fake('public');
 
@@ -28,8 +28,7 @@ class DriverProfileUploadTest extends TestCase
                 'daily_rate' => 600.00,
                 'location' => 'Addis Ababa',
                 'availability' => 'available',
-                'license_file' => UploadedFile::fake()->create('license.pdf', 100, 'application/pdf'),
-                'national_id_file' => UploadedFile::fake()->image('national-id.jpg'),
+                'license_file' => UploadedFile::fake()->create('driver-docs.pdf', 100, 'application/pdf'),
             ]);
 
         $response
@@ -50,9 +49,7 @@ class DriverProfileUploadTest extends TestCase
 
         $this->assertNotNull($profile);
         $this->assertNotNull($profile->license_file_path);
-        $this->assertNotNull($profile->national_id_file_path);
 
         Storage::disk('public')->assertExists($profile->license_file_path);
-        Storage::disk('public')->assertExists($profile->national_id_file_path);
     }
 }
