@@ -15,6 +15,8 @@ interface DriverProfile {
     location: string;
     availability: string;
     verification_status: string;
+    average_rating?: number;
+    review_count?: number;
 }
 
 interface Props { profile: DriverProfile | null; }
@@ -57,14 +59,26 @@ export default function DriverProfilePage({ profile }: Props) {
                 )}
 
                 {!isNew && profile && (
-                    <div className="flex items-center gap-3">
-                        <span className="text-sm text-muted-foreground">Status:</span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${profile.availability === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                            {profile.availability}
-                        </span>
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${profile.verification_status === 'approved' ? 'bg-green-100 text-green-800' : profile.verification_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
-                            {profile.verification_status}
-                        </span>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-muted-foreground">Status:</span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${profile.availability === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                {profile.availability}
+                            </span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm text-muted-foreground">Verification:</span>
+                            <span className={`px-2 py-1 text-xs font-medium rounded-full ${profile.verification_status === 'approved' ? 'bg-green-100 text-green-800' : profile.verification_status === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800'}`}>
+                                {profile.verification_status}
+                            </span>
+                        </div>
+                        {profile.average_rating !== undefined && (
+                            <div className="flex items-center gap-2">
+                                <span className="text-sm text-muted-foreground">Rating:</span>
+                                <span className="font-semibold">{profile.average_rating} ★</span>
+                                <span className="text-sm text-muted-foreground">({profile.review_count ?? 0})</span>
+                            </div>
+                        )}
                     </div>
                 )}
 

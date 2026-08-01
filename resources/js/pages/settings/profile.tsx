@@ -31,6 +31,14 @@ export default function Profile() {
                     description="Update your profile information"
                 />
 
+                {profile?.average_rating !== undefined && (
+                    <div className="rounded-2xl border border-muted p-4 bg-muted/5">
+                        <p className="text-sm text-muted-foreground">Average rating</p>
+                        <p className="mt-1 text-2xl font-semibold">{profile.average_rating} ★</p>
+                        <p className="text-sm text-muted-foreground">{profile.review_count ?? 0} review{(profile.review_count ?? 0) === 1 ? '' : 's'}</p>
+                    </div>
+                )}
+
                 <Form
                     {...ProfileController.update.form()}
                     options={{

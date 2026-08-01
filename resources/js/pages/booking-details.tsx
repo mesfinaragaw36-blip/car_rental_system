@@ -1,8 +1,21 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 import { ArrowLeft, Car, User, CalendarDays, MapPin, CreditCard, CircleDollarSign, UserCircle, Files, CheckCircle, XCircle, Ban } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { approve, reject, cancel, pickedUp, returned, complete} from '@/routes/bookings';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { approve, reject, cancel, pickedUp, returned, complete } from '@/routes/bookings';
+import reviews from '@/routes/bookings/reviews';
+
+interface ReviewTarget {
+    key: string;
+    label: string;
+    type: 'car' | 'user';
+    id: number;
+    name: string;
+    alreadyReviewed: boolean;
+}
 
 interface BookingDetails {
     id: number; status: string; pickup_date: string; return_date: string;
@@ -16,6 +29,9 @@ interface BookingDetails {
     driver_status: string | null;
     picked_up_at: string | null;
     returned_at: string | null;
+    reviewed?: Record<string, boolean>;
+    review_targets?: ReviewTarget[];
+    can_review?: boolean;
 }
 
 interface Props { booking: BookingDetails; role: string; }
@@ -31,9 +47,42 @@ export default function BookingDetails({ booking, role }: Props) {
     const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
     const toast = p.toast;
 
+    const { data, setData, post, processing, errors, reset } = useForm({
+        reviewable_type: '',
+        reviewable_id: 0,
+        rating: 5,
+        review_text: '',
+    });
+
+    const [selectedReviewTarget, setSelectedReviewTarget] = useState<ReviewTarget | null>(null);
+
     const handleAction = (action: string) => {
         const routeMap: Record<string, any> = { approve, reject, cancel, picked_up: pickedUp, returned, complete };
         router.post(routeMap[action].url({ booking: booking.id }), {}, { preserveScroll: true });
+    };
+
+    const selectReviewTarget = (target: ReviewTarget) => {
+        setSelectedReviewTarget(target);
+        setData('reviewable_type', target.type);
+        setData('reviewable_id', target.id);
+        setData('rating', 5);
+        setData('review_text', '');
+    };
+
+    const handleReviewSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        if (!selectedReviewTarget) {
+            return;
+        }
+
+        post(reviews.store.url({ booking: booking.id }), {
+            preserveScroll: true,
+            onSuccess: () => {
+                reset('review_text');
+                setSelectedReviewTarget(null);
+            },
+        });
     };
 
     return (
@@ -167,6 +216,71 @@ export default function BookingDetails({ booking, role }: Props) {
                     <Card>
                         <CardHeader><CardTitle>Notes</CardTitle></CardHeader>
                         <CardContent><p className="text-sm">{booking.notes}</p></CardContent>
+                    </Card>
+                )}
+
+                {booking.can_review && booking.review_targets && booking.review_targets.length > 0 && (
+                    <Card>
+                        <CardHeader><CardTitle>Leave a Review</CardTitle></CardHeader>
+                        <CardContent className="space-y-4">
+                            <p className="text-sm text-muted-foreground">Submit one review per eligible target for this booking.</p>
+
+                            <div className="grid gap-3">
+                                {booking.review_targets.map((target) => (
+                                    <div key={target.key} className="flex flex-col rounded-2xl border p-4 sm:flex-row sm:items-center sm:justify-between">
+                                        <div>
+                                            <p className="font-semibold">{target.label}</p>
+                                            <p className="text-sm text-muted-foreground">{target.name}</p>
+                                        </div>
+
+                                        {target.alreadyReviewed ? (
+                                            <span className="rounded-full bg-gray-100 px-3 py-1 text-sm font-medium text-gray-700">Already reviewed</span>
+                                        ) : (
+                                            <Button variant={selectedReviewTarget?.key === target.key ? 'secondary' : 'outline'} size="sm" onClick={() => selectReviewTarget(target)}>
+                                                {selectedReviewTarget?.key === target.key ? 'Review selected' : 'Write review'}
+                                            </Button>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {selectedReviewTarget && (
+                                <form onSubmit={handleReviewSubmit} className="space-y-4">
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <Label htmlFor="rating">Rating</Label>
+                                            <select
+                                                id="rating"
+                                                className="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                                                value={data.rating}
+                                                onChange={(e) => setData('rating', Number(e.target.value))}
+                                            >
+                                                {[5, 4, 3, 2, 1].map((value) => (
+                                                    <option key={value} value={value}>{value} Star{value > 1 ? 's' : ''}</option>
+                                                ))}
+                                            </select>
+                                            {errors.rating && <p className="text-sm text-destructive">{errors.rating}</p>}
+                                        </div>
+
+                                        <div className="space-y-1">
+                                            <Label>Review for</Label>
+                                            <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">{selectedReviewTarget.label}: {selectedReviewTarget.name}</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-1">
+                                        <Label htmlFor="review_text">Review</Label>
+                                        <Textarea id="review_text" value={data.review_text ?? ''} onChange={(e) => setData('review_text', e.target.value)} placeholder="Share what went well or what could improve." rows={4} />
+                                        {errors.review_text && <p className="text-sm text-destructive">{errors.review_text}</p>}
+                                    </div>
+
+                                    <div className="flex flex-wrap gap-2">
+                                        <Button type="submit" disabled={processing}>{processing ? 'Submitting...' : 'Submit Review'}</Button>
+                                        <Button variant="ghost" type="button" onClick={() => setSelectedReviewTarget(null)}>Cancel</Button>
+                                    </div>
+                                </form>
+                            )}
+                        </CardContent>
                     </Card>
                 )}
 

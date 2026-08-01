@@ -31,6 +31,11 @@ class ProfileController extends Controller
             $profile = $user->driverProfile?->toArray();
         }
 
+        if ($profile !== null) {
+            $profile['average_rating'] = round($user->reviews()->avg('rating') ?? 0, 1);
+            $profile['review_count'] = $user->reviews()->count();
+        }
+
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),
