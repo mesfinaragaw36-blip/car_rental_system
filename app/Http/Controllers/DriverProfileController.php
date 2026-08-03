@@ -12,7 +12,8 @@ class DriverProfileController extends Controller
 {
     public function show(): Response
     {
-        $profile = auth()->user()->driverProfile;
+        $driver = auth()->user();
+        $profile = $driver->driverProfile;
 
         return Inertia::render('driver/profile', [
             'profile' => $profile ? [
@@ -25,6 +26,8 @@ class DriverProfileController extends Controller
                 'availability' => $profile->availability,
                 'verification_status' => $profile->verification_status,
                 'license_file_path' => $profile->license_file_path,
+                'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $driver->reviews()->count(),
             ] : null,
         ]);
     }
@@ -50,7 +53,6 @@ class DriverProfileController extends Controller
         if ($request->hasFile('license_file')) {
             $profileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
         }
-
 
         DriverProfile::updateOrCreate(
             ['user_id' => $user->id],

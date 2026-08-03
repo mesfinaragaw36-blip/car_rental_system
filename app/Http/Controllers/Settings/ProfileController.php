@@ -12,7 +12,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,6 +29,11 @@ class ProfileController extends Controller
             $profile = $user->ownerProfile?->toArray();
         } elseif ($user->role === 'driver') {
             $profile = $user->driverProfile?->toArray();
+        }
+
+        if ($profile !== null) {
+            $profile['average_rating'] = round($user->reviews()->avg('rating') ?? 0, 1);
+            $profile['review_count'] = $user->reviews()->count();
         }
 
         return Inertia::render('settings/profile', [

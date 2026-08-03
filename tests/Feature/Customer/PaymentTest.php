@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Tests\TestCase;
 
 class PaymentTest extends TestCase
@@ -179,5 +180,40 @@ class PaymentTest extends TestCase
 
         $response->assertSessionHasErrors(['payment_method']);
         $this->assertDatabaseMissing('payments', ['booking_id' => $booking->id]);
+    }
+
+    public function test_customer_can_view_the_payment_page_for_their_approved_booking(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $booking = $this->createBooking($owner, $customer, $car);
+
+        $response = $this
+            ->actingAs($customer)
+            ->get(route('payments.create', $booking));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('payment')
+            ->where('booking.car.brand', 'Toyota')
+            ->where('booking.car.model', 'Corolla')
+            ->has('booking.car.plate_number')
+            ->where('booking.total_price', '300.00'));
+    }
+
+    public function test_customer_cannot_view_the_payment_page_for_another_customers_booking(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $otherCustomer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $booking = $this->createBooking($owner, $customer, $car);
+
+        $response = $this
+            ->actingAs($otherCustomer)
+            ->get(route('payments.create', $booking));
+
+        $response->assertForbidden();
     }
 }

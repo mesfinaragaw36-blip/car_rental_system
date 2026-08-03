@@ -43,7 +43,10 @@ class BrowseCarController extends Controller
         $car->load(['images', 'owner', 'carTypeName']);
 
         return Inertia::render('car-details', [
-            'car' => $car,
+            'car' => array_merge($car->toArray(), [
+                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $car->reviews()->count(),
+            ]),
             'role' => auth()->user()->role,
         ]);
     }
