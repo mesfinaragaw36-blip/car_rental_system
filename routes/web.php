@@ -16,6 +16,7 @@ use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\Admin\LocationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -131,6 +132,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/car-types/type-names', [CarTypeNameController::class, 'store'])->name('car-types.type-names.store');
         Route::put('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'update'])->name('car-types.type-names.update');
         Route::delete('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])->name('car-types.type-names.destroy');
+
+        Route::resource('locations', LocationController::class)->except('show');
     });
 });
 

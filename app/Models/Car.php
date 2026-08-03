@@ -30,6 +30,7 @@ class Car extends Model
         'description',
         'approval_status',
         'availability_status',
+        'location_id',
     ];
 
     protected function casts(): array
@@ -66,4 +67,8 @@ class Car extends Model
     {
         return $this->hasMany(Booking::class);
     }
+    public function location()
+{
+    return $this->belongsTo(Location::class);
+}
 }

@@ -32,6 +32,7 @@ interface Car {
     images: CarImage[];
     owner: { id: number; name: string; phone: string };
     car_type_name?: { id: number; name: string };
+    location?: {id: number;name: string;address: string;city: string};
 }
 
 interface CarTypeName {
@@ -39,27 +40,36 @@ interface CarTypeName {
     name: string;
 }
 
+interface Location {
+    id: number;
+    name: string;
+    city: string;
+}
+
 interface Props {
     cars: Car[];
     carTypeNames: CarTypeName[];
+    locations: Location[];
     filters: {
         search?: string;
         category?: string;
         fuel_type?: string;
         transmission?: string;
+        location_id?: string;
     };
 }
 
-export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Props) {
+export default function BrowseCars({ cars = [], carTypeNames = [], locations = [], filters }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [category, setCategory] = useState(filters.category ?? '');
     const [fuelType, setFuelType] = useState(filters.fuel_type ?? '');
     const [transmission, setTransmission] = useState(filters.transmission ?? '');
+    const [locationId, setLocationId] = useState(filters.location_id ?? '');
     const [selectedCar, setSelectedCar] = useState<Car | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [filtersOpen, setFiltersOpen] = useState(false);
 
-    const activeFilterCount = [search, category, fuelType, transmission].filter((value) => value !== '').length;
+   const activeFilterCount = [search, category, fuelType, transmission, locationId].filter((value) => value !== '').length;
 
     function applyFilters() {
         router.get('/browse-cars', {
@@ -67,6 +77,7 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
             category,
             fuel_type: fuelType,
             transmission,
+            location_id: locationId,
         }, {
             preserveState: true,
             preserveScroll: true,
@@ -82,9 +93,10 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
         setCategory('');
         setFuelType('');
         setTransmission('');
+        setLocationId('');
         router.get('/browse-cars');
     }
-
+ console.log(locations);
     return (
         <>
             <Head title="Browse Cars" />
@@ -122,6 +134,22 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                                 onChange={(e) => setSearch(e.target.value)}
                             />
                         </div>
+                             <div className="min-w-40">
+                                <Label>Location</Label>
+                                <Select value={locationId} onValueChange={setLocationId}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="All Locations" />
+                                    </SelectTrigger>
+
+                                    <SelectContent>
+                                        {locations.map((location) => (
+                                            <SelectItem key={location.id} value={String(location.id)}>
+                                                {location.name}, {location.city}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
 
                         <div className="min-w-40">
                             <Label>Car Type</Label>
@@ -226,6 +254,11 @@ export default function BrowseCars({ cars = [], carTypeNames = [], filters }: Pr
                                                     <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                                                     {car.transmission}
                                                 </p>
+                                                {car.location && (
+                                                    <p className="mt-1 text-sm text-slate-500">
+                                                        📍 {car.location.name}, {car.location.city}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="shrink-0 text-right">
                                                 <p className="text-lg font-bold text-slate-900">ETB {Number(car.daily_price).toLocaleString()}</p>

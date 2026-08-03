@@ -5,23 +5,26 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarTypeName;
+use App\Models\Location;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
+
 class BrowseCarController extends Controller
 {
     public function index(Request $request): Response
     {
-        $cars = Car::with(['images', 'owner', 'carTypeName'])
+        $cars = Car::with(['images', 'owner', 'carTypeName', 'location'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
             ->when($request->search, fn ($q, $v) => $q->where(fn ($q2) => $q2->where('brand', 'like', "%{$v}%")->orWhere('model', 'like', "%{$v}%")))
             ->when($request->category, fn ($q, $v) => $q->where('category', $v))
             ->when($request->fuel_type, fn ($q, $v) => $q->where('fuel_type', $v))
             ->when($request->transmission, fn ($q, $v) => $q->where('transmission', $v))
+            ->when($request->location_id, fn ($q, $v) => $q->where('location_id', $v))
             ->when($request->min_price, fn ($q, $v) => $q->where('daily_price', '>=', $v))
             ->when($request->max_price, fn ($q, $v) => $q->where('daily_price', '<=', $v))
             ->latest()
@@ -31,7 +34,8 @@ class BrowseCarController extends Controller
             'cars' => $cars,
             'carTypeNames' => CarTypeName::orderBy('name')->get(['id', 'name']),
             'role' => auth()->user()->role,
-            'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price']),
+            'filters' => $request->only(['search', 'category', 'fuel_type', 'location_id', 'transmission', 'min_price', 'max_price']),
+            'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }
 
@@ -40,11 +44,12 @@ class BrowseCarController extends Controller
         if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
             abort(404);
         }
-        $car->load(['images', 'owner', 'carTypeName']);
+        $car->load(['images', 'owner', 'carTypeName', 'location']);
 
         return Inertia::render('car-details', [
             'car' => $car,
             'role' => auth()->user()->role,
+            'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }
 

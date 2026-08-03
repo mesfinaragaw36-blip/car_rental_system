@@ -12,6 +12,7 @@ import {
     SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from '@/components/ui/sidebar';
 import type { Auth, NavItem } from '@/types';
+import { MapPin } from "lucide-react";
 
 const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     users: ['/admin/users'],
@@ -66,6 +67,7 @@ routes.forEach((r) => allowedRoutes.add(r));
                 { title: 'Roles & Permissions', href: '/admin/roles', icon: Shield },
                 { title: 'Staff', href: '/admin/staff', icon: UserCog },
                 { title: 'Users', href: '/admin/users', icon: Users },
+                { title: 'Locations', href: '/admin/locations', icon: MapPin },
             ];
 
         case 'owner':

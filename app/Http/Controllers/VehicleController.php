@@ -6,6 +6,7 @@ use App\Models\Car;
 use App\Models\CarImage;
 use App\Models\CarTypeName;
 use App\Models\VehicleDocument;
+use App\Models\Location;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -33,6 +34,7 @@ class VehicleController extends Controller
     {
         return Inertia::render('create-vehicle', [
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'locations' => Location::all(),
         ]);
     }
 
@@ -58,6 +60,7 @@ class VehicleController extends Controller
             'primary_photo_index' => 'nullable|integer|min:0',
             'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
             'ownership_expiry' => 'nullable|date|after:today',
+            'location_id' => 'required|exists:locations,id',
         ], [
             'photos.*.image' => 'Each photo must be a valid image (JPEG, PNG, GIF, or WebP).',
             'photos.*.max' => 'Each photo must be smaller than 10MB.',
@@ -83,6 +86,7 @@ class VehicleController extends Controller
             'owner_id' => auth()->id(),
             'approval_status' => 'pending',
             'availability_status' => 'available',
+            'location_id' => $request->location_id,
         ]);
 
         if ($request->hasFile('photos')) {
