@@ -216,4 +216,54 @@ class PaymentTest extends TestCase
 
         $response->assertForbidden();
     }
+
+    public function test_customer_can_view_their_payment_receipt_with_days_and_daily_rate(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $booking = $this->createBooking($owner, $customer, $car);
+
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => 300.00,
+            'payment_method' => 'Cash',
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($customer)
+            ->get(route('payments.receipt', $payment));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('receipt')
+            ->where('booking.days', 3)
+            ->where('booking.daily_rate', '100.00')
+            ->where('payment.amount', '300.00'));
+    }
+
+    public function test_customer_cannot_view_another_customers_receipt(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $otherCustomer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $booking = $this->createBooking($owner, $customer, $car);
+
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => 300.00,
+            'payment_method' => 'Cash',
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($otherCustomer)
+            ->get(route('payments.receipt', $payment));
+
+        $response->assertForbidden();
+    }
 }

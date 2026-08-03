@@ -149,6 +149,11 @@ class PaymentController extends Controller
 
         $booking = $payment->booking;
 
+        $days = $booking->pickup_date->diffInDays($booking->return_date);
+        $dailyRate = $days > 0
+            ? number_format($booking->total_price / $days, 2)
+            : '0.00';
+
         // Security check: customer, owner, or admin can view receipt
         if (
             $booking->customer_id !== $user->id &&
@@ -174,6 +179,8 @@ class PaymentController extends Controller
                 'pickup_location' => $booking->pickup_location,
                 'return_location' => $booking->return_location,
                 'total_price' => $booking->total_price,
+                'days' => $days,
+                'daily_rate' => $dailyRate,
             ],
             'customer' => $booking->customer ? [
                 'name' => $booking->customer->name,
