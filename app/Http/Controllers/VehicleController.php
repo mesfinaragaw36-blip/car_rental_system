@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\CarImage;
 use App\Models\CarTypeName;
+use App\Models\Location;
 use App\Models\VehicleDocument;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class VehicleController extends Controller
     {
         return Inertia::render('create-vehicle', [
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'locations' => Location::all(),
         ]);
     }
 
@@ -58,6 +60,7 @@ class VehicleController extends Controller
             'primary_photo_index' => 'nullable|integer|min:0',
             'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
             'ownership_expiry' => 'nullable|date|after:today',
+            'location_id' => 'required|exists:locations,id',
         ], [
             'photos.*.image' => 'Each photo must be a valid image (JPEG, PNG, GIF, or WebP).',
             'photos.*.max' => 'Each photo must be smaller than 10MB.',
@@ -83,6 +86,7 @@ class VehicleController extends Controller
             'owner_id' => auth()->id(),
             'approval_status' => 'pending',
             'availability_status' => 'available',
+            'location_id' => $request->location_id,
         ]);
 
         if ($request->hasFile('photos')) {
@@ -152,105 +156,106 @@ class VehicleController extends Controller
         ]);
 
         $car->update($validated);
-        
+
         if ($request->hasFile('photos')) {
-    foreach ($request->file('photos') as $photo) {
-        $path = $photo->store('car-photos', 'public');
+            foreach ($request->file('photos') as $photo) {
+                $path = $photo->store('car-photos', 'public');
 
-        CarImage::create([
-            'car_id' => $car->id,
-            'image_path' => $path,
-            'is_primary' => $car->images()->count() === 0,
-        ]);
-    }
-}
-            if ($request->hasFile('ownership_document')) {
-    $oldDocument = $car->documents()
-        ->where('document_type', 'Ownership')
-        ->latest()
-        ->first();
+                CarImage::create([
+                    'car_id' => $car->id,
+                    'image_path' => $path,
+                    'is_primary' => $car->images()->count() === 0,
+                ]);
+            }
+        }
+        if ($request->hasFile('ownership_document')) {
+            $oldDocument = $car->documents()
+                ->where('document_type', 'Ownership')
+                ->latest()
+                ->first();
 
-    if ($oldDocument) {
-        if (Storage::disk('public')->exists($oldDocument->document_path)) {
-            Storage::disk('public')->delete($oldDocument->document_path);
+            if ($oldDocument) {
+                if (Storage::disk('public')->exists($oldDocument->document_path)) {
+                    Storage::disk('public')->delete($oldDocument->document_path);
+                }
+
+                $oldDocument->delete();
+            }
+
+            $path = $request->file('ownership_document')
+                ->store('vehicle_documents', 'public');
+
+            VehicleDocument::create([
+                'car_id' => $car->id,
+                'document_type' => 'Ownership',
+                'document_path' => $path,
+                'expiry_date' => $validated['ownership_expiry'] ?? null,
+                'verification_status' => 'pending',
+            ]);
         }
 
-        $oldDocument->delete();
-    }
-
-    $path = $request->file('ownership_document')
-        ->store('vehicle_documents', 'public');
-
-    VehicleDocument::create([
-        'car_id' => $car->id,
-        'document_type' => 'Ownership',
-        'document_path' => $path,
-        'expiry_date' => $validated['ownership_expiry'] ?? null,
-        'verification_status' => 'pending',
-    ]);
-}
         return redirect()->route('vehicles.index')->with('toast', ['type' => 'success', 'message' => 'Vehicle updated successfully!']);
     }
 
     public function deleteImage(Car $car, CarImage $image): RedirectResponse
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    if ($car->owner_id !== $user->id && $user->role !== 'admin') {
-        abort(403);
-    }
-
-    if ($image->car_id !== $car->id) {
-        abort(404);
-    }
-
-    // Delete the physical file
-    if (Storage::disk('public')->exists($image->image_path)) {
-        Storage::disk('public')->delete($image->image_path);
-    }
-
-    $wasPrimary = $image->is_primary;
-
-    $image->delete();
-
-    // If the deleted image was primary, make another image primary
-    if ($wasPrimary) {
-        $nextImage = $car->images()->first();
-
-        if ($nextImage) {
-            $nextImage->update(['is_primary' => true]);
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
         }
+
+        if ($image->car_id !== $car->id) {
+            abort(404);
+        }
+
+        // Delete the physical file
+        if (Storage::disk('public')->exists($image->image_path)) {
+            Storage::disk('public')->delete($image->image_path);
+        }
+
+        $wasPrimary = $image->is_primary;
+
+        $image->delete();
+
+        // If the deleted image was primary, make another image primary
+        if ($wasPrimary) {
+            $nextImage = $car->images()->first();
+
+            if ($nextImage) {
+                $nextImage->update(['is_primary' => true]);
+            }
+        }
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Vehicle photo deleted.',
+        ]);
     }
 
-    return redirect()->back()->with('toast', [
-        'type' => 'success',
-        'message' => 'Vehicle photo deleted.',
-    ]);
-}
+    public function setPrimaryImage(Car $car, CarImage $image): RedirectResponse
+    {
+        $user = auth()->user();
 
-public function setPrimaryImage(Car $car, CarImage $image): RedirectResponse
-{
-    $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
 
-    if ($car->owner_id !== $user->id && $user->role !== 'admin') {
-        abort(403);
+        if ($image->car_id !== $car->id) {
+            abort(404);
+        }
+
+        // Remove primary status from all other photos
+        $car->images()->update(['is_primary' => false]);
+
+        // Make selected image primary
+        $image->update(['is_primary' => true]);
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Primary photo updated.',
+        ]);
     }
-
-    if ($image->car_id !== $car->id) {
-        abort(404);
-    }
-
-    // Remove primary status from all other photos
-    $car->images()->update(['is_primary' => false]);
-
-    // Make selected image primary
-    $image->update(['is_primary' => true]);
-
-    return redirect()->back()->with('toast', [
-        'type' => 'success',
-        'message' => 'Primary photo updated.',
-    ]);
-}
 
     public function destroy(Car $car): RedirectResponse
     {
@@ -264,26 +269,26 @@ public function setPrimaryImage(Car $car, CarImage $image): RedirectResponse
     }
 
     public function destroyDocument(Car $car, VehicleDocument $document): RedirectResponse
-{
-    $user = auth()->user();
+    {
+        $user = auth()->user();
 
-    if ($car->owner_id !== $user->id && $user->role !== 'admin') {
-        abort(403);
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        if ($document->car_id !== $car->id) {
+            abort(404);
+        }
+
+        if ($document->document_path && Storage::disk('public')->exists($document->document_path)) {
+            Storage::disk('public')->delete($document->document_path);
+        }
+
+        $document->delete();
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Document deleted successfully.',
+        ]);
     }
-
-    if ($document->car_id !== $car->id) {
-        abort(404);
-    }
-
-    if ($document->document_path && Storage::disk('public')->exists($document->document_path)) {
-        Storage::disk('public')->delete($document->document_path);
-    }
-
-    $document->delete();
-
-    return redirect()->back()->with('toast', [
-        'type' => 'success',
-        'message' => 'Document deleted successfully.',
-    ]);
-}
 }

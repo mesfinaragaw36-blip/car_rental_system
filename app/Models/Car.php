@@ -32,6 +32,7 @@ class Car extends Model
         'description',
         'approval_status',
         'availability_status',
+        'location_id',
     ];
 
     protected function casts(): array
@@ -82,5 +83,10 @@ class Car extends Model
     public function reviewCount(): Attribute
     {
         return Attribute::get(fn () => $this->reviews()->count());
+    }
+
+    public function location(): BelongsTo
+    {
+        return $this->belongsTo(Location::class);
     }
 }

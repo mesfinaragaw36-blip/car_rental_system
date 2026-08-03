@@ -3,6 +3,7 @@
 namespace Tests\Feature\Owner;
 
 use App\Models\Car;
+use App\Models\Location;
 use App\Models\User;
 use App\Models\VehicleDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -19,6 +20,12 @@ class VehicleUploadTest extends TestCase
         Storage::fake('public');
 
         $owner = User::factory()->create(['role' => 'owner']);
+
+        $location = Location::create([
+            'name' => 'Main Branch',
+            'address' => '123 Main Street',
+            'city' => 'Metro City',
+        ]);
 
         $photoOne = UploadedFile::fake()->image('photo-one.jpg');
         $photoTwo = UploadedFile::fake()->image('photo-two.jpg');
@@ -45,6 +52,7 @@ class VehicleUploadTest extends TestCase
                 'primary_photo_index' => 0,
                 'ownership_document' => $ownershipDocument,
                 'ownership_expiry' => '2027-12-31',
+                'location_id' => $location->id,
             ]);
 
         $response->assertRedirect(route('vehicles.index'));

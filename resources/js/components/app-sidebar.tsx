@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid, Car, Users, CreditCard,
-    Shield, UserCog, BookOpen, Settings, Building2, Wrench, Search,
+    Shield, UserCog, BookOpen, Settings, Building2, Wrench, Search, MapPin,
 } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
@@ -66,6 +66,7 @@ routes.forEach((r) => allowedRoutes.add(r));
                 { title: 'Roles & Permissions', href: '/admin/roles', icon: Shield },
                 { title: 'Staff', href: '/admin/staff', icon: UserCog },
                 { title: 'Users', href: '/admin/users', icon: Users },
+                { title: 'Locations', href: '/admin/locations', icon: MapPin },
             ];
 
         case 'owner':

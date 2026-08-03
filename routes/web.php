@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\CarImageController;
 use App\Http\Controllers\Admin\CarTypeNameController;
 use App\Http\Controllers\Admin\DriverController;
+use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\UserController;
@@ -133,6 +134,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/car-types/type-names', [CarTypeNameController::class, 'store'])->name('car-types.type-names.store');
         Route::put('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'update'])->name('car-types.type-names.update');
         Route::delete('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])->name('car-types.type-names.destroy');
+
+        Route::resource('locations', LocationController::class)->except('show');
     });
 });
 
