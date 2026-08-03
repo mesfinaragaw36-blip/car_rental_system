@@ -313,6 +313,31 @@ export default function ShowUser({ user }: Props) {
                             )}
                         </CardContent>
                     </Card>
+                {user.reviews && user.reviews.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">Driver Reviews</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {user.reviews.map((r) => (
+                                    <div key={r.id} className="flex items-start justify-between rounded-lg border p-3">
+                                        <div>
+                                            <p className="font-medium">{r.reviewer.name}</p>
+                                            <p className="text-sm text-muted-foreground">{r.rating} ★ · {new Date(r.created_at).toLocaleDateString()}</p>
+                                            {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
+                                        </div>
+                                        <div>
+                                            <Button variant="destructive" size="sm" onClick={() => { if (confirm('Delete this review?')) router.delete(`/admin/reviews/${r.id}`); }}>
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
                 )}
             </div>
         </>

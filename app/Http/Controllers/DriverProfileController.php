@@ -15,10 +15,21 @@ class DriverProfileController extends Controller
         $driver = auth()->user();
         $profile = $driver->driverProfile;
 
+        $recent = $driver->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($r) {
+            return [
+                'id' => $r->id,
+                'reviewer' => ['id' => $r->reviewer->id, 'name' => $r->reviewer->name],
+                'rating' => $r->rating,
+                'review_text' => $r->review_text,
+                'created_at' => $r->created_at->toDateTimeString(),
+            ];
+        })->toArray();
+
         return Inertia::render('driver/profile', [
             'profile' => $profile ? array_merge($profile->toArray(), [
                 'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $driver->reviews()->count(),
+                'recent_reviews' => $recent,
             ]) : null,
         ]);
     }

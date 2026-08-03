@@ -15,6 +15,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -42,6 +43,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/picked-up', [BookingController::class, 'markPickedUp'])->name('bookings.picked-up');
     Route::post('/bookings/{booking}/returned', [BookingController::class, 'markReturned'])->name('bookings.returned');
     Route::post('/bookings/{booking}/reviews', [ReviewController::class, 'store'])->name('bookings.reviews.store');
+    Route::put('/bookings/{booking}/reviews/{review}', [ReviewController::class, 'update'])->name('bookings.reviews.update');
+    Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
     // Payments
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
@@ -76,6 +79,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/driver/available-bookings', [DriverBookingController::class, 'available'])->name('driver.available-bookings');
     Route::post('/driver/claim/{booking}', [DriverBookingController::class, 'claim'])->name('driver.claim');
     Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
+
+    // Inspection staff routes
+    Route::middleware(['staff_permission'])->group(function () {
+        Route::get('/inspections', [InspectionController::class, 'index'])->name('inspections.index');
+        Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
+    });
 
     // Admin-only routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
@@ -129,6 +138,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/car-types/type-names', [CarTypeNameController::class, 'store'])->name('car-types.type-names.store');
         Route::put('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'update'])->name('car-types.type-names.update');
         Route::delete('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])->name('car-types.type-names.destroy');
+        Route::delete('/reviews/{review}', [\App\Http\Controllers\ReviewController::class, 'destroy'])->name('reviews.destroy');
     });
 });
 

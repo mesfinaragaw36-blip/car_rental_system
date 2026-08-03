@@ -333,6 +333,11 @@ const highestPrice = prices.length ? Math.max(...prices) : 0;
     </p>
 </div>
 
+                                                                        {car.average_rating !== undefined && (
+                                                                            <div className="mt-3 text-sm text-muted-foreground">
+                                                                                {car.average_rating} ★ · {car.review_count ?? 0} review{(car.review_count ?? 0) === 1 ? '' : 's'}
+                                                                            </div>
+                                                                        )}
                                         <div className="flex gap-2">
     <Link href={`/cars/${car.id}`} className="flex-1">
         <Button

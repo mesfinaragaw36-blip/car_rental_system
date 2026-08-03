@@ -22,9 +22,24 @@ class VehicleController extends Controller
             $query->where('owner_id', $user->id);
         }
 
+        $vehicles = $query->get()->map(function (Car $car) {
+            $latestReview = $car->reviews()->with('reviewer')->latest()->first();
+
+            return array_merge($car->toArray(), [
+                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $car->reviews()->count(),
+                'latest_review' => $latestReview ? [
+                    'reviewer' => ['id' => $latestReview->reviewer->id, 'name' => $latestReview->reviewer->name],
+                    'rating' => $latestReview->rating,
+                    'review_text' => $latestReview->review_text,
+                    'created_at' => $latestReview->created_at->toDateTimeString(),
+                ] : null,
+            ]);
+        });
+
         return Inertia::render('vehicles', [
             'role' => $user->role,
-            'vehicles' => $query->get(),
+            'vehicles' => $vehicles,
         ]);
     }
 
@@ -112,10 +127,25 @@ class VehicleController extends Controller
         if ($car->owner_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-        $car->load(['images', 'documents', 'carTypeName']);
+
+        $car->load(['images', 'documents', 'carTypeName', 'reviews.reviewer']);
+
+        $recentReviews = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($review) {
+            return [
+                'id' => $review->id,
+                'reviewer' => ['id' => $review->reviewer->id, 'name' => $review->reviewer->name],
+                'rating' => $review->rating,
+                'review_text' => $review->review_text,
+                'created_at' => $review->created_at->toDateTimeString(),
+            ];
+        })->toArray();
 
         return Inertia::render('edit-vehicle', [
-            'vehicle' => $car,
+            'vehicle' => array_merge($car->toArray(), [
+                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $car->reviews()->count(),
+                'recent_reviews' => $recentReviews,
+            ]),
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }

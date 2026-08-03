@@ -29,6 +29,8 @@ interface Vehicle {
     availability_status: string;
     images: CarImage[];
     car_type_name: CarTypeName | null;
+    average_rating?: number;
+    review_count?: number;
 }
 
 interface Props { role: string; vehicles: Vehicle[]; }
@@ -105,13 +107,23 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                                                     <div className="flex items-start justify-between">
                                                         <div>
                                                             <h2 className="text-xl font-bold">{vehicle.brand} {vehicle.model}</h2>
-                                                            <p className="mt-1 text-sm text-muted-foreground">{vehicle.year} &bull; {vehicle.plate_number}</p>
+                                                                    <p className="mt-1 text-sm text-muted-foreground">{vehicle.year} &bull; {vehicle.plate_number}</p>
+                                                                    {vehicle.average_rating !== undefined && (
+                                                                        <p className="mt-1 text-sm text-muted-foreground">{vehicle.average_rating} ★ · {vehicle.review_count ?? 0} review{(vehicle.review_count ?? 0) === 1 ? '' : 's'}</p>
+                                                                    )}
                                                         </div>
                                                         <p className="text-xl font-bold text-blue-900">
                                                             ETB {vehicle.daily_price}<span className="text-sm font-normal text-muted-foreground">/day</span>
                                                         </p>
                                                     </div>
                                                     <div className="mt-5 flex flex-wrap gap-3 text-sm text-muted-foreground">
+                                                        <span className="flex items-center gap-1"><Settings2 className="h-4 w-4" /> {vehicle.transmission}</span>
+                                                        <span className="flex items-center gap-1"><Fuel className="h-4 w-4" /> {vehicle.fuel_type}</span>
+                                                        {vehicle.seats && (
+                                                            <span className="flex items-center gap-1"><Users className="h-4 w-4" /> {vehicle.seats} Seats</span>
+                                                        )}
+                                                    </div>
+                                                    <div className="mt-5 flex flex-wrap gap-2 text-sm text-muted-foreground">
                                                         <span className="flex items-center gap-1"><Settings2 className="h-4 w-4" /> {vehicle.transmission}</span>
                                                         <span className="flex items-center gap-1"><Fuel className="h-4 w-4" /> {vehicle.fuel_type}</span>
                                                         {vehicle.seats && (
@@ -133,8 +145,27 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                                                             {vehicle.availability_status}
                                                         </span>
                                                     </div>
+                                                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                                                        <p className="font-medium">Reviews</p>
+                                                        <p>{vehicle.average_rating ?? 0} ★ · {vehicle.review_count ?? 0} review{(vehicle.review_count ?? 0) === 1 ? '' : 's'}</p>
+                                                    </div>
                                                 </div>
-                                                <div className="mt-6 flex gap-3">
+                                                {vehicle.latest_review ? (
+                                                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                                                        <p className="font-semibold">Latest Review</p>
+                                                        <p className="mt-1">{vehicle.latest_review.reviewer.name} · {vehicle.latest_review.rating} ★</p>
+                                                        {vehicle.latest_review.review_text && <p className="mt-2 text-muted-foreground">{vehicle.latest_review.review_text}</p>}
+                                                    </div>
+                                                ) : (
+                                                    <div className="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-3 text-sm text-slate-700">
+                                                        <p className="font-semibold">Latest Review</p>
+                                                        <p className="mt-1 text-muted-foreground">No reviews yet.</p>
+                                                    </div>
+                                                )}
+                                                <div className="mt-6 flex flex-wrap gap-3">
+                                                    <Link href={`/cars/${vehicle.id}`} className="inline-flex items-center rounded-md border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50">
+                                                        View Details
+                                                    </Link>
                                                     <Button variant="outline" onClick={() => router.get(`/vehicles/${vehicle.id}/edit`)}>
                                                         <Pencil className="mr-2 h-4 w-4" /> Edit
                                                     </Button>

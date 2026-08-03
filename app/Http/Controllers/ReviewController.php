@@ -8,6 +8,7 @@ use App\Models\Review;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Models\Review as ReviewModel;
 
 class ReviewController extends Controller
 {
@@ -34,42 +35,23 @@ class ReviewController extends Controller
         $rating = $validated['rating'];
         $reviewText = $validated['review_text'];
 
-        if ($user->role === 'customer') {
-            if ($booking->customer_id !== $user->id) {
-                abort(403);
-            }
-
-            if ($reviewableType === 'car') {
-                if ($booking->car_id !== $reviewableId) {
-                    abort(403);
-                }
-            } elseif ($reviewableType === 'user') {
-                if ($booking->owner_id === $reviewableId) {
-                    // customer rating owner
-                } elseif ($booking->driverAssignment?->driver_id === $reviewableId) {
-                    // customer rating driver
-                } else {
-                    abort(403);
-                }
-            }
-        } elseif ($user->role === 'owner') {
-            if ($booking->owner_id !== $user->id) {
-                abort(403);
-            }
-
-            if ($reviewableType !== 'user' || $reviewableId !== $booking->customer_id) {
-                abort(403);
-            }
-        } elseif ($user->role === 'driver') {
-            if ($booking->driverAssignment?->driver_id !== $user->id) {
-                abort(403);
-            }
-
-            if ($reviewableType !== 'user' || $reviewableId !== $booking->customer_id) {
-                abort(403);
-            }
-        } else {
+        // Only customers may create reviews for cars or users tied to their completed booking.
+        if ($user->role !== 'customer') {
             abort(403);
+        }
+
+        if ($booking->customer_id !== $user->id) {
+            abort(403);
+        }
+
+        if ($reviewableType === 'car') {
+            if ($booking->car_id !== $reviewableId) {
+                abort(403);
+            }
+        } elseif ($reviewableType === 'user') {
+            if (! ($booking->owner_id === $reviewableId || $booking->driverAssignment?->driver_id === $reviewableId)) {
+                abort(403);
+            }
         }
 
         $reviewableClass = $reviewableType === 'car' ? Car::class : User::class;
@@ -98,6 +80,53 @@ class ReviewController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Review submitted successfully.',
+        ]);
+    }
+
+    public function destroy(Request $request, ReviewModel $review): RedirectResponse
+    {
+        $user = $request->user();
+
+        // Allow admins or the original reviewer to delete a review.
+        if ($user->role !== 'admin' && $user->id !== $review->reviewer_id) {
+            abort(403);
+        }
+
+        $review->delete();
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Review removed.',
+        ]);
+    }
+
+    public function update(Request $request, Booking $booking, ReviewModel $review): RedirectResponse
+    {
+        $user = $request->user();
+
+        if (! in_array($booking->status, ['returned', 'completed'], true)) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Reviews can only be edited after a completed booking.',
+            ]);
+        }
+
+        if ($user->id !== $review->reviewer_id) {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'rating' => ['required', 'integer', 'between:1,5'],
+            'review_text' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        $review->rating = $validated['rating'];
+        $review->review_text = $validated['review_text'] ?? null;
+        $review->save();
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Review updated.',
         ]);
     }
 }

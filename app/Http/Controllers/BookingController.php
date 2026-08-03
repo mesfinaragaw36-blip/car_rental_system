@@ -126,27 +126,7 @@ class BookingController extends Controller
                 }
             }
 
-            if ($user->role === 'owner' && $booking->customer) {
-                $reviewTargets[] = [
-                    'key' => 'customer',
-                    'label' => 'Customer',
-                    'type' => 'user',
-                    'id' => $booking->customer->id,
-                    'name' => $booking->customer->name,
-                    'alreadyReviewed' => $reviewed['customer'],
-                ];
-            }
-
-            if ($user->role === 'driver' && $booking->customer) {
-                $reviewTargets[] = [
-                    'key' => 'customer',
-                    'label' => 'Customer',
-                    'type' => 'user',
-                    'id' => $booking->customer->id,
-                    'name' => $booking->customer->name,
-                    'alreadyReviewed' => $reviewed['customer'],
-                ];
-            }
+            // Only customers may submit reviews for cars, owners, and drivers tied to their booking.
         }
 
         $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));

@@ -17,6 +17,9 @@ interface Vehicle {
     car_type_name_id?: number | null; engine_size?: string;
     mileage?: number; seats?: number; daily_price: number;
     description?: string;
+    average_rating?: number;
+    review_count?: number;
+    recent_reviews?: { id: number; reviewer: { id: number; name: string }; rating: number; review_text?: string | null; created_at: string }[];
     carTypeName?: { id: number; name: string } | null;
 }
 
@@ -50,6 +53,41 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
             <Head title="Edit Vehicle" />
             <div className="p-6 space-y-6">
                 <h1 className="text-3xl font-bold">Edit Vehicle</h1>
+                {vehicle.average_rating !== undefined && (
+                    <Card>
+                        <CardHeader><CardTitle>Customer Reviews</CardTitle></CardHeader>
+                        <CardContent>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Average Rating</p>
+                                    <p className="text-2xl font-semibold">{vehicle.average_rating} ★</p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Total Reviews</p>
+                                    <p className="text-2xl font-semibold">{vehicle.review_count ?? 0}</p>
+                                </div>
+                            </div>
+                            {vehicle.recent_reviews && vehicle.recent_reviews.length > 0 ? (
+                                <div className="mt-4 space-y-3">
+                                    {vehicle.recent_reviews.map((review) => (
+                                        <div key={review.id} className="rounded-xl border border-slate-200 p-4">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-semibold">{review.reviewer.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">{review.rating} ★</span>
+                                            </div>
+                                            {review.review_text && <p className="mt-3 text-sm text-muted-foreground">{review.review_text}</p>}
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="mt-4 text-sm text-muted-foreground">No reviews yet for this vehicle.</p>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
                 <Card>
                     <CardHeader><CardTitle>Vehicle Information</CardTitle></CardHeader>
                     <CardContent>

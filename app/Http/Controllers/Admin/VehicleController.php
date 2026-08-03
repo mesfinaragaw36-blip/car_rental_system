@@ -37,8 +37,18 @@ class VehicleController extends Controller
     {
         $car->load(['owner', 'images', 'documents']);
 
+        $reviews = $car->reviews()->with('reviewer')->latest()->get()->map(function ($r) {
+            return [
+                'id' => $r->id,
+                'reviewer' => ['id' => $r->reviewer->id, 'name' => $r->reviewer->name],
+                'rating' => $r->rating,
+                'review_text' => $r->review_text,
+                'created_at' => $r->created_at->toDateTimeString(),
+            ];
+        })->toArray();
+
         return Inertia::render('admin/vehicle-details', [
-            'vehicle' => $car,
+            'vehicle' => array_merge($car->toArray(), ['reviews' => $reviews]),
         ]);
     }
 

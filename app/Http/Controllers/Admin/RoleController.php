@@ -20,6 +20,7 @@ class RoleController extends Controller
             'items' => [
                 'bookings.view' => 'View Bookings',
                 'bookings.cancel' => 'Cancel Bookings',
+                'bookings.inspect' => 'Inspect Bookings',
             ],
         ],
         'drivers' => [
