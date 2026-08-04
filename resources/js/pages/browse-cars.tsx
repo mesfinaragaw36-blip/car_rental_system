@@ -33,6 +33,8 @@ interface Car {
     owner: { id: number; name: string; phone: string };
     car_type_name?: { id: number; name: string };
     location?: {id: number;name: string;address: string;city: string};
+    average_rating?: number;
+    review_count?: number;
 }
 
 interface CarTypeName {
@@ -257,6 +259,11 @@ export default function BrowseCars({ cars = [], carTypeNames = [], locations = [
                                                 {car.location && (
                                                     <p className="mt-1 text-sm text-slate-500">
                                                         📍 {car.location.name}, {car.location.city}
+                                                    </p>
+                                                )}
+                                                {car.average_rating !== undefined && (
+                                                    <p className="mt-1 text-sm text-slate-500">
+                                                        {car.average_rating} ★ · {car.review_count ?? 0} review{(car.review_count ?? 0) === 1 ? '' : 's'}
                                                     </p>
                                                 )}
                                             </div>

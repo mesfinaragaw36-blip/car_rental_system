@@ -31,6 +31,13 @@ interface Vehicle {
     owner: { name: string; email: string };
     images: { id: number; image_path: string; is_primary: boolean }[];
     documents: VehicleDocument[];
+    reviews?: Array<{
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text: string | null;
+        created_at: string;
+    }>;
 }
 
 interface Props { vehicle: Vehicle; }
@@ -144,7 +151,7 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                     </CardContent>
                 </Card>
 
-                {/* Documents */}
+                    {/* Documents */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -200,6 +207,40 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                         )}
                     </CardContent>
                 </Card>
+
+                {vehicle.reviews && vehicle.reviews.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">Reviews</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="space-y-3">
+                                {vehicle.reviews.map((r) => (
+                                    <div key={r.id} className="flex items-start justify-between rounded-lg border p-3">
+                                        <div>
+                                            <p className="font-medium">{r.reviewer.name}</p>
+                                            <p className="text-sm text-muted-foreground">{r.rating} ★ · {new Date(r.created_at).toLocaleDateString()}</p>
+                                            {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
+                                        </div>
+                                        <div>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => {
+                                                    if (confirm('Delete this review?')) {
+                                                        router.delete(`/admin/reviews/${r.id}`);
+                                                    }
+                                                }}
+                                            >
+                                                Delete
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
             </div>
         </>
     );

@@ -92,15 +92,13 @@ class ReviewSubmissionTest extends TestCase
                 'review_text' => 'Customer was punctual and easy to work with.',
             ]);
 
-        $response->assertRedirect();
+        $response->assertForbidden();
 
-        $this->assertDatabaseHas('reviews', [
+        $this->assertDatabaseMissing('reviews', [
             'booking_id' => $booking->id,
             'reviewer_id' => $owner->id,
             'reviewable_type' => User::class,
             'reviewable_id' => $customer->id,
-            'rating' => 4,
-            'review_text' => 'Customer was punctual and easy to work with.',
         ]);
     }
 

@@ -18,6 +18,13 @@ interface CarTypeName {
     name: string;
 }
 
+interface LatestReview {
+    reviewer: { id: number; name: string };
+    rating: number;
+    review_text: string | null;
+    created_at: string;
+}
+
 interface Vehicle {
     id: number;
     brand: string;
@@ -37,6 +44,9 @@ interface Vehicle {
     availability_status: string;
     images: CarImage[];
     car_type_name: CarTypeName | null;
+    average_rating?: number;
+    review_count?: number;
+    latest_review?: LatestReview | null;
 }
 
 interface Props { role: string; vehicles: Vehicle[]; }
@@ -127,12 +137,24 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                                                     <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                                                     {vehicle.transmission}
                                                 </p>
+                                                {vehicle.average_rating !== undefined && (
+                                                    <p className="mt-1 text-sm text-slate-500">
+                                                        {vehicle.average_rating} ★ · {vehicle.review_count ?? 0} review{(vehicle.review_count ?? 0) === 1 ? '' : 's'}
+                                                    </p>
+                                                )}
                                             </div>
                                             <div className="shrink-0 text-right">
                                                 <p className="text-lg font-bold text-slate-900">ETB {Number(vehicle.daily_price).toLocaleString()}</p>
                                                 <p className="text-xs font-medium text-slate-400">per day</p>
                                             </div>
                                         </div>
+                                        {vehicle.latest_review && (
+                                            <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
+                                                <p className="font-semibold">Latest Review</p>
+                                                <p className="mt-0.5">{vehicle.latest_review.reviewer.name} · {vehicle.latest_review.rating} ★</p>
+                                                {vehicle.latest_review.review_text && <p className="mt-1 text-muted-foreground">{vehicle.latest_review.review_text}</p>}
+                                            </div>
+                                        )}
                                     </div>
                                 </GlareCard>
                             );

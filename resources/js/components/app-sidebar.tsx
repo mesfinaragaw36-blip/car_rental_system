@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import {
     LayoutGrid, Car, Users, CreditCard,
-    Shield, UserCog, BookOpen, Settings, Building2, Wrench, Search, MapPin,
+    Shield, UserCog, BookOpen, Settings, Building2, Wrench, Search, MapPin, ClipboardCheck,
 } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
@@ -18,6 +18,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     vehicles: ['/admin/vehicles', '/admin/vehicle-images', '/admin/vehicle-documents'],
     staff: ['/admin/staff'],
     payments: ['/admin/payments'],
+    'bookings.inspect': ['/inspections'],
 };
 
 function getNavItems(role: string, staffRoleId: number | null, permissions: string[] | null): NavItem[] {
@@ -28,8 +29,8 @@ function getNavItems(role: string, staffRoleId: number | null, permissions: stri
             const routes = PERMISSION_ROUTE_MAP[perm];
 
             if (routes) {
-routes.forEach((r) => allowedRoutes.add(r));
-}
+                routes.forEach((r) => allowedRoutes.add(r));
+            }
         }
 
         const items: NavItem[] = [{ title: 'Dashboard', href: '/dashboard', icon: LayoutGrid }];
@@ -43,6 +44,10 @@ routes.forEach((r) => allowedRoutes.add(r));
         }
 
         items.push({ title: 'Bookings', href: '/bookings', icon: BookOpen });
+
+        if (allowedRoutes.has('/inspections')) {
+            items.push({ title: 'Inspections', href: '/inspections', icon: ClipboardCheck });
+        }
 
         if (allowedRoutes.has('/admin/payments')) {
             items.push({ title: 'Payments', href: '/payments', icon: CreditCard });
@@ -60,6 +65,7 @@ routes.forEach((r) => allowedRoutes.add(r));
                 { title: 'Vehicles (Admin)', href: '/admin/vehicles', icon: Building2 },
                 { title: 'Browse Cars', href: '/browse-cars', icon: Search },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
+                { title: 'Inspections', href: '/inspections', icon: ClipboardCheck },
                 { title: 'Payments', href: '/payments', icon: CreditCard },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },

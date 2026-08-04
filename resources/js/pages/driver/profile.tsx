@@ -19,6 +19,13 @@ interface DriverProfile {
     license_file_path?: string | null;
     average_rating?: number;
     review_count?: number;
+    recent_reviews?: Array<{
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text: string | null;
+        created_at: string;
+    }>;
 }
 
 interface Props { profile: DriverProfile | null; }
@@ -87,6 +94,25 @@ export default function DriverProfilePage({ profile }: Props) {
                                 <span className="text-sm text-muted-foreground">Rating:</span>
                                 <span className="font-semibold">{profile.average_rating} ★</span>
                                 <span className="text-sm text-muted-foreground">({profile.review_count ?? 0})</span>
+                            </div>
+                        )}
+                        {profile.recent_reviews && profile.recent_reviews.length > 0 && (
+                            <div className="mt-4">
+                                <h3 className="text-lg font-semibold">Recent Reviews</h3>
+                                <div className="space-y-3 mt-3">
+                                    {profile.recent_reviews.map((r) => (
+                                        <div key={r.id} className="rounded-lg border p-3">
+                                            <div className="flex items-center justify-between">
+                                                <div>
+                                                    <p className="font-medium">{r.reviewer.name}</p>
+                                                    <p className="text-sm text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                                                </div>
+                                                <div className="font-semibold">{r.rating} ★</div>
+                                            </div>
+                                            {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         )}
                     </div>

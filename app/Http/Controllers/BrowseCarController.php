@@ -27,7 +27,11 @@ class BrowseCarController extends Controller
             ->when($request->min_price, fn ($q, $v) => $q->where('daily_price', '>=', $v))
             ->when($request->max_price, fn ($q, $v) => $q->where('daily_price', '<=', $v))
             ->latest()
-            ->get();
+            ->get()
+            ->map(fn (Car $car) => array_merge($car->toArray(), [
+                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $car->reviews()->count(),
+            ]));
 
         return Inertia::render('browse-cars', [
             'cars' => $cars,
@@ -40,15 +44,30 @@ class BrowseCarController extends Controller
 
     public function show(Car $car): Response
     {
+        $user = auth()->user();
+
         if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
-            abort(404);
+            if (! ($user->role === 'owner' && $car->owner_id === $user->id) && $user->role !== 'admin') {
+                abort(404);
+            }
         }
         $car->load(['images', 'owner', 'carTypeName', 'location']);
+
+        $recent = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($r) {
+            return [
+                'id' => $r->id,
+                'reviewer' => ['id' => $r->reviewer->id, 'name' => $r->reviewer->name],
+                'rating' => $r->rating,
+                'review_text' => $r->review_text,
+                'created_at' => $r->created_at->toDateTimeString(),
+            ];
+        })->toArray();
 
         return Inertia::render('car-details', [
             'car' => array_merge($car->toArray(), [
                 'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $car->reviews()->count(),
+                'recent_reviews' => $recent,
             ]),
             'role' => auth()->user()->role,
             'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
