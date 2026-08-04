@@ -16,6 +16,7 @@ class StaffPermissionMiddleware
         'vehicles' => ['admin.vehicles', 'admin.vehicle-images', 'admin.vehicle-documents'],
         'staff' => ['admin.staff'],
         'payments' => ['admin.payments'],
+        'bookings.inspect' => ['inspections'],
     ];
 
     public function handle(Request $request, Closure $next): Response
@@ -26,7 +27,7 @@ class StaffPermissionMiddleware
             abort(403, 'Unauthorized.');
         }
 
-        // Full admin (no staff_role_id) has unrestricted access
+        // Full admin (no staff_role_id) has unrestricted access.
         if ($user->role === 'admin' && $user->staff_role_id === null) {
             return $next($request);
         }

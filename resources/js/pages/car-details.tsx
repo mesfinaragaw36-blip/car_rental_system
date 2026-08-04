@@ -17,6 +17,7 @@ interface Car {
     images?: { id: number; image_path: string; is_primary: boolean }[];
     average_rating?: number;
     review_count?: number;
+    recent_reviews?: { id: number; reviewer: { id: number; name: string }; rating: number; review_text?: string | null; created_at: string }[];
 }
 
 interface Props { car: Car; role: string; }
@@ -93,6 +94,32 @@ export default function CarDetails({ car, role }: Props) {
                         <p className="text-sm text-muted-foreground">Owner: {car.owner.name} ({car.owner.phone})</p>
                     </div>
                 </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Customer Reviews</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        {car.recent_reviews && car.recent_reviews.length > 0 ? (
+                            <div className="space-y-3">
+                                {car.recent_reviews.map((r) => (
+                                    <div key={r.id} className="rounded-lg border p-4">
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div>
+                                                <p className="font-medium">{r.reviewer.name}</p>
+                                                <p className="text-sm text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                                            </div>
+                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">{r.rating} ★</span>
+                                        </div>
+                                        {r.review_text && <p className="mt-3 text-sm text-muted-foreground">{r.review_text}</p>}
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No reviews yet for this vehicle.</p>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {role === 'customer' && car.availability_status === 'available' && (
                     <Card>

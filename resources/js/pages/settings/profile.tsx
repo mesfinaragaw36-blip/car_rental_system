@@ -1,3 +1,4 @@
+import type { FormComponentOptions } from '@inertiajs/core';
 import { Form, Head, usePage } from '@inertiajs/react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
@@ -43,7 +44,8 @@ export default function Profile() {
                     {...ProfileController.update.form()}
                     options={{
                         preserveScroll: true,
-                    }}
+                        forceFormData: true,
+                    } as FormComponentOptions}
                     className="space-y-6"
                 >
                     {({ processing, errors }) => (
@@ -329,10 +331,37 @@ export default function Profile() {
                                         <InputError className="mt-2" message={errors.availability} />
                                     </div>
 
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="license_file">Upload necessary files</Label>
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Upload necessary files: license, national ID, and years of experience evidence all combined in one PDF.
+                                        </p>
+
+                                        <Input
+                                            id="license_file"
+                                            type="file"
+                                            className="mt-1 block w-full"
+                                            name="license_file"
+                                            accept="application/pdf"
+                                        />
+
+                                        {profile?.license_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Existing file: <a className="text-primary underline" href={`/storage/${profile.license_file_path}`} target="_blank" rel="noreferrer">View upload</a>
+                                            </p>
+                                        )}
+
+                                        <InputError className="mt-2" message={errors.license_file} />
+                                    </div>
+
                                     <div className="rounded-2xl border border-muted p-4">
                                         <p className="text-sm font-medium text-muted-foreground">Verification status</p>
                                         <p className="mt-2 text-base font-semibold capitalize">
                                             {profile?.verification_status ?? 'pending'}
+                                        </p>
+                                        <p className="mt-2 text-sm text-muted-foreground">
+                                            Uploads and driver profile changes will be reviewed by an administrator.
                                         </p>
                                     </div>
                                 </div>

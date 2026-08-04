@@ -21,6 +21,7 @@ interface DriverProfile {
     location: string;
     availability: string;
     verification_status: string;
+    license_file_path?: string | null;
 }
 
 interface UserData {
@@ -35,6 +36,13 @@ interface UserData {
     updated_at: string;
     owner_profile: OwnerProfile | null;
     driver_profile: DriverProfile | null;
+    reviews?: Array<{
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text: string | null;
+        created_at: string;
+    }>;
 }
 
 interface Props {
@@ -260,7 +268,8 @@ export default function ShowUser({ user }: Props) {
 
                 {/* Driver Profile */}
                 {user.role === 'driver' && user.driver_profile && (
-                    <Card>
+                    <>
+                        <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
                                 <Car className="h-5 w-5" />
@@ -299,6 +308,22 @@ export default function ShowUser({ user }: Props) {
                                 </div>
                             </div>
 
+                            <div className="rounded-2xl border border-muted p-4">
+                                <p className="text-sm text-muted-foreground">Uploaded verification document</p>
+                                {user.driver_profile.license_file_path ? (
+                                    <a
+                                        href={`/storage/${user.driver_profile.license_file_path}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="text-primary underline"
+                                    >
+                                        View uploaded document
+                                    </a>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">No verification document uploaded yet.</p>
+                                )}
+                            </div>
+
                             {user.driver_profile.verification_status === 'pending' && (
                                 <div className="flex gap-3 border-t pt-4">
                                     <Button size="sm" onClick={handleVerifyDriver}>
@@ -313,6 +338,32 @@ export default function ShowUser({ user }: Props) {
                             )}
                         </CardContent>
                     </Card>
+                    {user.reviews && user.reviews.length > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">Driver Reviews</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="space-y-3">
+                                    {user.reviews.map((r) => (
+                                        <div key={r.id} className="flex items-start justify-between rounded-lg border p-3">
+                                            <div>
+                                                <p className="font-medium">{r.reviewer.name}</p>
+                                                <p className="text-sm text-muted-foreground">{r.rating} ★ · {new Date(r.created_at).toLocaleDateString()}</p>
+                                                {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
+                                            </div>
+                                            <div>
+                                                <Button variant="destructive" size="sm" onClick={() => { if (confirm('Delete this review?')) router.delete(`/admin/reviews/${r.id}`); }}>
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </CardContent>
+                        </Card>
+                    )}
+                    </>
                 )}
             </div>
         </>

@@ -9,15 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { store } from '@/routes/vehicles';
 
-interface Option { id: number; name: string; }
+interface Option { id: number; name: string; city?: string; }
 
-interface Props { carTypeNames: Option[]; }
+interface Props { carTypeNames: Option[]; locations: Option[];}
 
-export default function CreateVehicle({ carTypeNames }: Props) {
+export default function CreateVehicle({ carTypeNames, locations }: Props) {
     const { data, setData, processing, errors } = useForm({
         brand: '', model: '', year: '', plate_number: '', category: '',
         color: '', fuel_type: '', transmission: '', car_type_name_id: '',
-        engine_size: '', mileage: '', seats: '', daily_price: '', description: '',
+        engine_size: '', mileage: '', seats: '', daily_price: '', description: '', location_id: '',
     });
 
     const [step, setStep] = useState(1);
@@ -97,6 +97,7 @@ return (bytes / (1024 * 1024)).toFixed(1) + 'MB';
         formData.append('fuel_type', data.fuel_type);
         formData.append('transmission', data.transmission);
         formData.append('daily_price', data.daily_price);
+        formData.append('location_id', data.location_id);
 
         if (data.car_type_name_id) {
 formData.append('car_type_name_id', data.car_type_name_id);
@@ -279,6 +280,32 @@ setData('category', option.name);
                                     <Textarea id="description" placeholder="Optional description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
                                     <InputError message={serverErrors.description ?? errors.description} />
                                 </div>
+
+                                             <div>
+                                                <Label>Location</Label>
+
+                                                <Select
+                                                    value={data.location_id}
+                                                    onValueChange={(value) => setData('location_id', value)}
+                                                >
+                                                    <SelectTrigger className="w-full">
+                                                        <SelectValue placeholder="Select location" />
+                                                    </SelectTrigger>
+
+                                                    <SelectContent>
+                                                        {locations.map((location) => (
+                                                            <SelectItem 
+                                                                key={location.id} 
+                                                                value={String(location.id)}
+                                                            >
+                                                                {location.name} - {location.city}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+
+                                                <InputError message={serverErrors.location_id ?? errors.location_id} />
+                                            </div>
                             </CardContent>
                         </Card>
                     )}

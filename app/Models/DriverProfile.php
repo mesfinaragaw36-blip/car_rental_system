@@ -16,6 +16,8 @@ class DriverProfile extends Model
         'location',
         'availability',
         'verification_status',
+        'license_file_path',
+        'national_id_file_path',
     ];
 
     protected function casts(): array

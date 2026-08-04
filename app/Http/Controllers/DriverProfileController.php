@@ -15,11 +15,31 @@ class DriverProfileController extends Controller
         $driver = auth()->user();
         $profile = $driver->driverProfile;
 
+        $recent = $driver->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($r) {
+            return [
+                'id' => $r->id,
+                'reviewer' => ['id' => $r->reviewer->id, 'name' => $r->reviewer->name],
+                'rating' => $r->rating,
+                'review_text' => $r->review_text,
+                'created_at' => $r->created_at->toDateTimeString(),
+            ];
+        })->toArray();
+
         return Inertia::render('driver/profile', [
-            'profile' => $profile ? array_merge($profile->toArray(), [
+            'profile' => $profile ? [
+                'id' => $profile->id,
+                'license_number' => $profile->license_number,
+                'license_type' => $profile->license_type,
+                'experience_years' => $profile->experience_years,
+                'daily_rate' => $profile->daily_rate,
+                'location' => $profile->location,
+                'availability' => $profile->availability,
+                'verification_status' => $profile->verification_status,
+                'license_file_path' => $profile->license_file_path,
                 'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $driver->reviews()->count(),
-            ]) : null,
+                'recent_reviews' => $recent,
+            ] : null,
         ]);
     }
 
@@ -31,13 +51,23 @@ class DriverProfileController extends Controller
             'license_number' => 'required|string|max:100',
             'license_type' => 'required|string|max:50',
             'experience_years' => 'required|integer|min:0|max:50',
+            'daily_rate' => 'required|numeric|min:0',
             'location' => 'required|string|max:255',
             'availability' => 'sometimes|in:available,unavailable',
+            'license_file' => 'sometimes|file|mimes:pdf|max:10240',
         ]);
+
+        $profileData = $validated;
+
+        unset($profileData['license_file']);
+
+        if ($request->hasFile('license_file')) {
+            $profileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
+        }
 
         DriverProfile::updateOrCreate(
             ['user_id' => $user->id],
-            $validated,
+            $profileData,
         );
 
         return redirect()->route('driver.profile')->with('toast', [
