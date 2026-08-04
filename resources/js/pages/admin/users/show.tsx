@@ -353,7 +353,15 @@ export default function ShowUser({ user }: Props) {
                                                 {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
                                             </div>
                                             <div>
-                                                <Button variant="destructive" size="sm" onClick={() => { if (confirm('Delete this review?')) router.delete(`/admin/reviews/${r.id}`); }}>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        if (confirm('Delete this review?')) {
+                                                            router.delete(`/admin/reviews/${r.id}`);
+                                                        }
+                                                    }}
+                                                >
                                                     Delete
                                                 </Button>
                                             </div>
