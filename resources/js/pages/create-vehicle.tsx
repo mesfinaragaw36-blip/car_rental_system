@@ -538,36 +538,6 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
                                             }
                                         />
                                     </div>
-                                    <div>
-                                        <Label>Availability</Label>
-                                        <Select
-                                            value={data.availability_status}
-                                            onValueChange={(value) =>
-                                                setData(
-                                                    'availability_status',
-                                                    value,
-                                                )
-                                            }
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select availability" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="available">
-                                                    Available
-                                                </SelectItem>
-                                                <SelectItem value="maintenance">
-                                                    Under Maintenance
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                        <InputError
-                                            message={
-                                                serverErrors.availability_status ??
-                                                errors.availability_status
-                                            }
-                                        />
-                                    </div>
                                 </div>
                                 <div>
                                     <Label htmlFor="description">

@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, Search } from 'lucide-react';
+import { Eye, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import { GlareCard } from '@/components/ui/glare-card';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -67,7 +68,88 @@ router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
             <Head title="Vehicles" />
 
             <div className="p-6 space-y-6">
-                <h1 className="text-3xl font-bold">Vehicle Management</h1>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Vehicles</h1>
+                        <p className="mt-2 text-muted-foreground">
+                            Manage all vehicles in one page, including owner listings and admin approvals.
+                        </p>
+                    </div>
+                    <Link href="/vehicles/create">
+                        <Button className="bg-blue-900 hover:bg-blue-950">
+                            <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+                        </Button>
+                    </Link>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fleet Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {vehicles.data.map((vehicle) => {
+                            const image = vehicle.images?.find((img) => img.is_primary)?.image_path ?? vehicle.images?.[0]?.image_path;
+
+                            return (
+                                <Link
+                                    key={vehicle.id}
+                                    href={`/admin/vehicles/${vehicle.id}`}
+                                    className="block"
+                                >
+                                    <GlareCard className="rounded-3xl border border-slate-200 p-0 shadow-sm hover:-translate-y-0.5 transition-transform duration-150">
+                                        <div>
+                                            <div className="overflow-hidden rounded-t-3xl bg-slate-100">
+                                                {image ? (
+                                                    <img
+                                                        src={`/storage/${image}`}
+                                                        alt={`${vehicle.brand} ${vehicle.model}`}
+                                                        className="h-40 w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-40 items-center justify-center text-slate-400">
+                                                        No image
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-semibold text-slate-900">
+                                                        {vehicle.brand} {vehicle.model}
+                                                    </span>
+                                                    <span className="text-xs uppercase text-slate-500">
+                                                        {vehicle.category}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 space-y-2 text-sm text-slate-600">
+                                                    <p>
+                                                        <span className="font-medium text-slate-900">
+                                                            Plate:
+                                                        </span>{' '}
+                                                        {vehicle.plate_number}
+                                                    </p>
+                                                    <p>
+                                                        <span className="font-medium text-slate-900">
+                                                            Price:
+                                                        </span>{' '}
+                                                        ETB {vehicle.daily_price}
+                                                    </p>
+                                                </div>
+                                                <div className="mt-4 flex items-center justify-between text-xs">
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                                        {vehicle.availability_status}
+                                                    </span>
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                                        {vehicle.approval_status}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </GlareCard>
+                                </Link>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
 
                 {toast && (
                     <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>

@@ -8,7 +8,6 @@ import {
     UserCog,
     BookOpen,
     Settings,
-    Building2,
     Wrench,
     Search,
     MapPin,
@@ -68,7 +67,7 @@ function getNavItems(
 
         if (allowedRoutes.has('/admin/vehicles')) {
             items.push({
-                title: 'Vehicles (Admin)',
+                title: 'Vehicles',
                 href: '/admin/vehicles',
                 icon: Car,
             });
@@ -104,12 +103,7 @@ function getNavItems(
                     href: '/admin/car-types/type-names',
                     icon: Settings,
                 },
-                { title: 'My Vehicles', href: '/vehicles', icon: Car },
-                {
-                    title: 'Vehicles (Admin)',
-                    href: '/admin/vehicles',
-                    icon: Building2,
-                },
+                { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
                 { title: 'Browse Cars', href: '/browse-cars', icon: Search },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
                 {
