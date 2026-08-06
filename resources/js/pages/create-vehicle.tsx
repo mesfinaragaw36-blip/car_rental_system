@@ -21,12 +21,29 @@ interface Option {
     city?: string;
 }
 
+interface CarTypeTemplate {
+    id: number;
+    brand: string;
+    model: string;
+    car_type_name_id: number | null;
+    fuel_type: string;
+    transmission: string;
+    engine_size: string | null;
+    seats: number | null;
+    car_type_name?: { id: number; name: string } | null;
+}
+
 interface Props {
     carTypeNames: Option[];
+    carTypes: CarTypeTemplate[];
     locations: Option[];
 }
 
-export default function CreateVehicle({ carTypeNames, locations }: Props) {
+export default function CreateVehicle({
+    carTypeNames,
+    carTypes,
+    locations,
+}: Props) {
     const { data, setData, processing, errors } = useForm({
         brand: '',
         model: '',
@@ -74,6 +91,73 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
         'transmission',
         'daily_price',
     ];
+
+    const [templateQuery, setTemplateQuery] = useState('');
+    const [templateOpen, setTemplateOpen] = useState(false);
+    const [selectedTemplateLabel, setSelectedTemplateLabel] = useState('');
+
+    function templateLabel(template: CarTypeTemplate): string {
+        return `${template.brand} ${template.model}`;
+    }
+
+    const visibleTemplates = carTypes.filter((template) => {
+        const query = templateQuery.trim().toLowerCase();
+
+        if (!query) {
+            return true;
+        }
+
+        return [
+            template.brand,
+            template.model,
+            template.car_type_name?.name ?? '',
+        ]
+            .join(' ')
+            .toLowerCase()
+            .includes(query);
+    });
+
+    function handleTemplatePick(template: CarTypeTemplate) {
+        const label = templateLabel(template);
+
+        setData('brand', template.brand);
+        setData('model', template.model);
+
+        if (template.car_type_name) {
+            setData('car_type_name_id', String(template.car_type_name.id));
+            setData('category', template.car_type_name.name);
+        }
+
+        setData('fuel_type', template.fuel_type);
+        setData('transmission', template.transmission);
+        setData('engine_size', template.engine_size ?? '');
+        setData('seats', template.seats !== null ? String(template.seats) : '');
+
+        setTemplateQuery(label);
+        setSelectedTemplateLabel(label);
+        setTemplateOpen(false);
+    }
+
+    function handleTemplateQueryChange(value: string) {
+        setTemplateQuery(value);
+
+        if (value !== selectedTemplateLabel) {
+            setSelectedTemplateLabel('');
+        }
+
+        setTemplateOpen(true);
+    }
+
+    function handleTemplateKeyDown(e: React.KeyboardEvent) {
+        if (e.key === 'Escape') {
+            setTemplateOpen(false);
+        }
+
+        if (e.key === 'Enter' && templateOpen && visibleTemplates.length > 0) {
+            e.preventDefault();
+            handleTemplatePick(visibleTemplates[0]);
+        }
+    }
 
     function handlePhotosChange(files: FileList | null) {
         if (!files) {
@@ -253,6 +337,103 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
                                 <CardTitle>Vehicle Information</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
+                                <div className="rounded-lg border border-dashed p-4">
+                                    <Label htmlFor="vehicle-template-search">
+                                        Pick a vehicle model{' '}
+                                        <span className="font-normal text-muted-foreground">
+                                            (optional — type to filter, then
+                                            select)
+                                        </span>
+                                    </Label>
+                                    <div
+                                        className="relative mt-1"
+                                        onBlur={(e) => {
+                                            if (
+                                                !e.currentTarget.contains(
+                                                    e.relatedTarget,
+                                                )
+                                            ) {
+                                                setTemplateOpen(false);
+                                            }
+                                        }}
+                                    >
+                                        <Input
+                                            id="vehicle-template-search"
+                                            placeholder="Type to search, e.g. Toyota"
+                                            value={templateQuery}
+                                            onChange={(e) =>
+                                                handleTemplateQueryChange(
+                                                    e.target.value,
+                                                )
+                                            }
+                                            onFocus={() =>
+                                                setTemplateOpen(true)
+                                            }
+                                            onKeyDown={handleTemplateKeyDown}
+                                        />
+                                        {templateOpen && (
+                                            <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md">
+                                                {visibleTemplates.length > 0 ? (
+                                                    <ul>
+                                                        {visibleTemplates.map(
+                                                            (template) => (
+                                                                <li
+                                                                    key={
+                                                                        template.id
+                                                                    }
+                                                                >
+                                                                    <button
+                                                                        type="button"
+                                                                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
+                                                                        onMouseDown={(
+                                                                            e,
+                                                                        ) =>
+                                                                            e.preventDefault()
+                                                                        }
+                                                                        onClick={() =>
+                                                                            handleTemplatePick(
+                                                                                template,
+                                                                            )
+                                                                        }
+                                                                    >
+                                                                        <span>
+                                                                            {templateLabel(
+                                                                                template,
+                                                                            )}
+                                                                        </span>
+                                                                        <span className="text-xs text-muted-foreground">
+                                                                            {template
+                                                                                .car_type_name
+                                                                                ?.name ??
+                                                                                'Other'}
+                                                                            ·{' '}
+                                                                            {
+                                                                                template.fuel_type
+                                                                            }
+                                                                            ·{' '}
+                                                                            {
+                                                                                template.transmission
+                                                                            }
+                                                                        </span>
+                                                                    </button>
+                                                                </li>
+                                                            ),
+                                                        )}
+                                                    </ul>
+                                                ) : (
+                                                    <p className="px-3 py-2 text-sm text-muted-foreground">
+                                                        No matching vehicles.
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="mt-2 text-xs text-muted-foreground">
+                                        Fields below are filled automatically
+                                        and can still be edited.
+                                    </p>
+                                </div>
+
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
                                         <Label htmlFor="brand">Brand</Label>

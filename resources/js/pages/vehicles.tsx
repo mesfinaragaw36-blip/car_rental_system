@@ -184,7 +184,7 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                         </CardContent>
                     </Card>
                 ) : (
-                    <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                    <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
                         {vehicles.map((vehicle) => {
                             const image =
                                 vehicle.images?.find((img) => img.is_primary)
@@ -201,12 +201,12 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                                     }}
                                 >
                                     <div className="w-full p-2.5">
-                                        <div className="aspect-[4/3] w-full overflow-hidden rounded-[14px]">
+                                        <div className="aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
                                             {image ? (
                                                 <img
                                                     src={`/storage/${image}`}
                                                     alt={`${vehicle.brand} ${vehicle.model}`}
-                                                    className="h-full w-full object-cover"
+                                                    className="h-full w-full object-contain"
                                                 />
                                             ) : (
                                                 <div className="flex h-full items-center justify-center">

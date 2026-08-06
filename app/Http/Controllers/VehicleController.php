@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
+use App\Models\CarType;
 use App\Models\CarTypeName;
 use App\Models\Location;
 use App\Models\VehicleDocument;
@@ -60,6 +61,7 @@ class VehicleController extends Controller
     {
         return Inertia::render('create-vehicle', [
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
+            'carTypes' => CarType::where('is_active', true)->with('carTypeName:id,name')->orderBy('brand')->orderBy('model')->get(),
             'locations' => Location::all(),
         ]);
     }
