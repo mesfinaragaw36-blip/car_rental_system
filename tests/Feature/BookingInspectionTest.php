@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Inspection;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -72,6 +73,12 @@ class BookingInspectionTest extends TestCase
             'need_driver' => false,
             'total_price' => 300.00,
             'status' => 'returned',
+        ]);
+
+        Inspection::factory()->create([
+            'booking_id' => $booking->id,
+            'type' => Inspection::TYPE_RETURN,
+            'status' => Inspection::STATUS_APPROVED,
         ]);
 
         $response = $this->actingAs($inspector)

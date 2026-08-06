@@ -1,11 +1,24 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Car, Pencil, Plus, Settings2, Trash2 } from 'lucide-react';
+import {
+    CalendarRange,
+    Car,
+    Pause,
+    Pencil,
+    Play,
+    Plus,
+    Settings2,
+    Trash2,
+    X,
+} from 'lucide-react';
 import { useState } from 'react';
 import { CarDetailsModal } from '@/components/car-details-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { GlareCard } from '@/components/ui/glare-card';
-import { destroy } from '@/routes/vehicles';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { destroy, toggleAvailability } from '@/routes/vehicles';
+import availablePeriods from '@/routes/vehicles/available-periods';
 
 interface CarImage {
     id: number;
@@ -16,6 +29,12 @@ interface CarImage {
 interface CarTypeName {
     id: number;
     name: string;
+}
+
+interface AvailablePeriod {
+    id: number;
+    start_date: string;
+    end_date: string;
 }
 
 interface LatestReview {
@@ -44,17 +63,25 @@ interface Vehicle {
     availability_status: string;
     images: CarImage[];
     car_type_name: CarTypeName | null;
+    available_periods?: AvailablePeriod[];
     average_rating?: number;
     review_count?: number;
     latest_review?: LatestReview | null;
 }
 
-interface Props { role: string; vehicles: Vehicle[]; }
+interface Props {
+    role: string;
+    vehicles: Vehicle[];
+}
 
 export default function Vehicles({ role, vehicles = [] }: Props) {
-    const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
+    const { props: p } = usePage<{
+        toast?: { type: string; message: string };
+    }>();
     const toast = p.toast;
-    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+    const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(
+        null,
+    );
     const [detailsOpen, setDetailsOpen] = useState(false);
 
     const handleDelete = (id: number) => {
@@ -63,6 +90,50 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
         }
     };
 
+    const handleToggle = (id: number) => {
+        router.post(
+            toggleAvailability.url({ car: id }),
+            {},
+            { preserveScroll: true },
+        );
+    };
+
+    const handleAddAvailablePeriod = (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!selectedVehicle) {
+            return;
+        }
+
+        router.post(
+            availablePeriods.store.url({ car: selectedVehicle.id }),
+            periodData,
+            {
+                preserveScroll: true,
+                onSuccess: () =>
+                    setPeriodData({ start_date: '', end_date: '' }),
+            },
+        );
+    };
+
+    const handleRemoveAvailablePeriod = (
+        vehicleId: number,
+        periodId: number,
+    ) => {
+        router.delete(
+            availablePeriods.destroy.url({
+                car: vehicleId,
+                availablePeriod: periodId,
+            }),
+            { preserveScroll: true },
+        );
+    };
+
+    const [periodData, setPeriodData] = useState({
+        start_date: '',
+        end_date: '',
+    });
+
     return (
         <>
             <Head title="My Vehicles" />
@@ -70,7 +141,9 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h1 className="text-3xl font-bold">My Vehicles</h1>
-                        <p className="mt-2 text-muted-foreground">Manage all your listed vehicles in one place.</p>
+                        <p className="mt-2 text-muted-foreground">
+                            Manage all your listed vehicles in one place.
+                        </p>
                     </div>
                     {(role === 'owner' || role === 'admin') && (
                         <Link href="/vehicles/create">
@@ -82,7 +155,9 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                 </div>
 
                 {toast && (
-                    <div className={`p-4 rounded-lg ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <div
+                        className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
                         {toast.message}
                     </div>
                 )}
@@ -91,12 +166,18 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                     <Card>
                         <CardContent className="flex flex-col items-center justify-center py-16">
                             <Car className="mb-4 h-16 w-16 text-slate-400" />
-                            <h2 className="text-xl font-semibold">No vehicles yet</h2>
-                            <p className="mt-2 text-center text-muted-foreground">Start growing your fleet by adding your first vehicle.</p>
+                            <h2 className="text-xl font-semibold">
+                                No vehicles yet
+                            </h2>
+                            <p className="mt-2 text-center text-muted-foreground">
+                                Start growing your fleet by adding your first
+                                vehicle.
+                            </p>
                             {(role === 'owner' || role === 'admin') && (
                                 <Link href="/vehicles/create" className="mt-6">
                                     <Button className="bg-blue-900 hover:bg-blue-950">
-                                        <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+                                        <Plus className="mr-2 h-4 w-4" /> Add
+                                        Vehicle
                                     </Button>
                                 </Link>
                             )}
@@ -105,7 +186,10 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                 ) : (
                     <div className="grid items-start gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {vehicles.map((vehicle) => {
-                            const image = vehicle.images?.find((img) => img.is_primary)?.image_path ?? vehicle.images?.[0]?.image_path;
+                            const image =
+                                vehicle.images?.find((img) => img.is_primary)
+                                    ?.image_path ??
+                                vehicle.images?.[0]?.image_path;
 
                             return (
                                 <GlareCard
@@ -132,27 +216,68 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                                         </div>
                                         <div className="mt-3 flex items-start justify-between gap-3 px-1 pb-1">
                                             <div className="min-w-0">
-                                                <h3 className="truncate text-base font-bold text-slate-900">{vehicle.brand} {vehicle.model}</h3>
+                                                <h3 className="truncate text-base font-bold text-slate-900">
+                                                    {vehicle.brand}{' '}
+                                                    {vehicle.model}
+                                                </h3>
                                                 <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
                                                     <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                                                     {vehicle.transmission}
                                                 </p>
-                                                {vehicle.average_rating !== undefined && (
+                                                {vehicle.average_rating !==
+                                                    undefined && (
                                                     <p className="mt-1 text-sm text-slate-500">
-                                                        {vehicle.average_rating} ★ · {vehicle.review_count ?? 0} review{(vehicle.review_count ?? 0) === 1 ? '' : 's'}
+                                                        {vehicle.average_rating}{' '}
+                                                        ★ ·{' '}
+                                                        {vehicle.review_count ??
+                                                            0}{' '}
+                                                        review
+                                                        {(vehicle.review_count ??
+                                                            0) === 1
+                                                            ? ''
+                                                            : 's'}
                                                     </p>
                                                 )}
                                             </div>
                                             <div className="shrink-0 text-right">
-                                                <p className="text-lg font-bold text-slate-900">ETB {Number(vehicle.daily_price).toLocaleString()}</p>
-                                                <p className="text-xs font-medium text-slate-400">per day</p>
+                                                <p className="text-lg font-bold text-slate-900">
+                                                    ETB{' '}
+                                                    {Number(
+                                                        vehicle.daily_price,
+                                                    ).toLocaleString()}
+                                                </p>
+                                                <p className="text-xs font-medium text-slate-400">
+                                                    per day
+                                                </p>
                                             </div>
                                         </div>
                                         {vehicle.latest_review && (
                                             <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                                                <p className="font-semibold">Latest Review</p>
-                                                <p className="mt-0.5">{vehicle.latest_review.reviewer.name} · {vehicle.latest_review.rating} ★</p>
-                                                {vehicle.latest_review.review_text && <p className="mt-1 text-muted-foreground">{vehicle.latest_review.review_text}</p>}
+                                                <p className="font-semibold">
+                                                    Latest Review
+                                                </p>
+                                                <p className="mt-0.5">
+                                                    {
+                                                        vehicle.latest_review
+                                                            .reviewer.name
+                                                    }{' '}
+                                                    ·{' '}
+                                                    {
+                                                        vehicle.latest_review
+                                                            .rating
+                                                    }{' '}
+                                                    ★
+                                                </p>
+                                                {vehicle.latest_review
+                                                    .review_text && (
+                                                    <p className="mt-1 text-muted-foreground">
+                                                        {
+                                                            vehicle
+                                                                .latest_review
+                                                                .review_text
+                                                        }
+                                                    </p>
+                                                )}
                                             </div>
                                         )}
                                     </div>
@@ -167,30 +292,184 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                     onClose={() => setDetailsOpen(false)}
                     car={selectedVehicle}
                     actions={
-                        <>
-                            <Button
-                                variant="outline"
-                                className="flex-1"
-                                onClick={() => {
-                                    if (selectedVehicle) {
-                                        router.get(`/vehicles/${selectedVehicle.id}/edit`);
-                                    }
-                                }}
-                            >
-                                <Pencil className="mr-2 h-4 w-4" /> Edit
-                            </Button>
-                            <Button
-                                variant="destructive"
-                                className="flex-1"
-                                onClick={() => {
-                                    if (selectedVehicle) {
-                                        handleDelete(selectedVehicle.id);
-                                    }
-                                }}
-                            >
-                                <Trash2 className="mr-2 h-4 w-4" /> Delete
-                            </Button>
-                        </>
+                        <div className="w-full space-y-4">
+                            <div className="rounded-xl border border-slate-200 p-4 text-left">
+                                <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                    <CalendarRange className="h-4 w-4 text-blue-600" />{' '}
+                                    Available Dates
+                                </h3>
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Customers can only book this vehicle during
+                                    these date ranges.
+                                </p>
+
+                                <form
+                                    onSubmit={handleAddAvailablePeriod}
+                                    className="mt-3 space-y-2"
+                                >
+                                    <div className="grid gap-2 sm:grid-cols-2">
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="period-start"
+                                                className="text-xs"
+                                            >
+                                                Start
+                                            </Label>
+                                            <Input
+                                                id="period-start"
+                                                type="date"
+                                                className="h-9"
+                                                value={periodData.start_date}
+                                                min={
+                                                    new Date()
+                                                        .toISOString()
+                                                        .split('T')[0]
+                                                }
+                                                onChange={(e) =>
+                                                    setPeriodData({
+                                                        ...periodData,
+                                                        start_date:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                required
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label
+                                                htmlFor="period-end"
+                                                className="text-xs"
+                                            >
+                                                End
+                                            </Label>
+                                            <Input
+                                                id="period-end"
+                                                type="date"
+                                                className="h-9"
+                                                value={periodData.end_date}
+                                                min={
+                                                    periodData.start_date ||
+                                                    new Date()
+                                                        .toISOString()
+                                                        .split('T')[0]
+                                                }
+                                                onChange={(e) =>
+                                                    setPeriodData({
+                                                        ...periodData,
+                                                        end_date:
+                                                            e.target.value,
+                                                    })
+                                                }
+                                                required
+                                            />
+                                        </div>
+                                    </div>
+                                    <Button
+                                        type="submit"
+                                        size="sm"
+                                        className="w-full"
+                                    >
+                                        Add Available Range
+                                    </Button>
+                                </form>
+
+                                {selectedVehicle?.available_periods &&
+                                    selectedVehicle.available_periods.length >
+                                        0 && (
+                                        <ul className="mt-3 space-y-2">
+                                            {selectedVehicle.available_periods.map(
+                                                (period) => (
+                                                    <li
+                                                        key={period.id}
+                                                        className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                                                    >
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium text-slate-800">
+                                                                {
+                                                                    period.start_date
+                                                                }{' '}
+                                                                →{' '}
+                                                                {
+                                                                    period.end_date
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                        <button
+                                                            type="button"
+                                                            onClick={() =>
+                                                                handleRemoveAvailablePeriod(
+                                                                    selectedVehicle.id,
+                                                                    period.id,
+                                                                )
+                                                            }
+                                                            className="rounded-md p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                                            aria-label="Remove available range"
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </button>
+                                                    </li>
+                                                ),
+                                            )}
+                                        </ul>
+                                    )}
+                            </div>
+
+                            <div className="flex flex-wrap gap-2">
+                                <Button
+                                    variant="outline"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        if (selectedVehicle) {
+                                            router.get(
+                                                `/vehicles/${selectedVehicle.id}/edit`,
+                                            );
+                                        }
+                                    }}
+                                >
+                                    <Pencil className="mr-2 h-4 w-4" /> Edit
+                                </Button>
+                                {selectedVehicle &&
+                                    (selectedVehicle.availability_status ===
+                                        'available' ||
+                                        selectedVehicle.availability_status ===
+                                            'maintenance') && (
+                                        <Button
+                                            variant={
+                                                selectedVehicle.availability_status ===
+                                                'available'
+                                                    ? 'outline'
+                                                    : 'default'
+                                            }
+                                            className="flex-1"
+                                            onClick={() =>
+                                                handleToggle(selectedVehicle.id)
+                                            }
+                                        >
+                                            {selectedVehicle.availability_status ===
+                                            'available' ? (
+                                                <Pause className="mr-2 h-4 w-4" />
+                                            ) : (
+                                                <Play className="mr-2 h-4 w-4" />
+                                            )}
+                                            {selectedVehicle.availability_status ===
+                                            'available'
+                                                ? 'Pause'
+                                                : 'Resume'}
+                                        </Button>
+                                    )}
+                                <Button
+                                    variant="destructive"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        if (selectedVehicle) {
+                                            handleDelete(selectedVehicle.id);
+                                        }
+                                    }}
+                                >
+                                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                                </Button>
+                            </div>
+                        </div>
                     }
                 />
             </div>

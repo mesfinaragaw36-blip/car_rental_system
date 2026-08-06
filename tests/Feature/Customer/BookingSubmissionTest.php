@@ -4,6 +4,7 @@ namespace Tests\Feature\Customer;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\CarAvailablePeriod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,7 +18,7 @@ class BookingSubmissionTest extends TestCase
      */
     private function createCar(User $owner): Car
     {
-        return Car::create([
+        $car = Car::create([
             'owner_id' => $owner->id,
             'brand' => 'Toyota',
             'model' => 'Corolla',
@@ -35,6 +36,14 @@ class BookingSubmissionTest extends TestCase
             'approval_status' => 'approved',
             'availability_status' => 'available',
         ]);
+
+        CarAvailablePeriod::create([
+            'car_id' => $car->id,
+            'start_date' => now()->subDay()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(),
+        ]);
+
+        return $car;
     }
 
     public function test_customer_can_submit_a_booking_request(): void
@@ -60,7 +69,7 @@ class BookingSubmissionTest extends TestCase
             'customer_id' => $customer->id,
             'owner_id' => $owner->id,
             'car_id' => $car->id,
-            'status' => 'pending',
+            'status' => 'confirmed',
         ]);
     }
 

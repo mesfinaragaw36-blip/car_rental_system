@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingDriver;
+use App\Models\Inspection;
 use App\Models\Payment;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -50,14 +52,14 @@ class PaymentController extends Controller
         ]);
     }
 
-    public function create(Booking $booking): Response
+    public function create(Booking $booking): Response|RedirectResponse
     {
         $user = auth()->user();
         if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-        if ($booking->status !== 'approved') {
-            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'Only approved bookings can be paid.']);
+        if ($booking->status !== Booking::STATUS_CONFIRMED) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting a deposit payment.']);
         }
         if ($booking->payment) {
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
@@ -76,9 +78,51 @@ class PaymentController extends Controller
         $booking->load('car');
 
         return Inertia::render('payment', [
+            'mode' => 'deposit',
             'booking' => [
                 'id' => $booking->id,
-                'total_price' => $booking->total_price,
+                'total_price' => round((float) $booking->total_price, 2),
+                'deposit_amount' => round($booking->depositAmount(), 2),
+                'balance_amount' => round($booking->balanceAmount(), 2),
+                'security_deposit_amount' => round($booking->securityDepositAmount(), 2),
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'car' => $booking->car->only(['brand', 'model', 'plate_number']),
+                'need_driver' => $booking->need_driver,
+                'driver' => $booking->driverAssignment?->driver ? [
+                    'name' => $booking->driverAssignment->driver->name,
+                ] : null,
+            ],
+            'role' => $user->role,
+        ]);
+    }
+
+    public function createPickup(Booking $booking): Response|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+        if ($booking->status !== Booking::STATUS_DEPOSIT_PAID) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting the pickup balance payment.']);
+        }
+        if ($booking->hasPaidBalance()) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'The balance has already been paid for this booking.']);
+        }
+        if (! $booking->hasApprovedInspection(Inspection::TYPE_PICKUP)) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'You can pay the balance once the vehicle passes the pickup inspection.']);
+        }
+
+        $booking->load('car', 'driverAssignment.driver');
+
+        return Inertia::render('payment', [
+            'mode' => 'pickup',
+            'booking' => [
+                'id' => $booking->id,
+                'total_price' => round((float) $booking->total_price, 2),
+                'deposit_amount' => round($booking->depositAmount(), 2),
+                'balance_amount' => round($booking->balanceAmount(), 2),
+                'security_deposit_amount' => round($booking->securityDepositAmount(), 2),
                 'pickup_date' => $booking->pickup_date->toDateString(),
                 'return_date' => $booking->return_date->toDateString(),
                 'car' => $booking->car->only(['brand', 'model', 'plate_number']),
@@ -97,8 +141,8 @@ class PaymentController extends Controller
         if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-        if ($booking->status !== 'approved') {
-            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking cannot be paid.']);
+        if ($booking->status !== Booking::STATUS_CONFIRMED) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting a deposit payment.']);
         }
 
         if ($booking->need_driver) {
@@ -117,23 +161,137 @@ class PaymentController extends Controller
 
         $validated = $request->validate([
             'payment_method' => 'required|in:Cash,Bank Transfer,Telebirr,CBE Birr',
-            'transaction_reference' => 'nullable|string|max:255',
+            'transaction_reference' => 'required_unless:payment_method,Cash|string|max:255',
         ]);
 
-        Payment::create([
-            'booking_id' => $booking->id,
-            'amount' => $booking->total_price,
-            'payment_method' => $validated['payment_method'],
-            'transaction_reference' => $validated['transaction_reference'] ?? null,
-            'payment_status' => 'paid',
-            'paid_at' => now(),
-        ]);
+        $depositAmount = $booking->depositAmount();
 
-        $booking->update(['status' => 'paid']);
+        DB::transaction(function () use ($booking, $validated, $depositAmount) {
+            Booking::whereKey($booking->id)->lockForUpdate()->first();
+
+            if ($booking->status !== Booking::STATUS_CONFIRMED) {
+                throw new \RuntimeException('status');
+            }
+
+            Payment::create([
+                'booking_id' => $booking->id,
+                'type' => 'booking_deposit',
+                'amount' => $depositAmount,
+                'payment_method' => $validated['payment_method'],
+                'transaction_reference' => $validated['transaction_reference'] ?? null,
+                'payment_status' => 'paid',
+                'paid_at' => now(),
+            ]);
+
+            $booking->update([
+                'status' => Booking::STATUS_DEPOSIT_PAID,
+                'deposit_paid_at' => now(),
+            ]);
+
+            $owner = $booking->owner;
+            $car = $booking->car;
+
+            if ($owner) {
+                $owner->notifyNow(
+                    "Bring your {$car->brand} {$car->model} to the branch",
+                    sprintf(
+                        'A customer paid the ETB %s booking deposit for your %s %s. Please deliver the car to %s by %s so the pre-rental inspection can take place before pickup on %s.',
+                        number_format($depositAmount, 2),
+                        $car->brand,
+                        $car->model,
+                        $booking->pickup_location,
+                        $booking->carDeliveryDueDate()->format('M j, Y'),
+                        $booking->pickup_date->format('M j, Y g:i A'),
+                    ),
+                    'booking_locked',
+                    Booking::class,
+                    $booking->id,
+                );
+            }
+        });
 
         return redirect()->route('bookings.index')->with('toast', [
             'type' => 'success',
-            'message' => 'Payment completed successfully!',
+            'message' => 'Deposit payment completed! Your booking dates are now locked.',
+        ]);
+    }
+
+    public function storePickup(Request $request, Booking $booking): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+        if ($booking->status !== Booking::STATUS_DEPOSIT_PAID) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting the pickup balance payment.']);
+        }
+        if ($booking->hasPaidBalance()) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'The balance has already been paid for this booking.']);
+        }
+        if (! $booking->hasApprovedInspection(Inspection::TYPE_PICKUP)) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'You can pay the balance once the vehicle passes the pickup inspection.']);
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:Cash,Bank Transfer,Telebirr,CBE Birr',
+            'transaction_reference' => 'required_unless:payment_method,Cash|string|max:255',
+        ]);
+
+        $balance = $booking->balanceAmount();
+        $securityDeposit = $booking->securityDepositAmount();
+        $totalReceived = round($balance + $securityDeposit, 2);
+
+        DB::transaction(function () use ($booking, $balance, $securityDeposit, $totalReceived) {
+            Booking::whereKey($booking->id)->lockForUpdate()->first();
+
+            if ($booking->status !== Booking::STATUS_DEPOSIT_PAID || $booking->hasPaidBalance()) {
+                throw new \RuntimeException('status');
+            }
+
+            $booking->update([
+                'status' => Booking::STATUS_PAID,
+                'balance_paid_at' => now(),
+                'security_deposit_paid_at' => now(),
+            ]);
+
+            $booking->customer?->notifyNow(
+                "Booking #{$booking->id} fully paid",
+                sprintf(
+                    'Your payment of ETB %s (ETB %s rental balance + ETB %s security deposit) was received for the %s %s. The vehicle is ready for pickup at %s on %s.',
+                    number_format($totalReceived, 2),
+                    number_format($balance, 2),
+                    number_format($securityDeposit, 2),
+                    $booking->car->brand,
+                    $booking->car->model,
+                    $booking->pickup_location,
+                    $booking->pickup_date->format('M j, Y g:i A'),
+                ),
+                'booking_paid',
+                Booking::class,
+                $booking->id,
+            );
+
+            $booking->owner?->notifyNow(
+                "Booking #{$booking->id} fully paid",
+                sprintf(
+                    'The customer paid ETB %s (ETB %s rental balance + ETB %s security deposit) for your %s %s. Prepare for handover at %s on %s.',
+                    number_format($totalReceived, 2),
+                    number_format($balance, 2),
+                    number_format($securityDeposit, 2),
+                    $booking->car->brand,
+                    $booking->car->model,
+                    $booking->pickup_location,
+                    $booking->pickup_date->format('M j, Y g:i A'),
+                ),
+                'booking_paid',
+                Booking::class,
+                $booking->id,
+            );
+        });
+
+        return redirect()->route('bookings.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Payment complete! The vehicle is ready for pickup at the branch.',
         ]);
     }
 

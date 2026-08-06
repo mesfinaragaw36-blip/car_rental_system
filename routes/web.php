@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\CarImageController;
 use App\Http\Controllers\Admin\CarTypeNameController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\LocationController;
+use App\Http\Controllers\Admin\PayoutController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\Admin\UserController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\InspectionController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
@@ -41,8 +43,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
     Route::post('/bookings/{booking}/assign-driver', [BookingController::class, 'assignDriver'])->name('bookings.assign-driver');
-    Route::post('/bookings/{booking}/picked-up', [BookingController::class, 'markPickedUp'])->name('bookings.picked-up');
-    Route::post('/bookings/{booking}/returned', [BookingController::class, 'markReturned'])->name('bookings.returned');
     Route::post('/bookings/{booking}/reviews', [ReviewController::class, 'store'])->name('bookings.reviews.store');
     Route::put('/bookings/{booking}/reviews/{review}', [ReviewController::class, 'update'])->name('bookings.reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
@@ -52,7 +52,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/bookings/{booking}/payment', [PaymentController::class, 'create'])->name('payments.create');
     Route::post('/bookings/{booking}/payment', [PaymentController::class, 'store'])->name('payments.store');
+    Route::get('/bookings/{booking}/payment/pickup', [PaymentController::class, 'createPickup'])->name('payments.pickup-create');
+    Route::post('/bookings/{booking}/payment/pickup', [PaymentController::class, 'storePickup'])->name('payments.pickup-store');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
+
+    // Notifications
+    Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.read-all');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
 
     // Vehicles (owner management)
     Route::get('/vehicles', [VehicleController::class, 'index'])->name('vehicles.index');
@@ -64,6 +71,9 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/vehicles/{car}', [VehicleController::class, 'destroy'])->name('vehicles.destroy');
     Route::delete('/vehicles/{car}/images/{image}', [VehicleController::class, 'deleteImage'])->name('vehicles.images.delete');
     Route::delete('/vehicles/{car}/documents/{document}', [VehicleController::class, 'destroyDocument'])->name('vehicles.documents.destroy');
+    Route::post('/vehicles/{car}/toggle-availability', [VehicleController::class, 'toggleAvailability'])->name('vehicles.toggle-availability');
+    Route::post('/vehicles/{car}/available-periods', [VehicleController::class, 'storeAvailablePeriod'])->name('vehicles.available-periods.store');
+    Route::delete('/vehicles/{car}/available-periods/{availablePeriod}', [VehicleController::class, 'destroyAvailablePeriod'])->name('vehicles.available-periods.destroy');
     // Browse cars
     Route::get('/browse-cars', [BrowseCarController::class, 'index'])->name('cars.index');
     Route::get('/cars/{car}', [BrowseCarController::class, 'show'])->name('cars.show');
@@ -88,6 +98,10 @@ Route::middleware(['auth'])->group(function () {
     // Inspection staff routes
     Route::middleware(['staff_permission'])->group(function () {
         Route::get('/inspections', [InspectionController::class, 'index'])->name('inspections.index');
+        Route::post('/inspections/{booking}/delivery', [InspectionController::class, 'confirmDelivery'])->name('inspections.delivery');
+        Route::post('/inspections/{booking}/conduct', [InspectionController::class, 'conduct'])->name('inspections.conduct');
+        Route::post('/inspections/{booking}/handover', [InspectionController::class, 'handover'])->name('inspections.handover');
+        Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])->name('inspections.returned');
         Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
     });
 
@@ -106,6 +120,9 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
         Route::post('/drivers/{driver}/suspend', [DriverController::class, 'suspend'])->name('drivers.suspend');
         Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])->name('drivers.activate');
+
+        Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+        Route::post('/payouts/{payout}/mark-paid', [PayoutController::class, 'markPaid'])->name('payouts.mark-paid');
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');

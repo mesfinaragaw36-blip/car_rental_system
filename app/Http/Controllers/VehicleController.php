@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Car;
+use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
 use App\Models\CarTypeName;
 use App\Models\Location;
@@ -18,7 +19,7 @@ class VehicleController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $query = Car::with(['images', 'carTypeName']);
+        $query = Car::with(['images', 'carTypeName', 'availablePeriods']);
 
         if ($user->role !== 'admin') {
             $query->where('owner_id', $user->id);
@@ -36,6 +37,16 @@ class VehicleController extends Controller
                     'review_text' => $latestReview->review_text,
                     'created_at' => $latestReview->created_at->toDateTimeString(),
                 ] : null,
+                'available_periods' => $car->availablePeriods
+                    ->filter(fn (CarAvailablePeriod $period) => $period->end_date->toDateString() >= now()->toDateString())
+                    ->sortBy('start_date')
+                    ->values()
+                    ->map(fn (CarAvailablePeriod $period) => [
+                        'id' => $period->id,
+                        'start_date' => $period->start_date->toDateString(),
+                        'end_date' => $period->end_date->toDateString(),
+                    ])
+                    ->all(),
             ]);
         });
 
@@ -66,10 +77,14 @@ class VehicleController extends Controller
             'transmission' => 'required|in:Manual,Automatic, Semi',
             'car_type_name_id' => 'nullable|exists:car_type_names,id',
             'daily_price' => 'required|numeric|min:0',
+            'availability_status' => 'nullable|in:available,maintenance',
             'engine_size' => 'nullable|string|max:50',
             'mileage' => 'nullable|integer|min:0',
             'seats' => 'nullable|integer|min:1|max:10',
             'description' => 'nullable|string',
+            'available_periods' => 'nullable|array',
+            'available_periods.*.start_date' => ['required_with:available_periods', 'date'],
+            'available_periods.*.end_date' => ['required_with:available_periods', 'date', 'after_or_equal:available_periods.*.start_date'],
             'photos' => 'nullable',
             'photos.*' => 'image|max:10240',
             'primary_photo_index' => 'nullable|integer|min:0',
@@ -100,9 +115,17 @@ class VehicleController extends Controller
             'description' => $validated['description'] ?? null,
             'owner_id' => auth()->id(),
             'approval_status' => 'pending',
-            'availability_status' => 'available',
+            'availability_status' => $validated['availability_status'] ?? 'available',
             'location_id' => $request->location_id,
         ]);
+
+        foreach ($validated['available_periods'] ?? [] as $period) {
+            CarAvailablePeriod::create([
+                'car_id' => $car->id,
+                'start_date' => $period['start_date'],
+                'end_date' => $period['end_date'],
+            ]);
+        }
 
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
@@ -133,7 +156,7 @@ class VehicleController extends Controller
             abort(403);
         }
 
-        $car->load(['images', 'documents', 'carTypeName', 'reviews.reviewer']);
+        $car->load(['images', 'documents', 'carTypeName', 'reviews.reviewer', 'availablePeriods']);
 
         $recentReviews = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($review) {
             return [
@@ -150,6 +173,14 @@ class VehicleController extends Controller
                 'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $car->reviews()->count(),
                 'recent_reviews' => $recentReviews,
+                'available_periods' => $car->availablePeriods
+                    ->sortBy('start_date')
+                    ->values()
+                    ->map(fn (CarAvailablePeriod $period) => [
+                        'id' => $period->id,
+                        'start_date' => $period->start_date->toDateString(),
+                        'end_date' => $period->end_date->toDateString(),
+                    ]),
             ]),
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
@@ -173,10 +204,14 @@ class VehicleController extends Controller
             'transmission' => 'required|in:Manual,Automatic,Semi',
             'car_type_name_id' => 'nullable|exists:car_type_names,id',
             'daily_price' => 'required|numeric|min:0',
+            'availability_status' => 'nullable|in:available,maintenance',
             'engine_size' => 'nullable|string|max:50',
             'mileage' => 'nullable|integer|min:0',
             'seats' => 'nullable|integer|min:1|max:10',
             'description' => 'nullable|string',
+            'available_periods' => 'nullable|array',
+            'available_periods.*.start_date' => ['required_with:available_periods', 'date'],
+            'available_periods.*.end_date' => ['required_with:available_periods', 'date', 'after_or_equal:available_periods.*.start_date'],
             'photos' => 'nullable|array',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:10240',
 
@@ -186,6 +221,16 @@ class VehicleController extends Controller
         ]);
 
         $car->update($validated);
+
+        $car->availablePeriods()->delete();
+
+        foreach ($validated['available_periods'] ?? [] as $period) {
+            CarAvailablePeriod::create([
+                'car_id' => $car->id,
+                'start_date' => $period['start_date'],
+                'end_date' => $period['end_date'],
+            ]);
+        }
 
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
@@ -320,5 +365,71 @@ class VehicleController extends Controller
             'type' => 'success',
             'message' => 'Document deleted successfully.',
         ]);
+    }
+
+    public function toggleAvailability(Car $car): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        if ($car->availability_status === 'available') {
+            $car->update(['availability_status' => 'maintenance']);
+
+            return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle paused. It is no longer bookable.']);
+        }
+
+        if ($car->availability_status === 'maintenance') {
+            $car->update(['availability_status' => 'available']);
+
+            return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle resumed and is bookable again.']);
+        }
+
+        return back()->with('toast', ['type' => 'error', 'message' => 'Only available or paused vehicles can be toggled.']);
+    }
+
+    public function storeAvailablePeriod(Request $request, Car $car): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
+            'end_date' => ['required', 'date', 'after_or_equal:start_date'],
+        ]);
+
+        $hasOverlap = $car->availablePeriods()
+            ->whereDate('start_date', '<=', $validated['end_date'])
+            ->whereDate('end_date', '>=', $validated['start_date'])
+            ->exists();
+
+        if ($hasOverlap) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'This date range overlaps with an existing available period.']);
+        }
+
+        CarAvailablePeriod::create([
+            'car_id' => $car->id,
+            'start_date' => $validated['start_date'],
+            'end_date' => $validated['end_date'],
+        ]);
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Available date range added.']);
+    }
+
+    public function destroyAvailablePeriod(Car $car, CarAvailablePeriod $availablePeriod): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($car->owner_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+        if ($availablePeriod->car_id !== $car->id) {
+            abort(404);
+        }
+        $availablePeriod->delete();
+
+        return back()->with('toast', ['type' => 'success', 'message' => 'Available date range removed.']);
     }
 }

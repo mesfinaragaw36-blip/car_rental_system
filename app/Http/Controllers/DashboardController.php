@@ -60,8 +60,8 @@ class DashboardController extends Controller
                 'total_vehicles' => Car::count(),
                 'pending_vehicles' => Car::where('approval_status', 'pending')->count(),
                 'total_bookings' => Booking::count(),
-                'pending_bookings' => Booking::where('status', 'pending')->count(),
-                'active_bookings' => Booking::whereIn('status', ['approved', 'paid', 'picked_up'])->count(),
+                'pending_bookings' => Booking::where('status', 'confirmed')->count(),
+                'active_bookings' => Booking::whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->count(),
                 'completed_bookings' => Booking::where('status', 'completed')->count(),
                 'total_revenue' => number_format($totalRevenue, 2),
                 'total_commission' => number_format($totalCommission, 2),
@@ -114,8 +114,8 @@ class DashboardController extends Controller
             'role' => 'owner',
             'stats' => [
                 'total_vehicles' => $vehicles->count(),
-                'active_bookings' => Booking::where('owner_id', $ownerId)->whereIn('status', ['approved', 'paid', 'picked_up'])->count(),
-                'pending_bookings' => Booking::where('owner_id', $ownerId)->where('status', 'pending')->count(),
+                'active_bookings' => Booking::where('owner_id', $ownerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->count(),
+                'pending_bookings' => Booking::where('owner_id', $ownerId)->where('status', 'confirmed')->count(),
                 'total_earnings' => number_format((float) Payment::where('payment_status', 'paid')->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))->sum('amount'), 2),
                 'available_vehicles' => (clone $vehicles)->where('availability_status', 'available')->count(),
                 'rented_vehicles' => (clone $vehicles)->where('availability_status', 'rented')->count(),
@@ -133,9 +133,9 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'role' => 'customer',
             'stats' => [
-                'active_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['pending', 'approved', 'paid', 'picked_up'])->count(),
+                'active_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['confirmed', 'deposit_paid', 'paid', 'picked_up'])->count(),
                 'past_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['returned', 'completed'])->count(),
-                'upcoming_returns' => Booking::with('car:id,brand,model')->where('customer_id', $customerId)->whereIn('status', ['approved', 'paid', 'picked_up'])->where('return_date', '>=', now()->toDateString())->orderBy('return_date')->limit(5)->get()->map(fn (Booking $booking) => [
+                'upcoming_returns' => Booking::with('car:id,brand,model')->where('customer_id', $customerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->where('return_date', '>=', now()->toDateString())->orderBy('return_date')->limit(5)->get()->map(fn (Booking $booking) => [
                     'id' => $booking->id,
                     'vehicle' => $booking->car->brand.' '.$booking->car->model,
                     'return_date' => $booking->return_date->toDateString(),

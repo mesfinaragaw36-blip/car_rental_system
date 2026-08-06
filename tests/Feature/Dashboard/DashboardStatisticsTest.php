@@ -177,9 +177,9 @@ class DashboardStatisticsTest extends TestCase
         $ownCar = $this->createCar($owner);
         $otherCar = $this->createCar($otherOwner);
 
-        $this->createBooking($owner, $customer, $ownCar, ['status' => 'approved']);
-        $this->createBooking($owner, $customer, $ownCar, ['status' => 'paid']);
-        $this->createBooking($otherOwner, $customer, $otherCar, ['status' => 'approved']);
+        $this->createBooking($owner, $customer, $ownCar, ['status' => 'deposit_paid']);
+        $this->createBooking($owner, $customer, $ownCar, ['status' => 'picked_up']);
+        $this->createBooking($otherOwner, $customer, $otherCar, ['status' => 'deposit_paid']);
 
         $response = $this->actingAs($owner)->get(route('dashboard'));
 
@@ -218,8 +218,8 @@ class DashboardStatisticsTest extends TestCase
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
 
-        $this->createBooking($owner, $customer, $car, ['status' => 'pending']);
-        $this->createBooking($owner, $customer, $car, ['status' => 'approved']);
+        $this->createBooking($owner, $customer, $car, ['status' => 'confirmed']);
+        $this->createBooking($owner, $customer, $car, ['status' => 'deposit_paid']);
         $this->createBooking($owner, $customer, $car, ['status' => 'completed']);
 
         $response = $this->actingAs($customer)->get(route('dashboard'));
@@ -253,11 +253,11 @@ class DashboardStatisticsTest extends TestCase
         $car = $this->createCar($owner);
 
         $this->createBooking($owner, $customer, $car, [
-            'status' => 'approved',
+            'status' => 'deposit_paid',
             'return_date' => now()->addDays(10)->toDateString(),
         ]);
         $this->createBooking($owner, $customer, $car, [
-            'status' => 'approved',
+            'status' => 'deposit_paid',
             'return_date' => now()->addDays(3)->toDateString(),
         ]);
 
@@ -278,7 +278,7 @@ class DashboardStatisticsTest extends TestCase
 
         for ($i = 1; $i <= 7; $i++) {
             $this->createBooking($owner, $customer, $car, [
-                'status' => 'approved',
+                'status' => 'deposit_paid',
                 'return_date' => now()->addDays($i + 1)->toDateString(),
             ]);
         }

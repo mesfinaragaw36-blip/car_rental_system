@@ -60,6 +60,21 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
+            'notifications' => [
+                'unread_count' => $user ? $user->notifications()->whereNull('read_at')->count() : 0,
+                'latest' => $user ? $user->notifications()
+                    ->latest()
+                    ->limit(5)
+                    ->get()
+                    ->map(fn ($notification) => [
+                        'id' => $notification->id,
+                        'type' => $notification->type,
+                        'title' => $notification->title,
+                        'message' => $notification->message,
+                        'read_at' => $notification->read_at?->toDateTimeString(),
+                        'created_at' => $notification->created_at->diffForHumans(),
+                    ]) : [],
+            ],
         ];
     }
 }

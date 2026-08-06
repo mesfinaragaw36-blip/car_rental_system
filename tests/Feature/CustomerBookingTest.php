@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Car;
+use App\Models\CarAvailablePeriod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -23,6 +24,12 @@ class CustomerBookingTest extends TestCase
             'daily_price' => 100.00,
         ]);
 
+        CarAvailablePeriod::create([
+            'car_id' => $car->id,
+            'start_date' => now()->addDay()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(),
+        ]);
+
         $this->actingAs($customer);
 
         $response = $this->post(route('cars.book', $car), [
@@ -41,7 +48,8 @@ class CustomerBookingTest extends TestCase
             'return_location' => 'Hotel',
             'need_driver' => true,
             'total_price' => 200.00,
-            'status' => 'pending',
+            'deposit_amount' => 500.00,
+            'status' => 'confirmed',
         ]);
     }
 }

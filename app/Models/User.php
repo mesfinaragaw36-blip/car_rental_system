@@ -86,6 +86,22 @@ class User extends Authenticatable
         return $this->hasMany(Review::class, 'reviewer_id');
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function notifyNow(string $title, string $message, string $type = 'system', ?string $relatedType = null, ?int $relatedId = null): Notification
+    {
+        return $this->notifications()->create([
+            'title' => $title,
+            'message' => $message,
+            'type' => $type,
+            'related_type' => $relatedType,
+            'related_id' => $relatedId,
+        ]);
+    }
+
     public function averageRating(): Attribute
     {
         return Attribute::get(fn () => round($this->reviews()->avg('rating') ?? 0, 1));

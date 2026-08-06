@@ -8,22 +8,45 @@ import { Textarea } from '@/components/ui/textarea';
 import { book } from '@/routes/cars';
 
 interface Car {
-    id: number; brand: string; model: string; year: number;
-    daily_rate: string; fuel_type: string; transmission: string;
-    category: string; color: string; engine_size?: string; mileage?: number;
-    seats?: number; description?: string; availability_status: string; photo: string | null;
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    daily_rate: string;
+    fuel_type: string;
+    transmission: string;
+    category: string;
+    color: string;
+    engine_size?: string;
+    mileage?: number;
+    seats?: number;
+    description?: string;
+    availability_status: string;
+    photo: string | null;
     car_type_name?: { name: string };
     owner: { id: number; name: string; phone: string; email: string };
     images?: { id: number; image_path: string; is_primary: boolean }[];
     average_rating?: number;
     review_count?: number;
-    recent_reviews?: { id: number; reviewer: { id: number; name: string }; rating: number; review_text?: string | null; created_at: string }[];
+    recent_reviews?: {
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text?: string | null;
+        created_at: string;
+    }[];
+    available_periods?: { id: number; start_date: string; end_date: string }[];
 }
 
-interface Props { car: Car; role: string; }
+interface Props {
+    car: Car;
+    role: string;
+}
 
 export default function CarDetails({ car, role }: Props) {
-    const { props: p } = usePage<{ toast?: { type: string; message: string } }>();
+    const { props: p } = usePage<{
+        toast?: { type: string; message: string };
+    }>();
     const toast = p.toast;
 
     const { data, setData, post, processing, errors } = useForm({
@@ -46,9 +69,11 @@ export default function CarDetails({ car, role }: Props) {
     return (
         <>
             <Head title={`${car.brand} ${car.model}`} />
-            <div className="p-6 space-y-6 max-w-4xl mx-auto">
+            <div className="mx-auto max-w-4xl space-y-6 p-6">
                 {toast && (
-                    <div className={`p-4 rounded-lg ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <div
+                        className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
                         {toast.message}
                     </div>
                 )}
@@ -62,10 +87,13 @@ export default function CarDetails({ car, role }: Props) {
                                 className="w-full rounded-lg object-cover"
                             />
                         ) : car.photo ? (
-                            <img src={`/storage/${car.photo}`} alt={`${car.brand} ${car.model}`}
-                                className="w-full rounded-lg object-cover" />
+                            <img
+                                src={`/storage/${car.photo}`}
+                                alt={`${car.brand} ${car.model}`}
+                                className="w-full rounded-lg object-cover"
+                            />
                         ) : (
-                            <div className="w-full h-64 bg-muted rounded-lg flex items-center justify-center text-muted-foreground">
+                            <div className="flex h-64 w-full items-center justify-center rounded-lg bg-muted text-muted-foreground">
                                 No image
                             </div>
                         )}
@@ -73,25 +101,79 @@ export default function CarDetails({ car, role }: Props) {
                     <div className="space-y-4">
                         <div className="flex flex-col gap-3">
                             <div className="flex flex-col gap-1">
-                                <h1 className="text-3xl font-bold">{car.brand} {car.model} ({car.year})</h1>
+                                <h1 className="text-3xl font-bold">
+                                    {car.brand} {car.model} ({car.year})
+                                </h1>
                                 {car.average_rating !== undefined && (
-                                    <p className="text-sm text-muted-foreground">{car.average_rating} ★ · {car.review_count ?? 0} review{(car.review_count ?? 0) === 1 ? '' : 's'}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {car.average_rating} ★ ·{' '}
+                                        {car.review_count ?? 0} review
+                                        {(car.review_count ?? 0) === 1
+                                            ? ''
+                                            : 's'}
+                                    </p>
                                 )}
                             </div>
-                            <p className="text-2xl font-bold text-primary">ETB {car.daily_rate}/day</p>
+                            <p className="text-2xl font-bold text-primary">
+                                ETB {car.daily_rate}/day
+                            </p>
                         </div>
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                            <span className="text-muted-foreground">Fuel:</span><span>{car.fuel_type}</span>
-                            <span className="text-muted-foreground">Transmission:</span><span>{car.transmission}</span>
-                            <span className="text-muted-foreground">Category:</span><span>{car.category}</span>
-                            <span className="text-muted-foreground">Color:</span><span>{car.color}</span>
-                            {car.engine_size && <><span className="text-muted-foreground">Engine:</span><span>{car.engine_size}</span></>}
-                            {car.seats && <><span className="text-muted-foreground">Seats:</span><span>{car.seats}</span></>}
-                            {car.mileage && <><span className="text-muted-foreground">Mileage:</span><span>{car.mileage} km</span></>}
-                            {car.car_type_name && <><span className="text-muted-foreground">Type:</span><span>{car.car_type_name.name}</span></>}
+                            <span className="text-muted-foreground">Fuel:</span>
+                            <span>{car.fuel_type}</span>
+                            <span className="text-muted-foreground">
+                                Transmission:
+                            </span>
+                            <span>{car.transmission}</span>
+                            <span className="text-muted-foreground">
+                                Category:
+                            </span>
+                            <span>{car.category}</span>
+                            <span className="text-muted-foreground">
+                                Color:
+                            </span>
+                            <span>{car.color}</span>
+                            {car.engine_size && (
+                                <>
+                                    <span className="text-muted-foreground">
+                                        Engine:
+                                    </span>
+                                    <span>{car.engine_size}</span>
+                                </>
+                            )}
+                            {car.seats && (
+                                <>
+                                    <span className="text-muted-foreground">
+                                        Seats:
+                                    </span>
+                                    <span>{car.seats}</span>
+                                </>
+                            )}
+                            {car.mileage && (
+                                <>
+                                    <span className="text-muted-foreground">
+                                        Mileage:
+                                    </span>
+                                    <span>{car.mileage} km</span>
+                                </>
+                            )}
+                            {car.car_type_name && (
+                                <>
+                                    <span className="text-muted-foreground">
+                                        Type:
+                                    </span>
+                                    <span>{car.car_type_name.name}</span>
+                                </>
+                            )}
                         </div>
-                        {car.description && <p className="text-sm text-muted-foreground">{car.description}</p>}
-                        <p className="text-sm text-muted-foreground">Owner: {car.owner.name} ({car.owner.phone})</p>
+                        {car.description && (
+                            <p className="text-sm text-muted-foreground">
+                                {car.description}
+                            </p>
+                        )}
+                        <p className="text-sm text-muted-foreground">
+                            Owner: {car.owner.name} ({car.owner.phone})
+                        </p>
                     </div>
                 </div>
 
@@ -103,73 +185,188 @@ export default function CarDetails({ car, role }: Props) {
                         {car.recent_reviews && car.recent_reviews.length > 0 ? (
                             <div className="space-y-3">
                                 {car.recent_reviews.map((r) => (
-                                    <div key={r.id} className="rounded-lg border p-4">
+                                    <div
+                                        key={r.id}
+                                        className="rounded-lg border p-4"
+                                    >
                                         <div className="flex items-center justify-between gap-4">
                                             <div>
-                                                <p className="font-medium">{r.reviewer.name}</p>
-                                                <p className="text-sm text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</p>
+                                                <p className="font-medium">
+                                                    {r.reviewer.name}
+                                                </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    {new Date(
+                                                        r.created_at,
+                                                    ).toLocaleDateString()}
+                                                </p>
                                             </div>
-                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">{r.rating} ★</span>
+                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">
+                                                {r.rating} ★
+                                            </span>
                                         </div>
-                                        {r.review_text && <p className="mt-3 text-sm text-muted-foreground">{r.review_text}</p>}
+                                        {r.review_text && (
+                                            <p className="mt-3 text-sm text-muted-foreground">
+                                                {r.review_text}
+                                            </p>
+                                        )}
                                     </div>
                                 ))}
                             </div>
                         ) : (
-                            <p className="text-sm text-muted-foreground">No reviews yet for this vehicle.</p>
+                            <p className="text-sm text-muted-foreground">
+                                No reviews yet for this vehicle.
+                            </p>
                         )}
                     </CardContent>
                 </Card>
 
-                {role === 'customer' && car.availability_status === 'available' && (
+                {car.available_periods && car.available_periods.length > 0 && (
                     <Card>
-                        <CardHeader><CardTitle>Book This Car</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Available Dates</CardTitle>
+                        </CardHeader>
                         <CardContent>
-                            <form onSubmit={handleBook} className="space-y-4">
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    <div>
-                                        <Label htmlFor="pickup_date">Pickup Date</Label>
-                                        <Input id="pickup_date" type="date" value={data.pickup_date}
-                                            onChange={(e) => setData('pickup_date', e.target.value)} />
-                                        <InputError message={errors.pickup_date} />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="return_date">Return Date</Label>
-                                        <Input id="return_date" type="date" value={data.return_date}
-                                            onChange={(e) => setData('return_date', e.target.value)} />
-                                        <InputError message={errors.return_date} />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="pickup_location">Pickup Location</Label>
-                                        <Input id="pickup_location" value={data.pickup_location}
-                                            onChange={(e) => setData('pickup_location', e.target.value)} />
-                                        <InputError message={errors.pickup_location} />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="return_location">Return Location</Label>
-                                        <Input id="return_location" value={data.return_location}
-                                            onChange={(e) => setData('return_location', e.target.value)} />
-                                        <InputError message={errors.return_location} />
-                                    </div>
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <input type="checkbox" id="need_driver" checked={data.need_driver}
-                                        onChange={(e) => setData('need_driver', e.target.checked)} />
-                                    <Label htmlFor="need_driver">I need a driver</Label>
-                                </div>
-                                <div>
-                                    <Label htmlFor="notes">Notes</Label>
-                                    <Textarea id="notes" value={data.notes}
-                                        onChange={(e) => setData('notes', e.target.value)} />
-                                    <InputError message={errors.notes} />
-                                </div>
-                                <Button type="submit" disabled={processing}>
-                                    {processing ? 'Booking...' : 'Book Now'}
-                                </Button>
-                            </form>
+                            <ul className="space-y-2 text-sm">
+                                {car.available_periods.map((period) => (
+                                    <li
+                                        key={period.id}
+                                        className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2"
+                                    >
+                                        <span className="font-medium">
+                                            {period.start_date} →{' '}
+                                            {period.end_date}
+                                        </span>
+                                    </li>
+                                ))}
+                            </ul>
+                            <p className="mt-2 text-xs text-muted-foreground">
+                                This vehicle can be booked during these dates.
+                            </p>
                         </CardContent>
                     </Card>
                 )}
+
+                {role === 'customer' &&
+                    car.availability_status === 'available' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Book This Car</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <form
+                                    onSubmit={handleBook}
+                                    className="space-y-4"
+                                >
+                                    <div className="grid gap-4 md:grid-cols-2">
+                                        <div>
+                                            <Label htmlFor="pickup_date">
+                                                Pickup Date
+                                            </Label>
+                                            <Input
+                                                id="pickup_date"
+                                                type="date"
+                                                value={data.pickup_date}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'pickup_date',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.pickup_date}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="return_date">
+                                                Return Date
+                                            </Label>
+                                            <Input
+                                                id="return_date"
+                                                type="date"
+                                                value={data.return_date}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'return_date',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.return_date}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="pickup_location">
+                                                Pickup Location
+                                            </Label>
+                                            <Input
+                                                id="pickup_location"
+                                                value={data.pickup_location}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'pickup_location',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.pickup_location}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="return_location">
+                                                Return Location
+                                            </Label>
+                                            <Input
+                                                id="return_location"
+                                                value={data.return_location}
+                                                onChange={(e) =>
+                                                    setData(
+                                                        'return_location',
+                                                        e.target.value,
+                                                    )
+                                                }
+                                            />
+                                            <InputError
+                                                message={errors.return_location}
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <input
+                                            type="checkbox"
+                                            id="need_driver"
+                                            checked={data.need_driver}
+                                            onChange={(e) =>
+                                                setData(
+                                                    'need_driver',
+                                                    e.target.checked,
+                                                )
+                                            }
+                                        />
+                                        <Label htmlFor="need_driver">
+                                            I need a driver
+                                        </Label>
+                                    </div>
+                                    <div>
+                                        <Label htmlFor="notes">Notes</Label>
+                                        <Textarea
+                                            id="notes"
+                                            value={data.notes}
+                                            onChange={(e) =>
+                                                setData('notes', e.target.value)
+                                            }
+                                        />
+                                        <InputError message={errors.notes} />
+                                    </div>
+                                    <Button type="submit" disabled={processing}>
+                                        {processing ? 'Booking...' : 'Book Now'}
+                                    </Button>
+                                </form>
+                            </CardContent>
+                        </Card>
+                    )}
             </div>
         </>
     );

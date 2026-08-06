@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +30,7 @@ class Car extends Model
         'mileage',
         'seats',
         'daily_price',
+        'estimated_value',
         'description',
         'approval_status',
         'availability_status',
@@ -42,6 +44,7 @@ class Car extends Model
             'mileage' => 'integer',
             'seats' => 'integer',
             'daily_price' => 'decimal:2',
+            'estimated_value' => 'decimal:2',
         ];
     }
 
@@ -88,5 +91,23 @@ class Car extends Model
     public function location(): BelongsTo
     {
         return $this->belongsTo(Location::class);
+    }
+
+    public function availablePeriods(): HasMany
+    {
+        return $this->hasMany(CarAvailablePeriod::class);
+    }
+
+    public function isAvailableFor(CarbonInterface $start, CarbonInterface $end): bool
+    {
+        return $this->availablePeriods()
+            ->whereDate('start_date', '<=', $start)
+            ->whereDate('end_date', '>=', $end)
+            ->exists();
+    }
+
+    public function upcomingAvailablePeriods(): HasMany
+    {
+        return $this->availablePeriods()->whereDate('end_date', '>=', now()->toDateString())->orderBy('start_date');
     }
 }

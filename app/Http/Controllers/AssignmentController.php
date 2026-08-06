@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingDriver;
+use App\Services\DriverMatchingService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -10,6 +11,8 @@ use Inertia\Response;
 
 class AssignmentController extends Controller
 {
+    public function __construct(private readonly DriverMatchingService $driverMatching) {}
+
     public function index(): Response
     {
         $user = auth()->user();
@@ -120,6 +123,23 @@ class AssignmentController extends Controller
         }
         $assignment->update(['status' => 'rejected']);
 
+        $booking = $assignment->booking;
+        $needsChauffeur = $booking->need_driver && ! in_array($booking->status, ['rejected', 'cancelled', 'returned', 'completed'], true);
+
+        if ($needsChauffeur) {
+            $nextDriver = $this->driverMatching->bestMatchFor($booking, $this->driverMatching->alreadyTriedDriverIds($booking));
+
+            if ($nextDriver === null) {
+                $this->driverMatching->escalateToAdmin($booking);
+
+                return back()->with('toast', ['type' => 'success', 'message' => 'Assignment rejected. No other chauffeur is available - admin has been notified.']);
+            }
+
+            $this->driverMatching->assignDriver($booking, $nextDriver);
+
+            return back()->with('toast', ['type' => 'success', 'message' => 'Assignment rejected. Another chauffeur has been assigned.']);
+        }
+
         return back()->with('toast', ['type' => 'success', 'message' => 'Assignment rejected.']);
     }
 
@@ -133,6 +153,14 @@ class AssignmentController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'Only assigned trips can be accepted.']);
         }
         $assignment->update(['status' => 'accepted']);
+
+        $booking = $assignment->booking;
+
+        if ($booking->need_driver) {
+            $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
+            $driverRate = $assignment->driver?->driverProfile?->daily_rate ?? 0;
+            $booking->update(['total_price' => round(($booking->car->daily_price + $driverRate) * $days, 2)]);
+        }
 
         return redirect()->route('dashboard')->with('toast', ['type' => 'success', 'message' => 'Assignment accepted.']);
     }

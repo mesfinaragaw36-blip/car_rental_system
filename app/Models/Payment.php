@@ -9,6 +9,7 @@ class Payment extends Model
 {
     protected $fillable = [
         'booking_id',
+        'type',
         'amount',
         'payment_method',
         'transaction_reference',

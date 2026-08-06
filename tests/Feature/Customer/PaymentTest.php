@@ -51,11 +51,12 @@ class PaymentTest extends TestCase
             'return_location' => 'Addis Ababa',
             'need_driver' => false,
             'total_price' => 300.00,
-            'status' => 'approved',
+            'deposit_amount' => 500.00,
+            'status' => 'confirmed',
         ], $overrides));
     }
 
-    public function test_customer_can_pay_an_approved_booking(): void
+    public function test_customer_can_pay_the_deposit_for_a_confirmed_booking(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -66,20 +67,22 @@ class PaymentTest extends TestCase
             ->actingAs($customer)
             ->post(route('payments.store', $booking), [
                 'payment_method' => 'Telebirr',
+                'transaction_reference' => 'TXN-DEP-001',
             ]);
 
         $response->assertRedirect(route('bookings.index'));
 
         $this->assertDatabaseHas('payments', [
             'booking_id' => $booking->id,
+            'type' => 'booking_deposit',
             'payment_method' => 'Telebirr',
             'payment_status' => 'paid',
-            'amount' => '300.00',
+            'amount' => '500.00',
         ]);
 
         $this->assertDatabaseHas('bookings', [
             'id' => $booking->id,
-            'status' => 'paid',
+            'status' => 'deposit_paid',
         ]);
     }
 
@@ -182,7 +185,7 @@ class PaymentTest extends TestCase
         $this->assertDatabaseMissing('payments', ['booking_id' => $booking->id]);
     }
 
-    public function test_customer_can_view_the_payment_page_for_their_approved_booking(): void
+    public function test_customer_can_view_the_payment_page_for_their_confirmed_booking(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -199,7 +202,8 @@ class PaymentTest extends TestCase
             ->where('booking.car.brand', 'Toyota')
             ->where('booking.car.model', 'Corolla')
             ->has('booking.car.plate_number')
-            ->where('booking.total_price', '300.00'));
+            ->where('booking.total_price', 300)
+            ->where('booking.deposit_amount', 500));
     }
 
     public function test_customer_cannot_view_the_payment_page_for_another_customers_booking(): void

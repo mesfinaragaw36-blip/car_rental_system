@@ -268,7 +268,7 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
                                             <span className="text-lg font-bold">{s.total_bookings}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-muted-foreground">Pending Bookings</span>
+                                            <span className="text-sm text-muted-foreground">Awaiting Deposit</span>
                                             <span className="text-lg font-bold text-amber-600">{s.pending_bookings}</span>
                                         </div>
                                         <div className="flex items-center justify-between">
@@ -334,7 +334,7 @@ export default function Dashboard({ role, stats, recentAssignments = [], recentB
 
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                 <StatCard title="Active Bookings" value={s.active_bookings} icon={<Activity className="h-4 w-4" />} href="/bookings" />
-                                <StatCard title="Pending Bookings" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} href="/bookings" accent="text-yellow-600" />
+                                <StatCard title="Awaiting Deposit" value={s.pending_bookings} icon={<Clock className="h-4 w-4" />} href="/bookings" accent="text-yellow-600" />
                                 <StatCard title="Total Earnings" value={`ETB ${s.total_earnings}`} icon={<CircleDollarSign className="h-4 w-4" />} />
                             </div>
 

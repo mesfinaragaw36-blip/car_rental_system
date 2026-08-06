@@ -4,24 +4,54 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { update } from '@/routes/vehicles';
 
-interface Option { id: number; name: string; }
+interface Option {
+    id: number;
+    name: string;
+}
 
 interface Vehicle {
-    id: number; brand: string; model: string; year: number;
-    plate_number: string; category: string; color: string;
-    fuel_type: string; transmission: string;
-    car_type_name_id?: number | null; engine_size?: string;
-    mileage?: number; seats?: number; daily_price: number;
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    plate_number: string;
+    category: string;
+    color: string;
+    fuel_type: string;
+    transmission: string;
+    car_type_name_id?: number | null;
+    engine_size?: string;
+    mileage?: number;
+    seats?: number;
+    daily_price: number;
+    availability_status?: string;
     description?: string;
+    available_periods?: {
+        id: number;
+        start_date: string;
+        end_date: string;
+    }[];
     average_rating?: number;
     review_count?: number;
-    recent_reviews?: { id: number; reviewer: { id: number; name: string }; rating: number; review_text?: string | null; created_at: string }[];
+    recent_reviews?: {
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text?: string | null;
+        created_at: string;
+    }[];
     carTypeName?: { id: number; name: string } | null;
-        images?: {
+    images?: {
         id: number;
         image_path: string;
         is_primary: boolean;
@@ -36,7 +66,10 @@ interface Vehicle {
     }[];
 }
 
-interface Props { vehicle: Vehicle; carTypeNames: Option[]; }
+interface Props {
+    vehicle: Vehicle;
+    carTypeNames: Option[];
+}
 
 export default function EditVehicle({ vehicle, carTypeNames }: Props) {
     const { data, setData, put, processing, errors } = useForm({
@@ -53,6 +86,11 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
         mileage: vehicle.mileage?.toString() || '',
         seats: vehicle.seats?.toString() || '',
         daily_price: vehicle.daily_price?.toString() || '',
+        availability_status: vehicle.availability_status || 'available',
+        available_periods: (vehicle.available_periods ?? []).map((period) => ({
+            start_date: period.start_date,
+            end_date: period.end_date,
+        })),
         description: vehicle.description || '',
         photos: [] as File[],
         ownership_document: null as File | null,
@@ -61,343 +99,679 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
 
     function submit(e: React.FormEvent) {
         e.preventDefault();
+        setData(
+            'available_periods',
+            data.available_periods.filter(
+                (period) => period.start_date && period.end_date,
+            ),
+        );
         put(update.url({ car: vehicle.id }), {
-        forceFormData: true,
-    });
+            forceFormData: true,
+        });
     }
 
     return (
         <>
             <Head title="Edit Vehicle" />
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <Link
-                     href="/vehicles"
-                        className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
->
-                             ← Back to Vehicles
-                                </Link>
+                    href="/vehicles"
+                    className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                >
+                    ← Back to Vehicles
+                </Link>
                 <h1 className="text-3xl font-bold">Edit Vehicle</h1>
                 {vehicle.average_rating !== undefined && (
                     <Card>
-                        <CardHeader><CardTitle>Customer Reviews</CardTitle></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Customer Reviews</CardTitle>
+                        </CardHeader>
                         <CardContent>
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Average Rating</p>
-                                    <p className="text-2xl font-semibold">{vehicle.average_rating} ★</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Average Rating
+                                    </p>
+                                    <p className="text-2xl font-semibold">
+                                        {vehicle.average_rating} ★
+                                    </p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-muted-foreground">Total Reviews</p>
-                                    <p className="text-2xl font-semibold">{vehicle.review_count ?? 0}</p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Total Reviews
+                                    </p>
+                                    <p className="text-2xl font-semibold">
+                                        {vehicle.review_count ?? 0}
+                                    </p>
                                 </div>
                             </div>
-                            {vehicle.recent_reviews && vehicle.recent_reviews.length > 0 ? (
+                            {vehicle.recent_reviews &&
+                            vehicle.recent_reviews.length > 0 ? (
                                 <div className="mt-4 space-y-3">
                                     {vehicle.recent_reviews.map((review) => (
-                                        <div key={review.id} className="rounded-xl border border-slate-200 p-4">
+                                        <div
+                                            key={review.id}
+                                            className="rounded-xl border border-slate-200 p-4"
+                                        >
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <p className="font-semibold">{review.reviewer.name}</p>
-                                                    <p className="text-sm text-muted-foreground">{new Date(review.created_at).toLocaleDateString()}</p>
+                                                    <p className="font-semibold">
+                                                        {review.reviewer.name}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {new Date(
+                                                            review.created_at,
+                                                        ).toLocaleDateString()}
+                                                    </p>
                                                 </div>
-                                                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">{review.rating} ★</span>
+                                                <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">
+                                                    {review.rating} ★
+                                                </span>
                                             </div>
-                                            {review.review_text && <p className="mt-3 text-sm text-muted-foreground">{review.review_text}</p>}
+                                            {review.review_text && (
+                                                <p className="mt-3 text-sm text-muted-foreground">
+                                                    {review.review_text}
+                                                </p>
+                                            )}
                                         </div>
                                     ))}
                                 </div>
                             ) : (
-                                <p className="mt-4 text-sm text-muted-foreground">No reviews yet for this vehicle.</p>
+                                <p className="mt-4 text-sm text-muted-foreground">
+                                    No reviews yet for this vehicle.
+                                </p>
                             )}
                         </CardContent>
                     </Card>
                 )}
                 <Card>
-                    <CardHeader><CardTitle>Vehicle Information</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>Vehicle Information</CardTitle>
+                    </CardHeader>
                     <CardContent>
                         <form onSubmit={submit} className="space-y-4">
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <Label htmlFor="brand">Brand</Label>
-                                    <Input id="brand" placeholder="e.g. Toyota" value={data.brand} onChange={(e) => setData('brand', e.target.value)} />
+                                    <Input
+                                        id="brand"
+                                        placeholder="e.g. Toyota"
+                                        value={data.brand}
+                                        onChange={(e) =>
+                                            setData('brand', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.brand} />
                                 </div>
                                 <div>
                                     <Label htmlFor="model">Model</Label>
-                                    <Input id="model" placeholder="e.g. Corolla" value={data.model} onChange={(e) => setData('model', e.target.value)} />
+                                    <Input
+                                        id="model"
+                                        placeholder="e.g. Corolla"
+                                        value={data.model}
+                                        onChange={(e) =>
+                                            setData('model', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.model} />
                                 </div>
                                 <div>
                                     <Label htmlFor="year">Year</Label>
-                                    <Input id="year" type="number" placeholder="e.g. 2023" value={data.year} onChange={(e) => setData('year', e.target.value)} />
+                                    <Input
+                                        id="year"
+                                        type="number"
+                                        placeholder="e.g. 2023"
+                                        value={data.year}
+                                        onChange={(e) =>
+                                            setData('year', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.year} />
                                 </div>
                                 <div>
-                                    <Label htmlFor="plate_number">Plate Number</Label>
-                                    <Input id="plate_number" placeholder="e.g. A1234B" value={data.plate_number} onChange={(e) => setData('plate_number', e.target.value)} />
+                                    <Label htmlFor="plate_number">
+                                        Plate Number
+                                    </Label>
+                                    <Input
+                                        id="plate_number"
+                                        placeholder="e.g. A1234B"
+                                        value={data.plate_number}
+                                        onChange={(e) =>
+                                            setData(
+                                                'plate_number',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
                                     <InputError message={errors.plate_number} />
                                 </div>
                                 <div>
                                     <Label>Car Type</Label>
-                                    <Select value={data.car_type_name_id} onValueChange={(value) => {
-                                        const option = carTypeNames.find((t) => String(t.id) === value);
-                                        setData('car_type_name_id', value);
+                                    <Select
+                                        value={data.car_type_name_id}
+                                        onValueChange={(value) => {
+                                            const option = carTypeNames.find(
+                                                (t) => String(t.id) === value,
+                                            );
+                                            setData('car_type_name_id', value);
 
-                                        if (option) {
-                                        setData('category', option.name);
-                                                }
-                                    }}>
-                                        <SelectTrigger className="w-full"><SelectValue placeholder="Select car type" /></SelectTrigger>
+                                            if (option) {
+                                                setData(
+                                                    'category',
+                                                    option.name,
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select car type" />
+                                        </SelectTrigger>
                                         <SelectContent>
                                             {carTypeNames.map((type) => (
-                                                <SelectItem key={type.id} value={String(type.id)}>{type.name}</SelectItem>
+                                                <SelectItem
+                                                    key={type.id}
+                                                    value={String(type.id)}
+                                                >
+                                                    {type.name}
+                                                </SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <InputError message={errors.car_type_name_id} />
+                                    <InputError
+                                        message={errors.car_type_name_id}
+                                    />
                                 </div>
                                 <div>
                                     <Label htmlFor="color">Color</Label>
-                                    <Input id="color" placeholder="e.g. White" value={data.color} onChange={(e) => setData('color', e.target.value)} />
+                                    <Input
+                                        id="color"
+                                        placeholder="e.g. White"
+                                        value={data.color}
+                                        onChange={(e) =>
+                                            setData('color', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.color} />
                                 </div>
                                 <div>
                                     <Label>Fuel Type</Label>
-                                    <Select value={data.fuel_type} onValueChange={(value) => setData('fuel_type', value)}>
-                                        <SelectTrigger className="w-full"><SelectValue placeholder="Select fuel type" /></SelectTrigger>
+                                    <Select
+                                        value={data.fuel_type}
+                                        onValueChange={(value) =>
+                                            setData('fuel_type', value)
+                                        }
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select fuel type" />
+                                        </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Petrol">Petrol</SelectItem>
-                                            <SelectItem value="Diesel">Diesel</SelectItem>
-                                            <SelectItem value="Hybrid">Hybrid</SelectItem>
-                                            <SelectItem value="Electric">Electric</SelectItem>
+                                            <SelectItem value="Petrol">
+                                                Petrol
+                                            </SelectItem>
+                                            <SelectItem value="Diesel">
+                                                Diesel
+                                            </SelectItem>
+                                            <SelectItem value="Hybrid">
+                                                Hybrid
+                                            </SelectItem>
+                                            <SelectItem value="Electric">
+                                                Electric
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.fuel_type} />
                                 </div>
                                 <div>
                                     <Label>Transmission</Label>
-                                    <Select value={data.transmission} onValueChange={(value) => setData('transmission', value)}>
-                                        <SelectTrigger className="w-full"><SelectValue placeholder="Select transmission" /></SelectTrigger>
+                                    <Select
+                                        value={data.transmission}
+                                        onValueChange={(value) =>
+                                            setData('transmission', value)
+                                        }
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select transmission" />
+                                        </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Manual">Manual</SelectItem>
-                                            <SelectItem value="Automatic">Automatic</SelectItem>
-                                            <SelectItem value="Semi">Semi</SelectItem>
+                                            <SelectItem value="Manual">
+                                                Manual
+                                            </SelectItem>
+                                            <SelectItem value="Automatic">
+                                                Automatic
+                                            </SelectItem>
+                                            <SelectItem value="Semi">
+                                                Semi
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.transmission} />
                                 </div>
                                 <div>
-                                    <Label htmlFor="engine_size">Engine Size</Label>
-                                    <Input id="engine_size" placeholder="e.g. 1.8L" value={data.engine_size} onChange={(e) => setData('engine_size', e.target.value)} />
+                                    <Label htmlFor="engine_size">
+                                        Engine Size
+                                    </Label>
+                                    <Input
+                                        id="engine_size"
+                                        placeholder="e.g. 1.8L"
+                                        value={data.engine_size}
+                                        onChange={(e) =>
+                                            setData(
+                                                'engine_size',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
                                     <InputError message={errors.engine_size} />
                                 </div>
                                 <div>
-                                    <Label htmlFor="mileage">Mileage (km)</Label>
-                                    <Input id="mileage" type="number" placeholder="e.g. 50000" value={data.mileage} onChange={(e) => setData('mileage', e.target.value)} />
+                                    <Label htmlFor="mileage">
+                                        Mileage (km)
+                                    </Label>
+                                    <Input
+                                        id="mileage"
+                                        type="number"
+                                        placeholder="e.g. 50000"
+                                        value={data.mileage}
+                                        onChange={(e) =>
+                                            setData('mileage', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.mileage} />
                                 </div>
                                 <div>
                                     <Label htmlFor="seats">Seats</Label>
-                                    <Input id="seats" type="number" placeholder="e.g. 5" value={data.seats} onChange={(e) => setData('seats', e.target.value)} />
+                                    <Input
+                                        id="seats"
+                                        type="number"
+                                        placeholder="e.g. 5"
+                                        value={data.seats}
+                                        onChange={(e) =>
+                                            setData('seats', e.target.value)
+                                        }
+                                    />
                                     <InputError message={errors.seats} />
                                 </div>
                                 <div>
-                                    <Label htmlFor="daily_price">Daily Price (ETB)</Label>
-                                    <Input id="daily_price" type="number" placeholder="e.g. 3000" value={data.daily_price} onChange={(e) => setData('daily_price', e.target.value)} />
+                                    <Label htmlFor="daily_price">
+                                        Daily Price (ETB)
+                                    </Label>
+                                    <Input
+                                        id="daily_price"
+                                        type="number"
+                                        placeholder="e.g. 3000"
+                                        value={data.daily_price}
+                                        onChange={(e) =>
+                                            setData(
+                                                'daily_price',
+                                                e.target.value,
+                                            )
+                                        }
+                                    />
                                     <InputError message={errors.daily_price} />
                                 </div>
+                                <div>
+                                    <Label>Availability</Label>
+                                    <Select
+                                        value={data.availability_status}
+                                        onValueChange={(value) =>
+                                            setData(
+                                                'availability_status',
+                                                value,
+                                            )
+                                        }
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select availability" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="available">
+                                                Available
+                                            </SelectItem>
+                                            <SelectItem value="maintenance">
+                                                Under Maintenance
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError
+                                        message={errors.availability_status}
+                                    />
+                                </div>
+                            </div>
+                            <div className="space-y-4 border-t pt-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold">
+                                        Available Date Ranges
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Customers can only book the car during
+                                        these date ranges.
+                                    </p>
+                                </div>
+                                {data.available_periods.map((period, index) => (
+                                    <div
+                                        key={index}
+                                        className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
+                                    >
+                                        <div>
+                                            <Label>Start Date</Label>
+                                            <Input
+                                                type="date"
+                                                value={period.start_date}
+                                                onChange={(e) => {
+                                                    const periods = [
+                                                        ...data.available_periods,
+                                                    ];
+                                                    periods[index] = {
+                                                        ...periods[index],
+                                                        start_date:
+                                                            e.target.value,
+                                                    };
+                                                    setData(
+                                                        'available_periods',
+                                                        periods,
+                                                    );
+                                                }}
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label>End Date</Label>
+                                            <div className="flex gap-2">
+                                                <Input
+                                                    type="date"
+                                                    value={period.end_date}
+                                                    onChange={(e) => {
+                                                        const periods = [
+                                                            ...data.available_periods,
+                                                        ];
+                                                        periods[index] = {
+                                                            ...periods[index],
+                                                            end_date:
+                                                                e.target.value,
+                                                        };
+                                                        setData(
+                                                            'available_periods',
+                                                            periods,
+                                                        );
+                                                    }}
+                                                />
+                                                <Button
+                                                    type="button"
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        setData(
+                                                            'available_periods',
+                                                            data.available_periods.filter(
+                                                                (_, i) =>
+                                                                    i !== index,
+                                                            ),
+                                                        );
+                                                    }}
+                                                >
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    onClick={() =>
+                                        setData('available_periods', [
+                                            ...data.available_periods,
+                                            {
+                                                start_date: '',
+                                                end_date: '',
+                                            },
+                                        ])
+                                    }
+                                >
+                                    + Add Available Range
+                                </Button>
+                                <InputError
+                                    message={errors.available_periods}
+                                />
                             </div>
                             <div>
                                 <Label htmlFor="description">Description</Label>
-                                <Textarea id="description" placeholder="Optional description" value={data.description} onChange={(e) => setData('description', e.target.value)} />
+                                <Textarea
+                                    id="description"
+                                    placeholder="Optional description"
+                                    value={data.description}
+                                    onChange={(e) =>
+                                        setData('description', e.target.value)
+                                    }
+                                />
                                 <InputError message={errors.description} />
                             </div>
                             <div className="space-y-4 border-t pt-6">
-    <div>
-        <h3 className="text-lg font-semibold">Vehicle Photos</h3>
-        <p className="text-sm text-muted-foreground">
-            Manage the photos for this vehicle.
-        </p>
-    </div>
+                                <div>
+                                    <h3 className="text-lg font-semibold">
+                                        Vehicle Photos
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Manage the photos for this vehicle.
+                                    </p>
+                                </div>
 
-    {vehicle.images && vehicle.images.length > 0 ? (
-        <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
-            {vehicle.images.map((image) => (
-                <div
-                    key={image.id}
-                    className="relative overflow-hidden rounded-lg border"
-                >
-                    <img
-                        src={`/storage/${image.image_path}`}
-                        alt="Vehicle"
-                        className="h-40 w-full object-cover"
-                    />
+                                {vehicle.images && vehicle.images.length > 0 ? (
+                                    <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                                        {vehicle.images.map((image) => (
+                                            <div
+                                                key={image.id}
+                                                className="relative overflow-hidden rounded-lg border"
+                                            >
+                                                <img
+                                                    src={`/storage/${image.image_path}`}
+                                                    alt="Vehicle"
+                                                    className="h-40 w-full object-cover"
+                                                />
 
-                    {image.is_primary && (
-                        <span className="absolute left-2 top-2 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white">
-                            Primary
-                        </span>
-                    )}
-                    <div className="flex gap-2 p-2">
-    {!image.is_primary && (
-        <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => {
-                fetch(
-                    `/vehicles/${vehicle.id}/images/${image.id}/primary`,
-                    {
-                        method: 'PUT',
-                        headers: {
-                            'X-CSRF-TOKEN':
-                                document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    ?.getAttribute('content') ?? '',
-                            'Accept': 'application/json',
-                        },
-                    }
-                ).then(() => window.location.reload());
-            }}
-        >
-            Set Primary
-        </Button>
-    )}
+                                                {image.is_primary && (
+                                                    <span className="absolute top-2 left-2 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white">
+                                                        Primary
+                                                    </span>
+                                                )}
+                                                <div className="flex gap-2 p-2">
+                                                    {!image.is_primary && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                fetch(
+                                                                    `/vehicles/${vehicle.id}/images/${image.id}/primary`,
+                                                                    {
+                                                                        method: 'PUT',
+                                                                        headers:
+                                                                            {
+                                                                                'X-CSRF-TOKEN':
+                                                                                    document
+                                                                                        .querySelector(
+                                                                                            'meta[name="csrf-token"]',
+                                                                                        )
+                                                                                        ?.getAttribute(
+                                                                                            'content',
+                                                                                        ) ??
+                                                                                    '',
+                                                                                Accept: 'application/json',
+                                                                            },
+                                                                    },
+                                                                ).then(() =>
+                                                                    window.location.reload(),
+                                                                );
+                                                            }}
+                                                        >
+                                                            Set Primary
+                                                        </Button>
+                                                    )}
 
-    <Button
-        type="button"
-        variant="destructive"
-        size="sm"
-        onClick={() => {
-            if (confirm('Are you sure you want to delete this photo?')) {
-                fetch(
-                    `/vehicles/${vehicle.id}/images/${image.id}`,
-                    {
-                        method: 'DELETE',
-                        headers: {
-                            'X-CSRF-TOKEN':
-                                document
-                                    .querySelector('meta[name="csrf-token"]')
-                                    ?.getAttribute('content') ?? '',
-                            'Accept': 'application/json',
-                        },
-                    }
-                ).then(() => window.location.reload());
-            }
-        }}
-    >
-        Delete
-    </Button>
-</div>
-                </div>
-            ))}
-        </div>
-    ) : (
-        <p className="text-sm text-muted-foreground">
-            No photos uploaded.
-        </p>
-    )}
+                                                    <Button
+                                                        type="button"
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (
+                                                                confirm(
+                                                                    'Are you sure you want to delete this photo?',
+                                                                )
+                                                            ) {
+                                                                fetch(
+                                                                    `/vehicles/${vehicle.id}/images/${image.id}`,
+                                                                    {
+                                                                        method: 'DELETE',
+                                                                        headers:
+                                                                            {
+                                                                                'X-CSRF-TOKEN':
+                                                                                    document
+                                                                                        .querySelector(
+                                                                                            'meta[name="csrf-token"]',
+                                                                                        )
+                                                                                        ?.getAttribute(
+                                                                                            'content',
+                                                                                        ) ??
+                                                                                    '',
+                                                                                Accept: 'application/json',
+                                                                            },
+                                                                    },
+                                                                ).then(() =>
+                                                                    window.location.reload(),
+                                                                );
+                                                            }
+                                                        }}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        No photos uploaded.
+                                    </p>
+                                )}
 
-    <div>
-        <Label htmlFor="photos">Add Photos</Label>
-        <Input
-    id="photos"
-    type="file"
-    accept="image/*"
-    multiple
-    onChange={(e) => {
-        setData('photos', Array.from(e.target.files ?? []));
-    }}
-/>
-        <p className="mt-1 text-xs text-muted-foreground">
-            You can select multiple photos.
-        </p>
-    </div>
-</div>
+                                <div>
+                                    <Label htmlFor="photos">Add Photos</Label>
+                                    <Input
+                                        id="photos"
+                                        type="file"
+                                        accept="image/*"
+                                        multiple
+                                        onChange={(e) => {
+                                            setData(
+                                                'photos',
+                                                Array.from(
+                                                    e.target.files ?? [],
+                                                ),
+                                            );
+                                        }}
+                                    />
+                                    <p className="mt-1 text-xs text-muted-foreground">
+                                        You can select multiple photos.
+                                    </p>
+                                </div>
+                            </div>
 
-<div className="space-y-4 border-t pt-6">
-    <div>
-        <h3 className="text-lg font-semibold">Ownership Document</h3>
-        <p className="text-sm text-muted-foreground">
-            Current ownership document and replacement option.
-        </p>
-    </div>
+                            <div className="space-y-4 border-t pt-6">
+                                <div>
+                                    <h3 className="text-lg font-semibold">
+                                        Ownership Document
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                        Current ownership document and
+                                        replacement option.
+                                    </p>
+                                </div>
 
-    {vehicle.documents && vehicle.documents.length > 0 ? (
-    <div className="space-y-2">
-        {vehicle.documents.map((document) => (
-            <div
-                key={document.id}
-                className="flex items-center justify-between rounded-lg border p-4"
-            >
-                <div>
-                    <p className="font-medium">
-                        {document.document_type}
-                    </p>
+                                {vehicle.documents &&
+                                vehicle.documents.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {vehicle.documents.map((document) => (
+                                            <div
+                                                key={document.id}
+                                                className="flex items-center justify-between rounded-lg border p-4"
+                                            >
+                                                <div>
+                                                    <p className="font-medium">
+                                                        {document.document_type}
+                                                    </p>
 
-                    <p className="text-sm text-muted-foreground">
-                        Status: {document.verification_status}
-                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Status:{' '}
+                                                        {
+                                                            document.verification_status
+                                                        }
+                                                    </p>
 
-                    {document.expiry_date && (
-                        <p className="text-sm text-muted-foreground">
-                            Expires: {document.expiry_date}
-                        </p>
-                    )}
-                </div>
+                                                    {document.expiry_date && (
+                                                        <p className="text-sm text-muted-foreground">
+                                                            Expires:{' '}
+                                                            {
+                                                                document.expiry_date
+                                                            }
+                                                        </p>
+                                                    )}
+                                                </div>
 
-                <div className="flex items-center gap-3">
-                    <a
-                        href={`/storage/${document.document_path}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                    >
-                        View Document
-                    </a>
+                                                <div className="flex items-center gap-3">
+                                                    <a
+                                                        href={`/storage/${document.document_path}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="text-sm font-medium text-blue-600 hover:underline"
+                                                    >
+                                                        View Document
+                                                    </a>
 
-                    <Link
-                        href={`/vehicles/${vehicle.id}/documents/${document.id}`}
-                        method="delete"
-                        as="button"
-                         onBefore={() =>
-                        window.confirm(
-                         'Are you sure you want to delete this ownership document?'
-                                 )
-                             }
-    className="text-sm font-medium text-red-600 hover:underline"
->
-    Delete
-</Link>
-                </div>
-            </div>
-        ))}
-    </div>
-) : (
-    <p className="text-sm text-muted-foreground">
-        No ownership document uploaded.
-    </p>
-)}
+                                                    <Link
+                                                        href={`/vehicles/${vehicle.id}/documents/${document.id}`}
+                                                        method="delete"
+                                                        as="button"
+                                                        onBefore={() =>
+                                                            window.confirm(
+                                                                'Are you sure you want to delete this ownership document?',
+                                                            )
+                                                        }
+                                                        className="text-sm font-medium text-red-600 hover:underline"
+                                                    >
+                                                        Delete
+                                                    </Link>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">
+                                        No ownership document uploaded.
+                                    </p>
+                                )}
 
-    <div>
-        <Label htmlFor="ownership_document">
-            Replace Ownership Document
-        </Label>
-            <Input
-            id="ownership_document"
-             type="file"
-                accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
-                    onChange={(e) => {
-                 setData(
-            'ownership_document',
-             e.target.files?.[0] ?? null
-                );
-                }}
-                    />
-<InputError message={errors.ownership_document} />
-    </div>
-</div>
-                            <Button type="submit" disabled={processing}>{processing ? 'Updating...' : 'Update Vehicle'}</Button>
+                                <div>
+                                    <Label htmlFor="ownership_document">
+                                        Replace Ownership Document
+                                    </Label>
+                                    <Input
+                                        id="ownership_document"
+                                        type="file"
+                                        accept=".jpg,.jpeg,.png,.gif,.webp,.pdf"
+                                        onChange={(e) => {
+                                            setData(
+                                                'ownership_document',
+                                                e.target.files?.[0] ?? null,
+                                            );
+                                        }}
+                                    />
+                                    <InputError
+                                        message={errors.ownership_document}
+                                    />
+                                </div>
+                            </div>
+                            <Button type="submit" disabled={processing}>
+                                {processing ? 'Updating...' : 'Update Vehicle'}
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
@@ -407,5 +781,8 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
 }
 
 EditVehicle.layout = {
-    breadcrumbs: [{ title: 'Vehicles', href: '/vehicles' }, { title: 'Edit Vehicle', href: '' }],
+    breadcrumbs: [
+        { title: 'Vehicles', href: '/vehicles' },
+        { title: 'Edit Vehicle', href: '' },
+    ],
 };

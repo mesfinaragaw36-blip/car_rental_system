@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Car;
+use App\Models\Inspection;
 use App\Models\Review;
 use App\Models\User;
+use App\Services\BookingCompletionService;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -15,11 +17,22 @@ use Inertia\Response;
 
 class BookingController extends Controller
 {
+    public function __construct(private readonly BookingCompletionService $completion) {}
+
     public function index(Request $request): Response
     {
         $user = auth()->user();
 
-        $query = Booking::with(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver']);
+        $customerColumns = $user->role === 'admin' ? 'customer:id,name,phone,email' : 'customer:id,name,phone';
+
+        $query = Booking::with([
+            $customerColumns,
+            'owner:id,name,phone',
+            'car:id,brand,model,year,plate_number',
+            'payment',
+            'driverAssignment:id,booking_id,driver_id,status',
+            'driverAssignment.driver:id,name,phone',
+        ]);
 
         if ($user->role === 'admin') {
             if ($request->filled('status')) {
@@ -46,8 +59,9 @@ class BookingController extends Controller
             'filters' => $request->only(['status', 'search']),
             'stats' => $user->role === 'admin' ? [
                 'total' => Booking::count(),
-                'pending' => Booking::where('status', 'pending')->count(),
-                'active' => Booking::where('status', 'approved')->count(),
+                'awaiting_deposit' => Booking::where('status', Booking::STATUS_CONFIRMED)->count(),
+                'deposit_paid' => Booking::where('status', Booking::STATUS_DEPOSIT_PAID)->count(),
+                'active' => Booking::where('status', 'picked_up')->count(),
                 'completed' => Booking::where('status', 'completed')->count(),
                 'cancelled' => Booking::whereIn('status', ['cancelled', 'rejected'])->count(),
             ] : null,
@@ -61,7 +75,18 @@ class BookingController extends Controller
             abort(403);
         }
 
-        $booking->load(['customer', 'owner', 'car', 'payment', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer']);
+        $booking->load([
+            'customer:id,name,phone,email',
+            'owner:id,name,phone',
+            'car:id,brand,model,year,plate_number',
+            'payment',
+            'driverAssignment:id,booking_id,driver_id,status',
+            'driverAssignment.driver:id,name,phone',
+            'reviews.reviewer:id,name',
+            'refunds',
+            'ownerPayout',
+            'inspections.conductedBy:id,name',
+        ]);
 
         $userReviews = Review::where('booking_id', $booking->id)
             ->where('reviewer_id', $user->id)
@@ -164,14 +189,50 @@ class BookingController extends Controller
                 'notes' => $booking->notes,
                 'days' => $days,
                 'daily_rate' => $days > 0 ? number_format($booking->total_price / $days, 2) : '0.00',
-                'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'email' => $booking->customer->email] : null,
+                'customer' => $booking->customer ? $this->customerPayload($booking, $user) : null,
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
                 'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
                 'payment' => $booking->payment ? ['id' => $booking->payment->id, 'payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
+                'security_deposit_amount' => number_format($booking->securityDepositAmount(), 2),
+                'balance_amount' => number_format($booking->balanceAmount(), 2),
+                'has_balance_paid' => $booking->hasPaidBalance(),
+                'has_security_deposit_paid' => $booking->hasPaidSecurityDeposit(),
+                'balance_paid_at' => $booking->balance_paid_at?->toDateTimeString(),
+                'security_deposit_paid_at' => $booking->security_deposit_paid_at?->toDateTimeString(),
+                'refunds' => $booking->refunds->map(fn ($refund) => [
+                    'id' => $refund->id,
+                    'amount' => $refund->amount,
+                    'reason' => $refund->reason,
+                    'created_at' => $refund->created_at->toDateTimeString(),
+                ])->values(),
+                'payout' => $booking->ownerPayout ? [
+                    'gross_amount' => $booking->ownerPayout->gross_amount,
+                    'commission_amount' => $booking->ownerPayout->commission_amount,
+                    'net_amount' => $booking->ownerPayout->net_amount,
+                    'status' => $booking->ownerPayout->status,
+                    'paid_at' => $booking->ownerPayout->paid_at?->toDateTimeString(),
+                ] : null,
                 'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
                 'driver_status' => $booking->driverAssignment?->status,
                 'picked_up_at' => $booking->picked_up_at?->toDateTimeString(),
                 'returned_at' => $booking->returned_at?->toDateTimeString(),
+                'car_delivery_status' => $booking->car_delivery_status,
+                'car_delivery_confirmed_at' => $booking->car_delivery_confirmed_at?->toDateTimeString(),
+                'car_delivery_due_date' => $booking->carDeliveryDueDate()->toDateString(),
+                'pickup_inspection_approved' => $booking->hasApprovedInspection(Inspection::TYPE_PICKUP),
+                'inspections' => $booking->inspections
+                    ->map(fn (Inspection $inspection) => [
+                        'id' => $inspection->id,
+                        'type' => $inspection->type,
+                        'status' => $inspection->status,
+                        'conducted_at' => $inspection->conducted_at?->toDateTimeString(),
+                        'conducted_by_name' => $inspection->conductedBy?->name,
+                        'mileage_reading' => $inspection->mileage_reading,
+                        'fuel_level' => $inspection->fuel_level,
+                        'damages' => $inspection->damages,
+                        'notes' => $inspection->notes,
+                    ])
+                    ->values(),
                 'reviewed' => $reviewed,
                 'review_targets' => $reviewTargets,
                 'can_review' => count($reviewTargets) > 0,
@@ -179,6 +240,21 @@ class BookingController extends Controller
             ],
             'role' => $user->role,
         ]);
+    }
+
+    private function customerPayload(Booking $booking, User $user): array
+    {
+        $payload = [
+            'id' => $booking->customer->id,
+            'name' => $booking->customer->name,
+            'phone' => $booking->customer->phone,
+        ];
+
+        if ($user->role === 'admin' || $user->id === $booking->customer_id) {
+            $payload['email'] = $booking->customer->email;
+        }
+
+        return $payload;
     }
 
     public function approve(Booking $booking): RedirectResponse
@@ -215,8 +291,8 @@ class BookingController extends Controller
         if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-        if (! in_array($booking->status, ['pending', 'approved'])) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only pending or approved bookings can be cancelled.']);
+        if (! in_array($booking->status, ['confirmed', 'pending'])) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Only bookings that have not paid the deposit can be cancelled.']);
         }
         $booking->update(['status' => 'cancelled']);
 
@@ -239,41 +315,6 @@ class BookingController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Driver assigned.']);
     }
 
-    public function markPickedUp(Booking $booking): RedirectResponse
-    {
-        $user = auth()->user();
-        if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-        if ($booking->status !== 'paid') {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only paid bookings can be marked as picked up.']);
-        }
-
-        $booking->update([
-            'status' => 'picked_up',
-            'picked_up_at' => now(),
-        ]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as picked up.']);
-    }
-
-    public function markReturned(Booking $booking): RedirectResponse
-    {
-        $user = auth()->user();
-        if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-        if ($booking->status !== 'picked_up') {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only picked up bookings can be marked as returned.']);
-        }
-        $booking->update([
-            'status' => 'returned',
-            'returned_at' => now(),
-        ]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as returned.']);
-    }
-
     public function complete(Booking $booking): RedirectResponse
     {
         $user = auth()->user();
@@ -290,9 +331,7 @@ class BookingController extends Controller
             ]);
         }
 
-        $booking->update([
-            'status' => 'completed',
-        ]);
+        $this->completion->complete($booking);
 
         return back()->with('toast', [
             'type' => 'success',
