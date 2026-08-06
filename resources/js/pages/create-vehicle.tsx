@@ -53,7 +53,6 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
     const [ownershipDocument, setOwnershipDocument] = useState<File | null>(
         null,
     );
-    const [ownershipExpiry, setOwnershipExpiry] = useState('');
     const [serverErrors, setServerErrors] = useState<Record<string, string>>(
         {},
     );
@@ -172,10 +171,6 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
 
         if (ownershipDocument) {
             formData.append('ownership_document', ownershipDocument);
-        }
-
-        if (ownershipExpiry) {
-            formData.append('ownership_expiry', ownershipExpiry);
         }
 
         router.post(store.url(), formData, {
@@ -730,27 +725,6 @@ export default function CreateVehicle({ carTypeNames, locations }: Props) {
                                         <InputError
                                             message={
                                                 serverErrors.ownership_document
-                                            }
-                                        />
-                                    </div>
-                                    <div>
-                                        <Label htmlFor="ownership_expiry">
-                                            Expiry Date
-                                        </Label>
-                                        <Input
-                                            id="ownership_expiry"
-                                            type="date"
-                                            className="mt-1"
-                                            value={ownershipExpiry}
-                                            onChange={(e) =>
-                                                setOwnershipExpiry(
-                                                    e.target.value,
-                                                )
-                                            }
-                                        />
-                                        <InputError
-                                            message={
-                                                serverErrors.ownership_expiry
                                             }
                                         />
                                     </div>
