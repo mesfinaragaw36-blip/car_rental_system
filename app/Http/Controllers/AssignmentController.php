@@ -19,7 +19,7 @@ class AssignmentController extends Controller
 
         if ($user->role === 'admin' || $user->role === 'owner') {
             $query = BookingDriver::with(['booking.customer', 'booking.car', 'driver:id,name,phone'])
-                ->whereIn('status', ['claimed', 'assigned', 'accepted', 'completed']);
+                ->whereIn('status', ['assigned', 'accepted', 'completed']);
 
             if ($user->role === 'owner') {
                 $query->whereHas('booking', fn ($q) => $q->where('owner_id', $user->id));
@@ -44,7 +44,7 @@ class AssignmentController extends Controller
         } else {
             $query = BookingDriver::with(['booking.customer', 'booking.car'])
                 ->where('driver_id', $user->id)
-                ->whereIn('status', ['claimed', 'assigned', 'accepted', 'completed', 'rejected']);
+                ->whereIn('status', ['assigned', 'accepted', 'completed', 'rejected']);
 
             $assignments = $query->latest('assigned_at')->get()->map(fn (BookingDriver $a) => [
                 'id' => $a->id,
@@ -66,50 +66,10 @@ class AssignmentController extends Controller
         return Inertia::render('assignments', [
             'role' => $user->role,
             'assignments' => $assignments,
+            'driverVerificationStatus' => $user->role === 'driver'
+                ? ($user->driverProfile?->verification_status ?? 'none')
+                : null,
         ]);
-    }
-
-    public function approveClaim(BookingDriver $assignment): RedirectResponse
-    {
-        $user = auth()->user();
-        $assignment->load(['booking.car', 'driver.driverProfile']);
-        $booking = $assignment->booking;
-
-        if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-
-        if ($assignment->status !== BookingDriver::STATUS_CLAIMED) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only claimed trips can be approved.']);
-        }
-
-        $assignment->update(['status' => BookingDriver::STATUS_ACCEPTED, 'assigned_by' => $user->id]);
-
-        $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
-        $driverRate = $assignment->driver?->driverProfile?->daily_rate ?? 0;
-        $carDailyPrice = $booking->car->daily_price;
-        $newTotal = ($carDailyPrice + $driverRate) * $days;
-        $booking->update(['total_price' => $newTotal]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Claim approved. Driver assigned to this trip.']);
-    }
-
-    public function rejectClaim(BookingDriver $assignment): RedirectResponse
-    {
-        $user = auth()->user();
-        $booking = $assignment->booking;
-
-        if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-
-        if ($assignment->status !== BookingDriver::STATUS_CLAIMED) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only claimed trips can be rejected.']);
-        }
-
-        $assignment->update(['status' => BookingDriver::STATUS_REJECTED]);
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Claim rejected.']);
     }
 
     public function reject(BookingDriver $assignment): RedirectResponse

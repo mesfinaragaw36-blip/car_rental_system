@@ -84,15 +84,11 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/assignments/{assignment}/accept', [AssignmentController::class, 'accept'])->name('assignments.accept');
     Route::post('/assignments/{assignment}/reject', [AssignmentController::class, 'reject'])->name('assignments.reject');
     Route::post('/assignments/{assignment}/complete', [AssignmentController::class, 'complete'])->name('assignments.complete');
-    Route::post('/assignments/{assignment}/approve-claim', [AssignmentController::class, 'approveClaim'])->name('assignments.approve-claim');
-    Route::post('/assignments/{assignment}/reject-claim', [AssignmentController::class, 'rejectClaim'])->name('assignments.reject-claim');
 
     // Driver features
     Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
     Route::post('/driver/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
     Route::post('/driver/toggle-availability', [DriverProfileController::class, 'toggleAvailability'])->name('driver.toggle-availability');
-    Route::get('/driver/available-bookings', [DriverBookingController::class, 'available'])->name('driver.available-bookings');
-    Route::post('/driver/claim/{booking}', [DriverBookingController::class, 'claim'])->name('driver.claim');
     Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
 
     // Inspection staff routes

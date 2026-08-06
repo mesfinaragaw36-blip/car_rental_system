@@ -1,13 +1,20 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, Search } from 'lucide-react';
+import { Eye, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
 import type { Auth } from '@/types';
 
-interface CarImage { id: number; is_primary: boolean; image_path: string; }
-interface Owner { name: string; }
+interface CarImage {
+    id: number;
+    is_primary: boolean;
+    image_path: string;
+}
+interface Owner {
+    name: string;
+}
 
 interface Vehicle {
     id: number;
@@ -33,12 +40,14 @@ interface Props {
     filters: { status?: string; search?: string };
 }
 
-interface FlashProps { toast?: { type: 'success' | 'error'; message: string } }
+interface FlashProps {
+    toast?: { type: 'success' | 'error'; message: string };
+}
 
 const APPROVAL_STYLES: Record<string, string> = {
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
-    pending:  'bg-yellow-100 text-yellow-800',
+    pending: 'bg-yellow-100 text-yellow-800',
 };
 
 export default function AdminVehicles({ vehicles, filters }: Props) {
@@ -49,28 +58,133 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
     const [status, setStatus] = useState(filters.status ?? '');
 
     function applyFilters() {
-        router.get('/admin/vehicles', { search: search || undefined, status: status || undefined }, { preserveState: true, replace: true });
+        router.get(
+            '/admin/vehicles',
+            { search: search || undefined, status: status || undefined },
+            { preserveState: true, replace: true },
+        );
     }
 
     function handleApprove(id: number) {
-        router.post(`/admin/vehicles/${id}/approve`, {}, { preserveScroll: true });
+        router.post(
+            `/admin/vehicles/${id}/approve`,
+            {},
+            { preserveScroll: true },
+        );
     }
 
     function handleReject(id: number) {
         if (confirm('Reject this vehicle?')) {
-router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
-}
+            router.post(
+                `/admin/vehicles/${id}/reject`,
+                {},
+                { preserveScroll: true },
+            );
+        }
     }
 
     return (
         <>
             <Head title="Vehicles" />
 
-            <div className="p-6 space-y-6">
-                <h1 className="text-3xl font-bold">Vehicle Management</h1>
+            <div className="space-y-6 p-6">
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                    <div>
+                        <h1 className="text-3xl font-bold">Vehicles</h1>
+                        <p className="mt-2 text-muted-foreground">
+                            Manage all vehicles in one page, including owner
+                            listings and admin approvals.
+                        </p>
+                    </div>
+                    <Link href="/vehicles/create">
+                        <Button className="bg-blue-900 hover:bg-blue-950">
+                            <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+                        </Button>
+                    </Link>
+                </div>
+
+                <Card>
+                    <CardHeader>
+                        <CardTitle>Fleet Summary</CardTitle>
+                    </CardHeader>
+                    <CardContent className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                        {vehicles.data.map((vehicle) => {
+                            const image =
+                                vehicle.images?.find((img) => img.is_primary)
+                                    ?.image_path ??
+                                vehicle.images?.[0]?.image_path;
+
+                            return (
+                                <Link
+                                    key={vehicle.id}
+                                    href={`/admin/vehicles/${vehicle.id}`}
+                                    className="block"
+                                >
+                                    <GlareCard className="rounded-3xl border border-slate-200 p-0 shadow-sm transition-transform duration-150 hover:-translate-y-0.5">
+                                        <div>
+                                            <div className="overflow-hidden rounded-t-3xl bg-slate-100">
+                                                {image ? (
+                                                    <img
+                                                        src={`/storage/${image}`}
+                                                        alt={`${vehicle.brand} ${vehicle.model}`}
+                                                        className="h-40 w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <div className="flex h-40 items-center justify-center text-slate-400">
+                                                        No image
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <div className="p-4">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-sm font-semibold text-slate-900">
+                                                        {vehicle.brand}{' '}
+                                                        {vehicle.model}
+                                                    </span>
+                                                    <span className="text-xs text-slate-500 uppercase">
+                                                        {vehicle.category}
+                                                    </span>
+                                                </div>
+                                                <div className="mt-3 space-y-2 text-sm text-slate-600">
+                                                    <p>
+                                                        <span className="font-medium text-slate-900">
+                                                            Plate:
+                                                        </span>{' '}
+                                                        {vehicle.plate_number}
+                                                    </p>
+                                                    <p>
+                                                        <span className="font-medium text-slate-900">
+                                                            Price:
+                                                        </span>{' '}
+                                                        ETB{' '}
+                                                        {vehicle.daily_price}
+                                                    </p>
+                                                </div>
+                                                <div className="mt-4 flex items-center justify-between text-xs">
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                                        {
+                                                            vehicle.availability_status
+                                                        }
+                                                    </span>
+                                                    <span className="rounded-full bg-slate-100 px-2 py-1 text-slate-700">
+                                                        {
+                                                            vehicle.approval_status
+                                                        }
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </GlareCard>
+                                </Link>
+                            );
+                        })}
+                    </CardContent>
+                </Card>
 
                 {toast && (
-                    <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <div
+                        className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
                         {toast.message}
                     </div>
                 )}
@@ -78,11 +192,15 @@ router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <form onSubmit={(e) => {
- e.preventDefault(); applyFilters(); 
-}} className="flex flex-col gap-3 md:flex-row md:items-end">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                applyFilters();
+                            }}
+                            className="flex flex-col gap-3 md:flex-row md:items-end"
+                        >
                             <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder="Search by brand, model, plate or owner..."
                                     value={search}
@@ -93,66 +211,135 @@ router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
                             <select
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
-                                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-ring focus:outline-none"
                             >
                                 <option value="">All Statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="approved">Approved</option>
                                 <option value="rejected">Rejected</option>
                             </select>
-                            <Button type="submit" variant="secondary">Filter</Button>
+                            <Button type="submit" variant="secondary">
+                                Filter
+                            </Button>
                         </form>
                     </CardContent>
                 </Card>
 
                 {/* Table */}
                 <Card>
-                    <CardHeader><CardTitle>All Vehicles</CardTitle></CardHeader>
+                    <CardHeader>
+                        <CardTitle>All Vehicles</CardTitle>
+                    </CardHeader>
                     <CardContent>
                         {vehicles.data.length === 0 ? (
-                            <p className="text-muted-foreground">No vehicles found.</p>
+                            <p className="text-muted-foreground">
+                                No vehicles found.
+                            </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-muted-foreground">
-                                            <th className="pb-3 font-medium">Vehicle</th>
-                                            <th className="pb-3 font-medium">Plate</th>
-                                            <th className="pb-3 font-medium">Owner</th>
-                                            <th className="pb-3 font-medium">Category</th>
-                                            <th className="pb-3 font-medium">Price/Day</th>
-                                            <th className="pb-3 font-medium">Availability</th>
-                                            <th className="pb-3 font-medium">Status</th>
-                                            <th className="pb-3 font-medium text-right">Actions</th>
+                                            <th className="pb-3 font-medium">
+                                                Vehicle
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Plate
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Owner
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Category
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Price/Day
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Availability
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Status
+                                            </th>
+                                            <th className="pb-3 text-right font-medium">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {vehicles.data.map((v) => (
-                                            <tr key={v.id} className="border-b last:border-0">
-                                                <td className="py-3 font-medium">{v.brand} {v.model} <span className="text-muted-foreground font-normal">({v.year})</span></td>
-                                                <td className="py-3 text-muted-foreground">{v.plate_number}</td>
-                                                <td className="py-3">{v.owner.name}</td>
-                                                <td className="py-3 text-muted-foreground capitalize">{v.category}</td>
-                                                <td className="py-3">ETB {v.daily_price}</td>
+                                            <tr
+                                                key={v.id}
+                                                className="border-b last:border-0"
+                                            >
+                                                <td className="py-3 font-medium">
+                                                    {v.brand} {v.model}{' '}
+                                                    <span className="font-normal text-muted-foreground">
+                                                        ({v.year})
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {v.plate_number}
+                                                </td>
                                                 <td className="py-3">
-                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${v.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                    {v.owner.name}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground capitalize">
+                                                    {v.category}
+                                                </td>
+                                                <td className="py-3">
+                                                    ETB {v.daily_price}
+                                                </td>
+                                                <td className="py-3">
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${v.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                                                    >
                                                         {v.availability_status}
                                                     </span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[v.approval_status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[v.approval_status] ?? 'bg-gray-100 text-gray-800'}`}
+                                                    >
                                                         {v.approval_status}
                                                     </span>
                                                 </td>
                                                 <td className="py-3 text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        <Link href={`/admin/vehicles/${v.id}`}>
-                                                            <Button size="sm" variant="outline"><Eye className="h-4 w-4" /></Button>
+                                                        <Link
+                                                            href={`/admin/vehicles/${v.id}`}
+                                                        >
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                            >
+                                                                <Eye className="h-4 w-4" />
+                                                            </Button>
                                                         </Link>
-                                                        {v.approval_status === 'pending' && (
+                                                        {v.approval_status ===
+                                                            'pending' && (
                                                             <>
-                                                                <Button size="sm" onClick={() => handleApprove(v.id)}>Approve</Button>
-                                                                <Button size="sm" variant="destructive" onClick={() => handleReject(v.id)}>Reject</Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    onClick={() =>
+                                                                        handleApprove(
+                                                                            v.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Approve
+                                                                </Button>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    onClick={() =>
+                                                                        handleReject(
+                                                                            v.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    Reject
+                                                                </Button>
                                                             </>
                                                         )}
                                                     </div>
@@ -167,8 +354,23 @@ router.post(`/admin/vehicles/${id}/reject`, {}, { preserveScroll: true });
                         {vehicles.links.length > 3 && (
                             <div className="mt-4 flex flex-wrap gap-2">
                                 {vehicles.links.map((link) => (
-                                    <Button key={link.label} variant={link.active ? 'secondary' : 'outline'} size="sm" asChild disabled={!link.url}>
-                                        <a href={link.url ?? '#'} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                    <Button
+                                        key={link.label}
+                                        variant={
+                                            link.active
+                                                ? 'secondary'
+                                                : 'outline'
+                                        }
+                                        size="sm"
+                                        asChild
+                                        disabled={!link.url}
+                                    >
+                                        <a
+                                            href={link.url ?? '#'}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
                                     </Button>
                                 ))}
                             </div>

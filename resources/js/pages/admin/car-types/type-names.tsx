@@ -100,7 +100,7 @@ export default function TypeNamesIndex({ items }: Props) {
         <>
             <Head title="Car Type Names" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Car Type Names</h1>
                     <Button onClick={openCreate}>
@@ -112,7 +112,9 @@ export default function TypeNamesIndex({ items }: Props) {
                 {toast && (
                     <div
                         className={`rounded-lg px-4 py-3 text-sm font-medium ${
-                            toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            toast.type === 'success'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                         }`}
                     >
                         {toast.message}
@@ -122,7 +124,9 @@ export default function TypeNamesIndex({ items }: Props) {
                 {items.length === 0 ? (
                     <Card>
                         <CardContent className="p-6 text-center">
-                            <p className="text-muted-foreground">No type names created yet.</p>
+                            <p className="text-muted-foreground">
+                                No type names created yet.
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -135,31 +139,58 @@ export default function TypeNamesIndex({ items }: Props) {
                                     <TableHead>Status</TableHead>
                                     <TableHead>Sort Order</TableHead>
                                     <TableHead>Cars</TableHead>
-                                    <TableHead className="text-right">Actions</TableHead>
+                                    <TableHead className="text-right">
+                                        Actions
+                                    </TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
                                 {items.map((item) => (
                                     <TableRow key={item.id}>
-                                        <TableCell className="font-medium">{item.name}</TableCell>
-                                        <TableCell className="text-muted-foreground">{item.slug}</TableCell>
+                                        <TableCell className="font-medium">
+                                            {item.name}
+                                        </TableCell>
+                                        <TableCell className="text-muted-foreground">
+                                            {item.slug}
+                                        </TableCell>
                                         <TableCell>
-                                            <Badge variant={item.is_active ? 'default' : 'secondary'}>
-                                                {item.is_active ? 'Active' : 'Inactive'}
+                                            <Badge
+                                                variant={
+                                                    item.is_active
+                                                        ? 'default'
+                                                        : 'secondary'
+                                                }
+                                            >
+                                                {item.is_active
+                                                    ? 'Active'
+                                                    : 'Inactive'}
                                             </Badge>
                                         </TableCell>
                                         <TableCell>{item.sort_order}</TableCell>
-                                        <TableCell>{item.cars_count ?? 0}</TableCell>
+                                        <TableCell>
+                                            {item.cars_count ?? 0}
+                                        </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-1">
-                                                <Button size="sm" variant="ghost" onClick={() => openEdit(item)}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        openEdit(item)
+                                                    }
+                                                >
                                                     <Pencil className="h-4 w-4" />
                                                 </Button>
                                                 <Button
                                                     size="sm"
                                                     variant="ghost"
                                                     className="text-destructive hover:text-destructive"
-                                                    onClick={() => handleDelete(item.id, item.name)}
+                                                    onClick={() =>
+                                                        handleDelete(
+                                                            item.id,
+                                                            item.name,
+                                                        )
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>
@@ -173,16 +204,22 @@ export default function TypeNamesIndex({ items }: Props) {
                 )}
             </div>
 
-            <Dialog open={dialogOpen} onOpenChange={(v) => {
- setDialogOpen(v);
+            <Dialog
+                open={dialogOpen}
+                onOpenChange={(v) => {
+                    setDialogOpen(v);
 
- if (!v) {
- setEditingItem(null); reset(); 
-} 
-}}>
+                    if (!v) {
+                        setEditingItem(null);
+                        reset();
+                    }
+                }}
+            >
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>{editingItem ? 'Edit Type Name' : 'Add Type Name'}</DialogTitle>
+                        <DialogTitle>
+                            {editingItem ? 'Edit Type Name' : 'Add Type Name'}
+                        </DialogTitle>
                     </DialogHeader>
 
                     <form onSubmit={handleSubmit} className="space-y-4">
@@ -191,10 +228,14 @@ export default function TypeNamesIndex({ items }: Props) {
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="e.g. Sedan"
                             />
-                            {errors.name && <InputError message={errors.name} />}
+                            {errors.name && (
+                                <InputError message={errors.name} />
+                            )}
                         </div>
 
                         <div className="space-y-1.5">
@@ -203,29 +244,55 @@ export default function TypeNamesIndex({ items }: Props) {
                                 id="sort_order"
                                 type="number"
                                 value={data.sort_order}
-                                onChange={(e) => setData('sort_order', Number(e.target.value))}
+                                onChange={(e) =>
+                                    setData(
+                                        'sort_order',
+                                        Number(e.target.value),
+                                    )
+                                }
                             />
-                            {errors.sort_order && <InputError message={errors.sort_order} />}
+                            {errors.sort_order && (
+                                <InputError message={errors.sort_order} />
+                            )}
                         </div>
 
                         <div className="flex items-center gap-2">
                             <Checkbox
                                 id="is_active"
                                 checked={data.is_active}
-                                onCheckedChange={(v) => setData('is_active', v === true)}
+                                onCheckedChange={(v) =>
+                                    setData('is_active', v === true)
+                                }
                             />
-                            <Label htmlFor="is_active" className="cursor-pointer">Active</Label>
+                            <Label
+                                htmlFor="is_active"
+                                className="cursor-pointer"
+                            >
+                                Active
+                            </Label>
                         </div>
-                        {errors.is_active && <InputError message={errors.is_active} />}
+                        {errors.is_active && (
+                            <InputError message={errors.is_active} />
+                        )}
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => {
- setDialogOpen(false); setEditingItem(null); reset(); 
-}}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setDialogOpen(false);
+                                    setEditingItem(null);
+                                    reset();
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>
-                                {processing ? 'Saving…' : editingItem ? 'Update' : 'Create'}
+                                {processing
+                                    ? 'Saving…'
+                                    : editingItem
+                                      ? 'Update'
+                                      : 'Create'}
                             </Button>
                         </DialogFooter>
                     </form>

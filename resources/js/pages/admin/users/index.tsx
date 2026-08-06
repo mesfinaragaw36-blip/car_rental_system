@@ -71,18 +71,21 @@ export default function Users({ users, filters }: Props) {
         const params: Record<string, string> = {};
 
         if (search) {
-params.search = search;
-}
+            params.search = search;
+        }
 
         if (roleFilter) {
-params.role = roleFilter;
-}
+            params.role = roleFilter;
+        }
 
         if (statusFilter) {
-params.status = statusFilter;
-}
+            params.status = statusFilter;
+        }
 
-        router.get('/admin/users', params, { preserveState: true, replace: true });
+        router.get('/admin/users', params, {
+            preserveState: true,
+            replace: true,
+        });
     }
 
     function handleSearchSubmit(e: React.FormEvent): void {
@@ -94,7 +97,7 @@ params.status = statusFilter;
         <>
             <Head title="User Management" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">User Management</h1>
                     <Link href="/admin/users/trashed">
@@ -117,26 +120,37 @@ params.status = statusFilter;
                 {/* Filters */}
                 <Card>
                     <CardContent className="p-4">
-                        <form onSubmit={handleSearchSubmit} className="flex flex-col gap-3 md:flex-row md:items-end">
+                        <form
+                            onSubmit={handleSearchSubmit}
+                            className="flex flex-col gap-3 md:flex-row md:items-end"
+                        >
                             <div className="flex-1 space-y-1.5">
-                                <label className="text-sm font-medium text-muted-foreground">Search</label>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    Search
+                                </label>
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                     <Input
                                         placeholder="Search by name or email..."
                                         value={search}
-                                        onChange={(e) => setSearch(e.target.value)}
+                                        onChange={(e) =>
+                                            setSearch(e.target.value)
+                                        }
                                         className="pl-9"
                                     />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-muted-foreground">Role</label>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    Role
+                                </label>
                                 <select
                                     value={roleFilter}
-                                    onChange={(e) => setRoleFilter(e.target.value)}
-                                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                    onChange={(e) =>
+                                        setRoleFilter(e.target.value)
+                                    }
+                                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-ring focus:outline-none"
                                 >
                                     <option value="">All Roles</option>
                                     <option value="customer">Customer</option>
@@ -146,11 +160,15 @@ params.status = statusFilter;
                             </div>
 
                             <div className="space-y-1.5">
-                                <label className="text-sm font-medium text-muted-foreground">Status</label>
+                                <label className="text-sm font-medium text-muted-foreground">
+                                    Status
+                                </label>
                                 <select
                                     value={statusFilter}
-                                    onChange={(e) => setStatusFilter(e.target.value)}
-                                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"
+                                    onChange={(e) =>
+                                        setStatusFilter(e.target.value)
+                                    }
+                                    className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-ring focus:outline-none"
                                 >
                                     <option value="">All Status</option>
                                     <option value="active">Active</option>
@@ -174,49 +192,98 @@ params.status = statusFilter;
 
                     <CardContent>
                         {users.data.length === 0 ? (
-                            <p className="text-muted-foreground">No users found.</p>
+                            <p className="text-muted-foreground">
+                                No users found.
+                            </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-muted-foreground">
-                                            <th className="pb-3 font-medium">Name</th>
-                                            <th className="pb-3 font-medium">Email</th>
-                                            <th className="pb-3 font-medium">Phone</th>
-                                            <th className="pb-3 font-medium">Role</th>
-                                            <th className="pb-3 font-medium">Status</th>
-                                            <th className="pb-3 font-medium">Created</th>
-                                            <th className="pb-3 font-medium text-right">Actions</th>
+                                            <th className="pb-3 font-medium">
+                                                Name
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Email
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Phone
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Role
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Status
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Created
+                                            </th>
+                                            <th className="pb-3 text-right font-medium">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {users.data.map((user) => (
-                                            <tr key={user.id} className="border-b last:border-0">
-                                                <td className="py-3 font-medium">{user.name}</td>
-                                                <td className="py-3 text-muted-foreground">{user.email}</td>
-                                                <td className="py-3 text-muted-foreground">{user.phone}</td>
+                                            <tr
+                                                key={user.id}
+                                                className="border-b last:border-0"
+                                            >
+                                                <td className="py-3 font-medium">
+                                                    {user.name}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {user.email}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {user.phone}
+                                                </td>
                                                 <td className="py-3">
-                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${roleBadgeClass(user.role)}`}>
-                                                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${roleBadgeClass(user.role)}`}
+                                                    >
+                                                        {user.role
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            user.role.slice(1)}
                                                     </span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(user.status)}`}>
-                                                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(user.status)}`}
+                                                    >
+                                                        {user.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            user.status.slice(
+                                                                1,
+                                                            )}
                                                     </span>
                                                 </td>
                                                 <td className="py-3 text-muted-foreground">
-                                                    {new Date(user.created_at).toLocaleDateString()}
+                                                    {new Date(
+                                                        user.created_at,
+                                                    ).toLocaleDateString()}
                                                 </td>
                                                 <td className="py-3 text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        <Link href={`/admin/users/${user.id}`}>
-                                                            <Button size="sm" variant="outline">
+                                                        <Link
+                                                            href={`/admin/users/${user.id}`}
+                                                        >
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                            >
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        <Link href={`/admin/users/${user.id}/edit`}>
-                                                            <Button size="sm" variant="outline">
+                                                        <Link
+                                                            href={`/admin/users/${user.id}/edit`}
+                                                        >
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                            >
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
@@ -234,12 +301,21 @@ params.status = statusFilter;
                                 {users.links.map((link) => (
                                     <Button
                                         key={link.label}
-                                        variant={link.active ? 'secondary' : 'outline'}
+                                        variant={
+                                            link.active
+                                                ? 'secondary'
+                                                : 'outline'
+                                        }
                                         size="sm"
                                         asChild
                                         disabled={!link.url}
                                     >
-                                        <a href={link.url ?? '#'} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                        <a
+                                            href={link.url ?? '#'}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
                                     </Button>
                                 ))}
                             </div>
@@ -252,5 +328,8 @@ params.status = statusFilter;
 }
 
 Users.layout = {
-    breadcrumbs: [{ title: 'Dashboard', href: '/admin/dashboard' }, { title: 'Users', href: '/admin/users' }],
+    breadcrumbs: [
+        { title: 'Dashboard', href: '/admin/dashboard' },
+        { title: 'Users', href: '/admin/users' },
+    ],
 };

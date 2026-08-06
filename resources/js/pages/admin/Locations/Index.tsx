@@ -25,11 +25,9 @@ export default function Index({ locations }: Props) {
         <>
             <Head title="Locations" />
 
-            <div className="p-6 space-y-6">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">
-                        Rental Locations
-                    </h1>
+            <div className="space-y-6 p-6">
+                <div className="flex items-center justify-between">
+                    <h1 className="text-2xl font-bold">Rental Locations</h1>
 
                     <Link href="/admin/locations/create">
                         <Button>
@@ -49,16 +47,23 @@ export default function Index({ locations }: Props) {
                             <table className="w-full border-collapse">
                                 <thead>
                                     <tr className="border-b">
-                                        <th className="text-left p-3">Name</th>
-                                        <th className="text-left p-3">Address</th>
-                                        <th className="text-left p-3">City</th>
-                                        <th className="text-left p-3">Actions</th>
+                                        <th className="p-3 text-left">Name</th>
+                                        <th className="p-3 text-left">
+                                            Address
+                                        </th>
+                                        <th className="p-3 text-left">City</th>
+                                        <th className="p-3 text-left">
+                                            Actions
+                                        </th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
                                     {locations.map((location) => (
-                                        <tr key={location.id} className="border-b">
+                                        <tr
+                                            key={location.id}
+                                            className="border-b"
+                                        >
                                             <td className="p-3">
                                                 {location.name}
                                             </td>
@@ -71,9 +76,14 @@ export default function Index({ locations }: Props) {
                                                 {location.city}
                                             </td>
 
-                                            <td className="p-3 flex gap-2">
-                                                <Link href={`/admin/locations/${location.id}/edit`}>
-                                                    <Button variant="outline" size="sm">
+                                            <td className="flex gap-2 p-3">
+                                                <Link
+                                                    href={`/admin/locations/${location.id}/edit`}
+                                                >
+                                                    <Button
+                                                        variant="outline"
+                                                        size="sm"
+                                                    >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
@@ -81,7 +91,11 @@ export default function Index({ locations }: Props) {
                                                 <Button
                                                     variant="destructive"
                                                     size="sm"
-                                                    onClick={() => deleteLocation(location.id)}
+                                                    onClick={() =>
+                                                        deleteLocation(
+                                                            location.id,
+                                                        )
+                                                    }
                                                 >
                                                     <Trash2 className="h-4 w-4" />
                                                 </Button>

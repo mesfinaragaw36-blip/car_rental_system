@@ -53,7 +53,9 @@ function statusBadgeClass(status: string): string {
 export default function ShowStaff({ staff }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin = props.auth.user.role === 'admin' && props.auth.user.staff_role_id === null;
+    const isFullAdmin =
+        props.auth.user.role === 'admin' &&
+        props.auth.user.staff_role_id === null;
 
     function handleSuspend(): void {
         if (confirm('Suspend this staff member?')) {
@@ -75,8 +77,11 @@ export default function ShowStaff({ staff }: Props) {
         <>
             <Head title={`${staff.name} - Staff Details`} />
 
-            <div className="p-6 space-y-6 max-w-3xl">
-                <Link href="/admin/staff" className="text-sm text-muted-foreground hover:underline">
+            <div className="max-w-3xl space-y-6 p-6">
+                <Link
+                    href="/admin/staff"
+                    className="text-sm text-muted-foreground hover:underline"
+                >
                     &larr; Back to Staff
                 </Link>
 
@@ -94,36 +99,57 @@ export default function ShowStaff({ staff }: Props) {
 
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-2xl">Staff Details</CardTitle>
-                        <span className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(staff.status)}`}>
-                            {staff.status.charAt(0).toUpperCase() + staff.status.slice(1)}
+                        <CardTitle className="text-2xl">
+                            Staff Details
+                        </CardTitle>
+                        <span
+                            className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(staff.status)}`}
+                        >
+                            {staff.status.charAt(0).toUpperCase() +
+                                staff.status.slice(1)}
                         </span>
                     </CardHeader>
 
                     <CardContent className="space-y-4">
                         <div className="grid gap-4 md:grid-cols-2">
                             <div>
-                                <p className="text-sm text-muted-foreground">Name</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Name
+                                </p>
                                 <p className="font-medium">{staff.name}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Email</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Email
+                                </p>
                                 <p className="font-medium">{staff.email}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Phone</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Phone
+                                </p>
                                 <p className="font-medium">{staff.phone}</p>
                             </div>
                             <div>
-                                <p className="text-sm text-muted-foreground">Joined</p>
-                                <p className="font-medium">{new Date(staff.created_at).toLocaleDateString()}</p>
+                                <p className="text-sm text-muted-foreground">
+                                    Joined
+                                </p>
+                                <p className="font-medium">
+                                    {new Date(
+                                        staff.created_at,
+                                    ).toLocaleDateString()}
+                                </p>
                             </div>
                         </div>
 
                         {isFullAdmin && (
                             <div className="flex gap-3 border-t pt-4">
                                 {staff.status === 'active' ? (
-                                    <Button variant="destructive" size="sm" onClick={handleSuspend}>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleSuspend}
+                                    >
                                         <Ban className="mr-1.5 h-4 w-4" />
                                         Suspend
                                     </Button>
@@ -133,7 +159,11 @@ export default function ShowStaff({ staff }: Props) {
                                         Activate
                                     </Button>
                                 )}
-                                <Button variant="destructive" size="sm" onClick={handleDelete}>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleDelete}
+                                >
                                     <Trash2 className="mr-1.5 h-4 w-4" />
                                     Delete
                                 </Button>

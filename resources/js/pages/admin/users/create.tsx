@@ -25,8 +25,11 @@ export default function CreateUser() {
         <>
             <Head title="Create User" />
 
-            <div className="p-6 space-y-6">
-                <Link href="/admin/users" className="text-sm text-muted-foreground hover:underline">
+            <div className="space-y-6 p-6">
+                <Link
+                    href="/admin/users"
+                    className="text-sm text-muted-foreground hover:underline"
+                >
                     &larr; Back to Users
                 </Link>
 
@@ -42,7 +45,9 @@ export default function CreateUser() {
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="Full name"
                                 />
                                 <InputError message={errors.name} />
@@ -54,7 +59,9 @@ export default function CreateUser() {
                                     id="email"
                                     type="email"
                                     value={data.email}
-                                    onChange={(e) => setData('email', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('email', e.target.value)
+                                    }
                                     placeholder="email@example.com"
                                 />
                                 <InputError message={errors.email} />
@@ -66,7 +73,9 @@ export default function CreateUser() {
                                     id="phone"
                                     type="tel"
                                     value={data.phone}
-                                    onChange={(e) => setData('phone', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('phone', e.target.value)
+                                    }
                                     placeholder="09xxxxxxxx"
                                 />
                                 <InputError message={errors.phone} />
@@ -77,17 +86,26 @@ export default function CreateUser() {
                                 <PasswordInput
                                     id="password"
                                     value={data.password}
-                                    onChange={(e) => setData('password', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('password', e.target.value)
+                                    }
                                 />
                                 <InputError message={errors.password} />
                             </div>
 
                             <div className="space-y-1.5">
-                                <Label htmlFor="password_confirmation">Confirm Password</Label>
+                                <Label htmlFor="password_confirmation">
+                                    Confirm Password
+                                </Label>
                                 <PasswordInput
                                     id="password_confirmation"
                                     value={data.password_confirmation}
-                                    onChange={(e) => setData('password_confirmation', e.target.value)}
+                                    onChange={(e) =>
+                                        setData(
+                                            'password_confirmation',
+                                            e.target.value,
+                                        )
+                                    }
                                 />
                             </div>
 
@@ -96,8 +114,10 @@ export default function CreateUser() {
                                 <select
                                     id="role"
                                     value={data.role}
-                                    onChange={(e) => setData('role', e.target.value)}
-                                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                    onChange={(e) =>
+                                        setData('role', e.target.value)
+                                    }
+                                    className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
                                 >
                                     <option value="customer">Customer</option>
                                     <option value="owner">Owner</option>

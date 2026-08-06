@@ -38,8 +38,11 @@ export default function CreateRole({ availablePermissions }: Props) {
         <>
             <Head title="Create Role" />
 
-            <div className="p-6 space-y-6">
-                <Link href="/admin/roles" className="text-sm text-muted-foreground hover:underline">
+            <div className="space-y-6 p-6">
+                <Link
+                    href="/admin/roles"
+                    className="text-sm text-muted-foreground hover:underline"
+                >
                     &larr; Back to Roles
                 </Link>
 
@@ -55,39 +58,60 @@ export default function CreateRole({ availablePermissions }: Props) {
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                     placeholder="e.g. Car Verifier"
                                 />
-                                {errors.name && <InputError message={errors.name} />}
+                                {errors.name && (
+                                    <InputError message={errors.name} />
+                                )}
                             </div>
 
                             <div className="space-y-4">
                                 <Label>Permissions</Label>
                                 {data.permissions.length === 0 && (
-                                    <p className="text-xs text-red-600">Select at least one permission.</p>
+                                    <p className="text-xs text-red-600">
+                                        Select at least one permission.
+                                    </p>
                                 )}
 
-                                {Object.entries(availablePermissions).map(([groupKey, group]) => (
-                                    <div key={groupKey} className="space-y-2">
-                                        <p className="text-sm font-medium text-muted-foreground">{group.label}</p>
-                                        <div className="grid gap-2 md:grid-cols-2">
-                                            {Object.entries(group.items).map(([key, label]) => (
-                                                <label
-                                                    key={key}
-                                                    className="flex items-center gap-2 rounded-md border p-2.5 text-sm cursor-pointer hover:bg-accent has-[:checked]:bg-accent"
-                                                >
-                                                    <input
-                                                        type="checkbox"
-                                                        className="h-4 w-4 rounded border-gray-300"
-                                                        checked={data.permissions.includes(key)}
-                                                        onChange={() => togglePermission(key)}
-                                                    />
-                                                    {label}
-                                                </label>
-                                            ))}
+                                {Object.entries(availablePermissions).map(
+                                    ([groupKey, group]) => (
+                                        <div
+                                            key={groupKey}
+                                            className="space-y-2"
+                                        >
+                                            <p className="text-sm font-medium text-muted-foreground">
+                                                {group.label}
+                                            </p>
+                                            <div className="grid gap-2 md:grid-cols-2">
+                                                {Object.entries(
+                                                    group.items,
+                                                ).map(([key, label]) => (
+                                                    <label
+                                                        key={key}
+                                                        className="flex cursor-pointer items-center gap-2 rounded-md border p-2.5 text-sm hover:bg-accent has-[:checked]:bg-accent"
+                                                    >
+                                                        <input
+                                                            type="checkbox"
+                                                            className="h-4 w-4 rounded border-gray-300"
+                                                            checked={data.permissions.includes(
+                                                                key,
+                                                            )}
+                                                            onChange={() =>
+                                                                togglePermission(
+                                                                    key,
+                                                                )
+                                                            }
+                                                        />
+                                                        {label}
+                                                    </label>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                ))}
+                                    ),
+                                )}
                             </div>
 
                             <div className="flex gap-3 pt-2">

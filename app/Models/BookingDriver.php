@@ -15,8 +15,6 @@ class BookingDriver extends Model
         'status',
     ];
 
-    public const STATUS_CLAIMED = 'claimed';
-
     public const STATUS_ASSIGNED = 'assigned';
 
     public const STATUS_ACCEPTED = 'accepted';

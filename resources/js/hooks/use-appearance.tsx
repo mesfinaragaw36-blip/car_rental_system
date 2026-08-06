@@ -24,7 +24,11 @@ export function initializeTheme(): void {
 }
 
 export function useAppearance(): UseAppearanceReturn {
-    useSyncExternalStore(subscribe, () => 'light', () => 'light');
+    useSyncExternalStore(
+        subscribe,
+        () => 'light',
+        () => 'light',
+    );
 
     return { appearance: 'light', resolvedAppearance: 'light' } as const;
 }

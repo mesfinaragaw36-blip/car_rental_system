@@ -1,15 +1,30 @@
 import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { Link } from '@inertiajs/react';
 import {
-    Plus, Edit, Trash2, Users, Shield, ChevronDown, ChevronRight,
-    UserCog, Car, CreditCard, FileCheck, UserCheck, Eye,
+    Plus,
+    Edit,
+    Trash2,
+    Users,
+    Shield,
+    ChevronDown,
+    ChevronRight,
+    UserCog,
+    Car,
+    CreditCard,
+    FileCheck,
+    UserCheck,
+    Eye,
 } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import {
     Dialog,
     DialogContent,
@@ -51,7 +66,13 @@ const GROUP_ICONS: Record<string, React.ElementType> = {
     profiles: FileCheck,
 };
 
-const ROLE_ICONS: React.ElementType[] = [Shield, UserCog, UserCheck, Users, FileCheck];
+const ROLE_ICONS: React.ElementType[] = [
+    Shield,
+    UserCog,
+    UserCheck,
+    Users,
+    FileCheck,
+];
 
 function PermissionGroups({
     availablePermissions,
@@ -63,7 +84,9 @@ function PermissionGroups({
     onChange: (perms: string[]) => void;
 }) {
     const [open, setOpen] = useState<Record<string, boolean>>(() =>
-        Object.fromEntries(Object.keys(availablePermissions).map((k) => [k, true])),
+        Object.fromEntries(
+            Object.keys(availablePermissions).map((k) => [k, true]),
+        ),
     );
 
     function toggleGroup(groupKey: string, items: Record<string, string>) {
@@ -95,34 +118,63 @@ function PermissionGroups({
                 const Icon = GROUP_ICONS[groupKey] ?? Shield;
 
                 return (
-                    <Collapsible key={groupKey} open={isOpen} onOpenChange={(v) => setOpen((s) => ({ ...s, [groupKey]: v }))}>
-                        <div className="flex items-center gap-2 rounded-md border px-3 py-2 bg-muted/40">
+                    <Collapsible
+                        key={groupKey}
+                        open={isOpen}
+                        onOpenChange={(v) =>
+                            setOpen((s) => ({ ...s, [groupKey]: v }))
+                        }
+                    >
+                        <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
                             <Checkbox
-                                checked={allChecked ? true : someChecked ? 'indeterminate' : false}
-                                onCheckedChange={() => toggleGroup(groupKey, group.items)}
+                                checked={
+                                    allChecked
+                                        ? true
+                                        : someChecked
+                                          ? 'indeterminate'
+                                          : false
+                                }
+                                onCheckedChange={() =>
+                                    toggleGroup(groupKey, group.items)
+                                }
                             />
                             <Icon className="h-4 w-4 text-muted-foreground" />
-                            <span className="flex-1 text-sm font-medium">{group.label}</span>
+                            <span className="flex-1 text-sm font-medium">
+                                {group.label}
+                            </span>
                             <CollapsibleTrigger asChild>
-                                <button type="button" className="text-muted-foreground hover:text-foreground">
-                                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                <button
+                                    type="button"
+                                    className="text-muted-foreground hover:text-foreground"
+                                >
+                                    {isOpen ? (
+                                        <ChevronDown className="h-4 w-4" />
+                                    ) : (
+                                        <ChevronRight className="h-4 w-4" />
+                                    )}
                                 </button>
                             </CollapsibleTrigger>
                         </div>
                         <CollapsibleContent>
-                            <div className="ml-6 mt-1 grid gap-1 md:grid-cols-2">
-                                {Object.entries(group.items).map(([key, label]) => (
-                                    <label
-                                        key={key}
-                                        className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer hover:bg-accent has-[:checked]:bg-accent"
-                                    >
-                                        <Checkbox
-                                            checked={permissions.includes(key)}
-                                            onCheckedChange={() => toggleOne(key)}
-                                        />
-                                        {label}
-                                    </label>
-                                ))}
+                            <div className="mt-1 ml-6 grid gap-1 md:grid-cols-2">
+                                {Object.entries(group.items).map(
+                                    ([key, label]) => (
+                                        <label
+                                            key={key}
+                                            className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent has-[:checked]:bg-accent"
+                                        >
+                                            <Checkbox
+                                                checked={permissions.includes(
+                                                    key,
+                                                )}
+                                                onCheckedChange={() =>
+                                                    toggleOne(key)
+                                                }
+                                            />
+                                            {label}
+                                        </label>
+                                    ),
+                                )}
                             </div>
                         </CollapsibleContent>
                     </Collapsible>
@@ -135,7 +187,9 @@ function PermissionGroups({
 export default function RolesIndex({ roles, availablePermissions }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin = props.auth.user.role === 'admin' && props.auth.user.staff_role_id === null;
+    const isFullAdmin =
+        props.auth.user.role === 'admin' &&
+        props.auth.user.staff_role_id === null;
 
     const [viewRole, setViewRole] = useState<Role | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -164,7 +218,7 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
         <>
             <Head title="Roles & Permissions" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Roles & Permissions</h1>
                     {isFullAdmin && (
@@ -178,7 +232,9 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                 {toast && (
                     <div
                         className={`rounded-lg px-4 py-3 text-sm font-medium ${
-                            toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            toast.type === 'success'
+                                ? 'bg-green-100 text-green-800'
+                                : 'bg-red-100 text-red-800'
                         }`}
                     >
                         {toast.message}
@@ -188,7 +244,10 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                 {roles.length === 0 ? (
                     <Card>
                         <CardContent className="p-6 text-center">
-                            <p className="text-muted-foreground">No roles created yet. Create a role to get started.</p>
+                            <p className="text-muted-foreground">
+                                No roles created yet. Create a role to get
+                                started.
+                            </p>
                         </CardContent>
                     </Card>
                 ) : (
@@ -204,11 +263,22 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                                                 <Icon className="h-5 w-5 text-primary" />
                                             </div>
                                             <div className="flex items-center gap-1">
-                                                <Button size="sm" variant="ghost" onClick={() => setViewRole(role)}>
+                                                <Button
+                                                    size="sm"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        setViewRole(role)
+                                                    }
+                                                >
                                                     <Eye className="h-4 w-4" />
                                                 </Button>
-                                                <Link href={`/admin/roles/${role.id}/edit`}>
-                                                    <Button size="sm" variant="ghost">
+                                                <Link
+                                                    href={`/admin/roles/${role.id}/edit`}
+                                                >
+                                                    <Button
+                                                        size="sm"
+                                                        variant="ghost"
+                                                    >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
@@ -217,25 +287,37 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                                                         size="sm"
                                                         variant="ghost"
                                                         className="text-destructive hover:text-destructive"
-                                                        onClick={() => handleDelete(role.id, role.name)}
+                                                        onClick={() =>
+                                                            handleDelete(
+                                                                role.id,
+                                                                role.name,
+                                                            )
+                                                        }
                                                     >
                                                         <Trash2 className="h-4 w-4" />
                                                     </Button>
                                                 )}
                                             </div>
                                         </div>
-                                        <CardTitle className="mt-2 text-base">{role.name}</CardTitle>
+                                        <CardTitle className="mt-2 text-base">
+                                            {role.name}
+                                        </CardTitle>
                                     </CardHeader>
 
                                     <CardContent className="space-y-2">
                                         <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                             <Users className="h-4 w-4" />
-                                            {role.staff_count} staff member{role.staff_count !== 1 ? 's' : ''}
+                                            {role.staff_count} staff member
+                                            {role.staff_count !== 1 ? 's' : ''}
                                         </div>
                                         <div className="flex items-center gap-1.5">
                                             <Shield className="h-4 w-4 text-muted-foreground" />
                                             <span className="rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
-                                                {role.permissions.length} permission{role.permissions.length !== 1 ? 's' : ''}
+                                                {role.permissions.length}{' '}
+                                                permission
+                                                {role.permissions.length !== 1
+                                                    ? 's'
+                                                    : ''}
                                             </span>
                                         </div>
                                     </CardContent>
@@ -247,12 +329,15 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
             </div>
 
             {/* View Permissions Dialog */}
-            <Dialog open={!!viewRole} onOpenChange={(v) => {
- if (!v) {
-setViewRole(null);
-} 
-}}>
-                <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+            <Dialog
+                open={!!viewRole}
+                onOpenChange={(v) => {
+                    if (!v) {
+                        setViewRole(null);
+                    }
+                }}
+            >
+                <DialogContent className="max-h-[80vh] max-w-lg overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Shield className="h-5 w-5 text-primary" />
@@ -261,8 +346,13 @@ setViewRole(null);
                     </DialogHeader>
                     <div className="flex flex-wrap gap-1.5 pt-1">
                         {viewRole?.permissions.map((perm) => (
-                            <span key={perm} className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium">
-                                {perm.replace(/[._]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())}
+                            <span
+                                key={perm}
+                                className="rounded-full bg-secondary px-2.5 py-0.5 text-xs font-medium"
+                            >
+                                {perm
+                                    .replace(/[._]/g, ' ')
+                                    .replace(/\b\w/g, (c) => c.toUpperCase())}
                             </span>
                         ))}
                     </div>
@@ -270,14 +360,17 @@ setViewRole(null);
             </Dialog>
 
             {/* Create Role Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={(v) => {
- setDialogOpen(v);
+            <Dialog
+                open={dialogOpen}
+                onOpenChange={(v) => {
+                    setDialogOpen(v);
 
- if (!v) {
-reset();
-} 
-}}>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    if (!v) {
+                        reset();
+                    }
+                }}
+            >
+                <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
                     <DialogHeader>
                         <DialogTitle>Create Role</DialogTitle>
                     </DialogHeader>
@@ -288,26 +381,39 @@ reset();
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="e.g. Car Verifier"
                             />
-                            {errors.name && <InputError message={errors.name} />}
+                            {errors.name && (
+                                <InputError message={errors.name} />
+                            )}
                         </div>
 
                         <div className="space-y-2">
                             <Label>Permissions</Label>
-                            {errors.permissions && <InputError message={errors.permissions} />}
+                            {errors.permissions && (
+                                <InputError message={errors.permissions} />
+                            )}
                             <PermissionGroups
                                 availablePermissions={availablePermissions}
                                 permissions={data.permissions}
-                                onChange={(perms) => setData('permissions', perms)}
+                                onChange={(perms) =>
+                                    setData('permissions', perms)
+                                }
                             />
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => {
- setDialogOpen(false); reset(); 
-}}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setDialogOpen(false);
+                                    reset();
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>

@@ -171,9 +171,6 @@ export default function CarDetails({ car, role }: Props) {
                                 {car.description}
                             </p>
                         )}
-                        <p className="text-sm text-muted-foreground">
-                            Owner: {car.owner.name} ({car.owner.phone})
-                        </p>
                     </div>
                 </div>
 

@@ -9,9 +9,15 @@ use Carbon\CarbonInterface;
 
 class DriverMatchingService
 {
-    private const ACTIVE_STATUSES = [BookingDriver::STATUS_CLAIMED, BookingDriver::STATUS_ASSIGNED, BookingDriver::STATUS_ACCEPTED];
+    private const ACTIVE_STATUSES = [
+        BookingDriver::STATUS_ASSIGNED,
+        BookingDriver::STATUS_ACCEPTED,
+    ];
 
-    private const CANCELLED_STATUSES = ['rejected', 'cancelled'];
+    private const CANCELLED_STATUSES = [
+        'rejected',
+        'cancelled',
+    ];
 
     public function bestMatchFor(Booking $booking, array $excludeDriverIds = []): ?User
     {
@@ -65,7 +71,10 @@ class DriverMatchingService
 
     public function escalateToAdmin(Booking $booking): void
     {
-        $admins = User::query()->where('role', 'admin')->whereNull('staff_role_id')->get();
+        $admins = User::query()
+            ->where('role', 'admin')
+            ->whereNull('staff_role_id')
+            ->get();
 
         foreach ($admins as $admin) {
             $admin->notifyNow(
@@ -92,8 +101,11 @@ class DriverMatchingService
             ->all();
     }
 
-    private function hasOverlappingAssignment(User $driver, CarbonInterface $pickupDate, CarbonInterface $returnDate): bool
-    {
+    private function hasOverlappingAssignment(
+        User $driver,
+        CarbonInterface $pickupDate,
+        CarbonInterface $returnDate
+    ): bool {
         return BookingDriver::query()
             ->where('driver_id', $driver->id)
             ->whereIn('status', self::ACTIVE_STATUSES)

@@ -53,16 +53,21 @@ interface FlashProps {
 
 function statusBadgeClass(status: string): string {
     switch (status) {
-        case 'active': return 'bg-green-100 text-green-800';
-        case 'suspended': return 'bg-red-100 text-red-800';
-        default: return 'bg-gray-100 text-gray-800';
+        case 'active':
+            return 'bg-green-100 text-green-800';
+        case 'suspended':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-gray-100 text-gray-800';
     }
 }
 
 export default function StaffIndex({ staff, roles }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin = props.auth.user.role === 'admin' && props.auth.user.staff_role_id === null;
+    const isFullAdmin =
+        props.auth.user.role === 'admin' &&
+        props.auth.user.staff_role_id === null;
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -78,8 +83,9 @@ export default function StaffIndex({ staff, roles }: Props) {
         e.preventDefault();
         post('/admin/staff', {
             onSuccess: () => {
- setDialogOpen(false); reset(); 
-},
+                setDialogOpen(false);
+                reset();
+            },
         });
     }
 
@@ -92,14 +98,14 @@ export default function StaffIndex({ staff, roles }: Props) {
 
     function handleDelete(id: number, name: string) {
         if (confirm(`Are you sure you want to delete "${name}"?`)) {
-router.delete(`/admin/staff/${id}`);
-}
+            router.delete(`/admin/staff/${id}`);
+        }
     }
 
     function handleSuspend(id: number) {
         if (confirm('Suspend this staff member?')) {
-router.post(`/admin/staff/${id}/suspend`);
-}
+            router.post(`/admin/staff/${id}/suspend`);
+        }
     }
 
     function handleActivate(id: number) {
@@ -110,7 +116,7 @@ router.post(`/admin/staff/${id}/suspend`);
         <>
             <Head title="Staff Management" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Staff Management</h1>
                     {isFullAdmin && (
@@ -122,7 +128,9 @@ router.post(`/admin/staff/${id}/suspend`);
                 </div>
 
                 {toast && (
-                    <div className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <div
+                        className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
                         {toast.message}
                     </div>
                 )}
@@ -134,55 +142,118 @@ router.post(`/admin/staff/${id}/suspend`);
 
                     <CardContent>
                         {staff.data.length === 0 ? (
-                            <p className="text-muted-foreground">No staff members yet.</p>
+                            <p className="text-muted-foreground">
+                                No staff members yet.
+                            </p>
                         ) : (
                             <div className="overflow-x-auto">
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-muted-foreground">
-                                            <th className="pb-3 font-medium">Name</th>
-                                            <th className="pb-3 font-medium">Email</th>
-                                            <th className="pb-3 font-medium">Phone</th>
-                                            <th className="pb-3 font-medium">Role</th>
-                                            <th className="pb-3 font-medium">Status</th>
-                                            <th className="pb-3 font-medium text-right">Actions</th>
+                                            <th className="pb-3 font-medium">
+                                                Name
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Email
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Phone
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Role
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Status
+                                            </th>
+                                            <th className="pb-3 text-right font-medium">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {staff.data.map((member) => (
-                                            <tr key={member.id} className="border-b last:border-0">
-                                                <td className="py-3 font-medium">{member.name}</td>
-                                                <td className="py-3 text-muted-foreground">{member.email}</td>
-                                                <td className="py-3 text-muted-foreground">{member.phone}</td>
+                                            <tr
+                                                key={member.id}
+                                                className="border-b last:border-0"
+                                            >
+                                                <td className="py-3 font-medium">
+                                                    {member.name}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {member.email}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {member.phone}
+                                                </td>
                                                 <td className="py-3">
                                                     <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
-                                                        {member.staff_role?.name ?? 'Unassigned'}
+                                                        {member.staff_role
+                                                            ?.name ??
+                                                            'Unassigned'}
                                                     </span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(member.status)}`}>
-                                                        {member.status.charAt(0).toUpperCase() + member.status.slice(1)}
+                                                    <span
+                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(member.status)}`}
+                                                    >
+                                                        {member.status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            member.status.slice(
+                                                                1,
+                                                            )}
                                                     </span>
                                                 </td>
                                                 <td className="py-3 text-right">
                                                     <div className="flex items-center justify-end gap-1">
-                                                        <Link href={`/admin/staff/${member.id}`}>
-                                                            <Button size="sm" variant="outline">
+                                                        <Link
+                                                            href={`/admin/staff/${member.id}`}
+                                                        >
+                                                            <Button
+                                                                size="sm"
+                                                                variant="outline"
+                                                            >
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
                                                         {isFullAdmin && (
                                                             <>
-                                                                {member.status === 'active' ? (
-                                                                    <Button size="sm" variant="outline" onClick={() => handleSuspend(member.id)}>
+                                                                {member.status ===
+                                                                'active' ? (
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleSuspend(
+                                                                                member.id,
+                                                                            )
+                                                                        }
+                                                                    >
                                                                         <Ban className="h-4 w-4" />
                                                                     </Button>
                                                                 ) : (
-                                                                    <Button size="sm" variant="outline" onClick={() => handleActivate(member.id)}>
+                                                                    <Button
+                                                                        size="sm"
+                                                                        variant="outline"
+                                                                        onClick={() =>
+                                                                            handleActivate(
+                                                                                member.id,
+                                                                            )
+                                                                        }
+                                                                    >
                                                                         <PlayCircle className="h-4 w-4" />
                                                                     </Button>
                                                                 )}
-                                                                <Button size="sm" variant="destructive" onClick={() => handleDelete(member.id, member.name)}>
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="destructive"
+                                                                    onClick={() =>
+                                                                        handleDelete(
+                                                                            member.id,
+                                                                            member.name,
+                                                                        )
+                                                                    }
+                                                                >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
                                                             </>
@@ -201,12 +272,21 @@ router.post(`/admin/staff/${id}/suspend`);
                                 {staff.links.map((link) => (
                                     <Button
                                         key={link.label}
-                                        variant={link.active ? 'secondary' : 'outline'}
+                                        variant={
+                                            link.active
+                                                ? 'secondary'
+                                                : 'outline'
+                                        }
                                         size="sm"
                                         asChild
                                         disabled={!link.url}
                                     >
-                                        <a href={link.url ?? '#'} dangerouslySetInnerHTML={{ __html: link.label }} />
+                                        <a
+                                            href={link.url ?? '#'}
+                                            dangerouslySetInnerHTML={{
+                                                __html: link.label,
+                                            }}
+                                        />
                                     </Button>
                                 ))}
                             </div>
@@ -216,13 +296,16 @@ router.post(`/admin/staff/${id}/suspend`);
             </div>
 
             {/* Create Staff Dialog */}
-            <Dialog open={dialogOpen} onOpenChange={(v) => {
- setDialogOpen(v);
+            <Dialog
+                open={dialogOpen}
+                onOpenChange={(v) => {
+                    setDialogOpen(v);
 
- if (!v) {
-reset();
-} 
-}}>
+                    if (!v) {
+                        reset();
+                    }
+                }}
+            >
                 <DialogContent className="max-w-lg">
                     <DialogHeader>
                         <DialogTitle>Create Staff Member</DialogTitle>
@@ -234,7 +317,9 @@ reset();
                             <Input
                                 id="name"
                                 value={data.name}
-                                onChange={(e) => setData('name', e.target.value)}
+                                onChange={(e) =>
+                                    setData('name', e.target.value)
+                                }
                                 placeholder="Full name"
                             />
                             <InputError message={errors.name} />
@@ -246,7 +331,9 @@ reset();
                                 id="email"
                                 type="email"
                                 value={data.email}
-                                onChange={(e) => setData('email', e.target.value)}
+                                onChange={(e) =>
+                                    setData('email', e.target.value)
+                                }
                                 placeholder="email@example.com"
                             />
                             <InputError message={errors.email} />
@@ -258,7 +345,9 @@ reset();
                                 id="phone"
                                 type="tel"
                                 value={data.phone}
-                                onChange={(e) => setData('phone', e.target.value)}
+                                onChange={(e) =>
+                                    setData('phone', e.target.value)
+                                }
                                 placeholder="09xxxxxxxx"
                             />
                             <InputError message={errors.phone} />
@@ -269,12 +358,16 @@ reset();
                             <select
                                 id="staff_role_id"
                                 value={data.staff_role_id}
-                                onChange={(e) => setData('staff_role_id', e.target.value)}
-                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-ring"
+                                onChange={(e) =>
+                                    setData('staff_role_id', e.target.value)
+                                }
+                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
                             >
                                 <option value="">Select a role</option>
                                 {roles.map((role) => (
-                                    <option key={role.id} value={role.id}>{role.name}</option>
+                                    <option key={role.id} value={role.id}>
+                                        {role.name}
+                                    </option>
                                 ))}
                             </select>
                             <InputError message={errors.staff_role_id} />
@@ -284,18 +377,28 @@ reset();
                         <div className="flex items-center gap-3 rounded-lg border border-dashed border-muted-foreground/40 bg-muted/40 px-4 py-3">
                             <KeyRound className="h-4 w-4 shrink-0 text-muted-foreground" />
                             <div className="text-sm">
-                                <span className="text-muted-foreground">Default password: </span>
+                                <span className="text-muted-foreground">
+                                    Default password:{' '}
+                                </span>
                                 <code className="rounded bg-background px-1.5 py-0.5 font-mono font-semibold tracking-widest">
                                     {DEFAULT_PASSWORD}
                                 </code>
-                                <p className="mt-0.5 text-xs text-muted-foreground">The staff member should change this after first login.</p>
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                    The staff member should change this after
+                                    first login.
+                                </p>
                             </div>
                         </div>
 
                         <DialogFooter>
-                            <Button type="button" variant="outline" onClick={() => {
- setDialogOpen(false); reset(); 
-}}>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                    setDialogOpen(false);
+                                    reset();
+                                }}
+                            >
                                 Cancel
                             </Button>
                             <Button type="submit" disabled={processing}>

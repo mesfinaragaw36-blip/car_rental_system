@@ -36,6 +36,7 @@ class PaymentController extends Controller
 
         $payments = $query->latest()->get()->map(fn (Payment $payment) => [
             'id' => $payment->id,
+            'type' => $payment->type,
             'payment_method' => $payment->payment_method,
             'payment_status' => $payment->payment_status,
             'amount' => $payment->amount,
@@ -61,7 +62,7 @@ class PaymentController extends Controller
         if ($booking->status !== Booking::STATUS_CONFIRMED) {
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting a deposit payment.']);
         }
-        if ($booking->payment) {
+        if ($booking->hasPaidDeposit()) {
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
         }
 
@@ -155,7 +156,7 @@ class PaymentController extends Controller
             }
         }
 
-        if ($booking->payment) {
+        if ($booking->hasPaidDeposit()) {
             return back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
         }
 
@@ -241,11 +242,30 @@ class PaymentController extends Controller
         $securityDeposit = $booking->securityDepositAmount();
         $totalReceived = round($balance + $securityDeposit, 2);
 
-        DB::transaction(function () use ($booking, $balance, $securityDeposit, $totalReceived) {
+        DB::transaction(function () use ($booking, $balance, $securityDeposit, $totalReceived, $validated) {
             Booking::whereKey($booking->id)->lockForUpdate()->first();
 
             if ($booking->status !== Booking::STATUS_DEPOSIT_PAID || $booking->hasPaidBalance()) {
                 throw new \RuntimeException('status');
+            }
+
+            foreach ([
+                Payment::TYPE_BALANCE => $balance,
+                Payment::TYPE_SECURITY_DEPOSIT => $securityDeposit,
+            ] as $type => $amount) {
+                if ($amount <= 0) {
+                    continue;
+                }
+
+                Payment::create([
+                    'booking_id' => $booking->id,
+                    'type' => $type,
+                    'amount' => $amount,
+                    'payment_method' => $validated['payment_method'],
+                    'transaction_reference' => $validated['transaction_reference'] ?? null,
+                    'payment_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
             }
 
             $booking->update([

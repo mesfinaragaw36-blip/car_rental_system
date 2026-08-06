@@ -56,6 +56,8 @@ class Booking extends Model
         'notes',
     ];
 
+    protected $appends = ['payment'];
+
     protected function casts(): array
     {
         return [
@@ -148,9 +150,34 @@ class Booking extends Model
         return $this->hasOne(BookingDriver::class);
     }
 
-    public function payment(): HasOne
+    public function payments(): HasMany
     {
-        return $this->hasOne(Payment::class);
+        return $this->hasMany(Payment::class);
+    }
+
+    public function depositPayment(): ?Payment
+    {
+        return $this->payments->firstWhere('type', Payment::TYPE_DEPOSIT);
+    }
+
+    public function hasPaidDeposit(): bool
+    {
+        return $this->depositPayment() !== null;
+    }
+
+    /**
+     * @return array<string, mixed>|null
+     */
+    public function getPaymentAttribute(): ?array
+    {
+        $deposit = $this->depositPayment();
+
+        return $deposit ? [
+            'id' => $deposit->id,
+            'payment_method' => $deposit->payment_method,
+            'payment_status' => $deposit->payment_status,
+            'paid_at' => $deposit->paid_at?->toDateTimeString(),
+        ] : null;
     }
 
     public function reviews(): HasMany

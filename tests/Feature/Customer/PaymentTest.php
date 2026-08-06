@@ -134,6 +134,7 @@ class PaymentTest extends TestCase
 
         Payment::create([
             'booking_id' => $booking->id,
+            'type' => 'booking_deposit',
             'amount' => 300.00,
             'payment_method' => 'Cash',
             'payment_status' => 'paid',

@@ -29,7 +29,7 @@ class BookingController extends Controller
             $customerColumns,
             'owner:id,name,phone',
             'car:id,brand,model,year,plate_number',
-            'payment',
+            'payments',
             'driverAssignment:id,booking_id,driver_id,status',
             'driverAssignment.driver:id,name,phone',
         ]);
@@ -79,7 +79,7 @@ class BookingController extends Controller
             'customer:id,name,phone,email',
             'owner:id,name,phone',
             'car:id,brand,model,year,plate_number',
-            'payment',
+            'payments',
             'driverAssignment:id,booking_id,driver_id,status',
             'driverAssignment.driver:id,name,phone',
             'reviews.reviewer:id,name',
@@ -176,6 +176,8 @@ class BookingController extends Controller
             ];
         })->toArray();
 
+        $depositPayment = $booking->depositPayment();
+
         return Inertia::render('booking-details', [
             'booking' => [
                 'id' => $booking->id,
@@ -192,7 +194,7 @@ class BookingController extends Controller
                 'customer' => $booking->customer ? $this->customerPayload($booking, $user) : null,
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
                 'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
-                'payment' => $booking->payment ? ['id' => $booking->payment->id, 'payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
+                'payment' => $depositPayment ? ['id' => $depositPayment->id, 'payment_method' => $depositPayment->payment_method, 'payment_status' => $depositPayment->payment_status, 'paid_at' => $depositPayment->paid_at?->toDateTimeString()] : null,
                 'security_deposit_amount' => number_format($booking->securityDepositAmount(), 2),
                 'balance_amount' => number_format($booking->balanceAmount(), 2),
                 'has_balance_paid' => $booking->hasPaidBalance(),

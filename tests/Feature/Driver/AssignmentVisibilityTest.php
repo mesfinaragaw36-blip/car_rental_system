@@ -52,7 +52,7 @@ class AssignmentVisibilityTest extends TestCase
         ], $overrides));
     }
 
-    private function createDriver(): User
+    private function createDriver(string $verificationStatus = 'approved'): User
     {
         $driver = User::factory()->create(['role' => 'driver']);
 
@@ -61,7 +61,7 @@ class AssignmentVisibilityTest extends TestCase
             'license_number' => fake()->bothify('DL-#####'),
             'experience_years' => 2,
             'availability' => 'available',
-            'verification_status' => 'approved',
+            'verification_status' => $verificationStatus,
         ]);
 
         return $driver;
@@ -187,5 +187,50 @@ class AssignmentVisibilityTest extends TestCase
             $this->assertCount(1, $assignments);
             $this->assertEquals('rejected', $assignments[0]['status']);
         });
+    }
+
+    public function test_pending_driver_gets_pending_verification_status(): void
+    {
+        $driver = $this->createDriver('pending');
+
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
+
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page
+            ->component('assignments')
+            ->where('driverVerificationStatus', 'pending'));
+    }
+
+    public function test_approved_driver_gets_approved_verification_status(): void
+    {
+        $driver = $this->createDriver('approved');
+
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('assignments')
+            ->where('driverVerificationStatus', 'approved'));
+    }
+
+    public function test_driver_without_profile_gets_none_verification_status(): void
+    {
+        $driver = User::factory()->create(['role' => 'driver']);
+
+        $response = $this->actingAs($driver)->get(route('assignments.index'));
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('assignments')
+            ->where('driverVerificationStatus', 'none'));
+    }
+
+    public function test_non_drivers_get_null_verification_status(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $response = $this->actingAs($customer)->get(route('assignments.index'));
+
+        $response->assertInertia(fn ($page) => $page
+            ->component('assignments')
+            ->where('driverVerificationStatus', null));
     }
 }

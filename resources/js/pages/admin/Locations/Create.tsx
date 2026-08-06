@@ -22,7 +22,7 @@ export default function CreateLocation() {
         <>
             <Head title="Create Location" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <Link
                     href="/admin/locations"
                     className="text-sm text-muted-foreground hover:underline"
@@ -37,11 +37,8 @@ export default function CreateLocation() {
 
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-5">
-
                             <div className="space-y-1.5">
-                                <Label htmlFor="name">
-                                    Location Name
-                                </Label>
+                                <Label htmlFor="name">Location Name</Label>
 
                                 <Input
                                     id="name"
@@ -55,11 +52,8 @@ export default function CreateLocation() {
                                 <InputError message={errors.name} />
                             </div>
 
-
                             <div className="space-y-1.5">
-                                <Label htmlFor="address">
-                                    Address
-                                </Label>
+                                <Label htmlFor="address">Address</Label>
 
                                 <Input
                                     id="address"
@@ -73,11 +67,8 @@ export default function CreateLocation() {
                                 <InputError message={errors.address} />
                             </div>
 
-
                             <div className="space-y-1.5">
-                                <Label htmlFor="city">
-                                    City
-                                </Label>
+                                <Label htmlFor="city">City</Label>
 
                                 <Input
                                     id="city"
@@ -91,11 +82,9 @@ export default function CreateLocation() {
                                 <InputError message={errors.city} />
                             </div>
 
-
                             <Button type="submit" disabled={processing}>
                                 {processing ? 'Saving...' : 'Create Location'}
                             </Button>
-
                         </form>
                     </CardContent>
                 </Card>

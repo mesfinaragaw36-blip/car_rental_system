@@ -27,8 +27,17 @@ export default function AuthCardLayout({
                     href={home()}
                     className="flex items-center gap-2 self-center font-medium"
                 >
-                    <img src="/images/logo.png" alt={name} className="h-8 w-8 rounded-xl object-cover" />
-                    <span style={{ color: '#1A365D' }} className="font-semibold">{name}</span>
+                    <img
+                        src="/images/logo.png"
+                        alt={name}
+                        className="h-8 w-8 rounded-xl object-cover"
+                    />
+                    <span
+                        style={{ color: '#1A365D' }}
+                        className="font-semibold"
+                    >
+                        {name}
+                    </span>
                 </Link>
 
                 <div className="flex flex-col gap-6">

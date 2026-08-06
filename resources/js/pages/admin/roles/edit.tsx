@@ -1,11 +1,24 @@
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ChevronDown, ChevronRight, Shield, UserCog, Car, CreditCard, FileCheck, Users } from 'lucide-react';
+import {
+    ChevronDown,
+    ChevronRight,
+    Shield,
+    UserCog,
+    Car,
+    CreditCard,
+    FileCheck,
+    Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import {
+    Collapsible,
+    CollapsibleContent,
+    CollapsibleTrigger,
+} from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -40,7 +53,9 @@ export default function EditRole({ role, availablePermissions }: Props) {
     });
 
     const [open, setOpen] = useState<Record<string, boolean>>(() =>
-        Object.fromEntries(Object.keys(availablePermissions).map((k) => [k, true])),
+        Object.fromEntries(
+            Object.keys(availablePermissions).map((k) => [k, true]),
+        ),
     );
 
     function toggleGroup(groupKey: string, items: Record<string, string>) {
@@ -72,8 +87,11 @@ export default function EditRole({ role, availablePermissions }: Props) {
         <>
             <Head title={`Edit ${role.name}`} />
 
-            <div className="p-6 space-y-6">
-                <Link href="/admin/roles" className="text-sm text-muted-foreground hover:underline">
+            <div className="space-y-6 p-6">
+                <Link
+                    href="/admin/roles"
+                    className="text-sm text-muted-foreground hover:underline"
+                >
                     &larr; Back to Roles & Permissions
                 </Link>
 
@@ -89,60 +107,108 @@ export default function EditRole({ role, availablePermissions }: Props) {
                                 <Input
                                     id="name"
                                     value={data.name}
-                                    onChange={(e) => setData('name', e.target.value)}
+                                    onChange={(e) =>
+                                        setData('name', e.target.value)
+                                    }
                                 />
-                                {errors.name && <InputError message={errors.name} />}
+                                {errors.name && (
+                                    <InputError message={errors.name} />
+                                )}
                             </div>
 
                             <div className="space-y-2">
                                 <Label>Permissions</Label>
-                                {errors.permissions && <InputError message={errors.permissions} />}
+                                {errors.permissions && (
+                                    <InputError message={errors.permissions} />
+                                )}
 
-                                {Object.entries(availablePermissions).map(([groupKey, group]) => {
-                                    const keys = Object.keys(group.items);
-                                    const allChecked = keys.every((k) => data.permissions.includes(k));
-                                    const someChecked = keys.some((k) => data.permissions.includes(k));
-                                    const isOpen = open[groupKey];
-                                    const Icon = GROUP_ICONS[groupKey] ?? Shield;
+                                {Object.entries(availablePermissions).map(
+                                    ([groupKey, group]) => {
+                                        const keys = Object.keys(group.items);
+                                        const allChecked = keys.every((k) =>
+                                            data.permissions.includes(k),
+                                        );
+                                        const someChecked = keys.some((k) =>
+                                            data.permissions.includes(k),
+                                        );
+                                        const isOpen = open[groupKey];
+                                        const Icon =
+                                            GROUP_ICONS[groupKey] ?? Shield;
 
-                                    return (
-                                        <Collapsible
-                                            key={groupKey}
-                                            open={isOpen}
-                                            onOpenChange={(v) => setOpen((s) => ({ ...s, [groupKey]: v }))}
-                                        >
-                                            <div className="flex items-center gap-2 rounded-md border px-3 py-2 bg-muted/40">
-                                                <Checkbox
-                                                    checked={allChecked ? true : someChecked ? 'indeterminate' : false}
-                                                    onCheckedChange={() => toggleGroup(groupKey, group.items)}
-                                                />
-                                                <Icon className="h-4 w-4 text-muted-foreground" />
-                                                <span className="flex-1 text-sm font-medium">{group.label}</span>
-                                                <CollapsibleTrigger asChild>
-                                                    <button type="button" className="text-muted-foreground hover:text-foreground">
-                                                        {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                                                    </button>
-                                                </CollapsibleTrigger>
-                                            </div>
-                                            <CollapsibleContent>
-                                                <div className="ml-6 mt-1 grid gap-1 md:grid-cols-2">
-                                                    {Object.entries(group.items).map(([key, label]) => (
-                                                        <label
-                                                            key={key}
-                                                            className="flex items-center gap-2 rounded-md border px-3 py-2 text-sm cursor-pointer hover:bg-accent has-[:checked]:bg-accent"
+                                        return (
+                                            <Collapsible
+                                                key={groupKey}
+                                                open={isOpen}
+                                                onOpenChange={(v) =>
+                                                    setOpen((s) => ({
+                                                        ...s,
+                                                        [groupKey]: v,
+                                                    }))
+                                                }
+                                            >
+                                                <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2">
+                                                    <Checkbox
+                                                        checked={
+                                                            allChecked
+                                                                ? true
+                                                                : someChecked
+                                                                  ? 'indeterminate'
+                                                                  : false
+                                                        }
+                                                        onCheckedChange={() =>
+                                                            toggleGroup(
+                                                                groupKey,
+                                                                group.items,
+                                                            )
+                                                        }
+                                                    />
+                                                    <Icon className="h-4 w-4 text-muted-foreground" />
+                                                    <span className="flex-1 text-sm font-medium">
+                                                        {group.label}
+                                                    </span>
+                                                    <CollapsibleTrigger asChild>
+                                                        <button
+                                                            type="button"
+                                                            className="text-muted-foreground hover:text-foreground"
                                                         >
-                                                            <Checkbox
-                                                                checked={data.permissions.includes(key)}
-                                                                onCheckedChange={() => toggleOne(key)}
-                                                            />
-                                                            {label}
-                                                        </label>
-                                                    ))}
+                                                            {isOpen ? (
+                                                                <ChevronDown className="h-4 w-4" />
+                                                            ) : (
+                                                                <ChevronRight className="h-4 w-4" />
+                                                            )}
+                                                        </button>
+                                                    </CollapsibleTrigger>
                                                 </div>
-                                            </CollapsibleContent>
-                                        </Collapsible>
-                                    );
-                                })}
+                                                <CollapsibleContent>
+                                                    <div className="mt-1 ml-6 grid gap-1 md:grid-cols-2">
+                                                        {Object.entries(
+                                                            group.items,
+                                                        ).map(
+                                                            ([key, label]) => (
+                                                                <label
+                                                                    key={key}
+                                                                    className="flex cursor-pointer items-center gap-2 rounded-md border px-3 py-2 text-sm hover:bg-accent has-[:checked]:bg-accent"
+                                                                >
+                                                                    <Checkbox
+                                                                        checked={data.permissions.includes(
+                                                                            key,
+                                                                        )}
+                                                                        onCheckedChange={() =>
+                                                                            toggleOne(
+                                                                                key,
+                                                                            )
+                                                                        }
+                                                                    />
+                                                                    {label}
+                                                                </label>
+                                                            ),
+                                                        )}
+                                                    </div>
+                                                </CollapsibleContent>
+                                            </Collapsible>
+                                        );
+                                    },
+                                )}
                             </div>
 
                             <div className="flex gap-3 pt-2">
@@ -150,7 +216,9 @@ export default function EditRole({ role, availablePermissions }: Props) {
                                     {processing ? 'Saving…' : 'Save Changes'}
                                 </Button>
                                 <Link href="/admin/roles">
-                                    <Button type="button" variant="outline">Cancel</Button>
+                                    <Button type="button" variant="outline">
+                                        Cancel
+                                    </Button>
                                 </Link>
                             </div>
                         </form>

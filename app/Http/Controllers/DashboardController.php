@@ -31,7 +31,8 @@ class DashboardController extends Controller
     {
         $commissionRate = config('commission.rate', 10);
 
-        $paidPayments = Payment::where('payment_status', 'paid');
+        $paidPayments = Payment::where('payment_status', 'paid')
+            ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT);
         $totalRevenue = (float) (clone $paidPayments)->sum('amount');
         $totalCommission = round($totalRevenue * $commissionRate / 100, 2);
 
@@ -85,6 +86,7 @@ class DashboardController extends Controller
             : "DATE_FORMAT(paid_at, '%Y-%m')";
 
         $monthlyData = Payment::where('payment_status', 'paid')
+            ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)
             ->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))
             ->whereNotNull('paid_at')
             ->selectRaw("{$dateFormat} as month, SUM(amount) as revenue")
@@ -116,7 +118,7 @@ class DashboardController extends Controller
                 'total_vehicles' => $vehicles->count(),
                 'active_bookings' => Booking::where('owner_id', $ownerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->count(),
                 'pending_bookings' => Booking::where('owner_id', $ownerId)->where('status', 'confirmed')->count(),
-                'total_earnings' => number_format((float) Payment::where('payment_status', 'paid')->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))->sum('amount'), 2),
+                'total_earnings' => number_format((float) Payment::where('payment_status', 'paid')->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))->sum('amount'), 2),
                 'available_vehicles' => (clone $vehicles)->where('availability_status', 'available')->count(),
                 'rented_vehicles' => (clone $vehicles)->where('availability_status', 'rented')->count(),
                 'pending_vehicles' => (clone $vehicles)->where('approval_status', 'pending')->count(),

@@ -41,7 +41,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 Email
                             </Label>
                             <div className="relative">
-                                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     id="email"
                                     type="email"
@@ -60,7 +60,10 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Password */}
                         <div className="space-y-1.5">
                             <div className="flex items-center justify-between">
-                                <Label htmlFor="password" className="font-semibold">
+                                <Label
+                                    htmlFor="password"
+                                    className="font-semibold"
+                                >
                                     Password
                                 </Label>
                                 {canResetPassword && (
@@ -74,7 +77,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 )}
                             </div>
                             <div className="relative">
-                                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                                 <PasswordInput
                                     id="password"
                                     name="password"
@@ -90,8 +93,15 @@ export default function Login({ status, canResetPassword }: Props) {
 
                         {/* Remember */}
                         <div className="flex items-center gap-2">
-                            <Checkbox id="remember" name="remember" tabIndex={3} />
-                            <Label htmlFor="remember" className="cursor-pointer text-sm font-normal text-muted-foreground select-none">
+                            <Checkbox
+                                id="remember"
+                                name="remember"
+                                tabIndex={3}
+                            />
+                            <Label
+                                htmlFor="remember"
+                                className="cursor-pointer text-sm font-normal text-muted-foreground select-none"
+                            >
                                 Keep me signed in
                             </Label>
                         </div>
@@ -103,20 +113,32 @@ export default function Login({ status, canResetPassword }: Props) {
                             tabIndex={4}
                             disabled={processing}
                         >
-                            {processing ? <><Spinner /> Signing in…</> : 'Sign in'}
+                            {processing ? (
+                                <>
+                                    <Spinner /> Signing in…
+                                </>
+                            ) : (
+                                'Sign in'
+                            )}
                         </Button>
 
                         {/* Divider */}
                         <div className="relative my-1 flex items-center gap-3">
                             <div className="h-px flex-1 bg-border/60" />
-                            <span className="text-xs text-muted-foreground">or</span>
+                            <span className="text-xs text-muted-foreground">
+                                or
+                            </span>
                             <div className="h-px flex-1 bg-border/60" />
                         </div>
 
                         {/* Footer */}
                         <p className="text-center text-sm text-muted-foreground">
                             Don&apos;t have an account?{' '}
-                            <TextLink href={register()} tabIndex={6} className="font-semibold text-accent no-underline hover:underline">
+                            <TextLink
+                                href={register()}
+                                tabIndex={6}
+                                className="font-semibold text-accent no-underline hover:underline"
+                            >
                                 Create one free
                             </TextLink>
                         </p>

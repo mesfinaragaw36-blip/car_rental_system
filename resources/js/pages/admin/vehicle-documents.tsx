@@ -40,7 +40,7 @@ export default function VehicleDocuments({ documents = [] }: Props) {
         <>
             <Head title="Vehicle Documents" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <h1 className="text-3xl font-bold">Vehicle Documents</h1>
 
                 <Card>
@@ -67,12 +67,14 @@ export default function VehicleDocuments({ documents = [] }: Props) {
                                             </p>
 
                                             <p className="text-sm text-muted-foreground">
-                                                {document.document_type} document
+                                                {document.document_type}{' '}
+                                                document
                                             </p>
 
                                             <p className="text-sm text-muted-foreground">
                                                 Expires:{' '}
-                                                {document.expiry_date ?? 'No expiry'}
+                                                {document.expiry_date ??
+                                                    'No expiry'}
                                             </p>
 
                                             <a
@@ -92,9 +94,9 @@ export default function VehicleDocuments({ documents = [] }: Props) {
                                                     'approved'
                                                         ? 'bg-emerald-100 text-emerald-800'
                                                         : document.verification_status ===
-                                                          'rejected'
-                                                        ? 'bg-rose-100 text-rose-800'
-                                                        : 'bg-yellow-100 text-yellow-800'
+                                                            'rejected'
+                                                          ? 'bg-rose-100 text-rose-800'
+                                                          : 'bg-yellow-100 text-yellow-800'
                                                 }`}
                                             >
                                                 {document.verification_status}

@@ -7,6 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Payment extends Model
 {
+    public const TYPE_DEPOSIT = 'booking_deposit';
+
+    public const TYPE_BALANCE = 'balance';
+
+    public const TYPE_SECURITY_DEPOSIT = 'security_deposit';
+
     protected $fillable = [
         'booking_id',
         'type',

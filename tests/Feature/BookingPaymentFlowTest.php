@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Inspection;
 use App\Models\OwnerPayout;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -143,6 +144,14 @@ class BookingPaymentFlowTest extends TestCase
         $this->assertNotNull($booking->fresh()->balance_paid_at);
         $this->assertNotNull($booking->fresh()->security_deposit_paid_at);
 
+        $this->assertDatabaseHas('payments', [
+            'booking_id' => $booking->id,
+            'type' => 'security_deposit',
+            'amount' => '1000.00',
+            'payment_method' => 'Telebirr',
+            'payment_status' => 'paid',
+        ]);
+
         $this->assertDatabaseHas('notifications', [
             'user_id' => $customer->id,
             'type' => 'booking_paid',
@@ -154,6 +163,44 @@ class BookingPaymentFlowTest extends TestCase
             'type' => 'booking_paid',
             'related_id' => $booking->id,
         ]);
+    }
+
+    public function test_pickup_payment_records_balance_and_security_deposit_rows(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, Booking::STATUS_DEPOSIT_PAID, [
+            'total_price' => 1500.00,
+        ]);
+        $this->approvedPickupInspection($booking);
+
+        $this->actingAs($customer)
+            ->post(route('payments.pickup-store', ['booking' => $booking->id]), [
+                'payment_method' => 'Bank Transfer',
+                'transaction_reference' => 'TX-PICKUP-2',
+            ])
+            ->assertRedirect(route('bookings.index'))
+            ->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('payments', [
+            'booking_id' => $booking->id,
+            'type' => 'balance',
+            'amount' => '1000.00',
+            'payment_method' => 'Bank Transfer',
+            'transaction_reference' => 'TX-PICKUP-2',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->assertDatabaseHas('payments', [
+            'booking_id' => $booking->id,
+            'type' => 'security_deposit',
+            'amount' => '1000.00',
+            'payment_method' => 'Bank Transfer',
+            'transaction_reference' => 'TX-PICKUP-2',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->assertSame(2, Payment::where('booking_id', $booking->id)->count());
     }
 
     public function test_pickup_payment_blocked_without_approved_inspection(): void

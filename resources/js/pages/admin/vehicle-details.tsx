@@ -40,15 +40,23 @@ interface Vehicle {
     }>;
 }
 
-interface Props { vehicle: Vehicle; }
+interface Props {
+    vehicle: Vehicle;
+}
 
 const APPROVAL_STYLES: Record<string, string> = {
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
-    pending:  'bg-yellow-100 text-yellow-800',
+    pending: 'bg-yellow-100 text-yellow-800',
 };
 
-function DetailRow({ label, value }: { label: string; value: string | number | null }) {
+function DetailRow({
+    label,
+    value,
+}: {
+    label: string;
+    value: string | number | null;
+}) {
     return (
         <div>
             <p className="text-xs text-muted-foreground">{label}</p>
@@ -64,26 +72,33 @@ export default function VehicleDetails({ vehicle }: Props) {
 
     function handleReject() {
         if (confirm('Reject this vehicle?')) {
-router.post(`/admin/vehicles/${vehicle.id}/reject`);
-}
+            router.post(`/admin/vehicles/${vehicle.id}/reject`);
+        }
     }
 
     function handleApproveDoc(docId: number) {
-        router.post(`/admin/vehicles/${vehicle.id}/documents/approve`, { document_id: docId });
+        router.post(`/admin/vehicles/${vehicle.id}/documents/approve`, {
+            document_id: docId,
+        });
     }
 
     function handleRejectDoc(docId: number) {
         if (confirm('Reject this document?')) {
-router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: docId });
-}
+            router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, {
+                document_id: docId,
+            });
+        }
     }
 
     return (
         <>
             <Head title={`${vehicle.brand} ${vehicle.model}`} />
 
-            <div className="p-6 space-y-6 max-w-4xl">
-                <Link href="/admin/vehicles" className="text-sm text-muted-foreground hover:underline">
+            <div className="max-w-4xl space-y-6 p-6">
+                <Link
+                    href="/admin/vehicles"
+                    className="text-sm text-muted-foreground hover:underline"
+                >
                     ← Back to Vehicles
                 </Link>
 
@@ -94,10 +109,14 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                             {vehicle.brand} {vehicle.model} ({vehicle.year})
                         </CardTitle>
                         <div className="flex items-center gap-2">
-                            <span className={`rounded-full px-3 py-1 text-xs font-medium ${APPROVAL_STYLES[vehicle.approval_status] ?? 'bg-gray-100 text-gray-800'}`}>
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${APPROVAL_STYLES[vehicle.approval_status] ?? 'bg-gray-100 text-gray-800'}`}
+                            >
                                 {vehicle.approval_status}
                             </span>
-                            <span className={`rounded-full px-3 py-1 text-xs font-medium ${vehicle.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${vehicle.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
+                            >
                                 {vehicle.availability_status}
                             </span>
                         </div>
@@ -118,22 +137,55 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                         )}
 
                         <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-                            <DetailRow label="Owner" value={vehicle.owner.name} />
-                            <DetailRow label="Owner Email" value={vehicle.owner.email} />
-                            <DetailRow label="Plate Number" value={vehicle.plate_number} />
-                            <DetailRow label="Category" value={vehicle.category} />
+                            <DetailRow
+                                label="Owner"
+                                value={vehicle.owner.name}
+                            />
+                            <DetailRow
+                                label="Owner Email"
+                                value={vehicle.owner.email}
+                            />
+                            <DetailRow
+                                label="Plate Number"
+                                value={vehicle.plate_number}
+                            />
+                            <DetailRow
+                                label="Category"
+                                value={vehicle.category}
+                            />
                             <DetailRow label="Color" value={vehicle.color} />
-                            <DetailRow label="Fuel Type" value={vehicle.fuel_type} />
-                            <DetailRow label="Transmission" value={vehicle.transmission} />
-                            <DetailRow label="Engine Size" value={vehicle.engine_size} />
-                            <DetailRow label="Mileage" value={vehicle.mileage ? `${vehicle.mileage} km` : null} />
+                            <DetailRow
+                                label="Fuel Type"
+                                value={vehicle.fuel_type}
+                            />
+                            <DetailRow
+                                label="Transmission"
+                                value={vehicle.transmission}
+                            />
+                            <DetailRow
+                                label="Engine Size"
+                                value={vehicle.engine_size}
+                            />
+                            <DetailRow
+                                label="Mileage"
+                                value={
+                                    vehicle.mileage
+                                        ? `${vehicle.mileage} km`
+                                        : null
+                                }
+                            />
                             <DetailRow label="Seats" value={vehicle.seats} />
-                            <DetailRow label="Daily Price" value={`ETB ${vehicle.daily_price}`} />
+                            <DetailRow
+                                label="Daily Price"
+                                value={`ETB ${vehicle.daily_price}`}
+                            />
                         </div>
 
                         {vehicle.description && (
                             <div>
-                                <p className="text-xs text-muted-foreground">Description</p>
+                                <p className="text-xs text-muted-foreground">
+                                    Description
+                                </p>
                                 <p className="text-sm">{vehicle.description}</p>
                             </div>
                         )}
@@ -141,17 +193,22 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                         {vehicle.approval_status === 'pending' && (
                             <div className="flex gap-3 border-t pt-4">
                                 <Button onClick={handleApprove}>
-                                    <CheckCircle className="mr-1.5 h-4 w-4" /> Approve Vehicle
+                                    <CheckCircle className="mr-1.5 h-4 w-4" />{' '}
+                                    Approve Vehicle
                                 </Button>
-                                <Button variant="destructive" onClick={handleReject}>
-                                    <XCircle className="mr-1.5 h-4 w-4" /> Reject Vehicle
+                                <Button
+                                    variant="destructive"
+                                    onClick={handleReject}
+                                >
+                                    <XCircle className="mr-1.5 h-4 w-4" />{' '}
+                                    Reject Vehicle
                                 </Button>
                             </div>
                         )}
                     </CardContent>
                 </Card>
 
-                    {/* Documents */}
+                {/* Documents */}
                 <Card>
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
@@ -162,18 +219,31 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
 
                     <CardContent>
                         {vehicle.documents.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">No documents uploaded.</p>
+                            <p className="text-sm text-muted-foreground">
+                                No documents uploaded.
+                            </p>
                         ) : (
                             <div className="space-y-3">
                                 {vehicle.documents.map((doc) => (
-                                    <div key={doc.id} className="flex items-center justify-between rounded-lg border p-3">
+                                    <div
+                                        key={doc.id}
+                                        className="flex items-center justify-between rounded-lg border p-3"
+                                    >
                                         <div className="space-y-0.5">
                                             <p className="text-sm font-medium capitalize">
-                                                {doc.document_type.replace(/_/g, ' ')}
+                                                {doc.document_type.replace(
+                                                    /_/g,
+                                                    ' ',
+                                                )}
                                             </p>
                                             <div className="flex items-center gap-3 text-xs text-muted-foreground">
                                                 {doc.expiry_date && (
-                                                    <span>Expires: {new Date(doc.expiry_date).toLocaleDateString()}</span>
+                                                    <span>
+                                                        Expires:{' '}
+                                                        {new Date(
+                                                            doc.expiry_date,
+                                                        ).toLocaleDateString()}
+                                                    </span>
                                                 )}
                                                 <a
                                                     href={`/storage/${doc.document_path}`}
@@ -187,15 +257,33 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                                         </div>
 
                                         <div className="flex items-center gap-2">
-                                            <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[doc.verification_status] ?? 'bg-gray-100 text-gray-800'}`}>
+                                            <span
+                                                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[doc.verification_status] ?? 'bg-gray-100 text-gray-800'}`}
+                                            >
                                                 {doc.verification_status}
                                             </span>
-                                            {doc.verification_status === 'pending' && (
+                                            {doc.verification_status ===
+                                                'pending' && (
                                                 <>
-                                                    <Button size="sm" onClick={() => handleApproveDoc(doc.id)}>
+                                                    <Button
+                                                        size="sm"
+                                                        onClick={() =>
+                                                            handleApproveDoc(
+                                                                doc.id,
+                                                            )
+                                                        }
+                                                    >
                                                         <CheckCircle className="h-4 w-4" />
                                                     </Button>
-                                                    <Button size="sm" variant="destructive" onClick={() => handleRejectDoc(doc.id)}>
+                                                    <Button
+                                                        size="sm"
+                                                        variant="destructive"
+                                                        onClick={() =>
+                                                            handleRejectDoc(
+                                                                doc.id,
+                                                            )
+                                                        }
+                                                    >
                                                         <XCircle className="h-4 w-4" />
                                                     </Button>
                                                 </>
@@ -211,24 +299,46 @@ router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, { document_id: doc
                 {vehicle.reviews && vehicle.reviews.length > 0 && (
                     <Card>
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2">Reviews</CardTitle>
+                            <CardTitle className="flex items-center gap-2">
+                                Reviews
+                            </CardTitle>
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-3">
                                 {vehicle.reviews.map((r) => (
-                                    <div key={r.id} className="flex items-start justify-between rounded-lg border p-3">
+                                    <div
+                                        key={r.id}
+                                        className="flex items-start justify-between rounded-lg border p-3"
+                                    >
                                         <div>
-                                            <p className="font-medium">{r.reviewer.name}</p>
-                                            <p className="text-sm text-muted-foreground">{r.rating} ★ · {new Date(r.created_at).toLocaleDateString()}</p>
-                                            {r.review_text && <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>}
+                                            <p className="font-medium">
+                                                {r.reviewer.name}
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                {r.rating} ★ ·{' '}
+                                                {new Date(
+                                                    r.created_at,
+                                                ).toLocaleDateString()}
+                                            </p>
+                                            {r.review_text && (
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    {r.review_text}
+                                                </p>
+                                            )}
                                         </div>
                                         <div>
                                             <Button
                                                 variant="destructive"
                                                 size="sm"
                                                 onClick={() => {
-                                                    if (confirm('Delete this review?')) {
-                                                        router.delete(`/admin/reviews/${r.id}`);
+                                                    if (
+                                                        confirm(
+                                                            'Delete this review?',
+                                                        )
+                                                    ) {
+                                                        router.delete(
+                                                            `/admin/reviews/${r.id}`,
+                                                        );
                                                     }
                                                 }}
                                             >
