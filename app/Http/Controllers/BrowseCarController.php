@@ -21,9 +21,24 @@ class BrowseCarController extends Controller
 
     public function index(Request $request): Response
     {
+        $pickupDate = $request->pickup_date;
+        $returnDate = $request->return_date;
         $cars = Car::with(['images', 'owner', 'carTypeName'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
+            ->when($pickupDate && $returnDate, function ($q) use ($pickupDate, $returnDate) {
+                $q->whereDoesntHave('bookings', function ($booking) use ($pickupDate, $returnDate) {
+                    $booking->whereNotIn('status', ['rejected', 'cancelled'])
+                        ->where(function ($overlap) use ($pickupDate, $returnDate) {
+                            $overlap->whereBetween('pickup_date', [$pickupDate, $returnDate])
+                                ->orWhereBetween('return_date', [$pickupDate, $returnDate])
+                                ->orWhere(function ($inside) use ($pickupDate, $returnDate) {
+                                    $inside->where('pickup_date', '<=', $pickupDate)
+                                        ->where('return_date', '>=', $returnDate);
+                                });
+                        });
+                });
+            })
             ->whereHas('availablePeriods', fn ($q) => $q->whereDate('end_date', '>=', now()->toDateString()))
             ->when($request->search, fn ($q, $v) => $q->where(fn ($q2) => $q2->where('brand', 'like', "%{$v}%")->orWhere('model', 'like', "%{$v}%")))
             ->when($request->category, fn ($q, $v) => $q->where('category', $v))
