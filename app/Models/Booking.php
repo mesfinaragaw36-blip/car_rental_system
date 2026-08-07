@@ -62,6 +62,12 @@ class Booking extends Model
         return $this->hasOne(Payment::class);
     }
 
+    // Pre-pickup inspection
+    public function inspection(): HasOne
+    {
+        return $this->hasOne(BookingInspection::class);
+    }
+
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

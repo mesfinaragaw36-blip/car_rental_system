@@ -248,7 +248,16 @@ class BookingController extends Controller
         if ($booking->status !== 'paid') {
             return back()->with('toast', ['type' => 'error', 'message' => 'Only paid bookings can be marked as picked up.']);
         }
+// Check pre-pickup inspection before allowing pickup
+$inspection = $booking->inspection;
 
+if (!$inspection || $inspection->status !== 'approved') {
+    return back()->with('toast', [
+        'type' => 'error',
+        'message' => 'Vehicle cannot be picked up until the pre-pickup inspection is passed.',
+    ]);
+    
+}
         $booking->update([
             'status' => 'picked_up',
             'picked_up_at' => now(),

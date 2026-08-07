@@ -2,7 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { Check, Car, CalendarDays, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import inspections from '@/routes/inspections';
+
 
 interface Booking {
     id: number;
@@ -18,10 +18,14 @@ interface Booking {
 }
 
 interface Props {
-    bookings: Booking[];
+    prePickupBookings: Booking[];
+    returnBookings: Booking[];
 }
 
-export default function Inspections({ bookings }: Props) {
+export default function Inspections({
+    prePickupBookings,
+    returnBookings,
+}: Props) {
     const { props } = usePage<{ flash?: { toast?: { type: 'success' | 'error'; message: string } } }>();
     const toast = props.flash?.toast;
 
@@ -46,8 +50,53 @@ export default function Inspections({ bookings }: Props) {
                         {toast.message}
                     </div>
                 )}
+                    <Card>
+    <CardHeader>
+        <CardTitle>Pre-Pickup Inspections</CardTitle>
+    </CardHeader>
 
-                {bookings.length === 0 ? (
+    <CardContent>
+        {prePickupBookings.length === 0 ? (
+            <p className="text-muted-foreground">
+                No paid bookings waiting for inspection.
+            </p>
+        ) : (
+            <div className="space-y-3">
+                {prePickupBookings.map((booking) => (
+                    <div
+                        key={booking.id}
+                        className="flex items-center justify-between rounded-lg border p-4"
+                    >
+                        <div>
+                            <p className="font-semibold">
+                                Booking #{booking.id}
+                            </p>
+
+                            <p className="text-sm text-muted-foreground">
+                                {booking.car.brand} {booking.car.model}
+                            </p>
+
+                            <p className="text-sm">
+                                Status: {booking.status}
+                            </p>
+                        </div>
+
+                        <Button
+                            onClick={() =>
+                                router.visit(
+                                    `/inspections/pre-pickup/${booking.id}`
+                                )
+                            }
+                        >
+                            Start Inspection
+                        </Button>
+                    </div>
+                ))}
+            </div>
+        )}
+    </CardContent>
+</Card>
+                {returnBookings.length === 0 ? (
                     <Card>
                         <CardContent className="py-16 text-center">
                             <Check className="mx-auto h-12 w-12 text-green-500" />
@@ -57,7 +106,7 @@ export default function Inspections({ bookings }: Props) {
                     </Card>
                 ) : (
                     <div className="space-y-4">
-                        {bookings.map((booking) => (
+                        {returnBookings.map((booking) => (
                             <Card key={booking.id}>
                                 <CardHeader>
                                     <CardTitle className="flex items-center justify-between gap-3">
@@ -100,9 +149,13 @@ export default function Inspections({ bookings }: Props) {
                                             <p className="text-sm text-muted-foreground">{booking.customer?.phone ?? 'N/A'}</p>
                                         </div>
                                         <div className="flex items-center justify-end">
-                                            <Button onClick={() => handleComplete(booking.id)}>
-                                                <Check className="mr-2 h-4 w-4" /> Mark Completed
-                                            </Button>
+                                           <Button
+    onClick={() =>
+        router.visit(`/inspections/pre-pickup/${booking.id}`)
+    }
+>
+    Start Inspection
+</Button>
                                         </div>
                                     </div>
                                 </CardContent>

@@ -86,10 +86,25 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
 
     // Inspection staff routes
-    Route::middleware(['staff_permission'])->group(function () {
-        Route::get('/inspections', [InspectionController::class, 'index'])->name('inspections.index');
-        Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
-    });
+  // Inspection staff routes
+Route::middleware(['staff_permission'])->group(function () {
+
+    Route::get('/inspections', [InspectionController::class, 'index'])
+        ->name('inspections.index');
+
+    Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])
+        ->name('inspections.complete');
+
+    // Pre-pickup inspection
+    // Pre-pickup inspection list
+Route::get('/inspections/pre-pickup', [InspectionController::class, 'prePickupIndex'])
+    ->name('inspections.pre-pickup.index');
+    Route::get('/inspections/pre-pickup/{booking}', [InspectionController::class, 'showPrePickup'])
+        ->name('inspections.pre-pickup.show');
+
+    Route::post('/inspections/pre-pickup/{booking}', [InspectionController::class, 'storePrePickup'])
+        ->name('inspections.pre-pickup.store');
+});
 
     // Admin-only routes
     Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
