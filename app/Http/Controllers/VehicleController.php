@@ -221,6 +221,10 @@ class VehicleController extends Controller
             'ownership_expiry' => 'nullable|date|after:today',
 
         ]);
+        // If the owner edits the vehicle, it must be reviewed again
+            if ($user->role !== 'admin') {
+                $validated['approval_status'] = 'pending';
+            }
 
         $car->update($validated);
 

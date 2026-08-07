@@ -272,6 +272,9 @@ class InspectionController extends Controller
             'status' => Booking::STATUS_RETURNED,
             'returned_at' => now(),
         ]);
+        $booking->car->update([
+        'availability_status' => 'available',
+        ]);
 
         $booking->customer?->notifyNow(
             "Return received - Booking #{$booking->id}",

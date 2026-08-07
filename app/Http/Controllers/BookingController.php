@@ -287,19 +287,26 @@ class BookingController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Booking rejected.']);
     }
 
-    public function cancel(Booking $booking): RedirectResponse
-    {
-        $user = auth()->user();
-        if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-        if (! in_array($booking->status, ['confirmed', 'pending'])) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only bookings that have not paid the deposit can be cancelled.']);
-        }
-        $booking->update(['status' => 'cancelled']);
+   public function cancel(Booking $booking): RedirectResponse
+{
+    $user = auth()->user();
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Booking cancelled.']);
+    if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
+        abort(403);
     }
+
+    if (! in_array($booking->status, ['confirmed', 'pending'])) {
+        return back()->with('toast', ['type' => 'error', 'message' => 'Only bookings that have not paid the deposit can be cancelled.']);
+    }
+
+    $booking->update(['status' => 'cancelled']);
+
+    $booking->car->update([
+        'availability_status' => 'available',
+    ]);
+
+    return back()->with('toast', ['type' => 'success', 'message' => 'Booking cancelled.']);
+}
 
     public function assignDriver(Request $request, Booking $booking): RedirectResponse
     {
