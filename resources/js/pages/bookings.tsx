@@ -36,6 +36,7 @@ interface Booking {
     return_location: string;
     picked_up_at: string | null;
     returned_at: string | null;
+    has_dispute?: boolean;
     total_price: string;
     need_driver: boolean;
     notes?: string | null;
@@ -477,6 +478,31 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                         Cancel
                                                     </Button>
                                                 )}
+                                                {role === 'customer' &&
+    (booking.status === 'paid' ||
+ booking.status === 'deposit_paid') && (
+    booking.has_dispute ? (
+        <span className="text-sm font-medium text-red-600">
+            Dispute submitted
+        </span>
+    ) : (
+        <Button
+            size="sm"
+            variant="destructive"
+            onClick={() => {
+                router.post(
+                    `/bookings/${booking.id}/owner-no-show`,
+                    {},
+                    {
+                        preserveScroll: true,
+                    },
+                );
+            }}
+        >
+            Owner did not deliver car
+        </Button>
+    )
+)}
                                             {booking.status === 'picked_up' &&
                                                 (role === 'admin' ||
                                                     role === 'owner') && (

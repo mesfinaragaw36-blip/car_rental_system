@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
-
+use App\Models\BookingDispute;
 class Booking extends Model
 {
     public const STATUS_CONFIRMED = 'confirmed';
@@ -194,6 +194,10 @@ class Booking extends Model
     {
         return $this->hasMany(Refund::class);
     }
+    public function disputes(): HasMany
+{
+    return $this->hasMany(BookingDispute::class);
+}
 
     public function ownerPayout(): HasOne
     {

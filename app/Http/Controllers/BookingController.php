@@ -51,7 +51,16 @@ class BookingController extends Controller
             $query->where('customer_id', $user->id);
         }
 
-        $bookings = $query->latest()->paginate(15)->withQueryString();
+       $bookings = $query->latest()
+    ->paginate(15)
+    ->through(function ($booking) {
+        $booking->has_dispute = $booking->disputes()
+            ->where('type', 'owner_no_show')
+            ->exists();
+
+        return $booking;
+    })
+    ->withQueryString();
 
         return Inertia::render('bookings', [
             'role' => $user->role,
@@ -83,6 +92,7 @@ class BookingController extends Controller
             'driverAssignment:id,booking_id,driver_id,status',
             'driverAssignment.driver:id,name,phone',
             'reviews.reviewer:id,name',
+            'disputes',
             'refunds',
             'ownerPayout',
             'inspections.conductedBy:id,name',
@@ -182,6 +192,10 @@ class BookingController extends Controller
             'booking' => [
                 'id' => $booking->id,
                 'status' => $booking->status,
+                'has_dispute' => $booking->disputes
+            ->where('type', 'owner_no_show')
+            ->count() > 0,
+
                 'pickup_date' => $booking->pickup_date->toDateTimeString(),
                 'return_date' => $booking->return_date->toDateTimeString(),
                 'pickup_location' => $booking->pickup_location,

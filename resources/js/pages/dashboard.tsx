@@ -12,6 +12,7 @@ import {
     CarFront,
     CreditCard,
     ArrowRight,
+    AlertTriangle,
 } from 'lucide-react';
 import {
     LineChart,
@@ -330,6 +331,12 @@ export default function Dashboard({
                                         icon={<Users className="h-4 w-4" />}
                                         href="/admin/users"
                                     />
+                                     <StatCard
+    title="Booking Disputes"
+    value="View"
+    icon={<AlertTriangle className="h-4 w-4" />}
+    href="/disputes"
+/>
                                 </div>
 
                                 <div className="grid gap-6 lg:grid-cols-2">
