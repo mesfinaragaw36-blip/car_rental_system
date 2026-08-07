@@ -273,6 +273,9 @@ class PaymentController extends Controller
                 'balance_paid_at' => now(),
                 'security_deposit_paid_at' => now(),
             ]);
+            $booking->car->update([
+            'availability_status' => 'booked',
+        ]);
 
             $booking->customer?->notifyNow(
                 "Booking #{$booking->id} fully paid",
