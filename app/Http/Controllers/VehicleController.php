@@ -218,9 +218,9 @@ class VehicleController extends Controller
 
         ]);
         // If the owner edits the vehicle, it must be reviewed again
-            if ($user->role !== 'admin') {
-                $validated['approval_status'] = 'pending';
-            }
+        if ($user->role !== 'admin') {
+            $validated['approval_status'] = 'pending';
+        }
 
         $car->update($validated);
 

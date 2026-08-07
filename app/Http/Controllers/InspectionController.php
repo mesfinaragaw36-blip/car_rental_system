@@ -284,7 +284,7 @@ class InspectionController extends Controller
             'returned_at' => now(),
         ]);
         $booking->car->update([
-        'availability_status' => 'available',
+            'availability_status' => 'available',
         ]);
 
         $booking->customer?->notifyNow(
