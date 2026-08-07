@@ -64,6 +64,8 @@ interface Props {
         fuel_type?: string;
         transmission?: string;
         location_id?: string;
+        pickup_date?: string;
+        return_date?: string;
     };
 }
 
@@ -84,13 +86,18 @@ export default function BrowseCars({
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [filtersOpen, setFiltersOpen] = useState(false);
 
+    const [pickupDate, setPickupDate] = useState(filters.pickup_date ?? '');
+    const [returnDate, setReturnDate] = useState(filters.return_date ?? '');
+
     const activeFilterCount = [
-        search,
-        category,
-        fuelType,
-        transmission,
-        locationId,
-    ].filter((value) => value !== '').length;
+    search,
+    category,
+    fuelType,
+    transmission,
+    locationId,
+    pickupDate,
+    returnDate,
+].filter((value) => value !== '').length;
 
     function applyFilters() {
         router.get(
@@ -101,6 +108,8 @@ export default function BrowseCars({
                 fuel_type: fuelType,
                 transmission,
                 location_id: locationId,
+                pickup_date: pickupDate,
+                return_date: returnDate,
             },
             {
                 preserveState: true,
@@ -121,6 +130,8 @@ export default function BrowseCars({
         setFuelType('');
         setTransmission('');
         setLocationId('');
+        setPickupDate('');
+        setReturnDate('');
         router.get('/browse-cars');
     }
 
@@ -169,6 +180,24 @@ export default function BrowseCars({
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
+
+                            <div className="min-w-40">
+                                <Label>Pickup Date</Label>
+                                <Input
+                                    type="date"
+                                    value={pickupDate}
+                                    onChange={(e) => setPickupDate(e.target.value)}
+                                />
+                            </div>
+
+                            <div className="min-w-40">
+                                <Label>Return Date</Label>
+                                <Input
+                                    type="date"
+                                    value={returnDate}
+                                    onChange={(e) => setReturnDate(e.target.value)}
+                                />
+                            </div>
                         </div>
                         <div className="min-w-40">
                             <Label>Location</Label>
