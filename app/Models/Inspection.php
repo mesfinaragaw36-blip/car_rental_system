@@ -32,6 +32,7 @@ class Inspection extends Model
         'fuel_level',
         'damages',
         'notes',
+        'photos',
     ];
 
     protected function casts(): array
@@ -40,6 +41,7 @@ class Inspection extends Model
             'conducted_at' => 'datetime',
             'fuel_level' => 'integer',
             'damages' => 'array',
+            'photos' => 'array',
         ];
     }
 

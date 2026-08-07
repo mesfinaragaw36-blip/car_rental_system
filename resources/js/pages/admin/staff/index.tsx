@@ -22,6 +22,12 @@ interface Role {
     name: string;
 }
 
+interface Location {
+    id: number;
+    name: string;
+    city: string;
+}
+
 interface StaffRole {
     id: number;
     name: string;
@@ -35,6 +41,7 @@ interface StaffMember {
     status: string;
     created_at: string;
     staff_role: StaffRole | null;
+    branch: { id: number; name: string; city: string } | null;
 }
 
 interface PaginatedStaff {
@@ -45,6 +52,7 @@ interface PaginatedStaff {
 interface Props {
     staff: PaginatedStaff;
     roles: Role[];
+    locations: Location[];
 }
 
 interface FlashProps {
@@ -62,7 +70,7 @@ function statusBadgeClass(status: string): string {
     }
 }
 
-export default function StaffIndex({ staff, roles }: Props) {
+export default function StaffIndex({ staff, roles, locations }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
     const isFullAdmin =
@@ -77,6 +85,7 @@ export default function StaffIndex({ staff, roles }: Props) {
         password: DEFAULT_PASSWORD,
         password_confirmation: DEFAULT_PASSWORD,
         staff_role_id: '',
+        branch_id: '',
     });
 
     function handleSubmit(e: React.FormEvent) {
@@ -164,10 +173,13 @@ export default function StaffIndex({ staff, roles }: Props) {
                                             </th>
                                             <th className="pb-3 font-medium">
                                                 Status
-                                            </th>
-                                            <th className="pb-3 text-right font-medium">
-                                                Actions
-                                            </th>
+                                             </th>
+                                             <th className="pb-3 font-medium">
+                                                 Branch
+                                             </th>
+                                             <th className="pb-3 text-right font-medium">
+                                                 Actions
+                                             </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -185,13 +197,15 @@ export default function StaffIndex({ staff, roles }: Props) {
                                                 <td className="py-3 text-muted-foreground">
                                                     {member.phone}
                                                 </td>
-                                                <td className="py-3">
-                                                    <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
-                                                        {member.staff_role
-                                                            ?.name ??
-                                                            'Unassigned'}
-                                                    </span>
-                                                </td>
+                                                 <td className="py-3">
+                                                     <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                                                         {member.staff_role?.name ??
+                                                             'Unassigned'}
+                                                     </span>
+                                                 </td>
+                                                 <td className="py-3 text-muted-foreground">
+                                                     {member.branch?.name ?? 'N/A'}
+                                                 </td>
                                                 <td className="py-3">
                                                     <span
                                                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(member.status)}`}
@@ -371,6 +385,26 @@ export default function StaffIndex({ staff, roles }: Props) {
                                 ))}
                             </select>
                             <InputError message={errors.staff_role_id} />
+                        </div>
+
+                        <div className="space-y-1.5">
+                            <Label htmlFor="branch_id">Assign Branch</Label>
+                            <select
+                                id="branch_id"
+                                value={data.branch_id}
+                                onChange={(e) =>
+                                    setData('branch_id', e.target.value)
+                                }
+                                className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                            >
+                                <option value="">Select a branch</option>
+                                {locations.map((location) => (
+                                    <option key={location.id} value={location.id}>
+                                        {location.name}, {location.city}
+                                    </option>
+                                ))}
+                            </select>
+                            <InputError message={errors.branch_id} />
                         </div>
 
                         {/* Default password notice */}

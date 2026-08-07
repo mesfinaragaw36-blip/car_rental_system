@@ -21,7 +21,7 @@ class BrowseCarController extends Controller
 
     public function index(Request $request): Response
     {
-        $cars = Car::with(['images', 'owner', 'carTypeName', 'location'])
+        $cars = Car::with(['images', 'owner', 'carTypeName'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
             ->whereHas('availablePeriods', fn ($q) => $q->whereDate('end_date', '>=', now()->toDateString()))
@@ -29,7 +29,6 @@ class BrowseCarController extends Controller
             ->when($request->category, fn ($q, $v) => $q->where('category', $v))
             ->when($request->fuel_type, fn ($q, $v) => $q->where('fuel_type', $v))
             ->when($request->transmission, fn ($q, $v) => $q->where('transmission', $v))
-            ->when($request->location_id, fn ($q, $v) => $q->where('location_id', $v))
             ->when($request->min_price, fn ($q, $v) => $q->where('daily_price', '>=', $v))
             ->when($request->max_price, fn ($q, $v) => $q->where('daily_price', '<=', $v))
             ->latest()
@@ -43,8 +42,7 @@ class BrowseCarController extends Controller
             'cars' => $cars,
             'carTypeNames' => CarTypeName::orderBy('name')->get(['id', 'name']),
             'role' => auth()->user()->role,
-            'filters' => $request->only(['search', 'category', 'fuel_type', 'location_id', 'transmission', 'min_price', 'max_price']),
-            'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
+            'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price']),
         ]);
     }
 
@@ -57,7 +55,7 @@ class BrowseCarController extends Controller
                 abort(404);
             }
         }
-        $car->load(['images', 'owner', 'carTypeName', 'location']);
+        $car->load(['images', 'owner', 'carTypeName']);
 
         $recent = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($r) {
             return [
@@ -101,12 +99,14 @@ class BrowseCarController extends Controller
         $validated = $request->validate([
             'pickup_date' => ['required', 'date', 'after_or_equal:today'],
             'return_date' => ['required', 'date', 'after:pickup_date'],
-            'pickup_location' => ['required', 'string', 'max:255'],
-            'return_location' => ['required', 'string', 'max:255'],
+            'pickup_branch_id' => ['required', 'exists:locations,id'],
+            'return_branch_id' => ['required', 'exists:locations,id'],
             'need_driver' => ['nullable', 'boolean'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
+        $pickupBranch = Location::findOrFail($validated['pickup_branch_id']);
+        $returnBranch = Location::findOrFail($validated['return_branch_id']);
         $pickupDate = Carbon::parse($validated['pickup_date']);
         $returnDate = Carbon::parse($validated['return_date']);
 
@@ -124,7 +124,7 @@ class BrowseCarController extends Controller
             : max(1000.0, round($totalPrice * 0.20, 2));
 
         try {
-            $booking = DB::transaction(function () use ($car, $validated, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
+            $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
                 Car::whereKey($car->id)->lockForUpdate()->first();
 
                 $hasOverlap = Booking::where('car_id', $car->id)
@@ -153,8 +153,10 @@ class BrowseCarController extends Controller
                     'car_id' => $car->id,
                     'pickup_date' => $validated['pickup_date'],
                     'return_date' => $validated['return_date'],
-                    'pickup_location' => $validated['pickup_location'],
-                    'return_location' => $validated['return_location'],
+                    'pickup_branch_id' => $pickupBranch->id,
+                    'return_branch_id' => $returnBranch->id,
+                    'pickup_location' => $this->branchLabel($pickupBranch),
+                    'return_location' => $this->branchLabel($returnBranch),
                     'need_driver' => $validated['need_driver'] ?? false,
                     'total_price' => $totalPrice,
                     'deposit_amount' => $depositAmount,
@@ -198,5 +200,10 @@ class BrowseCarController extends Controller
             'type' => 'success',
             'message' => "Booking confirmed! Pay the ETB {$depositAmount} deposit within 24 hours to lock your dates.",
         ]);
+    }
+
+    private function branchLabel(Location $location): string
+    {
+        return trim("{$location->name}, {$location->city}", ', ');
     }
 }

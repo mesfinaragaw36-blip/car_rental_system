@@ -9,6 +9,7 @@ interface VehicleDocument {
     document_path: string;
     expiry_date: string | null;
     verification_status: string;
+    rejection_reason?: string | null;
 }
 
 interface Vehicle {
@@ -28,6 +29,7 @@ interface Vehicle {
     description: string | null;
     approval_status: string;
     availability_status: string;
+    rejection_reason?: string | null;
     owner: { name: string; email: string };
     images: { id: number; image_path: string; is_primary: boolean }[];
     documents: VehicleDocument[];
@@ -71,8 +73,11 @@ export default function VehicleDetails({ vehicle }: Props) {
     }
 
     function handleReject() {
-        if (confirm('Reject this vehicle?')) {
-            router.post(`/admin/vehicles/${vehicle.id}/reject`);
+        const reason = prompt('Please enter the reason for vehicle rejection:');
+        if (reason && reason.trim() !== '') {
+            router.post(`/admin/vehicles/${vehicle.id}/reject`, {
+                rejection_reason: reason,
+            });
         }
     }
 
@@ -83,9 +88,11 @@ export default function VehicleDetails({ vehicle }: Props) {
     }
 
     function handleRejectDoc(docId: number) {
-        if (confirm('Reject this document?')) {
+        const reason = prompt('Please enter the reason for document rejection:');
+        if (reason && reason.trim() !== '') {
             router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, {
                 document_id: docId,
+                rejection_reason: reason,
             });
         }
     }
@@ -190,6 +197,13 @@ export default function VehicleDetails({ vehicle }: Props) {
                             </div>
                         )}
 
+                        {vehicle.rejection_reason && (
+                            <div className="rounded-lg bg-red-50 p-3 text-red-800">
+                                <p className="text-xs font-semibold">Rejection Reason:</p>
+                                <p className="text-sm">{vehicle.rejection_reason}</p>
+                            </div>
+                        )}
+
                         {vehicle.approval_status === 'pending' && (
                             <div className="flex gap-3 border-t pt-4">
                                 <Button onClick={handleApprove}>
@@ -245,16 +259,21 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                         ).toLocaleDateString()}
                                                     </span>
                                                 )}
-                                                <a
-                                                    href={`/storage/${doc.document_path}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                    className="text-primary hover:underline"
-                                                >
-                                                    View file ↗
-                                                </a>
-                                            </div>
-                                        </div>
+                                                 <a
+                                                     href={`/storage/${doc.document_path}`}
+                                                     target="_blank"
+                                                     rel="noreferrer"
+                                                     className="text-primary hover:underline"
+                                                 >
+                                                     View file ↗
+                                                 </a>
+                                             </div>
+                                             {doc.rejection_reason && (
+                                                 <p className="mt-1 text-xs text-red-600">
+                                                     Reason: {doc.rejection_reason}
+                                                 </p>
+                                             )}
+                                         </div>
 
                                         <div className="flex items-center gap-2">
                                             <span

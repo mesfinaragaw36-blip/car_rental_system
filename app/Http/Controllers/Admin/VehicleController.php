@@ -59,9 +59,16 @@ class VehicleController extends Controller
         return redirect()->back();
     }
 
-    public function reject(Car $car)
+    public function reject(Request $request, Car $car)
     {
-        $car->update(['approval_status' => 'rejected']);
+        $validated = $request->validate([
+            'rejection_reason' => 'required|string|max:1000',
+        ]);
+
+        $car->update([
+            'approval_status' => 'rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+        ]);
 
         return redirect()->back();
     }
@@ -73,19 +80,23 @@ class VehicleController extends Controller
         ]);
 
         $document = $car->documents()->findOrFail($request->input('document_id'));
-        $document->update(['verification_status' => 'approved']);
+        $document->update(['verification_status' => 'approved', 'rejection_reason' => null]);
 
         return redirect()->back();
     }
 
     public function rejectDocument(Request $request, Car $car)
     {
-        $request->validate([
+        $validated = $request->validate([
             'document_id' => 'required|integer|exists:vehicle_documents,id',
+            'rejection_reason' => 'required|string|max:1000',
         ]);
 
-        $document = $car->documents()->findOrFail($request->input('document_id'));
-        $document->update(['verification_status' => 'rejected']);
+        $document = $car->documents()->findOrFail($validated['document_id']);
+        $document->update([
+            'verification_status' => 'rejected',
+            'rejection_reason' => $validated['rejection_reason'],
+        ]);
 
         return redirect()->back();
     }

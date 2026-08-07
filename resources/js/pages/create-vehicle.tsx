@@ -36,13 +36,11 @@ interface CarTypeTemplate {
 interface Props {
     carTypeNames: Option[];
     carTypes: CarTypeTemplate[];
-    locations: Option[];
 }
 
 export default function CreateVehicle({
     carTypeNames,
     carTypes,
-    locations,
 }: Props) {
     const { data, setData, processing, errors } = useForm({
         brand: '',
@@ -60,7 +58,6 @@ export default function CreateVehicle({
         daily_price: '',
         availability_status: 'available',
         description: '',
-        location_id: '',
     });
 
     const [step, setStep] = useState(1);
@@ -228,7 +225,6 @@ export default function CreateVehicle({
         formData.append('transmission', data.transmission);
         formData.append('daily_price', data.daily_price);
         formData.append('availability_status', data.availability_status);
-        formData.append('location_id', data.location_id);
 
         if (data.car_type_name_id) {
             formData.append('car_type_name_id', data.car_type_name_id);
@@ -730,47 +726,13 @@ export default function CreateVehicle({
                                             )
                                         }
                                     />
-                                    <InputError
-                                        message={
-                                            serverErrors.description ??
-                                            errors.description
-                                        }
-                                    />
-                                </div>
-
-                                <div>
-                                    <Label>Location</Label>
-
-                                    <Select
-                                        value={data.location_id}
-                                        onValueChange={(value) =>
-                                            setData('location_id', value)
-                                        }
-                                    >
-                                        <SelectTrigger className="w-full">
-                                            <SelectValue placeholder="Select location" />
-                                        </SelectTrigger>
-
-                                        <SelectContent>
-                                            {locations.map((location) => (
-                                                <SelectItem
-                                                    key={location.id}
-                                                    value={String(location.id)}
-                                                >
-                                                    {location.name} -{' '}
-                                                    {location.city}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-
-                                    <InputError
-                                        message={
-                                            serverErrors.location_id ??
-                                            errors.location_id
-                                        }
-                                    />
-                                </div>
+                                         <InputError
+                                             message={
+                                                 serverErrors.description ??
+                                                 errors.description
+                                             }
+                                         />
+                                     </div>
                             </CardContent>
                         </Card>
                     )}

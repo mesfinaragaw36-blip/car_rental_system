@@ -79,8 +79,8 @@ class InspectionController extends Controller
 
     public function confirmDelivery(Request $request, Booking $booking): RedirectResponse
     {
-        if ($booking->status !== Booking::STATUS_DEPOSIT_PAID) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Car delivery can only be confirmed for bookings with a paid deposit.']);
+        if (! in_array($booking->status, [Booking::STATUS_CONFIRMED, Booking::STATUS_DEPOSIT_PAID, Booking::STATUS_PAID], true)) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Car delivery can only be confirmed for active or confirmed bookings.']);
         }
 
         if ($booking->hasCarDeliveryBeenConfirmed()) {
@@ -123,6 +123,8 @@ class InspectionController extends Controller
             'damages.*.description' => ['required_with:damages', 'string', 'max:1000'],
             'estimated_value' => ['nullable', 'numeric', 'min:0'],
             'notes' => ['nullable', 'string', 'max:2000'],
+            'photos' => ['nullable', 'array'],
+            'photos.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
         ]);
 
         $type = $validated['type'];
@@ -136,6 +138,14 @@ class InspectionController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'A pickup inspection has already been recorded for this booking.']);
         }
 
+        $existing = Inspection::where('booking_id', $booking->id)->where('type', $type)->first();
+        $photoPaths = $existing?->photos ?? [];
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                $photoPaths[] = $photo->store('inspection-photos', 'public');
+            }
+        }
+
         Inspection::updateOrCreate(
             ['booking_id' => $booking->id, 'type' => $type],
             [
@@ -146,6 +156,7 @@ class InspectionController extends Controller
                 'fuel_level' => $validated['fuel_level'] ?? null,
                 'damages' => $validated['damages'] ?? null,
                 'notes' => $validated['notes'] ?? null,
+                'photos' => $photoPaths,
             ]
         );
 
@@ -461,6 +472,7 @@ class InspectionController extends Controller
             'fuel_level' => $inspection->fuel_level,
             'damages' => $inspection->damages,
             'notes' => $inspection->notes,
+            'photos' => $inspection->photos ?? [],
         ];
     }
 }

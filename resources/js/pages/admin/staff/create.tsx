@@ -11,11 +11,18 @@ interface Role {
     name: string;
 }
 
-interface Props {
-    roles: Role[];
+interface Location {
+    id: number;
+    name: string;
+    city: string;
 }
 
-export default function CreateStaff({ roles }: Props) {
+interface Props {
+    roles: Role[];
+    locations: Location[];
+}
+
+export default function CreateStaff({ roles, locations }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         name: '',
         email: '',
@@ -23,6 +30,7 @@ export default function CreateStaff({ roles }: Props) {
         password: '',
         password_confirmation: '',
         staff_role_id: '',
+        branch_id: '',
     });
 
     function handleSubmit(e: React.FormEvent): void {
@@ -137,8 +145,30 @@ export default function CreateStaff({ roles }: Props) {
                                         </option>
                                     ))}
                                 </select>
-                                <InputError message={errors.staff_role_id} />
-                            </div>
+                                 <InputError message={errors.staff_role_id} />
+                             </div>
+
+                             <div className="space-y-1.5">
+                                 <Label htmlFor="branch_id">
+                                     Assign Branch
+                                 </Label>
+                                 <select
+                                     id="branch_id"
+                                     value={data.branch_id}
+                                     onChange={(e) =>
+                                         setData('branch_id', e.target.value)
+                                     }
+                                     className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                                 >
+                                     <option value="">Select a branch</option>
+                                     {locations.map((location) => (
+                                         <option key={location.id} value={location.id}>
+                                             {location.name}, {location.city}
+                                         </option>
+                                     ))}
+                                 </select>
+                                 <InputError message={errors.branch_id} />
+                             </div>
 
                             <div className="flex gap-3 pt-2">
                                 <Button type="submit" disabled={processing}>

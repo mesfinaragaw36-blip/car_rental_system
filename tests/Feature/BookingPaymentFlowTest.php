@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Inspection;
+use App\Models\Location;
 use App\Models\OwnerPayout;
 use App\Models\Payment;
 use App\Models\User;
@@ -58,6 +59,7 @@ class BookingPaymentFlowTest extends TestCase
             'availability_status' => 'available',
             'daily_price' => 100.00,
         ]);
+        $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole', 'city' => 'Addis Ababa']);
 
         CarAvailablePeriod::create([
             'car_id' => $car->id,
@@ -68,8 +70,8 @@ class BookingPaymentFlowTest extends TestCase
         $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 

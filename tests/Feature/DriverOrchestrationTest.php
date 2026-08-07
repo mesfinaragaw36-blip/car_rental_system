@@ -7,6 +7,7 @@ use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\DriverProfile;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -51,12 +52,14 @@ class DriverOrchestrationTest extends TestCase
 
     private function bookChauffeur(Car $car, User $customer, array $overrides = [])
     {
+        $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
+
         return $this->actingAs($customer)
             ->post(route('cars.book', $car), array_merge([
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(5)->toDateString(),
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
                 'need_driver' => true,
             ], $overrides));
     }

@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,11 +33,13 @@ class CustomerBookingTest extends TestCase
 
         $this->actingAs($customer);
 
+        $branch = Location::create(['name' => 'Airport Branch', 'address' => 'Airport Road', 'city' => 'Addis Ababa']);
+
         $response = $this->post(route('cars.book', $car), [
             'pickup_date' => now()->addDays(2)->toDateString(),
             'return_date' => now()->addDays(4)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => true,
         ]);
 
@@ -44,8 +47,8 @@ class CustomerBookingTest extends TestCase
         $this->assertDatabaseHas('bookings', [
             'customer_id' => $customer->id,
             'car_id' => $car->id,
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_location' => $branch->name.', '.$branch->city,
+            'return_location' => $branch->name.', '.$branch->city,
             'need_driver' => true,
             'total_price' => 200.00,
             'deposit_amount' => 500.00,

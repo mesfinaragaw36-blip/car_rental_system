@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\Location;
 use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,12 +38,13 @@ class BookingDepositFlowTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole', 'city' => 'Addis Ababa']);
 
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 
@@ -65,6 +67,7 @@ class BookingDepositFlowTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole', 'city' => 'Addis Ababa']);
 
         Booking::create([
             'customer_id' => $customer->id,
@@ -82,8 +85,8 @@ class BookingDepositFlowTest extends TestCase
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(4)->toDateString(),
             'return_date' => now()->addDays(5)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 

@@ -18,6 +18,7 @@ interface StaffMember {
     status: string;
     created_at: string;
     staff_role: StaffRole | null;
+    branch: { id: number; name: string; city: string } | null;
 }
 
 interface Props {
@@ -138,6 +139,14 @@ export default function ShowStaff({ staff }: Props) {
                                     {new Date(
                                         staff.created_at,
                                     ).toLocaleDateString()}
+                                </p>
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    Branch
+                                </p>
+                                <p className="font-medium">
+                                    {staff.branch?.name ?? 'N/A'}
                                 </p>
                             </div>
                         </div>

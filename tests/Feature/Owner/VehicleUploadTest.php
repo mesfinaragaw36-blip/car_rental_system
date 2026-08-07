@@ -52,7 +52,6 @@ class VehicleUploadTest extends TestCase
                 'primary_photo_index' => 0,
                 'ownership_document' => $ownershipDocument,
                 'ownership_expiry' => '2027-12-31',
-                'location_id' => $location->id,
             ]);
 
         $response->assertRedirect(route('vehicles.index'));

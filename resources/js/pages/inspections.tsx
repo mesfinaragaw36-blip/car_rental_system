@@ -17,6 +17,13 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,6 +44,7 @@ interface InspectionRecord {
     fuel_level: number | null;
     damages: Damage[] | null;
     notes: string | null;
+    photos?: string[] | null;
 }
 
 type DeliveryStatus = 'pending' | 'arrived' | 'failed';
@@ -289,11 +297,13 @@ function SnapshotDiff({
 function InspectionForm({
     booking,
     type,
+    onClose,
 }: {
     booking: Booking;
     type: 'pickup' | 'return';
+    onClose?: () => void;
 }) {
-    const { data, setData, post, processing, errors, reset, transform } =
+    const { data, setData, processing, errors, reset } =
         useForm({
             type,
             status: 'approved',
@@ -302,6 +312,7 @@ function InspectionForm({
             estimated_value: booking.car.estimated_value?.toString() ?? '',
             damages: [{ area: '', description: '' }] as Damage[],
             notes: '',
+            photos: [] as File[],
         });
 
     const pickup = booking.inspections.find(
@@ -338,15 +349,27 @@ function InspectionForm({
     );
 
     const submitWith = (status: 'approved' | 'issues_found') => {
-        transform((formData) => ({
-            ...formData,
-            status,
-            damages: damagesToSubmit,
-        }));
+        const formData = new FormData();
+        formData.append('type', type);
+        formData.append('status', status);
+        formData.append('mileage_reading', data.mileage_reading);
+        formData.append('fuel_level', data.fuel_level);
+        formData.append('estimated_value', data.estimated_value);
+        formData.append('notes', data.notes);
+        damagesToSubmit.forEach((d, i) => {
+            formData.append(`damages[${i}][area]`, d.area);
+            formData.append(`damages[${i}][description]`, d.description);
+        });
+        data.photos.forEach((photo) => {
+            formData.append('photos[]', photo);
+        });
 
-        post(inspections.conduct.url({ booking: booking.id }), {
+        router.post(inspections.conduct.url({ booking: booking.id }), formData, {
             preserveScroll: true,
-            onSuccess: () => reset(),
+            onSuccess: () => {
+                reset();
+                if (onClose) onClose();
+            },
         });
     };
 
@@ -505,6 +528,23 @@ function InspectionForm({
             )}
 
             <div className="space-y-2">
+                <Label>Evidence Photos (Before / After inspection)</Label>
+                <Input
+                    type="file"
+                    multiple
+                    accept="image/*"
+                    onChange={(e) => {
+                        if (e.target.files) {
+                            setData('photos', Array.from(e.target.files));
+                        }
+                    }}
+                />
+                {errors.photos && (
+                    <p className="text-xs text-red-600">{errors.photos}</p>
+                )}
+            </div>
+
+            <div className="space-y-2">
                 <Label>Notes</Label>
                 <Textarea
                     value={data.notes}
@@ -619,6 +659,25 @@ function InspectionBadges({
                             {inspection.notes}
                         </p>
                     )}
+                    {inspection.photos && inspection.photos.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {inspection.photos.map((path, i) => (
+                                <a
+                                    key={i}
+                                    href={`/storage/${path}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block h-16 w-16 overflow-hidden rounded-md border shadow-sm hover:opacity-90"
+                                >
+                                    <img
+                                        src={`/storage/${path}`}
+                                        alt="Evidence"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </a>
+                            ))}
+                        </div>
+                    )}
                 </div>
             ))}
         </div>
@@ -645,6 +704,7 @@ function BookingCard({
     const [processingAction, setProcessingAction] = useState<
         'handover' | 'returned' | null
     >(null);
+    const [inspectOpen, setInspectOpen] = useState(false);
     const showForm =
         inspectionType === 'pickup'
             ? !hasPickup
@@ -713,31 +773,64 @@ function BookingCard({
 
                 <InspectionBadges inspections={booking.inspections} />
 
-                {showForm && inspectionType === 'pickup' && (
-                    <div>
-                        {booking.car_delivery_status === 'pending' && (
-                            <div className="mb-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-                                <p className="flex items-center gap-1.5 font-medium">
-                                    <TriangleAlert className="h-4 w-4" />
-                                    Waiting for the car to arrive at the branch
-                                </p>
-                                <p className="mt-1 text-yellow-700">
-                                    Confirm delivery above before conducting the
-                                    pickup inspection.
-                                </p>
-                            </div>
-                        )}
-                        {pickupDone && (
-                            <InspectionForm
-                                booking={booking}
-                                type={inspectionType}
-                            />
+                {showForm && (
+                    <div className="pt-2">
+                        {inspectionType === 'pickup' &&
+                            booking.car_delivery_status === 'pending' && (
+                                <div className="mb-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
+                                    <p className="flex items-center gap-1.5 font-medium">
+                                        <TriangleAlert className="h-4 w-4" />
+                                        Waiting for the car to arrive at the branch
+                                    </p>
+                                    <p className="mt-1 text-yellow-700">
+                                        Confirm delivery above before conducting the
+                                        pickup inspection.
+                                    </p>
+                                </div>
+                            )}
+
+                        {(inspectionType === 'return' || pickupDone) && (
+                            <>
+                                <Button
+                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                                    onClick={() => setInspectOpen(true)}
+                                    disabled={
+                                        inspectionType === 'pickup' &&
+                                        booking.car_delivery_status === 'pending'
+                                    }
+                                >
+                                    <ClipboardCheck className="mr-2 h-4 w-4" />
+                                    Conduct{' '}
+                                    {inspectionType === 'pickup'
+                                        ? 'Pickup'
+                                        : 'Return'}{' '}
+                                    Inspection
+                                </Button>
+
+                                <Dialog
+                                    open={inspectOpen}
+                                    onOpenChange={setInspectOpen}
+                                >
+                                    <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
+                                        <DialogHeader>
+                                            <DialogTitle>
+                                                Record{' '}
+                                                {inspectionType === 'pickup'
+                                                    ? 'Pickup'
+                                                    : 'Return'}{' '}
+                                                Inspection (Booking #{booking.id})
+                                            </DialogTitle>
+                                        </DialogHeader>
+                                        <InspectionForm
+                                            booking={booking}
+                                            type={inspectionType}
+                                            onClose={() => setInspectOpen(false)}
+                                        />
+                                    </DialogContent>
+                                </Dialog>
+                            </>
                         )}
                     </div>
-                )}
-
-                {showForm && inspectionType === 'return' && (
-                    <InspectionForm booking={booking} type={inspectionType} />
                 )}
 
                 {inspectionType === 'pickup' &&

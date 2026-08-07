@@ -5,6 +5,7 @@ namespace Tests\Feature\Customer;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -46,19 +47,25 @@ class BookingSubmissionTest extends TestCase
         return $car;
     }
 
+    private function createBranch(): Location
+    {
+        return Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
+    }
+
     public function test_customer_can_submit_a_booking_request(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $response = $this
             ->actingAs($customer)
             ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(5)->toDateString(),
-                'pickup_location' => 'Bole, Addis Ababa',
-                'return_location' => 'Bole, Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
                 'need_driver' => false,
                 'notes' => 'Please clean the car.',
             ]);
@@ -70,6 +77,8 @@ class BookingSubmissionTest extends TestCase
             'owner_id' => $owner->id,
             'car_id' => $car->id,
             'status' => 'confirmed',
+            'pickup_location' => $branch->name.', '.$branch->city,
+            'return_location' => $branch->name.', '.$branch->city,
         ]);
     }
 
@@ -78,14 +87,15 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner); // daily_price = 100
+        $branch = $this->createBranch();
 
         $this
             ->actingAs($customer)
             ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(1)->toDateString(),
                 'return_date' => now()->addDays(4)->toDateString(), // 3 days
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
                 'need_driver' => false,
             ]);
 
@@ -99,14 +109,15 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $this
             ->actingAs($customer)
             ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(4)->toDateString(),
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
                 'need_driver' => true,
             ]);
 
@@ -121,12 +132,13 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $response = $this
             ->actingAs($customer)
             ->post(route('cars.book', $car), [
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
             ]);
 
         $response->assertSessionHasErrors(['pickup_date', 'return_date']);
@@ -138,14 +150,15 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $response = $this
             ->actingAs($customer)
             ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(5)->toDateString(),
                 'return_date' => now()->addDays(3)->toDateString(),
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
             ]);
 
         $response->assertSessionHasErrors(['return_date']);
@@ -156,12 +169,13 @@ class BookingSubmissionTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $response = $this->post(route('cars.book', $car), [
             'pickup_date' => now()->addDays(2)->toDateString(),
             'return_date' => now()->addDays(5)->toDateString(),
-            'pickup_location' => 'Addis Ababa',
-            'return_location' => 'Addis Ababa',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
         ]);
 
         $response->assertRedirect('/login');
@@ -173,6 +187,7 @@ class BookingSubmissionTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
+        $branch = $this->createBranch();
 
         $car->update(['availability_status' => 'inactive']);
 
@@ -181,8 +196,8 @@ class BookingSubmissionTest extends TestCase
             ->post(route('cars.book', $car), [
                 'pickup_date' => now()->addDays(2)->toDateString(),
                 'return_date' => now()->addDays(5)->toDateString(),
-                'pickup_location' => 'Addis Ababa',
-                'return_location' => 'Addis Ababa',
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
             ]);
 
         $response->assertNotFound();

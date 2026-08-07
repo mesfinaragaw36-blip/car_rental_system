@@ -23,6 +23,7 @@ class User extends Authenticatable
         'password',
         'role',
         'staff_role_id',
+        'branch_id',
         'status',
         'address',
         'profile_photo',
@@ -54,6 +55,11 @@ class User extends Authenticatable
     public function staffRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'staff_role_id');
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'branch_id');
     }
 
     public function cars(): HasMany

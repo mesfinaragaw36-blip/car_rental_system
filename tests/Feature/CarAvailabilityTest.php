@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -31,6 +32,11 @@ class CarAvailabilityTest extends TestCase
             'start_date' => $start,
             'end_date' => $end,
         ]);
+    }
+
+    private function createBranch(): Location
+    {
+        return Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
     }
 
     public function test_owner_can_pause_vehicle_and_it_leaves_browse(): void
@@ -93,13 +99,14 @@ class CarAvailabilityTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = $this->createBranch();
         $car->update(['availability_status' => 'maintenance']);
 
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 
@@ -152,14 +159,15 @@ class CarAvailabilityTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = $this->createBranch();
 
         $this->availablePeriod($car, now()->addDays(10)->toDateString(), now()->addDays(12)->toDateString());
 
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 
@@ -172,14 +180,15 @@ class CarAvailabilityTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = $this->createBranch();
 
         $this->availablePeriod($car, now()->addDays(4)->toDateString(), now()->addDays(8)->toDateString());
 
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 
@@ -192,19 +201,26 @@ class CarAvailabilityTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->car($owner);
+        $branch = $this->createBranch();
 
         $this->availablePeriod($car, now()->addDays(1)->toDateString(), now()->addDays(30)->toDateString());
 
         $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
             'pickup_date' => now()->addDays(3)->toDateString(),
             'return_date' => now()->addDays(6)->toDateString(),
-            'pickup_location' => 'Airport',
-            'return_location' => 'Hotel',
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
             'need_driver' => false,
         ]);
 
         $response->assertRedirect(route('bookings.index'));
-        $this->assertSame(1, Booking::count());
+        $this->assertDatabaseHas('bookings', [
+            'car_id' => $car->id,
+            'customer_id' => $customer->id,
+            'status' => Booking::STATUS_CONFIRMED,
+            'pickup_location' => $branch->name.', '.$branch->city,
+            'return_location' => $branch->name.', '.$branch->city,
+        ]);
     }
 
     public function test_overlapping_available_ranges_are_rejected(): void

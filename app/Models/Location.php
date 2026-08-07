@@ -13,8 +13,8 @@ class Location extends Model
         'city',
     ];
 
-    public function cars(): HasMany
+    public function staff(): HasMany
     {
-        return $this->hasMany(Car::class);
+        return $this->hasMany(User::class, 'branch_id');
     }
 }

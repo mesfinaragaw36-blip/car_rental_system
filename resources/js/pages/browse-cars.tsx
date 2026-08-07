@@ -38,7 +38,6 @@ interface Car {
     images: CarImage[];
     owner: { id: number; name: string; phone: string };
     car_type_name?: { id: number; name: string };
-    location?: { id: number; name: string; address: string; city: string };
     average_rating?: number;
     review_count?: number;
 }
@@ -48,29 +47,20 @@ interface CarTypeName {
     name: string;
 }
 
-interface Location {
-    id: number;
-    name: string;
-    city: string;
-}
-
 interface Props {
     cars: Car[];
     carTypeNames: CarTypeName[];
-    locations: Location[];
     filters: {
         search?: string;
         category?: string;
         fuel_type?: string;
         transmission?: string;
-        location_id?: string;
     };
 }
 
 export default function BrowseCars({
     cars = [],
     carTypeNames = [],
-    locations = [],
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -79,7 +69,6 @@ export default function BrowseCars({
     const [transmission, setTransmission] = useState(
         filters.transmission ?? '',
     );
-    const [locationId, setLocationId] = useState(filters.location_id ?? '');
     const [selectedCar, setSelectedCar] = useState<Car | null>(null);
     const [detailsOpen, setDetailsOpen] = useState(false);
     const [filtersOpen, setFiltersOpen] = useState(false);
@@ -89,7 +78,6 @@ export default function BrowseCars({
         category,
         fuelType,
         transmission,
-        locationId,
     ].filter((value) => value !== '').length;
 
     function applyFilters() {
@@ -100,7 +88,6 @@ export default function BrowseCars({
                 category,
                 fuel_type: fuelType,
                 transmission,
-                location_id: locationId,
             },
             {
                 preserveState: true,
@@ -120,7 +107,6 @@ export default function BrowseCars({
         setCategory('');
         setFuelType('');
         setTransmission('');
-        setLocationId('');
         router.get('/browse-cars');
     }
 
@@ -169,28 +155,6 @@ export default function BrowseCars({
                                 value={search}
                                 onChange={(e) => setSearch(e.target.value)}
                             />
-                        </div>
-                        <div className="min-w-40">
-                            <Label>Location</Label>
-                            <Select
-                                value={locationId}
-                                onValueChange={setLocationId}
-                            >
-                                <SelectTrigger>
-                                    <SelectValue placeholder="All Locations" />
-                                </SelectTrigger>
-
-                                <SelectContent>
-                                    {locations.map((location) => (
-                                        <SelectItem
-                                            key={location.id}
-                                            value={String(location.id)}
-                                        >
-                                            {location.name}, {location.city}
-                                        </SelectItem>
-                                    ))}
-                                </SelectContent>
-                            </Select>
                         </div>
 
                         <div className="min-w-40">
@@ -326,12 +290,6 @@ export default function BrowseCars({
                                                     <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
                                                     {car.transmission}
                                                 </p>
-                                                {car.location && (
-                                                    <p className="mt-1 text-sm text-slate-500">
-                                                        📍 {car.location.name},{' '}
-                                                        {car.location.city}
-                                                    </p>
-                                                )}
                                                 {car.average_rating !==
                                                     undefined && (
                                                     <p className="mt-1 text-sm text-slate-500">

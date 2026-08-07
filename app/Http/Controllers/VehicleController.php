@@ -62,7 +62,7 @@ class VehicleController extends Controller
         return Inertia::render('create-vehicle', [
             'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'carTypes' => CarType::where('is_active', true)->with('carTypeName:id,name')->orderBy('brand')->orderBy('model')->get(),
-            'locations' => Location::all(),
+            'locations' => Location::orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -92,7 +92,6 @@ class VehicleController extends Controller
             'primary_photo_index' => 'nullable|integer|min:0',
             'ownership_document' => 'nullable|file|mimes:jpeg,png,jpg,gif,webp,pdf|max:10240',
             'ownership_expiry' => 'nullable|date|after:today',
-            'location_id' => 'required|exists:locations,id',
         ], [
             'photos.*.image' => 'Each photo must be a valid image (JPEG, PNG, GIF, or WebP).',
             'photos.*.max' => 'Each photo must be smaller than 10MB.',
@@ -118,16 +117,13 @@ class VehicleController extends Controller
             'owner_id' => auth()->id(),
             'approval_status' => 'pending',
             'availability_status' => $validated['availability_status'] ?? 'available',
-            'location_id' => $request->location_id,
         ]);
 
-        foreach ($validated['available_periods'] ?? [] as $period) {
-            CarAvailablePeriod::create([
-                'car_id' => $car->id,
-                'start_date' => $period['start_date'],
-                'end_date' => $period['end_date'],
-            ]);
-        }
+        CarAvailablePeriod::create([
+            'car_id' => $car->id,
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addYear()->toDateString(),
+        ]);
 
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
@@ -398,6 +394,10 @@ class VehicleController extends Controller
             abort(403);
         }
 
+        if ($car->bookings()->whereNotIn('status', ['cancelled', 'rejected'])->exists()) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Cannot modify available dates once the car has bookings.']);
+        }
+
         $validated = $request->validate([
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['required', 'date', 'after_or_equal:start_date'],
@@ -426,6 +426,10 @@ class VehicleController extends Controller
         $user = auth()->user();
         if ($car->owner_id !== $user->id && $user->role !== 'admin') {
             abort(403);
+        }
+
+        if ($car->bookings()->whereNotIn('status', ['cancelled', 'rejected'])->exists()) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'Cannot modify available dates once the car has bookings.']);
         }
         if ($availablePeriod->car_id !== $car->id) {
             abort(404);

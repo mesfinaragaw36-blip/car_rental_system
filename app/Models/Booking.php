@@ -38,6 +38,8 @@ class Booking extends Model
         'return_date',
         'pickup_location',
         'return_location',
+        'pickup_branch_id',
+        'return_branch_id',
         'picked_up_at',
         'returned_at',
         'need_driver',
@@ -143,6 +145,16 @@ class Booking extends Model
     public function car(): BelongsTo
     {
         return $this->belongsTo(Car::class);
+    }
+
+    public function pickupBranch(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'pickup_branch_id');
+    }
+
+    public function returnBranch(): BelongsTo
+    {
+        return $this->belongsTo(Location::class, 'return_branch_id');
     }
 
     public function driverAssignment(): HasOne

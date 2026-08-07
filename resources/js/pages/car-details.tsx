@@ -4,6 +4,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { book } from '@/routes/cars';
 
@@ -38,12 +45,19 @@ interface Car {
     available_periods?: { id: number; start_date: string; end_date: string }[];
 }
 
+interface Location {
+    id: number;
+    name: string;
+    city: string;
+}
+
 interface Props {
     car: Car;
     role: string;
+    locations: Location[];
 }
 
-export default function CarDetails({ car, role }: Props) {
+export default function CarDetails({ car, role, locations }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -52,8 +66,8 @@ export default function CarDetails({ car, role }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         pickup_date: '',
         return_date: '',
-        pickup_location: '',
-        return_location: '',
+        pickup_branch_id: '',
+        return_branch_id: '',
         need_driver: false,
         notes: '',
     });
@@ -293,42 +307,62 @@ export default function CarDetails({ car, role }: Props) {
                                                 message={errors.return_date}
                                             />
                                         </div>
-                                        <div>
-                                            <Label htmlFor="pickup_location">
-                                                Pickup Location
-                                            </Label>
-                                            <Input
-                                                id="pickup_location"
-                                                value={data.pickup_location}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'pickup_location',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
-                                            <InputError
-                                                message={errors.pickup_location}
-                                            />
-                                        </div>
-                                        <div>
-                                            <Label htmlFor="return_location">
-                                                Return Location
-                                            </Label>
-                                            <Input
-                                                id="return_location"
-                                                value={data.return_location}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'return_location',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                            />
-                                            <InputError
-                                                message={errors.return_location}
-                                            />
-                                        </div>
+                                         <div>
+                                             <Label htmlFor="pickup_branch_id">
+                                                 Pickup Location
+                                             </Label>
+                                             <Select
+                                                 value={data.pickup_branch_id}
+                                                 onValueChange={(value) =>
+                                                     setData('pickup_branch_id', value)
+                                                 }
+                                             >
+                                                 <SelectTrigger>
+                                                     <SelectValue placeholder="Select a pickup branch" />
+                                                 </SelectTrigger>
+                                                 <SelectContent>
+                                                     {locations.map((location) => (
+                                                         <SelectItem
+                                                             key={location.id}
+                                                             value={String(location.id)}
+                                                         >
+                                                             {location.name}, {location.city}
+                                                         </SelectItem>
+                                                     ))}
+                                                 </SelectContent>
+                                             </Select>
+                                             <InputError
+                                                 message={errors.pickup_branch_id}
+                                             />
+                                         </div>
+                                         <div>
+                                             <Label htmlFor="return_branch_id">
+                                                 Return Location
+                                             </Label>
+                                             <Select
+                                                 value={data.return_branch_id}
+                                                 onValueChange={(value) =>
+                                                     setData('return_branch_id', value)
+                                                 }
+                                             >
+                                                 <SelectTrigger>
+                                                     <SelectValue placeholder="Select a return branch" />
+                                                 </SelectTrigger>
+                                                 <SelectContent>
+                                                     {locations.map((location) => (
+                                                         <SelectItem
+                                                             key={location.id}
+                                                             value={String(location.id)}
+                                                         >
+                                                             {location.name}, {location.city}
+                                                         </SelectItem>
+                                                     ))}
+                                                 </SelectContent>
+                                             </Select>
+                                             <InputError
+                                                 message={errors.return_branch_id}
+                                             />
+                                         </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <input

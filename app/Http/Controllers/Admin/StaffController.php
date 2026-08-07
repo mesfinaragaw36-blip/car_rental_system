@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -17,13 +18,14 @@ class StaffController extends Controller
     {
         $staff = User::where('role', 'admin')
             ->whereNotNull('staff_role_id')
-            ->with('staffRole')
+            ->with(['staffRole', 'branch'])
             ->latest()
             ->paginate(15);
 
         return Inertia::render('admin/staff/index', [
             'staff' => $staff,
             'roles' => Role::all(),
+            'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }
 
@@ -33,6 +35,7 @@ class StaffController extends Controller
 
         return Inertia::render('admin/staff/create', [
             'roles' => $roles,
+            'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }
 
@@ -44,6 +47,7 @@ class StaffController extends Controller
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
             'staff_role_id' => ['required', 'exists:roles,id'],
+            'branch_id' => ['required', 'exists:locations,id'],
         ]);
 
         User::create([
@@ -53,6 +57,7 @@ class StaffController extends Controller
             'password' => Hash::make($validated['password']),
             'role' => 'admin',
             'staff_role_id' => $validated['staff_role_id'],
+            'branch_id' => $validated['branch_id'],
             'status' => 'active',
         ]);
 
@@ -66,10 +71,10 @@ class StaffController extends Controller
     {
         abort_unless($staff->role === 'admin' && $staff->staff_role_id !== null, 404);
 
-        $staff->load('staffRole');
+        $staff->load(['staffRole', 'branch']);
 
         return Inertia::render('admin/staff/show', [
-            'staff' => $staff->only(['id', 'name', 'email', 'phone', 'status', 'created_at', 'staff_role']),
+            'staff' => $staff->only(['id', 'name', 'email', 'phone', 'status', 'created_at', 'staff_role', 'branch']),
         ]);
     }
 
