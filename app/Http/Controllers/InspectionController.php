@@ -287,6 +287,8 @@ class InspectionController extends Controller
             'availability_status' => 'available',
         ]);
 
+        $booking->completeDriverTrips();
+
         $booking->customer?->notifyNow(
             "Return received - Booking #{$booking->id}",
             sprintf(

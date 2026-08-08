@@ -131,22 +131,4 @@ class AssignmentController extends Controller
 
         return redirect()->route('dashboard')->with('toast', ['type' => 'success', 'message' => 'Assignment accepted.']);
     }
-
-    public function complete(BookingDriver $assignment): RedirectResponse
-    {
-        $user = auth()->user();
-        if ($assignment->driver_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-        if ($assignment->status !== 'accepted') {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only active trips can be completed.']);
-        }
-        $assignment->update(['status' => 'completed']);
-        $booking = $assignment->booking;
-        if ($booking->status === 'picked_up') {
-            $booking->update(['status' => 'returned']);
-        }
-
-        return back()->with('toast', ['type' => 'success', 'message' => 'Trip completed.']);
-    }
 }

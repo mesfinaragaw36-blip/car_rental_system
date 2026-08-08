@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Models\Booking;
 use App\Models\Car;
+use App\Models\Inspection;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -94,6 +96,55 @@ class BookingInfoHidingTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->where('booking.customer.email', $customer->email));
+    }
+
+    public function test_booking_details_loads_when_a_deposit_payment_exists(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'type' => Payment::TYPE_DEPOSIT,
+            'amount' => 100.00,
+            'payment_method' => 'telebirr',
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        $this->actingAs($owner)
+            ->get(route('bookings.show', ['booking' => $booking->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.payment.id', $booking->payments->first()->id)
+                ->where('booking.payment.payment_method', 'telebirr')
+                ->where('booking.payment.payment_status', 'paid'));
+    }
+
+    public function test_booking_details_exposes_pickup_inspection_approved_flag(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer);
+
+        $this->actingAs($customer)
+            ->get(route('bookings.show', ['booking' => $booking->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.pickup_inspection_approved', false));
+
+        Inspection::factory()->create([
+            'booking_id' => $booking->id,
+            'type' => Inspection::TYPE_PICKUP,
+            'status' => Inspection::STATUS_APPROVED,
+        ]);
+
+        $this->actingAs($customer)
+            ->get(route('bookings.show', ['booking' => $booking->id]))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('booking.pickup_inspection_approved', true));
     }
 
     public function test_owner_still_sees_customer_phone_for_handoff(): void

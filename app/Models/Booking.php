@@ -162,6 +162,35 @@ class Booking extends Model
         return $this->hasOne(BookingDriver::class);
     }
 
+    public function driverAssignments(): HasMany
+    {
+        return $this->hasMany(BookingDriver::class);
+    }
+
+    public function completeDriverTrips(): void
+    {
+        $this->driverAssignments()
+            ->where('status', BookingDriver::STATUS_ACCEPTED)
+            ->get()
+            ->each(function (BookingDriver $assignment): void {
+                $assignment->update(['status' => BookingDriver::STATUS_COMPLETED]);
+
+                $assignment->driver?->notifyNow(
+                    "Trip completed - Booking #{$this->id}",
+                    sprintf(
+                        'The %s %s has been returned to %s. Your trip for booking #%s is complete.',
+                        $this->car->brand,
+                        $this->car->model,
+                        $this->return_location,
+                        $this->id,
+                    ),
+                    'trip_completed',
+                    Booking::class,
+                    $this->id,
+                );
+            });
+    }
+
     public function payments(): HasMany
     {
         return $this->hasMany(Payment::class);

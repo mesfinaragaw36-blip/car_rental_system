@@ -14,7 +14,7 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { accept, complete, reject } from '@/routes/assignments';
+import { accept, reject } from '@/routes/assignments';
 
 interface DriverAssignment {
     id: number;
@@ -71,20 +71,13 @@ export default function Assignments({
     const toast = p.toast;
     const [processingId, setProcessingId] = useState<number | null>(null);
 
-    const handleAction = (
-        id: number,
-        action: 'accept' | 'reject' | 'complete',
-    ) => {
+    const handleAction = (id: number, action: 'accept' | 'reject') => {
         if (action === 'reject' && !confirm('Reject this assignment?')) {
             return;
         }
 
-        if (action === 'complete' && !confirm('Mark this trip as completed?')) {
-            return;
-        }
-
         setProcessingId(id);
-        const routeMap = { accept, reject, complete };
+        const routeMap = { accept, reject };
         router.post(
             routeMap[action].url({ assignment: id }),
             {},
@@ -362,26 +355,6 @@ export default function Assignments({
                                                                 : 'Reject'}
                                                         </Button>
                                                     </>
-                                                )}
-                                                {a.status === 'accepted' && (
-                                                    <Button
-                                                        size="sm"
-                                                        variant="outline"
-                                                        disabled={
-                                                            processingId ===
-                                                            a.id
-                                                        }
-                                                        onClick={() =>
-                                                            handleAction(
-                                                                a.id,
-                                                                'complete',
-                                                            )
-                                                        }
-                                                    >
-                                                        {processingId === a.id
-                                                            ? 'Processing…'
-                                                            : 'Mark as Completed'}
-                                                    </Button>
                                                 )}
                                             </div>
                                             <p className="text-xs text-muted-foreground">

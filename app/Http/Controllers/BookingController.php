@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Car;
+use App\Models\Inspection;
 use App\Models\Review;
 use App\Models\User;
 use App\Services\BookingCompletionService;
@@ -178,9 +179,10 @@ class BookingController extends Controller
                 'customer' => $booking->customer ? $this->customerPayload($booking, $user) : null,
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
                 'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
-                'payment' => $booking->payment ? ['id' => $booking->payment->id, 'payment_method' => $booking->payment->payment_method, 'payment_status' => $booking->payment->payment_status, 'paid_at' => $booking->payment->paid_at?->toDateTimeString()] : null,
+                'payment' => $booking->payment,
                 'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
                 'driver_status' => $booking->driverAssignment?->status,
+                'pickup_inspection_approved' => $booking->hasApprovedInspection(Inspection::TYPE_PICKUP),
                 'picked_up_at' => $booking->picked_up_at?->toDateTimeString(),
                 'returned_at' => $booking->returned_at?->toDateTimeString(),
                 'inspections' => $booking->inspections
@@ -318,6 +320,8 @@ class BookingController extends Controller
             'status' => 'returned',
             'returned_at' => now(),
         ]);
+
+        $booking->completeDriverTrips();
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Vehicle marked as returned.']);
     }

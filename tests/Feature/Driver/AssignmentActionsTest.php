@@ -98,20 +98,28 @@ class AssignmentActionsTest extends TestCase
         ]);
     }
 
-    public function test_driver_can_complete_an_accepted_assignment(): void
+    public function test_accepted_driver_trip_completes_automatically_when_inspection_marks_car_returned(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $driver = $this->createDriver();
+        $admin = User::factory()->create(['role' => 'admin']);
         $car = $this->createCar($owner);
         $booking = $this->createBooking($owner, $customer, $car);
+        $booking->update(['status' => 'picked_up']);
         $assignment = $this->createAssignment($booking, $driver, $owner, 'accepted');
 
         $response = $this
-            ->actingAs($driver)
-            ->post(route('assignments.complete', ['assignment' => $assignment]));
+            ->actingAs($admin)
+            ->post(route('inspections.returned', ['booking' => $booking]));
 
         $response->assertRedirect();
+        $response->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'returned',
+        ]);
 
         $this->assertDatabaseHas('booking_drivers', [
             'id' => $assignment->id,
@@ -134,28 +142,6 @@ class AssignmentActionsTest extends TestCase
             ->post(route('assignments.accept', ['assignment' => $assignment]));
 
         $response->assertForbidden();
-
-        $this->assertDatabaseHas('booking_drivers', [
-            'id' => $assignment->id,
-            'status' => 'assigned',
-        ]);
-    }
-
-    public function test_driver_cannot_complete_a_pending_assignment(): void
-    {
-        $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
-        $driver = $this->createDriver();
-        $car = $this->createCar($owner);
-        $booking = $this->createBooking($owner, $customer, $car);
-        $assignment = $this->createAssignment($booking, $driver, $owner, 'assigned');
-
-        $response = $this
-            ->actingAs($driver)
-            ->post(route('assignments.complete', ['assignment' => $assignment]));
-
-        $response->assertRedirect();
-        $response->assertSessionHas('toast.type', 'error');
 
         $this->assertDatabaseHas('booking_drivers', [
             'id' => $assignment->id,
