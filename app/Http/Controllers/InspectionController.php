@@ -364,6 +364,7 @@ class InspectionController extends Controller
                     'booking_id' => $booking->id,
                     'amount' => round($paid, 2),
                     'reason' => 'Pre-rental inspection failed; booking cancelled.',
+                    'status' => 'pending',
                 ]);
             }
         });

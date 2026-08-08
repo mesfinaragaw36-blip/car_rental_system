@@ -13,6 +13,7 @@ import {
     MapPin,
     ClipboardCheck,
     Bell,
+    Wallet,
 } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
@@ -112,6 +113,7 @@ function getNavItems(
                     icon: ClipboardCheck,
                 },
                 { title: 'Payments', href: '/payments', icon: CreditCard },
+                { title: 'Refunds', href: '/admin/refunds', icon: Wallet },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
                 { title: 'Payouts', href: '/admin/payouts', icon: CreditCard },

@@ -165,6 +165,9 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('locations', LocationController::class)->except('show');
 
         Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
+
+        Route::get('/refunds', [\App\Http\Controllers\Admin\RefundController::class, 'index'])->name('refunds.index');
+        Route::post('/refunds/{refund}/process', [\App\Http\Controllers\Admin\RefundController::class, 'process'])->name('refunds.process');
     });
 });
 
