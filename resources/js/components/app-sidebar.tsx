@@ -13,7 +13,7 @@ import {
     MapPin,
     ClipboardCheck,
     Bell,
-    Wallet,
+    ReceiptText,
 } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
@@ -38,7 +38,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
         '/admin/vehicle-documents',
     ],
     staff: ['/admin/staff'],
-    payments: ['/admin/payments'],
+    payments: ['/admin/transactions'],
     'bookings.inspect': ['/inspections'],
 };
 
@@ -84,11 +84,11 @@ function getNavItems(
             });
         }
 
-        if (allowedRoutes.has('/admin/payments')) {
+        if (allowedRoutes.has('/admin/transactions')) {
             items.push({
-                title: 'Payments',
-                href: '/payments',
-                icon: CreditCard,
+                title: 'Transactions',
+                href: '/admin/transactions',
+                icon: ReceiptText,
             });
         }
 
@@ -112,11 +112,13 @@ function getNavItems(
                     href: '/inspections',
                     icon: ClipboardCheck,
                 },
-                { title: 'Payments', href: '/payments', icon: CreditCard },
-                { title: 'Refunds', href: '/admin/refunds', icon: Wallet },
+                {
+                    title: 'Transactions',
+                    href: '/admin/transactions',
+                    icon: ReceiptText,
+                },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
-                { title: 'Payouts', href: '/admin/payouts', icon: CreditCard },
                 {
                     title: 'Roles & Permissions',
                     href: '/admin/roles',

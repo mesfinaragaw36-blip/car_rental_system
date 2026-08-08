@@ -13,6 +13,9 @@ class BookingDriver extends Model
         'assigned_by',
         'assigned_at',
         'status',
+        'earnings',
+        'payout_status',
+        'paid_at',
     ];
 
     public const STATUS_ASSIGNED = 'assigned';
@@ -23,11 +26,22 @@ class BookingDriver extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
+    public const STATUS_PENDING = 'pending';
+
+    public const STATUS_PAID = 'paid';
+
     protected function casts(): array
     {
         return [
             'assigned_at' => 'datetime',
+            'earnings' => 'decimal:2',
+            'paid_at' => 'datetime',
         ];
+    }
+
+    public function hasEarnings(): bool
+    {
+        return (float) $this->earnings > 0;
     }
 
     public function booking(): BelongsTo

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Booking;
+use App\Models\BookingDriver;
 use App\Models\OwnerPayout;
 use App\Models\Refund;
 use Illuminate\Support\Facades\DB;
@@ -16,11 +17,14 @@ class BookingCompletionService
         $deduction = min($repairCost, $securityDeposit);
         $refundAmount = round($securityDeposit - $deduction, 2);
 
-        $gross = round((float) $booking->total_price, 2);
-        $commission = round($gross * (config('commission.rate', 10) / 100), 2);
-        $net = round($gross - $commission, 2);
+        $driverAssignment = $booking->driverAssignment;
+        $driverFee = $driverAssignment?->hasEarnings() ? (float) $driverAssignment->earnings : 0.0;
 
-        DB::transaction(function () use ($booking, $refundAmount, $deduction, $gross, $commission, $net) {
+        $carGross = round((float) $booking->total_price - $driverFee, 2);
+        $commission = round($carGross * (config('commission.rate', 10) / 100), 2);
+        $net = round($carGross - $commission, 2);
+
+        DB::transaction(function () use ($booking, $refundAmount, $deduction, $carGross, $commission, $net, $driverAssignment, $driverFee) {
             $booking->update(['status' => Booking::STATUS_COMPLETED]);
 
             if ($refundAmount > 0) {
@@ -36,11 +40,17 @@ class BookingCompletionService
             OwnerPayout::create([
                 'booking_id' => $booking->id,
                 'owner_id' => $booking->owner_id,
-                'gross_amount' => $gross,
+                'gross_amount' => $carGross,
                 'commission_amount' => $commission,
                 'net_amount' => $net,
                 'status' => OwnerPayout::STATUS_PENDING,
             ]);
+
+            if ($driverFee > 0 && $driverAssignment !== null) {
+                $driverAssignment->update([
+                    'payout_status' => BookingDriver::STATUS_PENDING,
+                ]);
+            }
         });
 
         $booking->customer?->notifyNow(
@@ -57,7 +67,7 @@ class BookingCompletionService
                 'Your rental for %s %s is complete. Gross ETB %s, commission ETB %s, your net payout is ETB %s and is pending transfer.',
                 $booking->car->brand,
                 $booking->car->model,
-                number_format($gross, 2),
+                number_format($carGross, 2),
                 number_format($commission, 2),
                 number_format($net, 2),
             ),
@@ -65,6 +75,20 @@ class BookingCompletionService
             Booking::class,
             $booking->id,
         );
+
+        if ($driverFee > 0 && $driverAssignment?->driver !== null) {
+            $driverAssignment->driver->notifyNow(
+                "Payout pending - Booking #{$booking->id}",
+                sprintf(
+                    'Your driver earnings of ETB %s for booking #%s are pending transfer.',
+                    number_format($driverFee, 2),
+                    $booking->id,
+                ),
+                'payout_pending',
+                Booking::class,
+                $booking->id,
+            );
+        }
     }
 
     private function customerMessage(Booking $booking, float $refundAmount, float $deduction): string

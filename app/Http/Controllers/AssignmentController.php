@@ -123,6 +123,10 @@ class AssignmentController extends Controller
             $booking->update([
                 'total_price' => round(($booking->car->daily_price + $driverRate) * $days, 2),
             ]);
+
+            $assignment->update([
+                'earnings' => round($driverRate * $days, 2),
+            ]);
         }
 
         return redirect()->route('dashboard')->with('toast', ['type' => 'success', 'message' => 'Assignment accepted.']);

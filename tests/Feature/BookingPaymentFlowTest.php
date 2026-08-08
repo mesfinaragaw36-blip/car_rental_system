@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Booking;
+use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Inspection;
@@ -315,6 +316,47 @@ class BookingPaymentFlowTest extends TestCase
         ]);
     }
 
+    public function test_owner_completing_booking_with_driver_pays_owner_car_share_and_creates_driver_payout(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $driver = User::factory()->create(['role' => 'driver']);
+        $booking = $this->booking($owner, $customer, 'returned', [
+            'returned_at' => now(),
+            'need_driver' => true,
+            'total_price' => 900.00,
+        ]);
+
+        $assignment = BookingDriver::create([
+            'booking_id' => $booking->id,
+            'driver_id' => $driver->id,
+            'assigned_by' => $owner->id,
+            'assigned_at' => now(),
+            'status' => BookingDriver::STATUS_ACCEPTED,
+            'earnings' => 600.00,
+        ]);
+
+        $this->actingAs($owner)
+            ->post(route('bookings.complete', ['booking' => $booking->id]))
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('owner_payouts', [
+            'booking_id' => $booking->id,
+            'owner_id' => $owner->id,
+            'gross_amount' => '300.00',
+            'commission_amount' => '30.00',
+            'net_amount' => '270.00',
+            'status' => OwnerPayout::STATUS_PENDING,
+        ]);
+
+        $this->assertDatabaseHas('booking_drivers', [
+            'id' => $assignment->id,
+            'earnings' => '600.00',
+            'payout_status' => BookingDriver::STATUS_PENDING,
+        ]);
+    }
+
     public function test_admin_can_mark_payout_paid(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
@@ -332,7 +374,7 @@ class BookingPaymentFlowTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->post(route('admin.payouts.mark-paid', ['payout' => $payout->id]))
+            ->post(route('admin.transactions.owner-payouts.mark-paid', ['payout' => $payout->id]))
             ->assertRedirect()
             ->assertSessionHas('toast.type', 'success');
 
@@ -350,7 +392,7 @@ class BookingPaymentFlowTest extends TestCase
         ]);
     }
 
-    public function test_admin_payouts_index_lists_payouts(): void
+    public function test_admin_transactions_index_lists_owner_payouts(): void
     {
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'owner']);
@@ -367,19 +409,20 @@ class BookingPaymentFlowTest extends TestCase
         ]);
 
         $this->actingAs($admin)
-            ->get(route('admin.payouts.index'))
+            ->get(route('admin.transactions.index', ['type' => 'owner_payout']))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->has('payouts.data', 1)
-                ->where('payouts.data.0.booking_id', $booking->id));
+                ->has('transactions.data', 1)
+                ->where('transactions.data.0.type', 'owner_payout')
+                ->where('transactions.data.0.booking_id', $booking->id));
     }
 
-    public function test_non_admin_cannot_access_payouts(): void
+    public function test_non_admin_cannot_access_transactions(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
 
         $this->actingAs($owner)
-            ->get(route('admin.payouts.index'))
+            ->get(route('admin.transactions.index'))
             ->assertForbidden();
     }
 }

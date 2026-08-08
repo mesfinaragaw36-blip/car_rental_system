@@ -4,9 +4,9 @@ use App\Http\Controllers\Admin\CarImageController;
 use App\Http\Controllers\Admin\CarTypeNameController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\LocationController;
-use App\Http\Controllers\Admin\PayoutController;
 use App\Http\Controllers\Admin\RoleController;
 use App\Http\Controllers\Admin\StaffController;
+use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
@@ -122,8 +122,10 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/drivers/{driver}/suspend', [DriverController::class, 'suspend'])->name('drivers.suspend');
         Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])->name('drivers.activate');
 
-        Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
-        Route::post('/payouts/{payout}/mark-paid', [PayoutController::class, 'markPaid'])->name('payouts.mark-paid');
+        Route::get('/transactions', [TransactionController::class, 'index'])->name('transactions.index');
+        Route::post('/transactions/refunds/{refund}/process', [TransactionController::class, 'processRefund'])->name('transactions.refunds.process');
+        Route::post('/transactions/owner-payouts/{payout}/mark-paid', [TransactionController::class, 'markOwnerPaid'])->name('transactions.owner-payouts.mark-paid');
+        Route::post('/transactions/driver-payouts/{assignment}/mark-paid', [TransactionController::class, 'markDriverPaid'])->name('transactions.driver-payouts.mark-paid');
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
@@ -165,9 +167,6 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('locations', LocationController::class)->except('show');
 
         Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
-
-        Route::get('/refunds', [\App\Http\Controllers\Admin\RefundController::class, 'index'])->name('refunds.index');
-        Route::post('/refunds/{refund}/process', [\App\Http\Controllers\Admin\RefundController::class, 'process'])->name('refunds.process');
     });
 });
 
