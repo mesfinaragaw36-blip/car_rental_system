@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
@@ -217,8 +218,9 @@ class VehicleController extends Controller
             'ownership_expiry' => 'nullable|date|after:today',
 
         ]);
-        // If the owner edits the vehicle, it must be reviewed again
-        if ($user->role !== 'admin') {
+        // Only content changes (not available-date ranges or availability status)
+        // require the vehicle to be reviewed by an admin again.
+        if ($user->role !== 'admin' && $this->contentChanged($car, $validated, $request)) {
             $validated['approval_status'] = 'pending';
         }
 
@@ -272,6 +274,59 @@ class VehicleController extends Controller
         }
 
         return redirect()->route('vehicles.index')->with('toast', ['type' => 'success', 'message' => 'Vehicle updated successfully!']);
+    }
+
+    /**
+     * Determine whether the submitted edit changes substantive vehicle content
+     * (as opposed to available date ranges or the availability status).
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function contentChanged(Car $car, array $validated, Request $request): bool
+    {
+        $contentFields = [
+            'brand',
+            'model',
+            'year',
+            'plate_number',
+            'category',
+            'color',
+            'fuel_type',
+            'transmission',
+            'car_type_name_id',
+            'daily_price',
+            'engine_size',
+            'mileage',
+            'seats',
+            'description',
+        ];
+
+        foreach ($contentFields as $field) {
+            $current = $car->getRawOriginal($field);
+            $incoming = $validated[$field] ?? null;
+
+            if ($this->valueChanged($current, $incoming)) {
+                return true;
+            }
+        }
+
+        return $request->hasFile('photos') || $request->hasFile('ownership_document');
+    }
+
+    private function valueChanged(mixed $current, mixed $incoming): bool
+    {
+        $current = $current === '' ? null : $current;
+        $incoming = $incoming === '' ? null : $incoming;
+
+        if ($current === null || $incoming === null) {
+            return $current !== $incoming;
+        }
+
+        if (is_numeric($current) && is_numeric($incoming)) {
+            return (float) $current != (float) $incoming;
+        }
+
+        return (string) $current !== (string) $incoming;
     }
 
     public function deleteImage(Car $car, CarImage $image): RedirectResponse
@@ -398,7 +453,7 @@ class VehicleController extends Controller
             abort(403);
         }
 
-        if ($car->bookings()->whereNotIn('status', ['cancelled', 'rejected'])->exists()) {
+        if ($car->bookings()->whereNotIn('status', Booking::INACTIVE_STATUSES)->exists()) {
             return back()->with('toast', ['type' => 'error', 'message' => 'Cannot modify available dates once the car has bookings.']);
         }
 
@@ -432,7 +487,7 @@ class VehicleController extends Controller
             abort(403);
         }
 
-        if ($car->bookings()->whereNotIn('status', ['cancelled', 'rejected'])->exists()) {
+        if ($car->bookings()->whereNotIn('status', Booking::INACTIVE_STATUSES)->exists()) {
             return back()->with('toast', ['type' => 'error', 'message' => 'Cannot modify available dates once the car has bookings.']);
         }
         if ($availablePeriod->car_id !== $car->id) {

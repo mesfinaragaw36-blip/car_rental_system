@@ -326,14 +326,10 @@ class PaymentController extends Controller
             'booking.customer',
             'booking.owner',
             'booking.car',
+            'booking.payments',
         ]);
 
         $booking = $payment->booking;
-
-        $days = $booking->pickup_date->diffInDays($booking->return_date);
-        $dailyRate = $days > 0
-            ? number_format($booking->total_price / $days, 2)
-            : '0.00';
 
         // Security check: customer, owner, or admin can view receipt
         if (
@@ -344,9 +340,29 @@ class PaymentController extends Controller
             abort(403);
         }
 
+        $days = max(1, $booking->pickup_date->diffInDays($booking->return_date));
+        $dailyRate = (float) ($booking->car?->daily_price ?? 0.0);
+        $rentalSubtotal = round($dailyRate * $days, 2);
+        $totalPrice = round((float) $booking->total_price, 2);
+        $driverFee = round(max(0.0, $totalPrice - $rentalSubtotal), 2);
+
+        $paidToDate = $booking->payments
+            ->where('payment_status', 'paid')
+            ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)
+            ->sum(fn (Payment $paidPayment) => (float) $paidPayment->amount);
+
+        $balanceRemaining = round(max(0.0, $totalPrice - $paidToDate), 2);
+
         return Inertia::render('receipt', [
             'payment' => [
                 'id' => $payment->id,
+                'type' => $payment->type,
+                'type_label' => match ($payment->type) {
+                    Payment::TYPE_DEPOSIT => 'Booking Deposit',
+                    Payment::TYPE_BALANCE => 'Balance Payment',
+                    Payment::TYPE_SECURITY_DEPOSIT => 'Security Deposit',
+                    default => 'Payment',
+                },
                 'amount' => $payment->amount,
                 'payment_method' => $payment->payment_method,
                 'transaction_reference' => $payment->transaction_reference,
@@ -359,9 +375,14 @@ class PaymentController extends Controller
                 'return_date' => $booking->return_date->toDateString(),
                 'pickup_location' => $booking->pickup_location,
                 'return_location' => $booking->return_location,
-                'total_price' => $booking->total_price,
+                'need_driver' => $booking->need_driver,
+                'total_price' => number_format($totalPrice, 2),
                 'days' => $days,
-                'daily_rate' => $dailyRate,
+                'daily_rate' => number_format($dailyRate, 2),
+                'subtotal' => number_format($rentalSubtotal, 2),
+                'driver_fee' => number_format($driverFee, 2),
+                'paid_to_date' => number_format($paidToDate, 2),
+                'balance_remaining' => number_format($balanceRemaining, 2),
             ],
             'customer' => $booking->customer ? [
                 'name' => $booking->customer->name,

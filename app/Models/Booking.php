@@ -24,6 +24,12 @@ class Booking extends Model
 
     public const STATUS_CANCELLED = 'cancelled';
 
+    /**
+     * Bookings in these states no longer occupy the car and must not block
+     * availability checks or overlap detection.
+     */
+    public const INACTIVE_STATUSES = ['rejected', 'cancelled', 'returned', 'completed'];
+
     public const CAR_DELIVERY_PENDING = 'pending';
 
     public const CAR_DELIVERY_ARRIVED = 'arrived';

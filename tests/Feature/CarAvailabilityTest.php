@@ -223,6 +223,74 @@ class CarAvailabilityTest extends TestCase
         ]);
     }
 
+    public function test_completed_booking_does_not_block_rebooking_same_vehicle(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+        $branch = $this->createBranch();
+
+        $this->availablePeriod($car, now()->addDays(1)->toDateString(), now()->addDays(30)->toDateString());
+
+        Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(2)->toDateString(),
+            'return_date' => now()->addDays(5)->toDateString(),
+            'pickup_location' => 'Bole Branch',
+            'return_location' => 'Bole Branch',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'status' => Booking::STATUS_COMPLETED,
+        ]);
+
+        $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
+            'need_driver' => false,
+        ]);
+
+        $response->assertRedirect(route('bookings.index'));
+        $this->assertSame(2, Booking::count());
+    }
+
+    public function test_returned_booking_does_not_block_rebooking_same_vehicle(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+        $branch = $this->createBranch();
+
+        $this->availablePeriod($car, now()->addDays(1)->toDateString(), now()->addDays(30)->toDateString());
+
+        Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(2)->toDateString(),
+            'return_date' => now()->addDays(5)->toDateString(),
+            'pickup_location' => 'Bole Branch',
+            'return_location' => 'Bole Branch',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'status' => Booking::STATUS_RETURNED,
+        ]);
+
+        $response = $this->actingAs($customer)->post(route('cars.book', ['car' => $car->id]), [
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
+            'need_driver' => false,
+        ]);
+
+        $response->assertRedirect(route('bookings.index'));
+        $this->assertSame(2, Booking::count());
+    }
+
     public function test_overlapping_available_ranges_are_rejected(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);

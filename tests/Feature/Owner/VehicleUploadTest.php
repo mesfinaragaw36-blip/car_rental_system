@@ -193,4 +193,65 @@ class VehicleUploadTest extends TestCase
             ->assertOk()
             ->assertDontSee('Camry Updated');
     }
+
+    public function test_owner_changing_only_available_dates_keeps_approval_status(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $car = Car::create([
+            'owner_id' => $owner->id,
+            'brand' => 'Toyota',
+            'model' => 'Camry',
+            'year' => 2023,
+            'plate_number' => 'DATES123',
+            'category' => 'Sedan',
+            'color' => 'Black',
+            'fuel_type' => 'Petrol',
+            'transmission' => 'Automatic',
+            'engine_size' => '2.0L',
+            'mileage' => 10000,
+            'seats' => 5,
+            'daily_price' => 100.00,
+            'approval_status' => 'approved',
+            'availability_status' => 'available',
+        ]);
+
+        $car->availablePeriods()->create([
+            'start_date' => now()->toDateString(),
+            'end_date' => now()->addDays(30)->toDateString(),
+        ]);
+
+        $this->actingAs($owner)
+            ->put(route('vehicles.update', $car), [
+                'brand' => 'Toyota',
+                'model' => 'Camry',
+                'year' => 2023,
+                'plate_number' => 'DATES123',
+                'category' => 'Sedan',
+                'color' => 'Black',
+                'fuel_type' => 'Petrol',
+                'transmission' => 'Automatic',
+                'engine_size' => '2.0L',
+                'mileage' => 10000,
+                'seats' => 5,
+                'daily_price' => 100.00,
+                'availability_status' => 'available',
+                'available_periods' => [
+                    [
+                        'start_date' => now()->toDateString(),
+                        'end_date' => now()->addDays(60)->toDateString(),
+                    ],
+                ],
+            ])
+            ->assertRedirect(route('vehicles.index'));
+
+        $car->refresh();
+        $this->assertEquals('approved', $car->approval_status);
+
+        $this->actingAs($customer)
+            ->get(route('cars.index'))
+            ->assertOk()
+            ->assertSee('Camry');
+    }
 }

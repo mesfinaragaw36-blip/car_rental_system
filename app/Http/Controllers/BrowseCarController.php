@@ -28,7 +28,7 @@ class BrowseCarController extends Controller
             ->where('availability_status', 'available')
             ->when($pickupDate && $returnDate, function ($q) use ($pickupDate, $returnDate) {
                 $q->whereDoesntHave('bookings', function ($booking) use ($pickupDate, $returnDate) {
-                    $booking->whereNotIn('status', ['rejected', 'cancelled'])
+                    $booking->whereNotIn('status', Booking::INACTIVE_STATUSES)
                         ->where(function ($overlap) use ($pickupDate, $returnDate) {
                             $overlap->whereBetween('pickup_date', [$pickupDate, $returnDate])
                                 ->orWhereBetween('return_date', [$pickupDate, $returnDate])
@@ -143,7 +143,7 @@ class BrowseCarController extends Controller
                 Car::whereKey($car->id)->lockForUpdate()->first();
 
                 $hasOverlap = Booking::where('car_id', $car->id)
-                    ->whereNotIn('status', ['rejected', 'cancelled'])
+                    ->whereNotIn('status', Booking::INACTIVE_STATUSES)
                     ->where(fn ($q) => $q->whereBetween('pickup_date', [$pickupDate, $returnDate])
                         ->orWhereBetween('return_date', [$pickupDate, $returnDate])
                         ->orWhere(fn ($q2) => $q2->where('pickup_date', '<=', $pickupDate)->where('return_date', '>=', $returnDate)))
