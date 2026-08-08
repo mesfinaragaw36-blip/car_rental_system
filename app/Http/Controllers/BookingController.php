@@ -45,6 +45,10 @@ class BookingController extends Controller
         $bookings = $query->latest()->paginate(15)->withQueryString();
 
         $bookings->getCollection()->transform(function ($booking) use ($user) {
+            $booking->has_dispute = $booking->disputes()
+                ->where('type', 'owner_no_show')
+                ->exists();
+
             if ($user->role !== 'admin' && $user->id !== $booking->customer_id && $booking->customer) {
                 unset($booking->customer->email);
             }
@@ -73,7 +77,7 @@ class BookingController extends Controller
             abort(403);
         }
 
-        $booking->load(['customer', 'owner', 'car', 'payments', 'refunds', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name']);
+        $booking->load(['customer', 'owner', 'car', 'payments', 'refunds', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name', 'disputes', 'ownerPayout']);
 
         $userReviews = Review::where('booking_id', $booking->id)
             ->where('reviewer_id', $user->id)
@@ -167,6 +171,9 @@ class BookingController extends Controller
             'booking' => [
                 'id' => $booking->id,
                 'status' => $booking->status,
+                'has_dispute' => $booking->disputes
+                    ->where('type', 'owner_no_show')
+                    ->count() > 0,
                 'pickup_date' => $booking->pickup_date->toDateTimeString(),
                 'return_date' => $booking->return_date->toDateTimeString(),
                 'pickup_location' => $booking->pickup_location,

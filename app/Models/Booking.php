@@ -257,6 +257,11 @@ class Booking extends Model
         return $this->hasMany(Refund::class);
     }
 
+    public function disputes(): HasMany
+    {
+        return $this->hasMany(BookingDispute::class);
+    }
+
     public function ownerPayout(): HasOne
     {
         return $this->hasOne(OwnerPayout::class);

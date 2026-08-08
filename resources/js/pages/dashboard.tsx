@@ -12,6 +12,7 @@ import {
     CarFront,
     CreditCard,
     ArrowRight,
+    AlertTriangle,
 } from 'lucide-react';
 import {
     LineChart,
@@ -26,6 +27,7 @@ import {
     CartesianGrid,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { index as disputesIndex } from '@/routes/disputes';
 
 interface AdminStats {
     total_users: number;
@@ -329,6 +331,12 @@ export default function Dashboard({
                                         value={s.total_users}
                                         icon={<Users className="h-4 w-4" />}
                                         href="/admin/users"
+                                    />
+                                    <StatCard
+                                        title="Booking Disputes"
+                                        value="View"
+                                        icon={<AlertTriangle className="h-4 w-4" />}
+                                        href={disputesIndex.url()}
                                     />
                                 </div>
 

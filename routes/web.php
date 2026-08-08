@@ -12,6 +12,7 @@ use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
 use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\BookingDisputeController;
 use App\Http\Controllers\BrowseCarController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverBookingController;
@@ -43,6 +44,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
     Route::post('/bookings/{booking}/assign-driver', [BookingController::class, 'assignDriver'])->name('bookings.assign-driver');
+    Route::post('/bookings/{booking}/owner-no-show', [BookingDisputeController::class, 'store'])->name('bookings.owner-no-show');
     Route::post('/bookings/{booking}/reviews', [ReviewController::class, 'store'])->name('bookings.reviews.store');
     Route::put('/bookings/{booking}/reviews/{review}', [ReviewController::class, 'update'])->name('bookings.reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
@@ -99,6 +101,13 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])->name('inspections.returned');
         Route::post('/inspections/{booking}/return-arrival', [InspectionController::class, 'confirmReturnArrival'])->name('inspections.return-arrival');
         Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
+    });
+
+    // Booking disputes (admin)
+    Route::middleware(['role:admin'])->group(function () {
+        Route::get('/disputes', [BookingDisputeController::class, 'index'])->name('disputes.index');
+        Route::post('/disputes/{dispute}/approve', [BookingDisputeController::class, 'approve'])->name('disputes.approve');
+        Route::post('/disputes/{dispute}/reject', [BookingDisputeController::class, 'reject'])->name('disputes.reject');
     });
 
     // Admin-only routes
