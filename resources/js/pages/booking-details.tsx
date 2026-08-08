@@ -166,6 +166,32 @@ export default function BookingDetails({ booking, role }: Props) {
         );
     };
 
+
+const handleCancelClick = () => {
+    const depositPaid = booking.status !== 'confirmed';
+
+    if (depositPaid) {
+        const totalPrice = parseFloat(booking.total_price);
+        const balanceAmount = parseFloat(booking.balance_amount);
+        const depositAmount = totalPrice - balanceAmount;
+        const refundAmount = (depositAmount * 0.75).toFixed(2);
+        const retainedAmount = (depositAmount * 0.25).toFixed(2);
+
+        const confirmed = window.confirm(
+            `You've already paid your deposit. Cancelling now means:\n\n` +
+            `• ETB ${refundAmount} (75%) will be refunded\n` +
+            `• ETB ${retainedAmount} (25%) is non-refundable\n\n` +
+            `Do you want to continue?`
+        );
+        if (!confirmed) return;
+    } else {
+        if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+    }
+
+    handleAction('cancel');
+};
+
+
     const selectReviewTarget = (target: ReviewTarget) => {
         setSelectedReviewTarget(target);
         setData('reviewable_type', target.type);
@@ -887,14 +913,12 @@ export default function BookingDetails({ booking, role }: Props) {
                     )}
 
                 <div className="flex flex-wrap gap-2">
-                    {booking.status === 'confirmed' && role === 'customer' && (
-                        <Button
-                            variant="destructive"
-                            onClick={() => handleAction('cancel')}
-                        >
-                            <Ban className="mr-1 h-4 w-4" /> Cancel
-                        </Button>
-                    )}
+                    {['confirmed', 'deposit_paid', 'paid'].includes(booking.status) &&
+    role === 'customer' && (
+        <Button variant="destructive" onClick={handleCancelClick}>
+            <Ban className="mr-1 h-4 w-4" /> Cancel
+        </Button>
+    )}
                     {booking.status === 'paid' &&
                         (role === 'admin' || role === 'owner') && (
                             <div className="w-full rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm text-muted-foreground">
