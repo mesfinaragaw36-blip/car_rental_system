@@ -73,7 +73,7 @@ class BookingController extends Controller
             abort(403);
         }
 
-        $booking->load(['customer', 'owner', 'car', 'payments', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name']);
+        $booking->load(['customer', 'owner', 'car', 'payments', 'refunds', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name']);
 
         $userReviews = Review::where('booking_id', $booking->id)
             ->where('reviewer_id', $user->id)
@@ -180,6 +180,18 @@ class BookingController extends Controller
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
                 'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
                 'payment' => $booking->payment,
+                'refunds' => $booking->refunds->map(fn ($refund) => [
+                    'id' => $refund->id,
+                    'amount' => $refund->amount,
+                    'reason' => $refund->reason,
+                    'created_at' => $refund->created_at->toDateTimeString(),
+                ])->values(),
+                'security_deposit_amount' => number_format($booking->securityDepositAmount(), 2, '.', ''),
+                'balance_amount' => number_format($booking->balanceAmount(), 2, '.', ''),
+                'has_balance_paid' => $booking->hasPaidBalance(),
+                'has_security_deposit_paid' => $booking->hasPaidSecurityDeposit(),
+                'balance_paid_at' => $booking->balance_paid_at?->toDateTimeString(),
+                'security_deposit_paid_at' => $booking->security_deposit_paid_at?->toDateTimeString(),
                 'driver' => $booking->driverAssignment?->driver ? ['id' => $booking->driverAssignment->driver->id, 'name' => $booking->driverAssignment->driver->name, 'phone' => $booking->driverAssignment->driver->phone] : null,
                 'driver_status' => $booking->driverAssignment?->status,
                 'pickup_inspection_approved' => $booking->hasApprovedInspection(Inspection::TYPE_PICKUP),
@@ -256,12 +268,35 @@ class BookingController extends Controller
         if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
             abort(403);
         }
-        if (! in_array($booking->status, ['pending', 'approved'])) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Only pending or approved bookings can be cancelled.']);
-        }
-        $booking->update(['status' => 'cancelled']);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Booking cancelled.']);
+        if (! in_array($booking->status, [
+            Booking::STATUS_CONFIRMED,
+            Booking::STATUS_DEPOSIT_PAID,
+            Booking::STATUS_PAID,
+        ], true)) {
+            return back()->with('toast', ['type' => 'error', 'message' => 'This booking can no longer be cancelled.']);
+        }
+
+        if ($booking->hasPaidDeposit()) {
+            $depositAmount = $booking->depositAmount();
+            $retained = round($depositAmount * 0.25, 2);
+            $refundAmount = round($depositAmount - $retained, 2);
+
+            $booking->refunds()->create([
+                'amount' => $refundAmount,
+                'reason' => 'Booking cancelled after deposit paid — 75% refund, 25% retained.',
+                'status' => 'pending',
+            ]);
+        }
+
+        $booking->update(['status' => Booking::STATUS_CANCELLED]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => $booking->hasPaidDeposit()
+                ? 'Booking cancelled. 75% of your deposit will be refunded; 25% is non-refundable.'
+                : 'Booking cancelled.',
+        ]);
     }
 
     public function assignDriver(Request $request, Booking $booking): RedirectResponse

@@ -7,6 +7,7 @@ use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Location;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -205,5 +206,146 @@ class BookingDepositFlowTest extends TestCase
             'car_id' => $car->id,
             'status' => 'cancelled',
         ]);
+    }
+
+    public function test_cancelling_deposit_paid_booking_refunds_75_percent_and_retains_25_percent(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+
+        $booking = Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_location' => 'Airport',
+            'return_location' => 'Hotel',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'deposit_amount' => 500.00,
+            'status' => Booking::STATUS_DEPOSIT_PAID,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'type' => 'booking_deposit',
+            'amount' => 500.00,
+            'payment_method' => 'Cash',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->actingAs($customer)->post(route('bookings.cancel', ['booking' => $booking->id]));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'cancelled',
+        ]);
+
+        $this->assertDatabaseHas('refunds', [
+            'booking_id' => $booking->id,
+            'amount' => 375.00,
+            'status' => 'pending',
+        ]);
+
+        $this->assertSame(1, Refund::count());
+    }
+
+    public function test_cancelling_confirmed_booking_without_deposit_creates_no_refund(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+
+        $booking = Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_location' => 'Airport',
+            'return_location' => 'Hotel',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'deposit_amount' => 500.00,
+            'status' => Booking::STATUS_CONFIRMED,
+        ]);
+
+        $this->actingAs($customer)->post(route('bookings.cancel', ['booking' => $booking->id]));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'cancelled',
+        ]);
+
+        $this->assertSame(0, Refund::count());
+    }
+
+    public function test_cancelling_fully_paid_booking_refunds_75_percent_of_deposit(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+
+        $booking = Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_location' => 'Airport',
+            'return_location' => 'Hotel',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'deposit_amount' => 500.00,
+            'status' => Booking::STATUS_PAID,
+        ]);
+
+        Payment::create([
+            'booking_id' => $booking->id,
+            'type' => 'booking_deposit',
+            'amount' => 500.00,
+            'payment_method' => 'Cash',
+            'payment_status' => 'paid',
+        ]);
+
+        $this->actingAs($customer)->post(route('bookings.cancel', ['booking' => $booking->id]));
+
+        $this->assertDatabaseHas('refunds', [
+            'booking_id' => $booking->id,
+            'amount' => 375.00,
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_booking_cannot_be_cancelled_once_picked_up(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->car($owner);
+
+        $booking = Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(3)->toDateString(),
+            'return_date' => now()->addDays(6)->toDateString(),
+            'pickup_location' => 'Airport',
+            'return_location' => 'Hotel',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'deposit_amount' => 500.00,
+            'status' => Booking::STATUS_PICKED_UP,
+        ]);
+
+        $this->actingAs($customer)->post(route('bookings.cancel', ['booking' => $booking->id]));
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'picked_up',
+        ]);
+
+        $this->assertSame(0, Refund::count());
     }
 }
