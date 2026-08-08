@@ -61,6 +61,12 @@ class TransactionController extends Controller
 
         $transactions = $transactions->sortByDesc('created_at')->values();
 
+        $summary = [
+            'total_transactions' => $transactions->count(),
+            'total_company_earnings' => (string) round($transactions->sum(fn (array $transaction) => (float) ($transaction['commission_amount'] ?? 0)), 2),
+            'total_amount' => (string) round($transactions->sum(fn (array $transaction) => (float) $transaction['amount']), 2),
+        ];
+
         $perPage = 15;
         $page = max(1, (int) $request->integer('page', 1));
 
@@ -78,6 +84,7 @@ class TransactionController extends Controller
         return Inertia::render('admin/transactions', [
             'transactions' => $paginator,
             'filters' => ['type' => $type],
+            'summary' => $summary,
         ]);
     }
 
@@ -174,7 +181,7 @@ class TransactionController extends Controller
             'plate_number' => $payment->booking?->car?->plate_number,
             'reason' => null,
             'gross_amount' => null,
-            'commission_amount' => null,
+            'commission_amount' => $this->paymentCommission($payment),
             'net_amount' => null,
             'earnings' => null,
             'payment_type' => $payment->type,
@@ -182,6 +189,17 @@ class TransactionController extends Controller
             'transaction_reference' => $payment->transaction_reference,
             'booking' => $this->bookingPayload($payment->booking),
         ];
+    }
+
+    private function paymentCommission(Payment $payment): ?string
+    {
+        if ($payment->payment_status !== 'paid' || $payment->type === Payment::TYPE_SECURITY_DEPOSIT) {
+            return null;
+        }
+
+        $rate = (float) config('commission.rate', 10);
+
+        return (string) round((float) $payment->amount * ($rate / 100), 2);
     }
 
     /**

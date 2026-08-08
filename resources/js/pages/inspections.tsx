@@ -49,6 +49,8 @@ interface InspectionRecord {
 
 type DeliveryStatus = 'pending' | 'arrived' | 'failed';
 
+type ReturnArrivalStatus = 'pending' | 'arrived';
+
 interface Booking {
     id: number;
     status: string;
@@ -61,6 +63,10 @@ interface Booking {
     car_delivery_status: DeliveryStatus;
     car_delivery_confirmed_at: string | null;
     car_delivery_due_date: string;
+    return_arrival_status: ReturnArrivalStatus;
+    return_arrival_confirmed_at: string | null;
+    returned_at: string | null;
+    late_return_days: number;
     car: {
         brand: string;
         model: string;
@@ -206,6 +212,91 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                         The owner and admins have been alerted. Follow up before
                         the pickup date.
                     </p>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function ReturnArrivalPanel({ booking }: { booking: Booking }) {
+    const [processing, setProcessing] = useState(false);
+    const status = booking.return_arrival_status;
+    const lateDays = booking.late_return_days;
+
+    const confirmArrival = () => {
+        if (
+            lateDays > 0 &&
+            !window.confirm(
+                `This car is ${lateDays} day${lateDays > 1 ? 's' : ''} late. Confirm the customer returned it now?`,
+            )
+        ) {
+            return;
+        }
+
+        setProcessing(true);
+
+        router.post(
+            inspections.returnArrival.url({ booking: booking.id }),
+            {},
+            { preserveScroll: true, onFinish: () => setProcessing(false) },
+        );
+    };
+
+    return (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-start gap-3">
+                    {status === 'arrived' ? (
+                        <PackageCheck className="mt-0.5 h-5 w-5 text-green-600" />
+                    ) : (
+                        <KeyRound className="mt-0.5 h-5 w-5 text-yellow-600" />
+                    )}
+                    <div>
+                        <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
+                            Customer car return
+                            <StatusBadge
+                                label={
+                                    status === 'arrived'
+                                        ? 'arrived'
+                                        : 'pending'
+                                }
+                                tone={
+                                    status === 'arrived' ? 'green' : 'yellow'
+                                }
+                            />
+                            {lateDays > 0 && status === 'pending' && (
+                                <StatusBadge
+                                    label={`Late by ${lateDays} day${lateDays > 1 ? 's' : ''}`}
+                                    tone="red"
+                                />
+                            )}
+                        </p>
+                        <p className="mt-0.5 text-sm text-muted-foreground">
+                            {status === 'arrived'
+                                ? `Car confirmed back at ${booking.return_location}.`
+                                : `Waiting for the customer to return the car to ${booking.return_location}.`}
+                        </p>
+                        {status === 'arrived' &&
+                            booking.return_arrival_confirmed_at && (
+                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                    Confirmed{' '}
+                                    {new Date(
+                                        booking.return_arrival_confirmed_at,
+                                    ).toLocaleString()}
+                                </p>
+                            )}
+                    </div>
+                </div>
+
+                {status === 'pending' && (
+                    <Button
+                        size="sm"
+                        disabled={processing}
+                        onClick={confirmArrival}
+                    >
+                        <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                        {processing ? 'Confirming...' : 'Car Arrived'}
+                    </Button>
                 )}
             </div>
         </div>
@@ -769,6 +860,10 @@ function BookingCard({
 
                 {inspectionType === 'pickup' && (
                     <DeliveryPanel booking={booking} />
+                )}
+
+                {inspectionType === 'return' && (
+                    <ReturnArrivalPanel booking={booking} />
                 )}
 
                 <InspectionBadges inspections={booking.inspections} />

@@ -38,6 +38,10 @@ class InspectionController extends Controller
             'car_delivery_status' => $booking->car_delivery_status,
             'car_delivery_confirmed_at' => $booking->car_delivery_confirmed_at?->toDateTimeString(),
             'car_delivery_due_date' => $booking->carDeliveryDueDate()->toDateString(),
+            'return_arrival_status' => $booking->return_arrival_status,
+            'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at?->toDateTimeString(),
+            'returned_at' => $booking->returned_at?->toDateTimeString(),
+            'late_return_days' => $booking->returnLateDays(),
             'car' => [
                 'brand' => $booking->car->brand,
                 'model' => $booking->car->model,
@@ -282,6 +286,9 @@ class InspectionController extends Controller
         $booking->update([
             'status' => Booking::STATUS_RETURNED,
             'returned_at' => now(),
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
+            'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at ?? now(),
+            'return_arrival_confirmed_by' => $booking->return_arrival_confirmed_by ?? auth()->id(),
         ]);
         $booking->car->update([
             'availability_status' => 'available',
@@ -318,6 +325,46 @@ class InspectionController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Vehicle marked as returned.',
+        ]);
+    }
+
+    public function confirmReturnArrival(Booking $booking): RedirectResponse
+    {
+        if (! in_array($booking->status, [Booking::STATUS_PICKED_UP, Booking::STATUS_RETURNED], true)) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'The car can only be confirmed as returned while the booking is picked up or returned.',
+            ]);
+        }
+
+        if ($booking->hasCarReturnArrivalBeenConfirmed()) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'The car return has already been confirmed for this booking.',
+            ]);
+        }
+
+        $booking->update([
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
+            'return_arrival_confirmed_at' => now(),
+            'return_arrival_confirmed_by' => auth()->id(),
+        ]);
+
+        $booking->owner?->notifyNow(
+            "Your {$booking->car->brand} {$booking->car->model} has been returned",
+            sprintf(
+                'The car has arrived back at %s for booking #%s. The return inspection will now be finalized.',
+                $booking->return_location,
+                $booking->id,
+            ),
+            'car_returned',
+            Booking::class,
+            $booking->id,
+        );
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Car return confirmed.',
         ]);
     }
 

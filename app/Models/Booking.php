@@ -30,6 +30,10 @@ class Booking extends Model
 
     public const CAR_DELIVERY_FAILED = 'failed';
 
+    public const RETURN_ARRIVAL_PENDING = 'pending';
+
+    public const RETURN_ARRIVAL_ARRIVED = 'arrived';
+
     protected $fillable = [
         'customer_id',
         'owner_id',
@@ -54,6 +58,9 @@ class Booking extends Model
         'car_delivery_confirmed_at',
         'car_delivery_confirmed_by',
         'car_delivery_escalated_at',
+        'return_arrival_status',
+        'return_arrival_confirmed_at',
+        'return_arrival_confirmed_by',
         'status',
         'notes',
     ];
@@ -75,6 +82,8 @@ class Booking extends Model
             'car_delivery_confirmed_at' => 'datetime',
             'car_delivery_confirmed_by' => 'integer',
             'car_delivery_escalated_at' => 'datetime',
+            'return_arrival_confirmed_at' => 'datetime',
+            'return_arrival_confirmed_by' => 'integer',
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
@@ -285,5 +294,24 @@ class Booking extends Model
     public function hasCarDeliveryBeenConfirmed(): bool
     {
         return in_array($this->car_delivery_status, [self::CAR_DELIVERY_ARRIVED, self::CAR_DELIVERY_FAILED], true);
+    }
+
+    public function hasCarReturnArrived(): bool
+    {
+        return $this->return_arrival_status === self::RETURN_ARRIVAL_ARRIVED;
+    }
+
+    public function hasCarReturnArrivalBeenConfirmed(): bool
+    {
+        return $this->return_arrival_status === self::RETURN_ARRIVAL_ARRIVED;
+    }
+
+    public function returnLateDays(): int
+    {
+        if ($this->returned_at === null) {
+            return 0;
+        }
+
+        return max(0, (int) $this->return_date->copy()->startOfDay()->diffInDays($this->returned_at->copy()->startOfDay()));
     }
 }

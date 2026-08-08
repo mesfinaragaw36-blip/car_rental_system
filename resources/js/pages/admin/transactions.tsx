@@ -54,6 +54,11 @@ interface Paginated {
 interface Props {
     transactions: Paginated;
     filters: { type?: string };
+    summary?: {
+        total_transactions: number;
+        total_company_earnings: string;
+        total_amount: string;
+    };
 }
 
 interface FlashProps {
@@ -94,7 +99,7 @@ const ACTION_LABELS: Record<'refund' | 'owner_payout' | 'driver_payout', string>
     driver_payout: 'Pay Driver',
 };
 
-export default function AdminTransactions({ transactions, filters }: Props) {
+export default function AdminTransactions({ transactions, filters, summary }: Props) {
     const { props } = usePage<{ flash: FlashProps }>();
     const toast = props.flash?.toast;
 
@@ -181,6 +186,45 @@ export default function AdminTransactions({ transactions, filters }: Props) {
                     </div>
                 )}
 
+                <div className="grid gap-4 sm:grid-cols-3">
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Transactions
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold">
+                                {summary?.total_transactions ?? 0}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Company Commission
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold text-emerald-600">
+                                ETB {summary?.total_company_earnings ?? '0.00'}
+                            </p>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
+                                Total Amount
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-2xl font-bold">
+                                ETB {summary?.total_amount ?? '0.00'}
+                            </p>
+                        </CardContent>
+                    </Card>
+                </div>
+
                 <Card>
                     <CardContent className="p-4">
                         <nav className="flex flex-wrap gap-2">
@@ -236,6 +280,9 @@ export default function AdminTransactions({ transactions, filters }: Props) {
                                                 Amount
                                             </th>
                                             <th className="pb-3 font-medium">
+                                                Commission
+                                            </th>
+                                            <th className="pb-3 font-medium">
                                                 Status
                                             </th>
                                             <th className="pb-3 font-medium">
@@ -268,6 +315,18 @@ export default function AdminTransactions({ transactions, filters }: Props) {
                                                 </td>
                                                 <td className="py-3 font-medium">
                                                     ETB {transaction.amount}
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {transaction.commission_amount ? (
+                                                        <span className="font-medium text-emerald-600">
+                                                            ETB{' '}
+                                                            {
+                                                                transaction.commission_amount
+                                                            }
+                                                        </span>
+                                                    ) : (
+                                                        '—'
+                                                    )}
                                                 </td>
                                                 <td className="py-3">
                                                     <span
@@ -433,6 +492,21 @@ export default function AdminTransactions({ transactions, filters }: Props) {
                                         label="Amount"
                                         value={`ETB ${selected.amount}`}
                                     />
+
+                                    {selected.type === 'payment' &&
+                                        selected.commission_amount && (
+                                            <DetailRow
+                                                label="Commission"
+                                                value={
+                                                    <span className="text-emerald-600">
+                                                        ETB{' '}
+                                                        {
+                                                            selected.commission_amount
+                                                        }
+                                                    </span>
+                                                }
+                                            />
+                                        )}
 
                                     {selected.type === 'owner_payout' && (
                                         <>

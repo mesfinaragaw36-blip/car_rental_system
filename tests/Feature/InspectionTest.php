@@ -693,6 +693,130 @@ class InspectionTest extends TestCase
         ]);
     }
 
+    public function test_confirm_return_arrival_marks_booking_arrived_and_notifies_owner(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, 'picked_up');
+
+        $this->actingAs($admin)
+            ->post(route('inspections.return-arrival', ['booking' => $booking->id]))
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
+            'return_arrival_confirmed_by' => $admin->id,
+        ]);
+
+        $this->assertNotNull($booking->fresh()->return_arrival_confirmed_at);
+
+        $this->assertDatabaseHas('notifications', [
+            'user_id' => $owner->id,
+            'type' => 'car_returned',
+            'related_id' => $booking->id,
+        ]);
+    }
+
+    public function test_confirm_return_arrival_requires_picked_up_or_returned_booking(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, 'paid');
+
+        $this->actingAs($admin)
+            ->post(route('inspections.return-arrival', ['booking' => $booking->id]))
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'error');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_PENDING,
+        ]);
+    }
+
+    public function test_confirm_return_arrival_cannot_be_confirmed_twice(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, 'picked_up');
+
+        $this->actingAs($admin)
+            ->post(route('inspections.return-arrival', ['booking' => $booking->id]))
+            ->assertSessionHas('toast.type', 'success');
+
+        $this->actingAs($admin)
+            ->post(route('inspections.return-arrival', ['booking' => $booking->id]))
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'error');
+    }
+
+    public function test_mark_returned_auto_confirms_return_arrival(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, 'picked_up');
+
+        $this->actingAs($admin)
+            ->post(route('inspections.returned', ['booking' => $booking->id]))
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('bookings', [
+            'id' => $booking->id,
+            'status' => 'returned',
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
+        ]);
+    }
+
+    public function test_index_exposes_return_arrival_status_and_late_return_days(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $onTime = $this->booking($owner, $customer, 'picked_up');
+
+        $car = Car::factory()->create([
+            'owner_id' => $owner->id,
+            'approval_status' => 'approved',
+            'availability_status' => 'available',
+        ]);
+
+        $late = Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->subDays(6)->toDateString(),
+            'return_date' => now()->subDays(2)->toDateString(),
+            'pickup_location' => 'Airport',
+            'return_location' => 'Hotel',
+            'need_driver' => false,
+            'total_price' => 300.00,
+            'deposit_amount' => 500.00,
+            'status' => 'returned',
+            'picked_up_at' => now()->subDays(5),
+            'returned_at' => now()->subDay(),
+            'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
+        ]);
+
+        $this->actingAs($admin)
+            ->get(route('inspections.index'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('return_queue.0.id', $onTime->id)
+                ->where('return_queue.0.return_arrival_status', Booking::RETURN_ARRIVAL_PENDING)
+                ->where('return_queue.0.late_return_days', 0)
+                ->where('awaiting_completion.0.id', $late->id)
+                ->where('awaiting_completion.0.return_arrival_status', Booking::RETURN_ARRIVAL_ARRIVED)
+                ->where('awaiting_completion.0.late_return_days', 1));
+    }
+
     public function test_pickup_inspection_with_issues_cancels_booking_and_refunds_customer(): void
     {
         $admin = $this->admin();

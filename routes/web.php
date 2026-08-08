@@ -97,6 +97,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/inspections/{booking}/conduct', [InspectionController::class, 'conduct'])->name('inspections.conduct');
         Route::post('/inspections/{booking}/handover', [InspectionController::class, 'handover'])->name('inspections.handover');
         Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])->name('inspections.returned');
+        Route::post('/inspections/{booking}/return-arrival', [InspectionController::class, 'confirmReturnArrival'])->name('inspections.return-arrival');
         Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
 
         // Pre-pickup inspection
