@@ -317,27 +317,11 @@ class BookingController extends Controller
         return back()->with('toast', ['type' => 'success', 'message' => 'Driver assigned.']);
     }
 
-    public function complete(Booking $booking): RedirectResponse
-    {
-        $user = auth()->user();
-
-        if ($booking->owner_id !== $user->id && $user->role !== 'admin') {
-            abort(403);
-        }
-
-        if ($booking->status !== 'returned') {
-            return back()->with('toast', [
-                'type' => 'error',
-
-                'message' => 'Only returned bookings can be completed.',
-            ]);
-        }
-
-        $this->completion->complete($booking);
-
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Booking completed.',
-        ]);
-    }
+   public function complete(Booking $booking): RedirectResponse
+{
+    return back()->with('toast', [
+        'type' => 'error',
+        'message' => 'Bookings must be completed through the inspection flow so repair costs and late fees are settled correctly.',
+    ]);
+}
 }
