@@ -99,6 +99,11 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/inspections/{booking}/handover', [InspectionController::class, 'handover'])->name('inspections.handover');
         Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])->name('inspections.returned');
         Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])->name('inspections.complete');
+
+        // Pre-pickup inspection
+        Route::get('/inspections/pre-pickup', [InspectionController::class, 'prePickupIndex'])->name('inspections.pre-pickup.index');
+        Route::get('/inspections/pre-pickup/{booking}', [InspectionController::class, 'showPrePickup'])->name('inspections.pre-pickup.show');
+        Route::post('/inspections/pre-pickup/{booking}', [InspectionController::class, 'storePrePickup'])->name('inspections.pre-pickup.store');
     });
 
     // Admin-only routes
