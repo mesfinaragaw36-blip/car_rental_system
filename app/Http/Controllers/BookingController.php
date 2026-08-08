@@ -199,6 +199,8 @@ class BookingController extends Controller
                 'has_security_deposit_paid' => $booking->hasPaidSecurityDeposit(),
                 'balance_paid_at' => $booking->balance_paid_at?->toDateTimeString(),
                 'security_deposit_paid_at' => $booking->security_deposit_paid_at?->toDateTimeString(),
+                'late_days' => $booking->late_days,
+                'late_fee' => $booking->late_fee,
                 'refunds' => $booking->refunds->map(fn ($refund) => [
                     'id' => $refund->id,
                     'amount' => $refund->amount,

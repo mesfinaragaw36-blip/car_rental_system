@@ -52,6 +52,8 @@ class Booking extends Model
         'car_delivery_confirmed_at',
         'car_delivery_confirmed_by',
         'car_delivery_escalated_at',
+        'late_days',
+        'late_fee',
         'status',
         'notes',
     ];
@@ -74,6 +76,7 @@ class Booking extends Model
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'late_fee' => 'decimal:2',
         ];
     }
 

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Booking;
 use App\Models\OwnerPayout;
 use App\Models\Refund;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BookingCompletionService
@@ -13,25 +14,58 @@ class BookingCompletionService
     {
         $repairCost = max(0.0, (float) $repairCost);
         $securityDeposit = $booking->securityDepositAmount();
-        $deduction = min($repairCost, $securityDeposit);
+
+        $lateDays = 0;
+        $lateFee = 0;
+
+if ($booking->return_date && Carbon::parse($booking->return_date)->isPast()) {
+    $lateDays = Carbon::parse($booking->return_date)
+        ->startOfDay()
+        ->diffInDays(now()->startOfDay());
+
+    $lateFee = $lateDays * config('booking.late_fee_per_day');
+}
+        $totalDeduction = $repairCost + $lateFee;
+
+        $deduction = min($totalDeduction, $securityDeposit);
+
         $refundAmount = round($securityDeposit - $deduction, 2);
 
         $gross = round((float) $booking->total_price, 2);
         $commission = round($gross * (config('commission.rate', 10) / 100), 2);
         $net = round($gross - $commission, 2);
 
-        DB::transaction(function () use ($booking, $refundAmount, $deduction, $gross, $commission, $net) {
-            $booking->update(['status' => Booking::STATUS_COMPLETED]);
+            DB::transaction(function () use ($booking, $refundAmount, $deduction, $gross, $commission, $net, $lateDays, $lateFee, $repairCost,) {
+            $booking->update(['status' => Booking::STATUS_COMPLETED, 'late_days' => $lateDays, 'late_fee' => $lateFee,]);
 
-            if ($refundAmount > 0) {
-                Refund::create([
-                    'booking_id' => $booking->id,
-                    'amount' => $refundAmount,
-                    'reason' => $deduction > 0
-                        ? sprintf('Security deposit refund after deducting ETB %s for repair costs.', number_format($deduction, 2))
-                        : 'Full security deposit refund after a successful return.',
-                ]);
-            }
+                    if ($refundAmount > 0) {
+                $reason = 'Full security deposit refund after a successful return.';
+
+                if ($repairCost > 0 || $lateFee > 0) {
+                    $reasons = [];
+
+                    if ($repairCost > 0) {
+                        $reasons[] = sprintf(
+                            'ETB %s for repair costs',
+                            number_format($repairCost, 2)
+                        );
+                    }
+
+                    if ($lateFee > 0) {
+                        $reasons[] = sprintf(
+                            'ETB %s for late fees',
+                            number_format($lateFee, 2)
+                        );
+                    }
+                    $reason = 'Security deposit refund after deducting ' . implode(' and ', $reasons) . '.';
+                        }
+
+                        Refund::create([
+                            'booking_id' => $booking->id,
+                            'amount' => $refundAmount,
+                            'reason' => $reason,
+                        ]);
+                    }
 
             OwnerPayout::create([
                 'booking_id' => $booking->id,
@@ -45,7 +79,7 @@ class BookingCompletionService
 
         $booking->customer?->notifyNow(
             "Booking #{$booking->id} completed",
-            $this->customerMessage($booking, $refundAmount, $deduction),
+            $this->customerMessage($booking, $refundAmount, $deduction, $repairCost, $lateFee),
             'booking_completed',
             Booking::class,
             $booking->id,
@@ -67,7 +101,13 @@ class BookingCompletionService
         );
     }
 
-    private function customerMessage(Booking $booking, float $refundAmount, float $deduction): string
+    private function customerMessage(
+    Booking $booking,
+    float $refundAmount,
+    float $deduction,
+    float $repairCost,
+    float $lateFee
+): string
     {
         $base = sprintf(
             'Your rental of the %s %s is complete. ',
