@@ -13,6 +13,8 @@ class Payment extends Model
 
     public const TYPE_SECURITY_DEPOSIT = 'security_deposit';
 
+    public const TYPE_EXTRA_CHARGE = 'extra_charge';
+
     protected $fillable = [
         'booking_id',
         'type',

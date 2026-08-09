@@ -116,6 +116,8 @@ interface BookingDetails {
         rating: number;
         review_text: string | null;
     }[];
+    late_days: number | null;
+    late_fee: number | string | null;
 }
 
 interface Props {
@@ -563,7 +565,33 @@ export default function BookingDetails({ booking, role }: Props) {
                                 </p>
                             )}
 
+                            {(booking.late_days ?? 0) > 0 && (
+                                    <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                                        <div className="flex items-center justify-between">
+                                            <div>
+                                                <h3 className="text-sm font-semibold text-amber-900">
+                                                    Late Return Fee
+                                                </h3>
+                                                <p className="mt-1 text-sm text-amber-700">
+                                                    The vehicle was returned {booking.late_days} day
+                                                    {booking.late_days === 1 ? '' : 's'} late.
+                                                </p>
+                                            </div>
+
+                                            <div className="text-right">
+                                                <p className="text-xs font-medium uppercase tracking-wide text-amber-600">
+                                                    Fee Charged
+                                                </p>
+                                                <p className="mt-1 text-xl font-bold text-amber-900">
+                                                    ETB {Number(booking.late_fee ?? 0).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
                             {booking.refunds && booking.refunds.length > 0 && (
+                        
                                 <div className="border-t pt-2">
                                     <p className="font-semibold text-green-700">
                                         Refunds

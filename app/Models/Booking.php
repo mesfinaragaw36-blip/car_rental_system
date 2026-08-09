@@ -67,6 +67,8 @@ class Booking extends Model
         'return_arrival_status',
         'return_arrival_confirmed_at',
         'return_arrival_confirmed_by',
+        'late_days',
+        'late_fee',
         'status',
         'notes',
     ];
@@ -93,6 +95,7 @@ class Booking extends Model
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'late_fee' => 'decimal:2',
         ];
     }
 

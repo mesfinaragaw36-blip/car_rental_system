@@ -3,7 +3,6 @@ import { Eye, Plus, Search } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
 import type { Auth } from '@/types';
 
@@ -102,7 +101,6 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                         </Button>
                     </Link>
                 </div>
-
 
 
                 {toast && (
