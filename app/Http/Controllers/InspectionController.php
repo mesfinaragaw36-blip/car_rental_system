@@ -38,7 +38,7 @@ class InspectionController extends Controller
             'car_delivery_status' => $booking->car_delivery_status,
             'car_delivery_confirmed_at' => $booking->car_delivery_confirmed_at?->toDateTimeString(),
             'car_delivery_due_date' => $booking->carDeliveryDueDate()->toDateString(),
-            'return_arrival_status' => $booking->return_arrival_status,
+            'return_arrival_status' => $booking->return_arrival_status ?? 'pending',
             'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at?->toDateTimeString(),
             'returned_at' => $booking->returned_at?->toDateTimeString(),
             'late_return_days' => $booking->returnLateDays(),
@@ -81,39 +81,86 @@ class InspectionController extends Controller
         ]);
     }
 
-    public function confirmDelivery(Request $request, Booking $booking): RedirectResponse
-    {
-        if (! in_array($booking->status, [Booking::STATUS_CONFIRMED, Booking::STATUS_DEPOSIT_PAID, Booking::STATUS_PAID], true)) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'Car delivery can only be confirmed for active or confirmed bookings.']);
-        }
-
-        if ($booking->hasCarDeliveryBeenConfirmed()) {
-            return back()->with('toast', ['type' => 'error', 'message' => 'The car delivery status has already been confirmed for this booking.']);
-        }
-
-        $validated = $request->validate([
-            'status' => ['required', 'in:arrived,failed'],
+   public function confirmDelivery(Request $request, Booking $booking): RedirectResponse
+{
+    if (! in_array($booking->status, [
+        Booking::STATUS_CONFIRMED,
+        Booking::STATUS_DEPOSIT_PAID,
+        Booking::STATUS_PAID,
+    ], true)) {
+        return back()->with('toast', [
+            'type' => 'error',
+            'message' => 'Car delivery can only be confirmed for active or confirmed bookings.',
         ]);
+    }
 
+    if ($booking->hasCarDeliveryBeenConfirmed()) {
+        return back()->with('toast', [
+            'type' => 'error',
+            'message' => 'The car delivery status has already been confirmed for this booking.',
+        ]);
+    }
+
+    $validated = $request->validate([
+        'status' => ['required', 'in:arrived,failed'],
+    ]);
+
+    if ($validated['status'] === Booking::CAR_DELIVERY_ARRIVED) {
         $booking->update([
-            'car_delivery_status' => $validated['status'],
+            'car_delivery_status' => Booking::CAR_DELIVERY_ARRIVED,
             'car_delivery_confirmed_at' => now(),
             'car_delivery_confirmed_by' => $request->user()->id,
         ]);
 
-        if ($validated['status'] === Booking::CAR_DELIVERY_ARRIVED) {
-            $this->notifyOwnerArrived($booking);
+        $this->notifyOwnerArrived($booking);
 
-            $message = 'Car arrival confirmed. The pre-rental inspection can now be conducted.';
-        } else {
-            $this->notifyOwnerNotDelivered($booking);
-            $this->notifyAdminsOfFailedDelivery($booking);
-
-            $message = 'Delivery marked as failed. The owner and admins have been notified.';
-        }
-
-        return back()->with('toast', ['type' => 'success', 'message' => $message]);
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Car arrival confirmed. The pre-rental inspection can now be conducted.',
+        ]);
     }
+
+    $paid = $booking->totalPaid();
+
+    DB::transaction(function () use ($booking, $paid, $request): void {
+        $booking->update([
+            'car_delivery_status' => Booking::CAR_DELIVERY_FAILED,
+            'car_delivery_confirmed_at' => now(),
+            'car_delivery_confirmed_by' => $request->user()->id,
+            'status' => Booking::STATUS_CANCELLED,
+        ]);
+
+        if ($paid > 0) {
+            Refund::create([
+                'booking_id' => $booking->id,
+                'amount' => round($paid, 2),
+                'reason' => 'Owner failed to deliver the vehicle; booking cancelled.',
+                'status' => 'pending',
+            ]);
+        }
+    });
+
+    $this->notifyOwnerNotDelivered($booking);
+    $this->notifyAdminsOfFailedDelivery($booking);
+
+    $booking->customer?->notifyNow(
+        "Booking #{$booking->id} cancelled",
+        sprintf(
+            'The %s %s was not delivered by the owner, so your booking has been cancelled. Your payment of ETB %s will be refunded to your original payment method.',
+            $booking->car->brand,
+            $booking->car->model,
+            number_format(round($paid, 2), 2),
+        ),
+        'booking_cancelled',
+        Booking::class,
+        $booking->id,
+    );
+
+    return back()->with('toast', [
+        'type' => 'success',
+        'message' => "Car delivery failed. Booking #{$booking->id} was cancelled and the customer's payment was queued for refund.",
+    ]);
+}
 
     public function conduct(Request $request, Booking $booking): RedirectResponse
     {
@@ -367,6 +414,44 @@ class InspectionController extends Controller
             'message' => 'Car return confirmed.',
         ]);
     }
+
+    public function markReturnNotArrived(Booking $booking): RedirectResponse
+{
+    if ($booking->status !== Booking::STATUS_PICKED_UP) {
+        return back()->with('toast', [
+            'type' => 'error',
+            'message' => 'This booking is not currently awaiting return.',
+        ]);
+    }
+
+    $booking->update([
+        'return_arrival_status' => Booking::RETURN_ARRIVAL_PENDING,
+    ]);
+
+    User::query()
+        ->where('role', 'admin')
+        ->whereNull('staff_role_id')
+        ->get()
+        ->each->notifyNow(
+            "Car not returned - Booking #{$booking->id}",
+            sprintf(
+                'The %s %s for booking #%s was not returned on time. It is currently %d day%s overdue. Please follow up with the customer.',
+                $booking->car->brand,
+                $booking->car->model,
+                $booking->id,
+                $booking->returnLateDays(),
+                $booking->returnLateDays() === 1 ? '' : 's',
+            ),
+            'car_return_not_arrived',
+            Booking::class,
+            $booking->id,
+        );
+
+    return back()->with('toast', [
+        'type' => 'warning',
+        'message' => 'Car marked as not returned. Admins have been notified.',
+    ]);
+}
 
     private function handleApprovedPickupInspection(Booking $booking, ?float $estimatedValue): void
     {

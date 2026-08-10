@@ -44,4 +44,20 @@ class Notification extends Model
     {
         return Attribute::get(fn () => $this->read_at !== null);
     }
+
+   public function url(): Attribute
+{
+    return Attribute::get(function () {
+        if (!$this->related_type || !$this->related_id) {
+            return null;
+        }
+
+        return match ($this->related_type) {
+            Booking::class => route('bookings.show', $this->related_id),
+            OwnerPayout::class => route('admin.transactions.index'),
+            BookingDriver::class => route('assignments.index'),
+            default => null,
+        };
+    });
+}
 }

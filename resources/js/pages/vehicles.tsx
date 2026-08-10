@@ -293,126 +293,36 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                     car={selectedVehicle}
                     actions={
                         <div className="w-full space-y-4">
-                            <div className="rounded-xl border border-slate-200 p-4 text-left">
-                                <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                                    <CalendarRange className="h-4 w-4 text-blue-600" />{' '}
-                                    Available Dates
-                                </h3>
-                                <p className="mt-1 text-xs text-slate-500">
-                                    Customers can only book this vehicle during
-                                    these date ranges.
+                        <div className="rounded-xl border border-slate-200 p-4 text-left">
+                            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                <CalendarRange className="h-4 w-4 text-blue-600" />{' '}
+                                Available Dates
+                            </h3>
+                            <p className="mt-1 text-xs text-slate-500">
+                                Customers can only book this vehicle during these date
+                                ranges.
+                            </p>
+
+                            {selectedVehicle?.available_periods &&
+                            selectedVehicle.available_periods.length > 0 ? (
+                                <ul className="mt-3 space-y-2">
+                                    {selectedVehicle.available_periods.map((period) => (
+                                        <li
+                                            key={period.id}
+                                            className="rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                                        >
+                                            <p className="font-medium text-slate-800">
+                                                {period.start_date} → {period.end_date}
+                                            </p>
+                                        </li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p className="mt-3 text-sm text-slate-500">
+                                    No available date ranges set.
                                 </p>
-
-                                <form
-                                    onSubmit={handleAddAvailablePeriod}
-                                    className="mt-3 space-y-2"
-                                >
-                                    <div className="grid gap-2 sm:grid-cols-2">
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="period-start"
-                                                className="text-xs"
-                                            >
-                                                Start
-                                            </Label>
-                                            <Input
-                                                id="period-start"
-                                                type="date"
-                                                className="h-9"
-                                                value={periodData.start_date}
-                                                min={
-                                                    new Date()
-                                                        .toISOString()
-                                                        .split('T')[0]
-                                                }
-                                                onChange={(e) =>
-                                                    setPeriodData({
-                                                        ...periodData,
-                                                        start_date:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                                required
-                                            />
-                                        </div>
-                                        <div className="space-y-1">
-                                            <Label
-                                                htmlFor="period-end"
-                                                className="text-xs"
-                                            >
-                                                End
-                                            </Label>
-                                            <Input
-                                                id="period-end"
-                                                type="date"
-                                                className="h-9"
-                                                value={periodData.end_date}
-                                                min={
-                                                    periodData.start_date ||
-                                                    new Date()
-                                                        .toISOString()
-                                                        .split('T')[0]
-                                                }
-                                                onChange={(e) =>
-                                                    setPeriodData({
-                                                        ...periodData,
-                                                        end_date:
-                                                            e.target.value,
-                                                    })
-                                                }
-                                                required
-                                            />
-                                        </div>
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        size="sm"
-                                        className="w-full"
-                                    >
-                                        Add Available Range
-                                    </Button>
-                                </form>
-
-                                {selectedVehicle?.available_periods &&
-                                    selectedVehicle.available_periods.length >
-                                        0 && (
-                                        <ul className="mt-3 space-y-2">
-                                            {selectedVehicle.available_periods.map(
-                                                (period) => (
-                                                    <li
-                                                        key={period.id}
-                                                        className="flex items-center justify-between gap-3 rounded-lg bg-slate-50 px-3 py-2 text-sm"
-                                                    >
-                                                        <div className="min-w-0">
-                                                            <p className="font-medium text-slate-800">
-                                                                {
-                                                                    period.start_date
-                                                                }{' '}
-                                                                →{' '}
-                                                                {
-                                                                    period.end_date
-                                                                }
-                                                            </p>
-                                                        </div>
-                                                        <button
-                                                            type="button"
-                                                            onClick={() =>
-                                                                handleRemoveAvailablePeriod(
-                                                                    selectedVehicle.id,
-                                                                    period.id,
-                                                                )
-                                                            }
-                                                            className="rounded-md p-1 text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                                            aria-label="Remove available range"
-                                                        >
-                                                            <X className="h-4 w-4" />
-                                                        </button>
-                                                    </li>
-                                                ),
-                                            )}
-                                        </ul>
-                                    )}
-                            </div>
+                            )}
+                        </div>
 
                             <div className="flex flex-wrap gap-2">
                                 <Button

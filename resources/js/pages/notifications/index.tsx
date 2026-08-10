@@ -35,6 +35,7 @@ interface AppNotification {
     read_at: string | null;
     created_at: string;
     created_at_iso: string;
+    url: string | null;
 }
 
 interface Props {
@@ -171,16 +172,37 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
     const Icon = meta.icon;
     const unread = !notification.read_at;
 
-    const markRead = () => {
-        if (unread) {
-            router.post(read({ notification: notification.id }), undefined, {
-                preserveScroll: true,
-            });
-        }
-    };
+    const handleClick = () => {
+    if (unread) {
+        router.post(read({ notification: notification.id }), undefined, {
+            preserveScroll: true,
+            onSuccess: () => {
+                if (notification.url) {
+                    router.visit(notification.url);
+                }
+            },
+        });
+
+        return;
+    }
+
+    if (notification.url) {
+        router.visit(notification.url);
+    }
+};
+
+const markRead = (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation();
+
+    if (unread) {
+        router.post(read({ notification: notification.id }), undefined, {
+            preserveScroll: true,
+        });
+    }
+};
 
     return (
-        <div className="group flex items-start gap-4 py-4">
+        <div className="group flex cursor-pointer items-start gap-4 py-4" onClick={handleClick}>
             <div
                 className={cn(
                     'mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-lg',
@@ -224,8 +246,8 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
                     )}
                     {unread && (
                         <button
-                            type="button"
-                            onClick={markRead}
+                        type="button"
+                        onClick={markRead}
                             className="text-xs font-medium text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100 hover:text-foreground focus:opacity-100 focus:outline-none"
                         >
                             Mark as read
