@@ -32,7 +32,7 @@ export function Navbar({ children }: { children: ReactNode }) {
             <header className="fixed inset-x-0 top-0 z-50 w-full px-4 text-sm">
                 <div
                     className={cn(
-                        'mx-auto max-w-6xl transition-all duration-300',
+                        'mx-auto max-w-7xl transition-all duration-300',
                         scrolled && 'mt-2 rounded-full border border-black/10 bg-background/80 shadow-lg shadow-black/5 backdrop-blur-xl',
                     )}
                 >

@@ -30,7 +30,7 @@ export default function AuthCardLayout({
                     <img
                         src="/images/logo.png"
                         alt={name}
-                        className="h-8 w-8 rounded-xl object-cover"
+                        className="h-10 w-10 rounded-xl object-cover"
                     />
                     <span
                         style={{ color: '#1A365D' }}

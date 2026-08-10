@@ -1,33 +1,44 @@
 import { Head, router, useForm } from '@inertiajs/react';
 import {
     ArrowDownToLine,
+    Calendar,
+    Car as CarIcon,
     Check,
     CheckCircle2,
     ClipboardCheck,
+    Fuel,
     Gauge,
     KeyRound,
     PackageCheck,
+    Palette,
     Plus,
+    Settings2,
     Timer,
     Trash2,
     TriangleAlert,
     Truck,
+    Users,
+    Wrench,
+    X,
     XCircle,
+    Zap,
 } from 'lucide-react';
 import { useState } from 'react';
+import type { LucideIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogFooter,
-} from '@/components/ui/dialog';
+import { Card, CardContent } from '@/components/ui/card';
+import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { cn } from '@/lib/utils';
 import inspections from '@/routes/inspections';
+
+interface CarImage {
+    id: number;
+    image_path: string;
+    is_primary: boolean;
+}
 
 interface Damage {
     area: string;
@@ -68,11 +79,23 @@ interface Booking {
     returned_at: string | null;
     late_return_days: number;
     car: {
+        id: number;
         brand: string;
         model: string;
         year: number;
         plate_number: string;
         estimated_value: string | number | null;
+        daily_price: string;
+        fuel_type: string;
+        transmission: string;
+        seats: number | null;
+        category: string;
+        color: string;
+        engine_size: string | null;
+        mileage: number | null;
+        description: string | null;
+        car_type_name: { id: number; name: string } | null;
+        images: CarImage[];
     };
     customer: { id: number; name: string; phone: string } | null;
     owner: { id: number; name: string; phone: string } | null;
@@ -119,6 +142,74 @@ function deliveryTone(status: DeliveryStatus): 'green' | 'red' | 'yellow' {
     }
 
     return 'yellow';
+}
+
+function SpecTile({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: LucideIcon;
+    label: string;
+    value: string | number;
+}) {
+    return (
+        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+            <Icon className="h-4 w-4 text-blue-600" />
+            <p className="mt-2 text-xs text-slate-500">{label}</p>
+            <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                {value}
+            </p>
+        </div>
+    );
+}
+
+function CarGallery({ images }: { images: CarImage[] }) {
+    const [activeImage, setActiveImage] = useState(0);
+    const currentImage = images[activeImage] ?? images[0];
+
+    return (
+        <div className="flex gap-3">
+            {images.length > 1 && (
+                <div className="flex flex-col gap-2">
+                    {images.map((img, index) => (
+                        <button
+                            key={img.id}
+                            type="button"
+                            onClick={() => setActiveImage(index)}
+                            className={cn(
+                                'h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition',
+                                index === activeImage
+                                    ? 'border-blue-600 shadow-sm'
+                                    : 'border-transparent opacity-60 hover:opacity-100',
+                            )}
+                        >
+                            <img
+                                src={`/storage/${img.image_path}`}
+                                alt=""
+                                className="h-full w-full object-cover"
+                            />
+                        </button>
+                    ))}
+                </div>
+            )}
+            <div className="flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                <div className="aspect-[4/3] w-full p-3">
+                    {currentImage ? (
+                        <img
+                            src={`/storage/${currentImage.image_path}`}
+                            alt=""
+                            className="h-full w-full object-contain"
+                        />
+                    ) : (
+                        <div className="flex h-full items-center justify-center">
+                            <CarIcon className="h-14 w-14 text-slate-300" />
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 }
 
 function DeliveryPanel({ booking }: { booking: Booking }) {
@@ -224,15 +315,6 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
     const lateDays = booking.late_return_days;
 
     const confirmArrival = () => {
-        if (
-            lateDays > 0 &&
-            !window.confirm(
-                `This car is ${lateDays} day${lateDays > 1 ? 's' : ''} late. Confirm the customer returned it now?`,
-            )
-        ) {
-            return;
-        }
-
         setProcessing(true);
 
         router.post(
@@ -775,222 +857,6 @@ function InspectionBadges({
     );
 }
 
-function BookingCard({
-    booking,
-    inspectionType,
-}: {
-    booking: Booking;
-    inspectionType: 'pickup' | 'return';
-}) {
-    const hasPickup = booking.inspections.some(
-        (inspection) => inspection.type === 'pickup',
-    );
-    const pickupApproved = booking.inspections.some(
-        (inspection) =>
-            inspection.type === 'pickup' && inspection.status === 'approved',
-    );
-    const hasReturnInspection = booking.inspections.some(
-        (inspection) => inspection.type === 'return',
-    );
-    const [processingAction, setProcessingAction] = useState<
-        'handover' | 'returned' | null
-    >(null);
-    const [inspectOpen, setInspectOpen] = useState(false);
-    const showForm =
-        inspectionType === 'pickup'
-            ? !hasPickup
-            : !booking.inspections.some(
-                  (inspection) => inspection.type === 'return',
-              );
-
-    const pickupDone =
-        hasPickup ||
-        booking.car_delivery_status === 'arrived' ||
-        booking.car_delivery_status === 'failed';
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex flex-wrap items-center justify-between gap-3">
-                    <span>Booking #{booking.id}</span>
-                    <StatusBadge
-                        label={booking.status.replace('_', ' ')}
-                        tone={
-                            booking.status === 'deposit_paid' ? 'blue' : 'slate'
-                        }
-                    />
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-                <div className="grid gap-2 text-sm md:grid-cols-2">
-                    <div>
-                        <p className="text-muted-foreground">Vehicle</p>
-                        <p className="font-medium">
-                            {booking.car.brand} {booking.car.model} (
-                            {booking.car.year})
-                        </p>
-                        <p className="text-muted-foreground">
-                            Plate: {booking.car.plate_number}
-                        </p>
-                    </div>
-                    <div>
-                        <p className="text-muted-foreground">Dates</p>
-                        <p>
-                            {booking.pickup_date} → {booking.return_date}
-                        </p>
-                        <p className="text-muted-foreground">
-                            {booking.pickup_location} →{' '}
-                            {booking.return_location}
-                        </p>
-                    </div>
-                </div>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                    <span>Customer: {booking.customer?.name ?? 'N/A'}</span>
-                    <span>Owner: {booking.owner?.name ?? 'N/A'}</span>
-                    <span>Total: ETB {booking.total_price}</span>
-                    {booking.security_deposit_amount && (
-                        <span>
-                            Security deposit: ETB{' '}
-                            {Number(
-                                booking.security_deposit_amount,
-                            ).toLocaleString()}
-                        </span>
-                    )}
-                </div>
-
-                {inspectionType === 'pickup' && (
-                    <DeliveryPanel booking={booking} />
-                )}
-
-                {inspectionType === 'return' && (
-                    <ReturnArrivalPanel booking={booking} />
-                )}
-
-                <InspectionBadges inspections={booking.inspections} />
-
-                {showForm && (
-                    <div className="pt-2">
-                        {inspectionType === 'pickup' &&
-                            booking.car_delivery_status === 'pending' && (
-                                <div className="mb-3 rounded-lg border border-yellow-200 bg-yellow-50 p-3 text-sm text-yellow-800">
-                                    <p className="flex items-center gap-1.5 font-medium">
-                                        <TriangleAlert className="h-4 w-4" />
-                                        Waiting for the car to arrive at the branch
-                                    </p>
-                                    <p className="mt-1 text-yellow-700">
-                                        Confirm delivery above before conducting the
-                                        pickup inspection.
-                                    </p>
-                                </div>
-                            )}
-
-                        {(inspectionType === 'return' || pickupDone) && (
-                            <>
-                                <Button
-                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-                                    onClick={() => setInspectOpen(true)}
-                                    disabled={
-                                        inspectionType === 'pickup' &&
-                                        booking.car_delivery_status === 'pending'
-                                    }
-                                >
-                                    <ClipboardCheck className="mr-2 h-4 w-4" />
-                                    Conduct{' '}
-                                    {inspectionType === 'pickup'
-                                        ? 'Pickup'
-                                        : 'Return'}{' '}
-                                    Inspection
-                                </Button>
-
-                                <Dialog
-                                    open={inspectOpen}
-                                    onOpenChange={setInspectOpen}
-                                >
-                                    <DialogContent className="max-h-[90vh] max-w-3xl overflow-y-auto">
-                                        <DialogHeader>
-                                            <DialogTitle>
-                                                Record{' '}
-                                                {inspectionType === 'pickup'
-                                                    ? 'Pickup'
-                                                    : 'Return'}{' '}
-                                                Inspection (Booking #{booking.id})
-                                            </DialogTitle>
-                                        </DialogHeader>
-                                        <InspectionForm
-                                            booking={booking}
-                                            type={inspectionType}
-                                            onClose={() => setInspectOpen(false)}
-                                        />
-                                    </DialogContent>
-                                </Dialog>
-                            </>
-                        )}
-                    </div>
-                )}
-
-                {inspectionType === 'pickup' &&
-                    booking.status === 'paid' &&
-                    pickupApproved && (
-                        <Button
-                            className="w-full"
-                            disabled={processingAction !== null}
-                            onClick={() => {
-                                setProcessingAction('handover');
-
-                                router.post(
-                                    inspections.handover.url({
-                                        booking: booking.id,
-                                    }),
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () =>
-                                            setProcessingAction(null),
-                                    },
-                                );
-                            }}
-                        >
-                            <KeyRound className="mr-1.5 h-4 w-4" />
-                            {processingAction === 'handover'
-                                ? 'Handing over...'
-                                : 'Hand Over Keys (Mark Picked Up)'}
-                        </Button>
-                    )}
-
-                {inspectionType === 'return' &&
-                    booking.status === 'picked_up' &&
-                    hasReturnInspection && (
-                        <Button
-                            className="w-full"
-                            variant="secondary"
-                            disabled={processingAction !== null}
-                            onClick={() => {
-                                setProcessingAction('returned');
-
-                                router.post(
-                                    inspections.returned.url({
-                                        booking: booking.id,
-                                    }),
-                                    {},
-                                    {
-                                        preserveScroll: true,
-                                        onFinish: () =>
-                                            setProcessingAction(null),
-                                    },
-                                );
-                            }}
-                        >
-                            <PackageCheck className="mr-1.5 h-4 w-4" />
-                            {processingAction === 'returned'
-                                ? 'Marking...'
-                                : 'Mark Returned'}
-                        </Button>
-                    )}
-            </CardContent>
-        </Card>
-    );
-}
-
 function CompletionCard({ booking }: { booking: Booking }) {
     const [repairCost, setRepairCost] = useState('');
     const [processing, setProcessing] = useState(false);
@@ -1016,7 +882,6 @@ function CompletionCard({ booking }: { booking: Booking }) {
 
     return (
         <div className="space-y-4">
-            <InspectionBadges inspections={booking.inspections} />
             <div className="flex flex-wrap items-end justify-end gap-3">
                 {hasIssues && (
                     <div className="space-y-1">
@@ -1053,6 +918,373 @@ function CompletionCard({ booking }: { booking: Booking }) {
     );
 }
 
+function BookingDetail({
+    booking,
+    inspectionType,
+    onClose,
+}: {
+    booking: Booking;
+    inspectionType: 'pickup' | 'return';
+    onClose: () => void;
+}) {
+    const car = booking.car;
+    const hasPickup = booking.inspections.some(
+        (inspection) => inspection.type === 'pickup',
+    );
+    const pickupApproved = booking.inspections.some(
+        (inspection) =>
+            inspection.type === 'pickup' && inspection.status === 'approved',
+    );
+    const hasReturnInspection = booking.inspections.some(
+        (inspection) => inspection.type === 'return',
+    );
+    const [processingAction, setProcessingAction] = useState<
+        'handover' | 'returned' | null
+    >(null);
+
+    const showPickupForm =
+        inspectionType === 'pickup' &&
+        !hasPickup &&
+        booking.car_delivery_status === 'arrived';
+
+    const showReturnForm =
+        inspectionType === 'return' &&
+        !hasReturnInspection &&
+        booking.return_arrival_status === 'arrived';
+
+    const images = [...car.images].sort(
+        (a, b) => Number(b.is_primary) - Number(a.is_primary),
+    );
+
+    const specs: Array<{
+        icon: LucideIcon;
+        label: string;
+        value: string | number;
+    }> = [
+        { icon: Settings2, label: 'Transmission', value: car.transmission },
+        { icon: Fuel, label: 'Fuel Type', value: car.fuel_type },
+        { icon: Users, label: 'Seats', value: car.seats ?? '—' },
+        { icon: Calendar, label: 'Year', value: car.year },
+        { icon: Palette, label: 'Color', value: car.color },
+        { icon: Zap, label: 'Engine Size', value: car.engine_size ?? '—' },
+        {
+            icon: Gauge,
+            label: 'Mileage',
+            value:
+                car.mileage != null
+                    ? `${car.mileage.toLocaleString()} km`
+                    : '—',
+        },
+        {
+            icon: CarIcon,
+            label: 'Category',
+            value: car.car_type_name?.name ?? car.category,
+        },
+    ];
+
+    return (
+        <Card className="overflow-hidden">
+            <div className="border-b bg-slate-50 px-5 py-4">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="text-lg font-bold">
+                            {car.brand} {car.model}
+                        </h2>
+                        <StatusBadge
+                            label={booking.status.replace('_', ' ')}
+                            tone={
+                                booking.status === 'deposit_paid'
+                                    ? 'blue'
+                                    : 'slate'
+                            }
+                        />
+                        <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                            Booking #{booking.id}
+                        </span>
+                    </div>
+                    <Button variant="ghost" size="sm" onClick={onClose}>
+                        <X className="mr-1 h-4 w-4" /> Close
+                    </Button>
+                </div>
+            </div>
+
+            <CardContent className="space-y-6 p-5">
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <CarGallery images={images} />
+
+                    <div className="space-y-4">
+                        <div className="flex flex-wrap items-baseline justify-between gap-2">
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    {car.year} · {car.car_type_name?.name ?? car.category} · {car.plate_number}
+                                </p>
+                                <p className="mt-1 text-2xl font-bold">
+                                    ETB {Number(car.daily_price).toLocaleString()}
+                                    <span className="text-sm font-normal text-muted-foreground">
+                                        {' '}
+                                        / day
+                                    </span>
+                                </p>
+                            </div>
+                            <div className="text-right text-sm">
+                                <p className="text-muted-foreground">
+                                    Booking total
+                                </p>
+                                <p className="text-lg font-bold">
+                                    ETB {Number(booking.total_price).toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+
+                        <div className="rounded-xl border border-slate-100 bg-slate-50 p-4 text-sm">
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Pickup
+                                    </p>
+                                    <p className="font-medium">
+                                        {booking.pickup_date}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        {booking.pickup_location}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">
+                                        Return
+                                    </p>
+                                    <p className="font-medium">
+                                        {booking.return_date}
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        {booking.return_location}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="mt-3 flex flex-wrap items-center gap-4 text-muted-foreground">
+                                <span>
+                                    Customer: {booking.customer?.name ?? 'N/A'}
+                                </span>
+                                <span>
+                                    Owner: {booking.owner?.name ?? 'N/A'}
+                                </span>
+                                {booking.security_deposit_amount && (
+                                    <span>
+                                        Deposit: ETB{' '}
+                                        {Number(
+                                            booking.security_deposit_amount,
+                                        ).toLocaleString()}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                            {specs.map((spec) => (
+                                <SpecTile key={spec.label} {...spec} />
+                            ))}
+                        </div>
+
+                        {car.description && (
+                            <div>
+                                <h3 className="text-sm font-semibold">
+                                    About this vehicle
+                                </h3>
+                                <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                    {car.description}
+                                </p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <div className="space-y-4 border-t border-slate-100 pt-5">
+                    {inspectionType === 'pickup' && (
+                        <DeliveryPanel booking={booking} />
+                    )}
+
+                    {inspectionType === 'return' && (
+                        <ReturnArrivalPanel booking={booking} />
+                    )}
+
+                    <InspectionBadges inspections={booking.inspections} />
+
+                    {showPickupForm && (
+                        <div className="pt-2">
+                            <InspectionForm booking={booking} type="pickup" />
+                        </div>
+                    )}
+
+                    {showReturnForm && (
+                        <div className="pt-2">
+                            <InspectionForm booking={booking} type="return" />
+                        </div>
+                    )}
+
+                    {inspectionType === 'pickup' &&
+                        booking.status === 'paid' &&
+                        pickupApproved && (
+                            <Button
+                                size="sm"
+                                disabled={processingAction !== null}
+                                onClick={() => {
+                                    setProcessingAction('handover');
+
+                                    router.post(
+                                        inspections.handover.url({
+                                            booking: booking.id,
+                                        }),
+                                        {},
+                                        {
+                                            preserveScroll: true,
+                                            onFinish: () =>
+                                                setProcessingAction(null),
+                                        },
+                                    );
+                                }}
+                            >
+                                <KeyRound className="mr-1.5 h-4 w-4" />
+                                {processingAction === 'handover'
+                                    ? 'Handing over...'
+                                    : 'Hand Over Keys (Mark Picked Up)'}
+                            </Button>
+                        )}
+
+                    {inspectionType === 'return' &&
+                        booking.status === 'picked_up' &&
+                        hasReturnInspection && (
+                            <Button
+                                className="w-full"
+                                variant="secondary"
+                                disabled={processingAction !== null}
+                                onClick={() => {
+                                    setProcessingAction('returned');
+
+                                    router.post(
+                                        inspections.returned.url({
+                                            booking: booking.id,
+                                        }),
+                                        {},
+                                        {
+                                            preserveScroll: true,
+                                            onFinish: () =>
+                                                setProcessingAction(null),
+                                        },
+                                    );
+                                }}
+                            >
+                                <PackageCheck className="mr-1.5 h-4 w-4" />
+                                {processingAction === 'returned'
+                                    ? 'Marking...'
+                                    : 'Mark Returned'}
+                            </Button>
+                        )}
+
+                    {inspectionType === 'return' &&
+                        booking.status === 'returned' && (
+                            <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                                <CompletionCard booking={booking} />
+                            </div>
+                        )}
+                </div>
+            </CardContent>
+        </Card>
+    );
+}
+
+function InspectionCard({
+    booking,
+    inspectionType,
+    active,
+    onSelect,
+}: {
+    booking: Booking;
+    inspectionType: 'pickup' | 'return';
+    active: boolean;
+    onSelect: () => void;
+}) {
+    const car = booking.car;
+    const image =
+        car.images.find((img) => img.is_primary)?.image_path ??
+        car.images?.[0]?.image_path;
+
+    const needsInspection =
+        inspectionType === 'pickup'
+            ? !booking.inspections.some(
+                  (inspection) => inspection.type === 'pickup',
+              )
+            : !booking.inspections.some(
+                  (inspection) => inspection.type === 'return',
+              );
+
+    const pickupApproved = booking.inspections.some(
+        (inspection) =>
+            inspection.type === 'pickup' && inspection.status === 'approved',
+    );
+
+    const readyForHandover =
+        inspectionType === 'pickup' &&
+        pickupApproved &&
+        booking.status === 'paid';
+
+    return (
+        <GlareCard
+            className={cn('w-full cursor-pointer', active && 'ring-2 ring-blue-600')}
+            onClick={onSelect}
+        >
+            <div className="w-full p-1.5">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] p-1">
+                    {image ? (
+                        <img
+                            src={`/storage/${image}`}
+                            alt={`${car.brand} ${car.model}`}
+                            className="h-full w-full object-contain"
+                        />
+                    ) : (
+                        <div className="flex h-full items-center justify-center">
+                            <CarIcon className="h-9 w-9 text-slate-400" />
+                        </div>
+                    )}
+
+                    {needsInspection && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/10">
+                            <Wrench className="h-6 w-6 text-amber-600 drop-shadow" />
+                        </div>
+                    )}
+
+                    {readyForHandover && (
+                        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/10">
+                            <KeyRound className="h-6 w-6 text-emerald-600 drop-shadow" />
+                        </div>
+                    )}
+                </div>
+
+                <div className="mt-2 flex items-start justify-between gap-2 px-0.5 pb-0.5">
+                    <div className="min-w-0">
+                        <h3 className="truncate text-xs font-bold text-slate-900">
+                            {car.brand} {car.model}
+                        </h3>
+                        <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
+                            {car.transmission}
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                            {car.plate_number}
+                        </p>
+                    </div>
+                    <div className="shrink-0 text-right">
+                        <p className="text-sm font-bold text-slate-900">
+                            ETB {Number(car.daily_price).toLocaleString()}
+                        </p>
+                        <p className="text-[10px] font-medium text-slate-400">
+                            per day
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </GlareCard>
+    );
+}
+
 export default function Inspections({
     pickup_queue,
     return_queue,
@@ -1061,6 +1293,7 @@ export default function Inspections({
     const [tab, setTab] = useState<'pickup' | 'return' | 'completion'>(
         'pickup',
     );
+    const [selectedId, setSelectedId] = useState<number | null>(null);
 
     const tabs = [
         {
@@ -1081,6 +1314,9 @@ export default function Inspections({
     ] as const;
 
     const active = tabs.find((item) => item.key === tab) ?? tabs[0];
+    const inspectionType = tab === 'completion' ? 'return' : tab;
+    const selectedBooking =
+        active.queue.find((booking) => booking.id === selectedId) ?? null;
 
     return (
         <>
@@ -1090,57 +1326,78 @@ export default function Inspections({
                 <div>
                     <h1 className="text-3xl font-bold">Booking Inspections</h1>
                     <p className="mt-2 text-muted-foreground">
-                        Confirm owner car delivery, inspect vehicles before
+                        Select a vehicle to confirm delivery, inspect it before
                         handover and at return, then mark returned bookings as
                         completed.
                     </p>
                 </div>
 
-                <div className="flex gap-2">
-                    {tabs.map((item) => (
-                        <Button
-                            key={item.key}
-                            variant={tab === item.key ? 'default' : 'outline'}
-                            onClick={() => setTab(item.key)}
-                        >
-                            {item.label}
-                        </Button>
-                    ))}
-                </div>
-
-                {active.queue.length === 0 ? (
-                    <Card>
-                        <CardContent className="py-16 text-center">
-                            <Check className="mx-auto h-12 w-12 text-green-500" />
-                            <p className="mt-4 text-lg font-semibold">
-                                No bookings in this queue.
-                            </p>
-                            <p className="mt-2 text-sm text-muted-foreground">
-                                {tab === 'pickup' &&
-                                    'Bookings with a paid deposit awaiting the pre-handover inspection will appear here.'}
-                                {tab === 'return' &&
-                                    'Picked up bookings awaiting the return inspection will appear here.'}
-                                {tab === 'completion' &&
-                                    'Returned bookings awaiting final completion will appear here.'}
-                            </p>
-                        </CardContent>
-                    </Card>
-                ) : (
-                    <div className="space-y-4">
-                        {active.queue.map((booking) => (
-                            <div key={booking.id} className="space-y-4">
-                                <BookingCard
-                                    booking={booking}
-                                    inspectionType={
-                                        tab === 'completion' ? 'return' : tab
+                {!selectedBooking && (
+                    <>
+                        <div className="flex gap-2">
+                            {tabs.map((item) => (
+                                <Button
+                                    key={item.key}
+                                    variant={
+                                        tab === item.key
+                                            ? 'default'
+                                            : 'outline'
                                     }
-                                />
-                                {tab === 'completion' && (
-                                    <CompletionCard booking={booking} />
-                                )}
+                                    onClick={() => {
+                                        setTab(item.key);
+                                        setSelectedId(null);
+                                    }}
+                                >
+                                    {item.label}
+                                </Button>
+                            ))}
+                        </div>
+
+                        {active.queue.length === 0 ? (
+                            <Card>
+                                <CardContent className="py-16 text-center">
+                                    <Check className="mx-auto h-12 w-12 text-green-500" />
+                                    <p className="mt-4 text-lg font-semibold">
+                                        No bookings in this queue.
+                                    </p>
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        {tab === 'pickup' &&
+                                            'Bookings with a paid deposit awaiting the pre-handover inspection will appear here.'}
+                                        {tab === 'return' &&
+                                            'Picked up bookings awaiting the return inspection will appear here.'}
+                                        {tab === 'completion' &&
+                                            'Returned bookings awaiting final completion will appear here.'}
+                                    </p>
+                                </CardContent>
+                            </Card>
+                        ) : (
+                            <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                                {active.queue.map((booking) => (
+                                    <InspectionCard
+                                        key={booking.id}
+                                        booking={booking}
+                                        inspectionType={inspectionType}
+                                        active={booking.id === selectedId}
+                                        onSelect={() =>
+                                            setSelectedId(
+                                                booking.id === selectedId
+                                                    ? null
+                                                    : booking.id,
+                                            )
+                                        }
+                                    />
+                                ))}
                             </div>
-                        ))}
-                    </div>
+                        )}
+                    </>
+                )}
+
+                {selectedBooking && (
+                    <BookingDetail
+                        booking={selectedBooking}
+                        inspectionType={inspectionType}
+                        onClose={() => setSelectedId(null)}
+                    />
                 )}
             </div>
         </>

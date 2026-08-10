@@ -92,10 +92,10 @@ const FLEET_CARDS: LayoutGridCard[] = [
         thumbnail: '/images/fleet-sedan.png',
         content: (
             <div>
-                <p className="text-xl font-bold text-white md:text-2xl">
+                <p className="text-xl font-bold text-foreground md:text-2xl">
                     Sedans
                 </p>
-                <p className="mt-2 max-w-lg text-sm text-neutral-200">
+                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
                     Smooth city cruisers — economical, agile, everyday ready.
                 </p>
             </div>
@@ -104,11 +104,11 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 2,
         className: 'md:col-span-1',
-        thumbnail: '/images/fleet-suv.jpg',
+        thumbnail: '/images/fleet-suv.png',
         content: (
             <div>
-                <p className="text-xl font-bold text-white md:text-2xl">SUVs</p>
-                <p className="mt-2 max-w-lg text-sm text-neutral-200">
+                <p className="text-xl font-bold text-foreground md:text-2xl">SUVs</p>
+                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
                     Space for the whole crew, built for the long haul.
                 </p>
             </div>
@@ -120,10 +120,10 @@ const FLEET_CARDS: LayoutGridCard[] = [
         thumbnail: '/images/fleet-luxury.png',
         content: (
             <div>
-                <p className="text-xl font-bold text-white md:text-2xl">
+                <p className="text-xl font-bold text-foreground md:text-2xl">
                     Luxury
                 </p>
-                <p className="mt-2 max-w-lg text-sm text-neutral-200">
+                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
                     Arrive the way you want to be remembered.
                 </p>
             </div>
@@ -132,13 +132,13 @@ const FLEET_CARDS: LayoutGridCard[] = [
     {
         id: 4,
         className: 'md:col-span-2',
-        thumbnail: '/images/fleet-pickup.jpg',
+        thumbnail: '/images/fleet-pickup.png',
         content: (
             <div>
-                <p className="text-xl font-bold text-white md:text-2xl">
+                <p className="text-xl font-bold text-foreground md:text-2xl">
                     Pickups & Vans
                 </p>
-                <p className="mt-2 max-w-lg text-sm text-neutral-200">
+                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
                     Haul more, do more — tough and dependable.
                 </p>
             </div>
@@ -202,7 +202,7 @@ function BrandLogo() {
             <img
                 src="/images/logo.png"
                 alt="Ethio Car Rental"
-                className="h-7 w-7 rounded-full object-cover"
+                className="h-10 w-10 rounded-full object-cover"
             />
             <span className="text-base">Ethio Car Rental</span>
         </>
@@ -310,7 +310,7 @@ export default function Welcome() {
                 </Navbar>
 
                 {/* Hero */}
-                <section className="relative mx-auto flex min-h-screen max-w-7xl flex-col justify-center overflow-hidden px-6 pt-24 pb-16 lg:grid lg:grid-cols-2 lg:items-center lg:gap-12">
+                <section className="relative flex min-h-screen w-full flex-col justify-center overflow-hidden px-6 pt-24 pb-16">
                     <div
                         className="pointer-events-none absolute inset-0 opacity-[0.04]"
                         style={{
@@ -320,7 +320,8 @@ export default function Welcome() {
                         }}
                     />
 
-                    <div className="relative z-10 py-12 text-center lg:py-0 lg:text-left">
+                    <div className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 items-center lg:grid-cols-2 lg:gap-12">
+                    <div className="py-12 text-center lg:py-0 lg:text-left">
                         <div className="inline-flex animate-in items-center gap-2 rounded-full border border-accent/25 bg-accent/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-accent uppercase duration-700 fade-in slide-in-from-bottom-4">
                             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
                             Available across Ethiopia
@@ -401,6 +402,7 @@ export default function Welcome() {
                                 className="relative z-10 w-full animate-float drop-shadow-2xl"
                             />
                         </div>
+                    </div>
                     </div>
                 </section>
 

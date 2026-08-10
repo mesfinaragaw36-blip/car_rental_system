@@ -7,7 +7,7 @@ export default function AppLogoIcon({ className }: Props) {
         <img
             src="/images/logo.png"
             alt=""
-            className={`rounded-xl object-cover ${className ?? 'size-9'}`}
+            className={`rounded-xl object-cover ${className ?? 'size-11'}`}
         />
     );
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Car;
 use App\Models\Inspection;
 use App\Models\Refund;
 use App\Models\User;
@@ -21,7 +22,7 @@ class InspectionController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['customer', 'owner', 'car', 'inspections'])
+        $bookings = Booking::with(['customer', 'owner', 'car.images', 'car.carTypeName', 'inspections'])
             ->whereIn('status', ['deposit_paid', 'paid', 'picked_up', 'returned'])
             ->latest('return_date')
             ->get();
@@ -42,13 +43,7 @@ class InspectionController extends Controller
             'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at?->toDateTimeString(),
             'returned_at' => $booking->returned_at?->toDateTimeString(),
             'late_return_days' => $booking->returnLateDays(),
-            'car' => [
-                'brand' => $booking->car->brand,
-                'model' => $booking->car->model,
-                'year' => $booking->car->year,
-                'plate_number' => $booking->car->plate_number,
-                'estimated_value' => $booking->car->estimated_value,
-            ],
+            'car' => $this->carPayload($booking->car),
             'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone] : null,
             'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
             'inspections' => $booking->inspections
@@ -511,6 +506,35 @@ class InspectionController extends Controller
         }
 
         return null;
+    }
+
+    private function carPayload(Car $car): array
+    {
+        return [
+            'id' => $car->id,
+            'brand' => $car->brand,
+            'model' => $car->model,
+            'year' => $car->year,
+            'plate_number' => $car->plate_number,
+            'estimated_value' => $car->estimated_value,
+            'daily_price' => $car->daily_price,
+            'fuel_type' => $car->fuel_type,
+            'transmission' => $car->transmission,
+            'seats' => $car->seats,
+            'category' => $car->category,
+            'color' => $car->color,
+            'engine_size' => $car->engine_size,
+            'mileage' => $car->mileage,
+            'description' => $car->description,
+            'car_type_name' => $car->carTypeName ? ['id' => $car->carTypeName->id, 'name' => $car->carTypeName->name] : null,
+            'images' => $car->images
+                ->map(fn ($image) => [
+                    'id' => $image->id,
+                    'image_path' => $image->image_path,
+                    'is_primary' => $image->is_primary,
+                ])
+                ->values(),
+        ];
     }
 
     private function inspectionPayload(Inspection $inspection): array

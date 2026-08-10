@@ -47,7 +47,7 @@ export default function AuthSplitLayout({
                     <img
                         src="/images/logo.png"
                         alt={name}
-                        className="h-7 w-7 rounded-xl object-cover"
+                        className="h-10 w-10 rounded-xl object-cover"
                     />
                     {name ?? 'Ethio Car Rental'}
                 </Link>
@@ -102,7 +102,7 @@ export default function AuthSplitLayout({
                     <img
                         src="/images/logo.png"
                         alt={name}
-                        className="h-7 w-7 rounded-xl object-cover"
+                        className="h-10 w-10 rounded-xl object-cover"
                     />
                     {name ?? 'Ethio Car Rental'}
                 </Link>
