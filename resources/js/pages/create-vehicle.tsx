@@ -58,6 +58,7 @@ export default function CreateVehicle({
         daily_price: '',
         availability_status: 'available',
         description: '',
+        available_periods: [] as { start_date: string; end_date: string }[],
     });
 
     const [step, setStep] = useState(1);
@@ -252,6 +253,27 @@ export default function CreateVehicle({
         if (ownershipDocument) {
             formData.append('ownership_document', ownershipDocument);
         }
+
+            data.available_periods
+                .filter((period) => period.start_date && period.end_date)
+                .forEach((period, index) => {
+                    formData.append(
+                        `available_periods[${index}][start_date]`,
+                        period.start_date,
+                    );
+                    formData.append(
+                        `available_periods[${index}][end_date]`,
+                        period.end_date,
+                    );
+                });
+
+            if (data.car_type_name_id) {
+                formData.append('car_type_name_id', data.car_type_name_id);
+            }
+
+            if (data.engine_size) {
+                formData.append('engine_size', data.engine_size);
+            }
 
         router.post(store.url(), formData, {
             forceFormData: true,
@@ -733,6 +755,87 @@ export default function CreateVehicle({
                                              }
                                          />
                                      </div>
+
+                                     <div className="space-y-4 border-t pt-6">
+    <div>
+        <h3 className="text-lg font-semibold">
+            Available Date Ranges
+        </h3>
+        <p className="text-sm text-muted-foreground">
+            Customers can only book the car during these date
+            ranges. You can add or edit these later too.
+        </p>
+    </div>
+    {data.available_periods.map((period, index) => (
+        <div
+            key={index}
+            className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
+        >
+            <div>
+                <Label>Start Date</Label>
+                <Input
+                    type="date"
+                    value={period.start_date}
+                    onChange={(e) => {
+                        const periods = [...data.available_periods];
+                        periods[index] = {
+                            ...periods[index],
+                            start_date: e.target.value,
+                        };
+                        setData('available_periods', periods);
+                    }}
+                />
+            </div>
+            <div>
+                <Label>End Date</Label>
+                <div className="flex gap-2">
+                    <Input
+                        type="date"
+                        value={period.end_date}
+                        onChange={(e) => {
+                            const periods = [...data.available_periods];
+                            periods[index] = {
+                                ...periods[index],
+                                end_date: e.target.value,
+                            };
+                            setData('available_periods', periods);
+                        }}
+                    />
+                    <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => {
+                            setData(
+                                'available_periods',
+                                data.available_periods.filter(
+                                    (_, i) => i !== index,
+                                ),
+                            );
+                        }}
+                    >
+                        Remove
+                    </Button>
+                </div>
+            </div>
+        </div>
+    ))}
+    <Button
+        type="button"
+        variant="outline"
+        onClick={() =>
+            setData('available_periods', [
+                ...data.available_periods,
+                { start_date: '', end_date: '' },
+            ])
+        }
+    >
+        + Add Available Range
+    </Button>
+    <InputError
+        message={serverErrors.available_periods ?? errors.available_periods}
+    />
+</div>
                             </CardContent>
                         </Card>
                     )}

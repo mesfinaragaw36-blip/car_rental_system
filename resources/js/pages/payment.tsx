@@ -58,6 +58,23 @@ const METHODS = [
     },
 ];
 
+const COMPANY_ACCOUNTS: Record<string, { label: string; value: string }[]> = {
+    'Bank Transfer': [
+        { label: 'Bank', value: 'Commercial Bank of Ethiopia' },
+        { label: 'Account Name', value: 'Ethio Car Rental PLC' },
+        { label: 'Account Number', value: '1000123456789' },
+    ],
+    Telebirr: [
+        { label: 'Account Name', value: 'Ethio Car Rental PLC' },
+        { label: 'Telebirr Number', value: '0911223344' },
+    ],
+    'CBE Birr': [
+        { label: 'Account Name', value: 'Ethio Car Rental PLC' },
+        { label: 'CBE Birr Number', value: '0911223344' },
+    ],
+};
+
+
 const formatETB = (value: number) =>
     new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 2,
@@ -336,41 +353,65 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                 </div>
                             </div>
 
-                            {showRefInput && (
-                                <div className="space-y-2 rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
-                                    <Label className="flex items-center gap-2 text-sm font-bold">
-                                        <Hash className="h-4 w-4 text-blue-600" />
-                                        Transaction Reference
-                                        <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white uppercase">
-                                            Required
-                                        </span>
-                                    </Label>
+                           {showRefInput && (
+                                    <div className="space-y-2 rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
+                                        {COMPANY_ACCOUNTS[method] && (
+                                            <div className="mb-3 rounded-lg border border-blue-300 bg-white p-3">
+                                                <p className="text-sm font-bold text-blue-900">
+                                                    Send payment to
+                                                </p>
+                                                <div className="mt-2 space-y-1">
+                                                    {COMPANY_ACCOUNTS[method].map((row) => (
+                                                        <div
+                                                            key={row.label}
+                                                            className="flex justify-between text-sm"
+                                                        >
+                                                            <span className="text-muted-foreground">
+                                                                {row.label}
+                                                            </span>
+                                                            <span className="font-semibold">
+                                                                {row.value}
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                                <p className="mt-2 text-xs text-blue-700">
+                                                    Complete the transfer first, then enter the
+                                                    confirmation reference below.
+                                                </p>
+                                            </div>
+                                        )}
 
-                                    <Input
-                                        placeholder="Enter receipt / transaction number"
-                                        value={transactionRef}
-                                        onChange={(e) =>
-                                            setTransactionRef(e.target.value)
-                                        }
-                                        className="border-blue-300 bg-white focus-visible:ring-blue-400"
-                                    />
+                                        <Label className="flex items-center gap-2 text-sm font-bold">
+                                            <Hash className="h-4 w-4 text-blue-600" />
+                                            Transaction Reference
+                                            <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold text-white uppercase">
+                                                Required
+                                            </span>
+                                        </Label>
 
-                                    <p className="text-xs text-blue-700">
-                                        For {method} payments, please enter the
-                                        receipt or transaction number exactly as
-                                        shown in your {method} app / bank slip.
-                                        This is required so the branch can
-                                        verify your payment.
-                                    </p>
+                                        <Input
+                                            placeholder="Enter receipt / transaction number"
+                                            value={transactionRef}
+                                            onChange={(e) => setTransactionRef(e.target.value)}
+                                            className="border-blue-300 bg-white focus-visible:ring-blue-400"
+                                        />
 
-                                    {showRefInput && !transactionRef.trim() && (
-                                        <p className="text-xs font-medium text-blue-800">
-                                            Payment cannot be submitted without
-                                            the transaction reference.
+                                        <p className="text-xs text-blue-700">
+                                            For {method} payments, please enter the receipt or
+                                            transaction number exactly as shown in your {method} app
+                                            / bank slip. This is required so the branch can verify
+                                            your payment.
                                         </p>
-                                    )}
-                                </div>
-                            )}
+
+                                        {showRefInput && !transactionRef.trim() && (
+                                            <p className="text-xs font-medium text-blue-800">
+                                                Payment cannot be submitted without the transaction
+                                                reference.
+                                            </p>
+                                        )}
+                                    </div>
+                                )}
 
                             {error && <InputError message={error} />}
 

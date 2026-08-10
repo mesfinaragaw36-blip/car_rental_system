@@ -120,12 +120,21 @@ class VehicleController extends Controller
             'availability_status' => $validated['availability_status'] ?? 'available',
         ]);
 
-        CarAvailablePeriod::create([
-            'car_id' => $car->id,
-            'start_date' => now()->toDateString(),
-            'end_date' => now()->addYear()->toDateString(),
-        ]);
-
+        if (! empty($validated['available_periods'])) {
+            foreach ($validated['available_periods'] as $period) {
+                CarAvailablePeriod::create([
+                    'car_id' => $car->id,
+                    'start_date' => $period['start_date'],
+                    'end_date' => $period['end_date'],
+                ]);
+            }
+        } else {
+            CarAvailablePeriod::create([
+                'car_id' => $car->id,
+                'start_date' => now()->toDateString(),
+                'end_date' => now()->addYear()->toDateString(),
+            ]);
+        }
         if ($request->hasFile('photos')) {
             $primaryIndex = $validated['primary_photo_index'] ?? 0;
             foreach ($request->file('photos') as $index => $photo) {

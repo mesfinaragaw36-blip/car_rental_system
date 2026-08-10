@@ -11,3 +11,5 @@ Artisan::command('inspire', function () {
 Schedule::command('bookings:release-expired-holds')->everyFiveMinutes();
 
 Schedule::command('bookings:escalate-missing-deliveries')->everyThirtyMinutes();
+
+Schedule::command('bookings:escalate-late-returns')->everyThirtyMinutes();

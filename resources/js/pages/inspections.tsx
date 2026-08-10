@@ -299,11 +299,11 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                 )}
 
                 {status === 'failed' && (
-                    <p className="w-full text-sm text-red-600">
-                        The owner and admins have been alerted. Follow up before
-                        the pickup date.
-                    </p>
-                )}
+                <p className="w-full text-sm text-red-600">
+                    The owner and admins have been notified. The booking has been
+                    cancelled and the customer's payment has been queued for refund.
+                </p>
+            )}
             </div>
         </div>
     );
@@ -323,6 +323,27 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
             { preserveScroll: true, onFinish: () => setProcessing(false) },
         );
     };
+
+    const markNotArrived = () => {
+    if (
+        !window.confirm(
+            'Mark this car as not returned? Platform admins will be notified.',
+        )
+    ) {
+        return;
+    }
+
+    setProcessing(true);
+
+    router.post(
+        inspections.returnNotArrived.url({ booking: booking.id }),
+        {},
+        {
+            preserveScroll: true,
+            onFinish: () => setProcessing(false),
+        },
+    );
+};
 
     return (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -370,21 +391,34 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                     </div>
                 </div>
 
-                {status === 'pending' && (
-                    <Button
-                        size="sm"
-                        disabled={processing}
-                        onClick={confirmArrival}
-                    >
-                        <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                        {processing ? 'Confirming...' : 'Car Arrived'}
-                    </Button>
-                )}
+            {status === 'pending' && (
+    <div className="flex shrink-0 gap-2">
+        <Button
+            type="button"
+            size="sm"
+            disabled={processing}
+            onClick={confirmArrival}
+        >
+            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+            {processing ? 'Confirming...' : 'Car Arrived'}
+        </Button>
+
+        <Button
+            type="button"
+            size="sm"
+            variant="destructive"
+            disabled={processing}
+            onClick={markNotArrived}
+        >
+            <XCircle className="mr-1.5 h-4 w-4" />
+            {processing ? 'Marking...' : 'Car Not Returned'}
+        </Button>
+    </div>
+)}
             </div>
         </div>
     );
 }
-
 function SnapshotDiff({
     pickup,
     current,
@@ -856,6 +890,7 @@ function InspectionBadges({
         </div>
     );
 }
+
 
 function CompletionCard({ booking }: { booking: Booking }) {
     const [repairCost, setRepairCost] = useState('');

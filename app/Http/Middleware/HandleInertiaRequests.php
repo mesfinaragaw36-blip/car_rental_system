@@ -73,6 +73,7 @@ class HandleInertiaRequests extends Middleware
                         'message' => $notification->message,
                         'read_at' => $notification->read_at?->toDateTimeString(),
                         'created_at' => $notification->created_at->diffForHumans(),
+                        'url' => $notification->url,
                     ]) : [],
             ],
         ];

@@ -322,10 +322,16 @@ class Booking extends Model
 
     public function returnLateDays(): int
     {
-        if ($this->returned_at === null) {
-            return 0;
-        }
+        $endDate = $this->returned_at ?? now();
 
-        return max(0, (int) $this->return_date->copy()->startOfDay()->diffInDays($this->returned_at->copy()->startOfDay()));
+        return max(
+            0,
+            (int) $this->return_date
+                ->copy()
+                ->startOfDay()
+                ->diffInDays(
+                    $endDate->copy()->startOfDay()
+                )
+        );
     }
 }
