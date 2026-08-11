@@ -323,18 +323,14 @@ class Booking extends Model
 
     public function returnLateDays(?CarbonInterface $returnedAt = null): int
     {
-        $returnedAt ??= $this->returned_at;
-
-        if ($returnedAt === null) {
-            return 0;
-        }
+        $endDate = $returnedAt ?? $this->returned_at ?? now();
 
         return max(
             0,
             (int) $this->return_date
                 ->copy()
                 ->startOfDay()
-                ->diffInDays($returnedAt->copy()->startOfDay())
+                ->diffInDays($endDate->copy()->startOfDay())
         );
     }
 }

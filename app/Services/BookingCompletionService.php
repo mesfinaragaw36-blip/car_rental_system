@@ -31,7 +31,7 @@ class BookingCompletionService
         $commission = round($carGross * (config('commission.rate', 10) / 100), 2);
         $net = round($carGross - $commission, 2);
 
-        DB::transaction(function () use ($booking, $refundAmount, $deduction, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost, $totalCharges) {
+        DB::transaction(function () use ($booking, $refundAmount, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost) {
             $booking->update([
                 'status' => Booking::STATUS_COMPLETED,
                 'late_days' => $lateDays,

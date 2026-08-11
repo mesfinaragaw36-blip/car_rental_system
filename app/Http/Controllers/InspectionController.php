@@ -325,7 +325,7 @@ class InspectionController extends Controller
             ]);
         }
 
-       $returnedAt = now();
+        $returnedAt = now();
 
         $lateDays = $booking->returnLateDays($returnedAt);
         $lateFee = round($lateDays * (float) $booking->car->daily_price, 2);

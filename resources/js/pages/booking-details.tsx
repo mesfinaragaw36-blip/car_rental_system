@@ -75,8 +75,6 @@ interface BookingDetails {
         estimated_value?: string | number | null;
     };
     
-        late_days: number;
-        late_fee: string | number;
         security_deposit: number;
         late_fee_deduction: number;
         extra_charge: number;
@@ -393,7 +391,7 @@ return;
                         </CardContent>
                     </Card>
 
-                                        {booking.late_days > 0 && (
+                                        {booking.late_days != null && booking.late_days > 0 && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
