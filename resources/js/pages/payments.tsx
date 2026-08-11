@@ -1,3 +1,4 @@
+import React from 'react';
 import { Head, usePage, Link } from '@inertiajs/react';
 import {
     CircleDollarSign,

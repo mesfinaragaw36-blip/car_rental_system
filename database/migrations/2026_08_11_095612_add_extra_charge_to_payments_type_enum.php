@@ -7,11 +7,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE payments MODIFY type ENUM('booking_deposit', 'balance', 'security_deposit', 'extra_charge') NOT NULL DEFAULT 'balance'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE payments MODIFY type ENUM('booking_deposit', 'balance', 'security_deposit', 'extra_charge') NOT NULL DEFAULT 'balance'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE payments MODIFY type ENUM('booking_deposit', 'balance', 'security_deposit') NOT NULL DEFAULT 'balance'");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE payments MODIFY type ENUM('booking_deposit', 'balance', 'security_deposit') NOT NULL DEFAULT 'balance'");
+        }
     }
 };

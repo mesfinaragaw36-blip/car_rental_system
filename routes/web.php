@@ -116,11 +116,14 @@ Route::middleware(['auth'])->group(function () {
     // Admin-only routes
     Route::middleware(['role:admin', 'staff_permission'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('vehicles');
+        Route::get('/vehicles/create', [AdminVehicleController::class, 'create'])->name('vehicles.create');
+        Route::post('/vehicles', [AdminVehicleController::class, 'store'])->name('vehicles.store');
         Route::get('/vehicles/{car}', [AdminVehicleController::class, 'show'])->name('vehicles.show');
         Route::post('/vehicles/{car}/approve', [AdminVehicleController::class, 'approve'])->name('vehicles.approve');
         Route::post('/vehicles/{car}/reject', [AdminVehicleController::class, 'reject'])->name('vehicles.reject');
         Route::post('/vehicles/{car}/documents/approve', [AdminVehicleController::class, 'approveDocument'])->name('vehicles.documents.approve');
         Route::post('/vehicles/{car}/documents/reject', [AdminVehicleController::class, 'rejectDocument'])->name('vehicles.documents.reject');
+        Route::delete('/vehicles/{car}', [AdminVehicleController::class, 'destroy'])->name('vehicles.destroy');
         Route::get('/vehicle-images', [CarImageController::class, 'index'])->name('vehicle-images');
         Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])->name('vehicle-documents');
         Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])->name('vehicle-documents.store');

@@ -7,11 +7,15 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr') NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr') NULL");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr') NOT NULL");
+        if (DB::getDriverName() !== 'sqlite') {
+            DB::statement("ALTER TABLE payments MODIFY payment_method ENUM('Cash', 'Bank Transfer', 'Telebirr', 'CBE Birr') NOT NULL");
+        }
     }
 };
