@@ -49,7 +49,7 @@ interface Booking {
         model: string;
         year?: number;
         plate_number?: string;
-        image?: string;
+        images?: { id: number; image_path: string; is_primary: boolean }[];
     };
     payment: {
         id: number;
@@ -314,17 +314,27 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                             <div className="flex items-start justify-between gap-4">
                                                 <div className="flex items-center gap-3">
                                                     <div className="h-16 w-24 overflow-hidden rounded-xl bg-gray-100">
-                                                        {booking.car.image ? (
-                                                            <img
-                                                                src={`/storage/${booking.car.image}`}
-                                                                alt={`${booking.car.brand} ${booking.car.model}`}
-                                                                className="h-full w-full object-cover"
-                                                            />
-                                                        ) : (
-                                                            <div className="flex h-full items-center justify-center">
-                                                                <Car className="h-6 w-6 text-gray-400" />
-                                                            </div>
-                                                        )}
+                                                        {(() => {
+                                                            const carImage =
+                                                                booking.car?.images?.find(
+                                                                    (img) =>
+                                                                        img.is_primary,
+                                                                )?.image_path ??
+                                                                booking.car?.images?.[0]
+                                                                    ?.image_path;
+
+                                                            return carImage ? (
+                                                                <img
+                                                                    src={`/storage/${carImage}`}
+                                                                    alt={`${booking.car.brand} ${booking.car.model}`}
+                                                                    className="h-full w-full object-cover"
+                                                                />
+                                                            ) : (
+                                                                <div className="flex h-full items-center justify-center">
+                                                                    <Car className="h-6 w-6 text-gray-400" />
+                                                                </div>
+                                                            );
+                                                        })()}
                                                     </div>
                                                     <div>
                                                         <p className="text-lg font-bold">

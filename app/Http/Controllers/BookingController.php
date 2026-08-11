@@ -23,7 +23,7 @@ class BookingController extends Controller
     {
         $user = auth()->user();
 
-        $query = Booking::with(['customer', 'owner', 'car', 'payments', 'driverAssignment.driver']);
+        $query = Booking::with(['customer', 'owner', 'car.images', 'payments', 'driverAssignment.driver']);
 
         if ($user->role === 'admin') {
             if ($request->filled('status')) {
