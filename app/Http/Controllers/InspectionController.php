@@ -283,11 +283,18 @@ class InspectionController extends Controller
             ]);
         }
 
+       $returnedAt = now();
+
+        $lateDays = $booking->returnLateDays($returnedAt);
+        $lateFee = round($lateDays * (float) $booking->car->daily_price, 2);
+
         $booking->update([
             'status' => Booking::STATUS_RETURNED,
-            'returned_at' => now(),
+            'returned_at' => $returnedAt,
+            'late_days' => $lateDays,
+            'late_fee' => $lateFee,
             'return_arrival_status' => Booking::RETURN_ARRIVAL_ARRIVED,
-            'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at ?? now(),
+            'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at ?? $returnedAt,
             'return_arrival_confirmed_by' => $booking->return_arrival_confirmed_by ?? auth()->id(),
         ]);
         $booking->car->update([

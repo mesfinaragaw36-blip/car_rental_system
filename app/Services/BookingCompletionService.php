@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\OwnerPayout;
 use App\Models\Refund;
+use App\Models\Payment;
 use Illuminate\Support\Facades\DB;
 
 class BookingCompletionService
@@ -13,9 +14,17 @@ class BookingCompletionService
     public function complete(Booking $booking, ?float $repairCost = null): void
     {
         $repairCost = max(0.0, (float) $repairCost);
+        $lateFee = max(0.0, (float) $booking->late_fee);
+
         $securityDeposit = $booking->securityDepositAmount();
-        $deduction = min($repairCost, $securityDeposit);
+
+        $totalCharges = round($repairCost + $lateFee, 2);
+
+        $deduction = min($totalCharges, $securityDeposit);
+
         $refundAmount = round($securityDeposit - $deduction, 2);
+
+        $extraCharge = round(max(0.0, $totalCharges - $securityDeposit), 2);
 
         $driverAssignment = $booking->driverAssignment;
         $driverFee = $driverAssignment?->hasEarnings() ? (float) $driverAssignment->earnings : 0.0;
@@ -24,7 +33,7 @@ class BookingCompletionService
         $commission = round($carGross * (config('commission.rate', 10) / 100), 2);
         $net = round($carGross - $commission, 2);
 
-        DB::transaction(function () use ($booking, $refundAmount, $deduction, $carGross, $commission, $net, $driverAssignment, $driverFee) {
+        DB::transaction(function () use ($booking, $refundAmount, $deduction, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee) {
             $booking->update(['status' => Booking::STATUS_COMPLETED]);
 
             if ($refundAmount > 0) {
@@ -36,6 +45,16 @@ class BookingCompletionService
                         : 'Full security deposit refund after a successful return.',
                 ]);
             }
+
+            if ($extraCharge > 0) {
+            Payment::create([
+                'booking_id' => $booking->id,
+                'type' => Payment::TYPE_EXTRA_CHARGE,
+                'amount' => $extraCharge,
+                'payment_method' => 'system',
+                'payment_status' => 'pending',
+            ]);
+        }
 
             OwnerPayout::create([
                 'booking_id' => $booking->id,
@@ -55,7 +74,7 @@ class BookingCompletionService
 
         $booking->customer?->notifyNow(
             "Booking #{$booking->id} completed",
-            $this->customerMessage($booking, $refundAmount, $deduction),
+            $this->customerMessage($booking, $refundAmount, $deduction, $extraCharge, $totalCharges),
             'booking_completed',
             Booking::class,
             $booking->id,
@@ -91,26 +110,44 @@ class BookingCompletionService
         }
     }
 
-    private function customerMessage(Booking $booking, float $refundAmount, float $deduction): string
-    {
-        $base = sprintf(
-            'Your rental of the %s %s is complete. ',
-            $booking->car->brand,
-            $booking->car->model
-        );
+    private function customerMessage(
+    Booking $booking,
+    float $refundAmount,
+    float $deduction,
+    float $extraCharge,
+    float $totalCharges
+): string {
+    $base = sprintf(
+        'Your rental of the %s %s is complete. ',
+        $booking->car->brand,
+        $booking->car->model
+    );
 
-        if ($deduction > 0) {
-            return $base.sprintf(
-                'Repair costs of ETB %s were deducted from your ETB %s security deposit. A refund of ETB %s has been issued to your original payment method.',
-                number_format($deduction, 2),
-                number_format($booking->securityDepositAmount(), 2),
-                number_format($refundAmount, 2),
-            );
-        }
+    $securityDeposit = $booking->securityDepositAmount();
+    $lateFee = (float) $booking->late_fee;
+    $repairCost = max(0.0, $totalCharges - $lateFee);
 
+    if ($extraCharge > 0) {
         return $base.sprintf(
-            'Your security deposit of ETB %s has been refunded in full to your original payment method.',
+            'Repair costs and late fees of ETB %s exceeded your ETB %s security deposit. Your full deposit was applied, and an additional ETB %s is now due.',
+            number_format($totalCharges, 2),
+            number_format($securityDeposit, 2),
+            number_format($extraCharge, 2),
+        );
+    }
+
+    if ($deduction > 0) {
+        return $base.sprintf(
+            'Repair costs and late fees of ETB %s were deducted from your ETB %s security deposit. A refund of ETB %s has been issued to your original payment method.',
+            number_format($totalCharges, 2),
+            number_format($securityDeposit, 2),
             number_format($refundAmount, 2),
         );
     }
+
+    return $base.sprintf(
+        'Your security deposit of ETB %s has been refunded in full to your original payment method.',
+        number_format($refundAmount, 2),
+    );
+}
 }

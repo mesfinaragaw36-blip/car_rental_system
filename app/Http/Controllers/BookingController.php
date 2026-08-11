@@ -202,6 +202,20 @@ class BookingController extends Controller
                 'review_targets' => $reviewTargets,
                 'can_review' => count($reviewTargets) > 0,
                 'reviews' => $reviewList,
+                'late_days' => $booking->late_days,
+                'late_fee' => $booking->late_fee,
+                'additional_charge' => $booking->late_fee > $booking->securityDepositAmount()
+    ? $booking->late_fee - $booking->securityDepositAmount()
+    : 0,
+                'security_deposit' => $booking->securityDepositAmount(),
+                'late_fee_deduction' => min(
+                    (float) $booking->late_fee,
+                    $booking->securityDepositAmount()
+                ),
+                'extra_charge' => max(
+                    0,
+                    (float) $booking->late_fee - $booking->securityDepositAmount()
+                ),
             ],
             'role' => $user->role,
         ]);
