@@ -7,7 +7,6 @@ use App\Models\BookingDriver;
 use App\Models\OwnerPayout;
 use App\Models\Payment;
 use App\Models\Refund;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class BookingCompletionService
@@ -15,22 +14,15 @@ class BookingCompletionService
     public function complete(Booking $booking, ?float $repairCost = null): void
     {
         $repairCost = max(0.0, (float) $repairCost);
+        $lateDays = $booking->returnLateDays();
+        $lateFeePerDay = (float) config('booking.late_fee_per_day', 500.0);
+        $lateFee = round($lateDays * $lateFeePerDay, 2);
+
+        $totalCharges = round($repairCost + $lateFee, 2);
         $securityDeposit = $booking->securityDepositAmount();
-
-        $lateDays = 0;
-        $lateFee = 0.0;
-
-        if ($booking->return_date && Carbon::parse($booking->return_date)->isPast()) {
-            $lateDays = (int) Carbon::parse($booking->return_date)
-                ->startOfDay()
-                ->diffInDays(now()->startOfDay());
-            $lateFee = round($lateDays * config('booking.late_fee_per_day'), 2);
-        }
-
-        $totalOwed = round($repairCost + $lateFee, 2);
-        $deduction = min($totalOwed, $securityDeposit);
+        $deduction = min($totalCharges, $securityDeposit);
         $refundAmount = round($securityDeposit - $deduction, 2);
-        $extraCharge = round($totalOwed - $deduction, 2);
+        $extraCharge = round(max(0.0, $totalCharges - $securityDeposit), 2);
 
         $driverAssignment = $booking->driverAssignment;
         $driverFee = $driverAssignment?->hasEarnings() ? (float) $driverAssignment->earnings : 0.0;
@@ -39,7 +31,7 @@ class BookingCompletionService
         $commission = round($carGross * (config('commission.rate', 10) / 100), 2);
         $net = round($carGross - $commission, 2);
 
-        DB::transaction(function () use ($booking, $refundAmount, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost) {
+        DB::transaction(function () use ($booking, $refundAmount, $deduction, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost, $totalCharges) {
             $booking->update([
                 'status' => Booking::STATUS_COMPLETED,
                 'late_days' => $lateDays,
@@ -57,7 +49,7 @@ class BookingCompletionService
                     }
 
                     if ($lateFee > 0) {
-                        $reasons[] = sprintf('ETB %s for late fees', number_format($lateFee, 2));
+                        $reasons[] = sprintf('ETB %s for late fees (%d days)', number_format($lateFee, 2), $lateDays);
                     }
 
                     $reason = 'Security deposit refund after deducting '.implode(' and ', $reasons).'.';
@@ -99,7 +91,7 @@ class BookingCompletionService
 
         $booking->customer?->notifyNow(
             "Booking #{$booking->id} completed",
-            $this->customerMessage($booking, $refundAmount, $deduction, $extraCharge, $repairCost, $lateFee),
+            $this->customerMessage($booking, $refundAmount, $deduction, $extraCharge, $totalCharges, $repairCost, $lateFee, $lateDays),
             'booking_completed',
             Booking::class,
             $booking->id,
@@ -140,8 +132,10 @@ class BookingCompletionService
         float $refundAmount,
         float $deduction,
         float $extraCharge,
+        float $totalCharges,
         float $repairCost,
-        float $lateFee
+        float $lateFee,
+        int $lateDays
     ): string {
         $base = sprintf(
             'Your rental of the %s %s is complete. ',
@@ -149,20 +143,22 @@ class BookingCompletionService
             $booking->car->model
         );
 
+        $securityDeposit = $booking->securityDepositAmount();
+
         if ($extraCharge > 0) {
             return $base.sprintf(
-                'Repair costs and late fees of ETB %s exceeded your ETB %s security deposit. Your full deposit was applied, and an additional ETB %s is now due — please check your Payment History to settle this balance.',
-                number_format($deduction + $extraCharge, 2),
-                number_format($booking->securityDepositAmount(), 2),
+                'Repair costs and late fees (total ETB %s) exceeded your ETB %s security deposit. Your full deposit was applied, and an additional ETB %s is now due — please check your Payment History to settle this balance.',
+                number_format($totalCharges, 2),
+                number_format($securityDeposit, 2),
                 number_format($extraCharge, 2),
             );
         }
 
         if ($deduction > 0) {
             return $base.sprintf(
-                'Repair costs and late fees of ETB %s were deducted from your ETB %s security deposit. A refund of ETB %s has been issued to your original payment method.',
-                number_format($deduction, 2),
-                number_format($booking->securityDepositAmount(), 2),
+                'Repair costs and late fees (total ETB %s) were deducted from your ETB %s security deposit. A refund of ETB %s has been issued to your original payment method.',
+                number_format($totalCharges, 2),
+                number_format($securityDeposit, 2),
                 number_format($refundAmount, 2),
             );
         }

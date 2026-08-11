@@ -4,6 +4,7 @@ import {
     Car,
     User,
     CalendarDays,
+    Clock,
     MapPin,
     CreditCard,
     CircleDollarSign,
@@ -73,6 +74,13 @@ interface BookingDetails {
         plate_number: string;
         estimated_value?: string | number | null;
     };
+    
+        late_days: number;
+        late_fee: string | number;
+        security_deposit: number;
+        late_fee_deduction: number;
+        extra_charge: number;
+        additional_charge: number;
     car_delivery_status?: 'pending' | 'arrived' | 'failed';
     car_delivery_confirmed_at?: string | null;
     car_delivery_due_date?: string;
@@ -384,6 +392,129 @@ return;
                             )}
                         </CardContent>
                     </Card>
+
+                                        {booking.late_days > 0 && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Clock className="h-5 w-5" /> Late Return
+                                </CardTitle>
+                            </CardHeader>
+
+                            <CardContent className="space-y-2 text-sm">
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">
+                                        Days late
+                                    </span>
+                                    <span className="font-medium">
+                                        {booking.late_days} day
+                                        {booking.late_days !== 1 ? 's' : ''}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">
+                                        Late fee
+                                    </span>
+                                    <span className="font-semibold">
+                                        ETB{' '}
+                                        {Number(booking.late_fee).toLocaleString(
+                                            'en-US',
+                                            {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            },
+                                        )}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between">
+                                    <span className="text-muted-foreground">
+                                        Security deposit
+                                    </span>
+                                    <span>
+                                        ETB{' '}
+                                        {Number(
+                                            booking.security_deposit,
+                                        ).toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </span>
+                                </div>
+
+                                <div className="flex justify-between border-t pt-2">
+                                    <span className="text-muted-foreground">
+                                        Deposit deducted
+                                    </span>
+                                    <span>
+                                        ETB{' '}
+                                        {Number(
+                                            booking.late_fee_deduction,
+                                        ).toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
+                                    </span>
+                                </div>
+
+                               {booking.extra_charge > 0 && (
+                                            <>
+                                                <div className="flex justify-between">
+                                                    <span className="text-muted-foreground">
+                                                        Additional charge
+                                                    </span>
+                                                    <span className="font-semibold text-destructive">
+                                                        ETB{' '}
+                                                        {Number(booking.extra_charge).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </span>
+                                                </div>
+
+                                                <div className="flex justify-between border-t pt-2">
+                                                    <span className="font-semibold">
+                                                        Remaining Amount Due
+                                                    </span>
+                                                    <span className="font-bold text-destructive">
+                                                        ETB{' '}
+                                                        {Number(booking.extra_charge).toLocaleString('en-US', {
+                                                            minimumFractionDigits: 2,
+                                                            maximumFractionDigits: 2,
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            </>
+                                        )}
+                                
+
+                                {booking.extra_charge === 0 &&
+                                    booking.late_fee_deduction <
+                                        Number(booking.late_fee) && (
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                                Refund
+                                            </span>
+                                            <span className="font-semibold">
+                                                ETB{' '}
+                                                {(
+                                                    Number(
+                                                        booking.security_deposit,
+                                                    ) -
+                                                    Number(
+                                                        booking.late_fee_deduction,
+                                                    )
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    )}
+                            </CardContent>
+                        </Card>
+                    )}
 
                     <Card>
                         <CardHeader>

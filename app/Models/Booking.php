@@ -95,6 +95,7 @@ class Booking extends Model
             'need_driver' => 'boolean',
             'total_price' => 'decimal:2',
             'deposit_amount' => 'decimal:2',
+            'late_days' => 'integer',
             'late_fee' => 'decimal:2',
         ];
     }
@@ -320,18 +321,20 @@ class Booking extends Model
         return $this->return_arrival_status === self::RETURN_ARRIVAL_ARRIVED;
     }
 
-    public function returnLateDays(): int
+    public function returnLateDays(?CarbonInterface $returnedAt = null): int
     {
-        $endDate = $this->returned_at ?? now();
+        $returnedAt ??= $this->returned_at;
+
+        if ($returnedAt === null) {
+            return 0;
+        }
 
         return max(
             0,
             (int) $this->return_date
                 ->copy()
                 ->startOfDay()
-                ->diffInDays(
-                    $endDate->copy()->startOfDay()
-                )
+                ->diffInDays($returnedAt->copy()->startOfDay())
         );
     }
 }
