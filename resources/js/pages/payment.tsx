@@ -10,9 +10,10 @@ import { Label } from '@/components/ui/label';
 interface Booking {
     id: number;
     total_price: number;
-    deposit_amount: number;
-    balance_amount: number;
-    security_deposit_amount: number;
+    deposit_amount?: number;
+    balance_amount?: number;
+    security_deposit_amount?: number;
+    extra_charge_amount?: number;
     pickup_date: string;
     return_date: string;
     car: {
@@ -28,7 +29,7 @@ interface Booking {
 
 interface Props {
     booking: Booking;
-    mode?: 'deposit' | 'pickup';
+    mode?: 'deposit' | 'pickup' | 'extra_charge';
 }
 
 const METHODS = [
@@ -92,6 +93,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
     const toast = p.toast;
 
     const isPickup = mode === 'pickup';
+    const isExtraCharge = mode === 'extra_charge';
 
     const [method, setMethod] = useState('');
     const [transactionRef, setTransactionRef] = useState('');
@@ -102,10 +104,11 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
     const showRefInput = selectedMethod?.needsRef ?? false;
     const balanceDue = Math.max(
         0,
-        booking.total_price - booking.deposit_amount,
+        booking.total_price - (booking.deposit_amount ?? 0),
     );
-    const totalDueNow =
-        booking.balance_amount + booking.security_deposit_amount;
+    const totalDueNow = isExtraCharge
+        ? (booking.extra_charge_amount ?? 0)
+        : (booking.balance_amount ?? 0) + (booking.security_deposit_amount ?? 0);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -126,9 +129,11 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
         setProcessing(true);
 
         router.post(
-            isPickup
-                ? `/bookings/${booking.id}/payment/pickup`
-                : `/bookings/${booking.id}/payment`,
+            isExtraCharge
+                ? `/bookings/${booking.id}/payment/extra-charge`
+                : isPickup
+                  ? `/bookings/${booking.id}/payment/pickup`
+                  : `/bookings/${booking.id}/payment`,
             {
                 payment_method: method,
                 transaction_reference: transactionRef.trim() || null,
@@ -162,15 +167,19 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                 </Link>
 
                 <h1 className="text-3xl font-bold">
-                    {isPickup
-                        ? 'Pay Rental Balance & Security Deposit'
-                        : 'Pay Booking Deposit'}
+                    {isExtraCharge
+                        ? 'Pay Outstanding Balance'
+                        : isPickup
+                          ? 'Pay Rental Balance & Security Deposit'
+                          : 'Pay Booking Deposit'}
                 </h1>
 
                 <p className="text-muted-foreground">
-                    {isPickup
-                        ? 'Pay the remaining rental balance plus the refundable security deposit to complete your payment before pickup.'
-                        : 'Pay the 10% deposit to lock your dates. The remaining balance is due at pickup.'}
+                    {isExtraCharge
+                        ? 'Repair costs and/or late fees exceeded your security deposit. Please settle the remaining balance below.'
+                        : isPickup
+                          ? 'Pay the remaining rental balance plus the refundable security deposit to complete your payment before pickup.'
+                          : 'Pay the 10% deposit to lock your dates. The remaining balance is due at pickup.'}
                 </p>
 
                 {toast && (
@@ -244,7 +253,16 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                     ETB {formatETB(booking.total_price)}
                                 </span>
                             </div>
-                            {isPickup ? (
+                            {isExtraCharge ? (
+                                <div className="flex items-center justify-between">
+                                    <span className="text-lg font-semibold">
+                                        Outstanding balance
+                                    </span>
+                                    <span className="text-3xl font-bold text-red-600">
+                                        ETB {formatETB(totalDueNow)}
+                                    </span>
+                                </div>
+                            ) : isPickup ? (
                                 <>
                                     <div className="flex items-center justify-between">
                                         <span className="text-sm text-muted-foreground">
@@ -252,7 +270,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </span>
                                         <span className="text-sm font-medium">
                                             ETB{' '}
-                                            {formatETB(booking.deposit_amount)}
+                                            {formatETB(booking.deposit_amount ?? 0)}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -261,7 +279,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </span>
                                         <span className="text-sm font-medium">
                                             ETB{' '}
-                                            {formatETB(booking.balance_amount)}
+                                            {formatETB(booking.balance_amount ?? 0)}
                                         </span>
                                     </div>
                                     <div className="flex items-center justify-between">
@@ -271,7 +289,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         <span className="text-sm font-medium">
                                             ETB{' '}
                                             {formatETB(
-                                                booking.security_deposit_amount,
+                                                booking.security_deposit_amount ?? 0,
                                             )}
                                         </span>
                                     </div>
@@ -300,7 +318,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </span>
                                         <span className="text-3xl font-bold text-green-600">
                                             ETB{' '}
-                                            {formatETB(booking.deposit_amount)}
+                                            {formatETB(booking.deposit_amount ?? 0)}
                                         </span>
                                     </div>
                                 </>
@@ -422,9 +440,11 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                             >
                                 {processing
                                     ? 'Processing Payment...'
-                                    : isPickup
-                                      ? `Pay ETB ${formatETB(totalDueNow)} Balance & Deposit`
-                                      : `Pay ETB ${formatETB(booking.deposit_amount)} Deposit`}
+                                    : isExtraCharge
+                                      ? `Pay ETB ${formatETB(totalDueNow)} Outstanding Balance`
+                                      : isPickup
+                                        ? `Pay ETB ${formatETB(totalDueNow)} Balance & Deposit`
+                                        : `Pay ETB ${formatETB(booking.deposit_amount ?? 0)} Deposit`}
                             </Button>
                         </form>
                     </CardContent>

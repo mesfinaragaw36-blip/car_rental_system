@@ -64,13 +64,32 @@ const TYPE_LABELS: Record<string, string> = {
     booking_deposit: 'Deposit',
     balance: 'Balance',
     security_deposit: 'Security Deposit',
+    extra_charge: 'Extra Charge',
 };
 
 const TYPE_STYLES: Record<string, string> = {
     booking_deposit: 'bg-blue-50 text-blue-700 border-blue-200',
     balance: 'bg-violet-50 text-violet-700 border-violet-200',
     security_deposit: 'bg-slate-100 text-slate-700 border-slate-200',
+    extra_charge: 'bg-red-50 text-red-700 border-red-200',
 };
+
+function PayNowAction({ payment }: { payment: Payment }) {
+    if (payment.type !== 'extra_charge' || payment.payment_status !== 'pending') {
+        return null;
+    }
+
+    const url = '/bookings/' + payment.booking_id + '/payment/extra-charge';
+
+    return React.createElement(
+        'a',
+        {
+            href: url,
+            className: 'inline-flex items-center rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700',
+        },
+        'Pay Now',
+    );
+}
 
 export default function Payments({ role, payments = [] }: Props) {
     const { props: p } = usePage<{
@@ -212,32 +231,16 @@ export default function Payments({ role, payments = [] }: Props) {
                                 <table className="w-full text-sm">
                                     <thead>
                                         <tr className="border-b text-left text-muted-foreground">
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Booking
-                                            </th>
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Vehicle
-                                            </th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Booking</th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Vehicle</th>
                                             {role === 'admin' && (
-                                                <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                    Customer
-                                                </th>
+                                                <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Customer</th>
                                             )}
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Type
-                                            </th>
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Method
-                                            </th>
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Amount
-                                            </th>
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Date
-                                            </th>
-                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
-                                                Status
-                                            </th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Type</th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Method</th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Amount</th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Date</th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">Status</th>
                                             <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
                                                 Actions
                                             </th>
@@ -265,14 +268,9 @@ export default function Payments({ role, payments = [] }: Props) {
                                                                     ? `${payment.car.brand} ${payment.car.model}`
                                                                     : '—'}
                                                             </p>
-                                                            {payment.car
-                                                                ?.plate_number && (
+                                                            {payment.car?.plate_number && (
                                                                 <p className="text-xs text-muted-foreground">
-                                                                    {
-                                                                        payment
-                                                                            .car
-                                                                            .plate_number
-                                                                    }
+                                                                    {payment.car.plate_number}
                                                                 </p>
                                                             )}
                                                         </div>
@@ -280,33 +278,21 @@ export default function Payments({ role, payments = [] }: Props) {
                                                 </td>
                                                 {role === 'admin' && (
                                                     <td className="px-6 py-4">
-                                                        {payment.customer
-                                                            ?.name ?? '—'}
+                                                        {payment.customer?.name ?? '—'}
                                                     </td>
                                                 )}
                                                 <td className="px-6 py-4">
                                                     <span
                                                         className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${TYPE_STYLES[payment.type] ?? 'border-slate-200 bg-slate-50 text-slate-700'}`}
                                                     >
-                                                        {TYPE_LABELS[
-                                                            payment.type
-                                                        ] ?? payment.type}
+                                                        {TYPE_LABELS[payment.type] ?? payment.type}
                                                     </span>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-2 text-muted-foreground">
-                                                        {
-                                                            METHOD_ICONS[
-                                                                payment
-                                                                    .payment_method
-                                                            ]
-                                                        }
+                                                        {METHOD_ICONS[payment.payment_method]}
                                                         <span>
-                                                            {METHOD_LABELS[
-                                                                payment
-                                                                    .payment_method
-                                                            ] ??
-                                                                payment.payment_method}
+                                                            {METHOD_LABELS[payment.payment_method] ?? payment.payment_method}
                                                         </span>
                                                     </div>
                                                 </td>
@@ -315,53 +301,41 @@ export default function Payments({ role, payments = [] }: Props) {
                                                 </td>
                                                 <td className="px-6 py-4 text-muted-foreground">
                                                     {payment.paid_at
-                                                        ? new Date(
-                                                              payment.paid_at,
-                                                          ).toLocaleDateString(
-                                                              'en-US',
-                                                              {
-                                                                  month: 'short',
-                                                                  day: 'numeric',
-                                                                  year: 'numeric',
-                                                              },
-                                                          )
+                                                        ? new Date(payment.paid_at).toLocaleDateString('en-US', {
+                                                              month: 'short',
+                                                              day: 'numeric',
+                                                              year: 'numeric',
+                                                          })
                                                         : '—'}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <span
                                                         className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_STYLES[payment.payment_status] ?? 'border-slate-200 bg-slate-50 text-slate-700'}`}
                                                     >
-                                                        {
-                                                            STATUS_ICONS[
-                                                                payment
-                                                                    .payment_status
-                                                            ]
-                                                        }
-                                                        {payment.payment_status
-                                                            .charAt(0)
-                                                            .toUpperCase() +
-                                                            payment.payment_status.slice(
-                                                                1,
-                                                            )}
+                                                        {STATUS_ICONS[payment.payment_status]}
+                                                        {payment.payment_status.charAt(0).toUpperCase() + payment.payment_status.slice(1)}
                                                     </span>
                                                 </td>
-                                                <td className="px-6 py-4">
-                                                    <Button
-                                                        asChild
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className="h-8 gap-1.5"
-                                                    >
-                                                        <Link
-                                                            href={receipt.url({
-                                                                payment: payment.id,
-                                                            })}
-                                                        >
-                                                            <Eye className="h-4 w-4" />
-                                                            View
-                                                        </Link>
-                                                    </Button>
-                                                </td>
+                                                 <td className="px-6 py-4 flex items-center gap-2">
+                                                     <Button
+                                                         asChild
+                                                         variant="outline"
+                                                         size="sm"
+                                                         className="h-8 gap-1.5"
+                                                     >
+                                                         <Link
+                                                             href={receipt.url({
+                                                                 payment: payment.id,
+                                                             })}
+                                                         >
+                                                             <Eye className="h-4 w-4" />
+                                                             View
+                                                         </Link>
+                                                     </Button>
+                                                     {role === 'customer' && (
+                                                         <PayNowAction payment={payment} />
+                                                     )}
+                                                 </td>
                                             </tr>
                                         ))}
                                     </tbody>

@@ -75,7 +75,7 @@ class BookingCompletionService
                     'booking_id' => $booking->id,
                     'type' => Payment::TYPE_EXTRA_CHARGE,
                     'amount' => $extraCharge,
-                    'payment_method' => '',
+                    'payment_method' => null,
                     'payment_status' => 'pending',
                     'paid_at' => null,
                 ]);

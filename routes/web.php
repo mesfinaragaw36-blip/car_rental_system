@@ -56,6 +56,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/bookings/{booking}/payment', [PaymentController::class, 'store'])->name('payments.store');
     Route::get('/bookings/{booking}/payment/pickup', [PaymentController::class, 'createPickup'])->name('payments.pickup-create');
     Route::post('/bookings/{booking}/payment/pickup', [PaymentController::class, 'storePickup'])->name('payments.pickup-store');
+    Route::get('/bookings/{booking}/payment/extra-charge', [PaymentController::class, 'createExtraCharge'])->name('payments.extra-charge-create');
+    Route::post('/bookings/{booking}/payment/extra-charge', [PaymentController::class, 'storeExtraCharge'])->name('payments.extra-charge-store');
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])->name('payments.receipt');
 
     // Notifications

@@ -137,6 +137,44 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function createExtraCharge(Booking $booking): Response|RedirectResponse
+    {
+        $user = auth()->user();
+        if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $extraCharge = $booking->payments()
+            ->where('type', Payment::TYPE_EXTRA_CHARGE)
+            ->where('payment_status', 'pending')
+            ->latest()
+            ->first();
+
+        if (! $extraCharge) {
+            return redirect()->back()->with('toast', [
+                'type' => 'error',
+                'message' => 'There is no outstanding extra charge for this booking.',
+            ]);
+        }
+
+        $booking->load('car');
+
+        return Inertia::render('payment', [
+            'mode' => 'extra_charge',
+            'booking' => [
+                'id' => $booking->id,
+                'total_price' => round((float) $booking->total_price, 2),
+                'extra_charge_amount' => round((float) $extraCharge->amount, 2),
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'car' => $booking->car->only(['brand', 'model', 'plate_number']),
+                'need_driver' => $booking->need_driver,
+                'driver' => null,
+            ],
+            'role' => $user->role,
+        ]);
+    }
+
     public function store(Request $request, Booking $booking): RedirectResponse
     {
         $user = auth()->user();
@@ -319,6 +357,63 @@ class PaymentController extends Controller
         ]);
     }
 
+    public function storeExtraCharge(Request $request, Booking $booking): RedirectResponse
+    {
+        $user = auth()->user();
+        if ($booking->customer_id !== $user->id && $user->role !== 'admin') {
+            abort(403);
+        }
+
+        $validated = $request->validate([
+            'payment_method' => 'required|in:Cash,Bank Transfer,Telebirr,CBE Birr',
+            'transaction_reference' => 'required_unless:payment_method,Cash|string|max:255',
+        ]);
+
+        try {
+            DB::transaction(function () use ($booking, $validated) {
+                $extraCharge = $booking->payments()
+                    ->where('type', Payment::TYPE_EXTRA_CHARGE)
+                    ->where('payment_status', 'pending')
+                    ->lockForUpdate()
+                    ->latest()
+                    ->first();
+
+                if (! $extraCharge) {
+                    throw new \RuntimeException('no-extra-charge');
+                }
+
+                $extraCharge->update([
+                    'payment_method' => $validated['payment_method'],
+                    'transaction_reference' => $validated['transaction_reference'] ?? null,
+                    'payment_status' => 'paid',
+                    'paid_at' => now(),
+                ]);
+            });
+        } catch (\RuntimeException $e) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This extra charge has already been settled or no longer exists.',
+            ]);
+        }
+
+        $booking->owner?->notifyNow(
+            "Extra charge settled - Booking #{$booking->id}",
+            sprintf(
+                'The customer paid the outstanding repair/late fee balance for your %s %s.',
+                $booking->car->brand,
+                $booking->car->model,
+            ),
+            'extra_charge_paid',
+            Booking::class,
+            $booking->id,
+        );
+
+        return redirect()->route('payments.index')->with('toast', [
+            'type' => 'success',
+            'message' => 'Payment completed! Thank you for settling the outstanding balance.',
+        ]);
+    }
+
     public function receipt(Payment $payment): Response
     {
         $user = auth()->user();
@@ -363,6 +458,7 @@ class PaymentController extends Controller
                     Payment::TYPE_DEPOSIT => 'Booking Deposit',
                     Payment::TYPE_BALANCE => 'Balance Payment',
                     Payment::TYPE_SECURITY_DEPOSIT => 'Security Deposit',
+                    Payment::TYPE_EXTRA_CHARGE => 'Extra Charge',
                     default => 'Payment',
                 },
                 'amount' => $payment->amount,
