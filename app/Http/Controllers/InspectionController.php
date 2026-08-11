@@ -133,9 +133,13 @@ class InspectionController extends Controller
                     'status' => 'pending',
                 ]);
             }
+
+            // Automatically suspend the owner for failing to deliver the vehicle.
+            $booking->owner?->update(['status' => 'suspended']);
         });
 
         $this->notifyOwnerNotDelivered($booking);
+        $this->notifyOwnerSuspended($booking);
         $this->notifyAdminsOfFailedDelivery($booking);
 
         $booking->customer?->notifyNow(
@@ -153,7 +157,7 @@ class InspectionController extends Controller
 
         return back()->with('toast', [
             'type' => 'success',
-            'message' => "Car delivery failed. Booking #{$booking->id} was cancelled and the customer's payment was queued for refund.",
+            'message' => "Car delivery failed. Booking #{$booking->id} was cancelled, the customer's payment was queued for refund, and the owner's account has been suspended.",
         ]);
     }
 
@@ -561,17 +565,38 @@ class InspectionController extends Controller
         );
     }
 
+    private function notifyOwnerSuspended(Booking $booking): void
+    {
+        $booking->owner?->notifyNow(
+            'Your account has been suspended',
+            sprintf(
+                'Your account has been suspended because your %s %s was not delivered for the pre-rental inspection for booking #%s. '
+                .'Please contact support to have your account reactivated.',
+                $booking->car->brand,
+                $booking->car->model,
+                $booking->id,
+            ),
+            'account_suspended',
+            Booking::class,
+            $booking->id,
+        );
+    }
+
     private function notifyAdminsOfFailedDelivery(Booking $booking): void
     {
         User::query()->where('role', 'admin')->whereNull('staff_role_id')->get()
             ->each->notifyNow(
-                "Car not delivered - booking #{$booking->id}",
+                "Car not delivered — owner flagged (booking #{$booking->id})",
                 sprintf(
-                    'The %s %s for booking #%s has not arrived at %s before the pickup inspection. Please follow up with the owner.',
+                    'The %s %s for booking #%s has not arrived at %s before the pickup inspection. '
+                    .'The booking has been cancelled, the customer\'s payment queued for refund, '
+                    .'and the owner\'s account (%s) has been automatically suspended. '
+                    .'You can review and reactivate the owner from the Users page.',
                     $booking->car->brand,
                     $booking->car->model,
                     $booking->id,
                     $booking->pickup_location,
+                    $booking->owner?->name ?? 'unknown',
                 ),
                 'delivery_escalated',
                 Booking::class,

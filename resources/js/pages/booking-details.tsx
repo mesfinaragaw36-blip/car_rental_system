@@ -1076,6 +1076,20 @@ return;
                     )}
 
                 <div className="flex flex-wrap gap-2">
+                    {booking.status === 'pending' &&
+                        (role === 'admin' || role === 'owner') && (
+                            <div className="flex gap-2">
+                                <Button onClick={() => handleAction('approve')}>
+                                    Approve
+                                </Button>
+                                <Button
+                                    variant="destructive"
+                                    onClick={() => handleAction('reject')}
+                                >
+                                    Reject
+                                </Button>
+                            </div>
+                        )}
                     {['confirmed', 'deposit_paid', 'paid'].includes(booking.status) &&
                         role === 'customer' && (
                             <Button

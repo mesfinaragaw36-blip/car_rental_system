@@ -8,6 +8,8 @@ import {
     Fuel,
     Gauge,
     Palette,
+    Power,
+    PowerOff,
     Settings2,
     Users,
     XCircle,
@@ -246,6 +248,16 @@ export default function VehicleDetails({ vehicle }: Props) {
         }
     }
 
+    function handleToggleStatus() {
+        const isActive = vehicle.availability_status !== 'inactive';
+        const msg = isActive
+            ? 'Deactivate this vehicle? It will be hidden from bookings.'
+            : 'Reactivate this vehicle?';
+        if (confirm(msg)) {
+            router.post(`/admin/vehicles/${vehicle.id}/toggle-status`, {}, { preserveScroll: true });
+        }
+    }
+
     return (
         <>
             <Head title={`${vehicle.brand} ${vehicle.model}`} />
@@ -289,12 +301,38 @@ export default function VehicleDetails({ vehicle }: Props) {
                                     {vehicle.plate_number}
                                 </span>
                             </div>
-                            <Link href="/admin/vehicles">
-                                <Button variant="ghost" size="sm">
-                                    <ArrowLeft className="mr-1 h-4 w-4" />{' '}
-                                    Back
-                                </Button>
-                            </Link>
+                            <div className="flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                        {vehicle.availability_status === 'inactive' ? 'Inactive' : 'Active'}
+                                    </span>
+                                    <button
+                                        role="switch"
+                                        aria-checked={vehicle.availability_status !== 'inactive'}
+                                        title={vehicle.availability_status === 'inactive' ? 'Reactivate vehicle' : 'Deactivate vehicle'}
+                                        className={cn(
+                                            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                                            vehicle.availability_status !== 'inactive' ? "border-green-500 bg-green-50" : "border-slate-300 bg-slate-100"
+                                        )}
+                                        onClick={handleToggleStatus}
+                                    >
+                                        <span
+                                            aria-hidden="true"
+                                            className={cn(
+                                                "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
+                                                vehicle.availability_status !== 'inactive' ? "translate-x-5 bg-green-600" : "translate-x-0.5 bg-slate-400"
+                                            )}
+                                        />
+                                    </button>
+                                </div>
+
+                                <Link href="/admin/vehicles">
+                                    <Button variant="ghost" size="sm">
+                                        <ArrowLeft className="mr-1 h-4 w-4" />{' '}
+                                        Back
+                                    </Button>
+                                </Link>
+                            </div>
                         </div>
                     </div>
 

@@ -452,18 +452,47 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                         </div>
 
                                         <div className="flex flex-wrap items-center gap-2 lg:flex-col lg:items-stretch">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                asChild
-                                            >
-                                                <Link
-                                                    href={`/bookings/${booking.id}`}
-                                                >
-                                                    <Eye className="mr-1.5 h-4 w-4" />{' '}
-                                                    Details
-                                                </Link>
-                                            </Button>
+                                             <Button
+                                                 size="sm"
+                                                 variant="outline"
+                                                 asChild
+                                             >
+                                                 <Link
+                                                     href={`/bookings/${booking.id}`}
+                                                 >
+                                                     <Eye className="mr-1.5 h-4 w-4" />{' '}
+                                                     Details
+                                                 </Link>
+                                             </Button>
+                                             {booking.status === 'pending' &&
+                                                 (role === 'admin' ||
+                                                     role === 'owner') && (
+                                                     <div className="flex gap-1.5">
+                                                         <Button
+                                                             size="sm"
+                                                             onClick={() =>
+                                                                 handleAction(
+                                                                     booking.id,
+                                                                     'approve',
+                                                                 )
+                                                             }
+                                                         >
+                                                             Approve
+                                                         </Button>
+                                                         <Button
+                                                             size="sm"
+                                                             variant="destructive"
+                                                             onClick={() =>
+                                                                 handleAction(
+                                                                     booking.id,
+                                                                     'reject',
+                                                                 )
+                                                             }
+                                                         >
+                                                             Reject
+                                                         </Button>
+                                                     </div>
+                                                 )}
                                             {booking.status === 'confirmed' &&
                                                 role === 'customer' && (
                                                     <Button

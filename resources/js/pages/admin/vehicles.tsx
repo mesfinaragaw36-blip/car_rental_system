@@ -1,10 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Eye, Plus, Search } from 'lucide-react';
+import { Clock, Eye, Plus, Power, PowerOff, Search, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { useCan } from '@/hooks/use-can';
+import { cn } from '@/lib/utils';
 import type { Auth } from '@/types';
 
 interface CarImage {
@@ -85,6 +86,22 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                 { rejection_reason: reason },
                 { preserveScroll: true },
             );
+        }
+    }
+
+    function handleDelete(id: number) {
+        if (confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) {
+            router.delete(`/admin/vehicles/${id}`, { preserveScroll: true });
+        }
+    }
+
+    function handleToggleStatus(id: number, currentStatus: string) {
+        const isActive = currentStatus !== 'inactive';
+        const msg = isActive
+            ? 'Deactivate this vehicle? It will be hidden from bookings.'
+            : 'Reactivate this vehicle?';
+        if (confirm(msg)) {
+            router.post(`/admin/vehicles/${id}/toggle-status`, {}, { preserveScroll: true });
         }
     }
 
@@ -226,11 +243,21 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                     </span>
                                                 </td>
                                                 <td className="py-3">
-                                                    <span
-                                                        className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[v.approval_status] ?? 'bg-gray-100 text-gray-800'}`}
-                                                    >
-                                                        {v.approval_status}
-                                                    </span>
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span
+                                                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[v.approval_status] ?? 'bg-gray-100 text-gray-800'}`}
+                                                        >
+                                                            {v.approval_status}
+                                                        </span>
+                                                        {v.approval_status === 'pending' && (
+                                                            <span
+                                                                title="Awaiting admin approval"
+                                                                className="inline-flex items-center text-yellow-500"
+                                                            >
+                                                                <Clock className="h-3.5 w-3.5 animate-pulse" />
+                                                            </span>
+                                                        )}
+                                                    </div>
                                                 </td>
                                                 <td className="py-3 text-right">
                                                     <div className="flex items-center justify-end gap-1">
@@ -240,39 +267,38 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
+                                                                title="View vehicle"
                                                             >
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        {v.approval_status ===
-                                                            'pending' &&
-                                                            can(
-                                                                'vehicles.approve',
-                                                            ) && (
-                                                            <>
-                                                                <Button
-                                                                    size="sm"
-                                                                    onClick={() =>
-                                                                        handleApprove(
-                                                                            v.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Approve
-                                                                </Button>
-                                                                <Button
-                                                                    size="sm"
-                                                                    variant="destructive"
-                                                                    onClick={() =>
-                                                                        handleReject(
-                                                                            v.id,
-                                                                        )
-                                                                    }
-                                                                >
-                                                                    Reject
-                                                                </Button>
-                                                            </>
-                                                        )}
+                                                         <button
+                                                             role="switch"
+                                                             aria-checked={v.availability_status !== 'inactive'}
+                                                             title={v.availability_status === 'inactive' ? 'Reactivate vehicle' : 'Deactivate vehicle'}
+                                                             className={cn(
+                                                                 "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 mx-1",
+                                                                 v.availability_status !== 'inactive' ? "border-green-500 bg-green-50" : "border-slate-300 bg-slate-100"
+                                                             )}
+                                                             onClick={() => handleToggleStatus(v.id, v.availability_status)}
+                                                         >
+                                                             <span
+                                                                 aria-hidden="true"
+                                                                 className={cn(
+                                                                     "pointer-events-none inline-block h-4 w-4 transform rounded-full shadow-sm transition duration-200 ease-in-out",
+                                                                     v.availability_status !== 'inactive' ? "translate-x-5 bg-green-600" : "translate-x-0.5 bg-slate-400"
+                                                                 )}
+                                                             />
+                                                         </button>
+                                                         <Button
+                                                             size="sm"
+                                                             variant="outline"
+                                                             title="Delete vehicle"
+                                                             className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                             onClick={() => handleDelete(v.id)}
+                                                         >
+                                                             <Trash2 className="h-4 w-4" />
+                                                         </Button>
                                                     </div>
                                                 </td>
                                             </tr>

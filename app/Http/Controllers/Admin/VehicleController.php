@@ -143,6 +143,34 @@ class VehicleController extends Controller
         ]);
     }
 
+    public function toggleStatus(Car $car): RedirectResponse
+    {
+        if ($car->availability_status !== 'inactive') {
+            // Deactivating: block if there are active bookings
+            if ($car->bookings()->whereNotIn('status', Booking::INACTIVE_STATUSES)->exists()) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'Cannot deactivate a vehicle with active bookings.',
+                ]);
+            }
+
+            $car->update(['availability_status' => 'inactive']);
+
+            return back()->with('toast', [
+                'type' => 'success',
+                'message' => "{$car->brand} {$car->model} has been deactivated.",
+            ]);
+        }
+
+        // Reactivating
+        $car->update(['availability_status' => 'available']);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => "{$car->brand} {$car->model} has been reactivated.",
+        ]);
+    }
+
     public function destroy(Car $car): RedirectResponse
     {
         if ($car->bookings()->whereNotIn('status', Booking::INACTIVE_STATUSES)->exists()) {

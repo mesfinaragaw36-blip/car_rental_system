@@ -121,6 +121,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/vehicles/{car}', [AdminVehicleController::class, 'show'])->name('vehicles.show');
         Route::post('/vehicles/{car}/approve', [AdminVehicleController::class, 'approve'])->name('vehicles.approve');
         Route::post('/vehicles/{car}/reject', [AdminVehicleController::class, 'reject'])->name('vehicles.reject');
+        Route::post('/vehicles/{car}/toggle-status', [AdminVehicleController::class, 'toggleStatus'])->name('vehicles.toggle-status');
         Route::post('/vehicles/{car}/documents/approve', [AdminVehicleController::class, 'approveDocument'])->name('vehicles.documents.approve');
         Route::post('/vehicles/{car}/documents/reject', [AdminVehicleController::class, 'rejectDocument'])->name('vehicles.documents.reject');
         Route::delete('/vehicles/{car}', [AdminVehicleController::class, 'destroy'])->name('vehicles.destroy');
