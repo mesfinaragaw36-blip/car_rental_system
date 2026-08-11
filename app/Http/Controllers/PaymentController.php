@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Inspection;
 use App\Models\Payment;
+use App\Models\Refund;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -327,6 +328,7 @@ class PaymentController extends Controller
             'booking.owner',
             'booking.car',
             'booking.payments',
+            'booking.refunds',
         ]);
 
         $booking = $payment->booking;
@@ -381,6 +383,10 @@ class PaymentController extends Controller
                 'daily_rate' => number_format($dailyRate, 2),
                 'subtotal' => number_format($rentalSubtotal, 2),
                 'driver_fee' => number_format($driverFee, 2),
+                'deposit_amount' => number_format($booking->depositAmount(), 2),
+                'full_deposit' => number_format($totalPrice, 2),
+                'full_deposit_balance' => number_format($booking->balanceAmount(), 2),
+                'security_deposit' => number_format($booking->securityDepositAmount(), 2),
                 'paid_to_date' => number_format($paidToDate, 2),
                 'balance_remaining' => number_format($balanceRemaining, 2),
             ],
@@ -394,6 +400,13 @@ class PaymentController extends Controller
                 'model' => $booking->car->model,
                 'plate_number' => $booking->car->plate_number,
             ] : null,
+            'refunds' => $booking->refunds->map(fn (Refund $refund) => [
+                'id' => $refund->id,
+                'amount' => number_format((float) $refund->amount, 2),
+                'reason' => $refund->reason,
+                'status' => $refund->status,
+                'processed_at' => $refund->processed_at?->toDateTimeString(),
+            ])->values(),
         ]);
     }
 }

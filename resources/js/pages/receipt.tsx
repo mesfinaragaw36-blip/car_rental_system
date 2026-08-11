@@ -1,5 +1,13 @@
 import { Head, usePage } from '@inertiajs/react';
-import { Printer, Banknote, CalendarDays, Car } from 'lucide-react';
+import {
+    Banknote,
+    CalendarDays,
+    Car,
+    Printer,
+    ReceiptText,
+    RefreshCcw,
+    ShieldCheck,
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface Props {
@@ -25,6 +33,10 @@ interface Props {
         daily_rate: string;
         subtotal: string;
         driver_fee: string;
+        deposit_amount: string;
+        full_deposit: string;
+        full_deposit_balance: string;
+        security_deposit: string;
         paid_to_date: string;
         balance_remaining: string;
     };
@@ -38,6 +50,13 @@ interface Props {
         model: string;
         plate_number: string;
     } | null;
+    refunds: {
+        id: number;
+        amount: string;
+        reason: string;
+        status: string;
+        processed_at: string | null;
+    }[];
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -47,260 +66,337 @@ const STATUS_STYLES: Record<string, string> = {
     refunded: 'border-slate-200 bg-slate-50 text-slate-600',
 };
 
-export default function Receipt({ payment, booking, customer, car }: Props) {
+const REFUND_STYLES: Record<string, string> = {
+    processed: 'border-green-200 bg-green-50 text-green-700',
+    pending: 'border-amber-200 bg-amber-50 text-amber-700',
+};
+
+function refundLabel(reason: string): string {
+    if (/damage|repair/i.test(reason)) {
+        return 'Refund — Damage';
+    }
+
+    if (/late/i.test(reason)) {
+        return 'Refund — Late Fees';
+    }
+
+    if (/cancel/i.test(reason)) {
+        return 'Cancellation Refund';
+    }
+
+    return 'Refund';
+}
+
+function Line({ label, value }: { label: string; value: string }) {
+    return (
+        <div className="flex items-baseline justify-between gap-4">
+            <dt className="text-sm text-muted-foreground">{label}</dt>
+            <dd className="text-sm font-semibold tabular-nums text-foreground">{value}</dd>
+        </div>
+    );
+}
+
+export default function Receipt({ payment, booking, customer, car, refunds }: Props) {
     const { name } = usePage().props as { name: string };
 
     return (
         <>
             <Head title={`Receipt #${payment.id}`} />
 
-            <div className="mx-auto w-full max-w-3xl p-4 sm:p-8 print:max-w-none print:p-0">
-                <div className="overflow-hidden rounded-lg border bg-white shadow-sm print:rounded-none print:border-0 print:shadow-none">
-                    {/* Header */}
-                    <div className="border-b border-dashed pb-6 text-center">
-                        <img
-                            src="/images/logo.png"
-                            alt={name}
-                            className="mx-auto mb-3 h-16 w-16 rounded-full object-cover"
-                        />
-
-                        <h1 className="text-xl font-bold tracking-tight text-foreground">
-                            {name}
-                        </h1>
-
-                        <p className="mt-1 text-sm font-medium uppercase tracking-widest text-secondary">
-                            Official Payment Receipt
-                        </p>
-
-                        <div className="mx-auto mt-4 inline-flex items-center gap-2 rounded-full border border-border bg-muted/60 px-4 py-1.5 text-sm">
-                            <span className="text-muted-foreground">Receipt No.</span>
-                            <span className="font-semibold">#{payment.id}</span>
-                        </div>
-                    </div>
-
-                    {/* Meta row */}
-                    <div className="grid grid-cols-2 gap-4 border-b border-dashed py-6 sm:grid-cols-4">
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                Booking Ref
+            <div className="flex min-h-screen w-full items-center justify-center bg-muted/50 px-4 py-10 print:bg-white print:px-0 print:py-0">
+                <div className="w-full max-w-2xl print:max-w-none">
+                    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm print:rounded-none print:border-0 print:shadow-none">
+                        {/* Header */}
+                        <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/80 px-6 pb-7 pt-9 text-center text-primary-foreground print:bg-white print:text-foreground">
+                            <img
+                                src="/images/logo.png"
+                                alt={name}
+                                className="mx-auto mb-3 h-16 w-16 rounded-full border-4 border-white/40 bg-white object-cover print:border-slate-200"
+                            />
+                            <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
+                            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.25em] text-primary-foreground/80 print:text-slate-500">
+                                Official Payment Receipt
                             </p>
-                            <p className="mt-1 text-sm font-semibold">#{booking.id}</p>
+
+                            <div className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm backdrop-blur-sm print:border print:bg-white print:text-foreground">
+                                <ReceiptText className="h-4 w-4" />
+                                <span className="text-primary-foreground/80 print:text-slate-500">
+                                    Receipt No.
+                                </span>
+                                <span className="font-bold">#{payment.id}</span>
+                            </div>
                         </div>
 
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                Payment Type
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">{payment.type_label}</p>
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                Date Issued
-                            </p>
-                            <p className="mt-1 text-sm font-semibold">
-                                {payment.paid_at
-                                    ? new Date(payment.paid_at).toLocaleDateString()
-                                    : 'N/A'}
-                            </p>
-                        </div>
-
-                        <div>
-                            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                                Status
-                            </p>
-                            <span
-                                className={`mt-1 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[payment.payment_status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}
-                            >
-                                {payment.payment_status}
-                            </span>
-                        </div>
-                    </div>
-
-                    {/* Billed to + Vehicle */}
-                    <div className="grid gap-6 border-b border-dashed py-6 sm:grid-cols-2">
-                        <div>
-                            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                <Car className="h-4 w-4" />
-                                <h2 className="text-sm font-semibold uppercase tracking-wide">
-                                    Vehicle
-                                </h2>
+                        {/* Meta row */}
+                        <div className="grid grid-cols-2 gap-x-4 gap-y-6 border-b border-dashed px-6 py-6 text-center sm:grid-cols-4">
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    Booking Ref
+                                </p>
+                                <p className="mt-1 text-sm font-semibold">#{booking.id}</p>
                             </div>
 
-                            <p className="text-base font-bold text-foreground">
-                                {car ? `${car.brand} ${car.model}` : 'N/A'}
-                            </p>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                Plate: <span className="font-medium text-foreground">{car?.plate_number ?? 'N/A'}</span>
-                            </p>
-                        </div>
-
-                        <div>
-                            <div className="mb-2 flex items-center gap-2 text-muted-foreground">
-                                <CalendarDays className="h-4 w-4" />
-                                <h2 className="text-sm font-semibold uppercase tracking-wide">
-                                    Rental Period
-                                </h2>
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    Payment Type
+                                </p>
+                                <p className="mt-1 text-sm font-semibold">{payment.type_label}</p>
                             </div>
 
-                            <p className="text-sm font-semibold text-foreground">
-                                {booking.pickup_date} → {booking.return_date}
-                            </p>
-
-                            <p className="mt-1 text-sm text-muted-foreground">
-                                {booking.pickup_location} → {booking.return_location}
-                            </p>
-                        </div>
-                    </div>
-
-                    {/* Customer */}
-                    <div className="border-b border-dashed py-6">
-                        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                            Billed To
-                        </h2>
-
-                        {customer ? (
-                            <div className="grid gap-2 sm:grid-cols-3">
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Name</p>
-                                    <p className="text-sm font-semibold">{customer.name}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Email</p>
-                                    <p className="text-sm">{customer.email}</p>
-                                </div>
-                                <div>
-                                    <p className="text-xs text-muted-foreground">Phone</p>
-                                    <p className="text-sm">{customer.phone}</p>
-                                </div>
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    Date Issued
+                                </p>
+                                <p className="mt-1 text-sm font-semibold">
+                                    {payment.paid_at
+                                        ? new Date(payment.paid_at).toLocaleDateString()
+                                        : 'N/A'}
+                                </p>
                             </div>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">N/A</p>
-                        )}
-                    </div>
 
-                    {/* Cost breakdown */}
-                    <div className="py-6">
-                        <div className="mb-3 flex items-center gap-2 text-muted-foreground">
-                            <Banknote className="h-4 w-4" />
-                            <h2 className="text-sm font-semibold uppercase tracking-wide">
-                                Cost Breakdown
-                            </h2>
+                            <div>
+                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                    Status
+                                </p>
+                                <span
+                                    className={`mt-1 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${STATUS_STYLES[payment.payment_status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                                >
+                                    {payment.payment_status}
+                                </span>
+                            </div>
                         </div>
 
-                        <dl className="space-y-2.5 text-sm">
-                            <div className="flex items-center justify-between gap-4">
-                                <dt className="text-muted-foreground">
-                                    Daily Rate
-                                    <span className="ml-2 text-xs text-muted-foreground/70">
-                                        (× {booking.days} day{booking.days === 1 ? '' : 's'})
+                        {/* Vehicle + Rental Period */}
+                        <div className="grid gap-8 border-b border-dashed px-6 py-6 text-center sm:grid-cols-2">
+                            <div>
+                                <div className="mb-2 flex items-center justify-center gap-2 text-muted-foreground">
+                                    <Car className="h-4 w-4" />
+                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                        Vehicle
+                                    </h2>
+                                </div>
+
+                                <p className="text-base font-bold text-foreground">
+                                    {car ? `${car.brand} ${car.model}` : 'N/A'}
+                                </p>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    Plate:{' '}
+                                    <span className="font-medium text-foreground">
+                                        {car?.plate_number ?? 'N/A'}
                                     </span>
-                                </dt>
-                                <dd className="font-medium tabular-nums">
-                                    ETB {booking.daily_rate}
-                                </dd>
+                                </p>
                             </div>
 
-                            <div className="flex items-center justify-between gap-4">
-                                <dt className="text-muted-foreground">Rental Subtotal</dt>
-                                <dd className="font-medium tabular-nums">
-                                    ETB {booking.subtotal}
-                                </dd>
+                            <div>
+                                <div className="mb-2 flex items-center justify-center gap-2 text-muted-foreground">
+                                    <CalendarDays className="h-4 w-4" />
+                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                        Rental Period
+                                    </h2>
+                                </div>
+
+                                <p className="text-sm font-semibold text-foreground">
+                                    {booking.pickup_date} → {booking.return_date}
+                                </p>
+
+                                <p className="mt-1 text-sm text-muted-foreground">
+                                    {booking.pickup_location} → {booking.return_location}
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Customer */}
+                        <div className="border-b border-dashed px-6 py-6 text-center">
+                            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                                Billed To
+                            </h2>
+
+                            {customer ? (
+                                <div className="grid gap-2 text-sm sm:grid-cols-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Name</p>
+                                        <p className="font-semibold">{customer.name}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Email</p>
+                                        <p>{customer.email}</p>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Phone</p>
+                                        <p>{customer.phone}</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-muted-foreground">N/A</p>
+                            )}
+                        </div>
+
+                        {/* Cost breakdown */}
+                        <div className="border-b border-dashed px-6 py-6">
+                            <div className="mb-5 flex items-center justify-center gap-2 text-muted-foreground">
+                                <Banknote className="h-4 w-4" />
+                                <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                    Cost Breakdown
+                                </h2>
                             </div>
 
-                            {booking.need_driver && Number(booking.driver_fee) > 0 && (
-                                <div className="flex items-center justify-between gap-4">
-                                    <dt className="text-muted-foreground">Driver Fee</dt>
-                                    <dd className="font-medium tabular-nums">
-                                        ETB {booking.driver_fee}
+                            <dl className="mx-auto w-full max-w-md space-y-3">
+                                <Line
+                                    label={`Daily Price (× ${booking.days} day${booking.days === 1 ? '' : 's'})`}
+                                    value={`ETB ${booking.daily_rate}`}
+                                />
+                                <Line label="Rental Subtotal" value={`ETB ${booking.subtotal}`} />
+
+                                {booking.need_driver && Number(booking.driver_fee) > 0 && (
+                                    <Line label="Driver Fee" value={`ETB ${booking.driver_fee}`} />
+                                )}
+
+                                <div className="flex items-baseline justify-between gap-4 rounded-lg bg-muted/60 px-4 py-2.5">
+                                    <dt className="font-semibold text-foreground">
+                                        Rental Total
+                                    </dt>
+                                    <dd className="text-lg font-bold tabular-nums">
+                                        ETB {booking.total_price}
                                     </dd>
                                 </div>
-                            )}
 
-                            <div className="flex items-center justify-between gap-4 border-t border-border pt-3">
-                                <dt className="font-semibold text-foreground">
-                                    Rental Total
-                                </dt>
-                                <dd className="text-lg font-bold tabular-nums">
-                                    ETB {booking.total_price}
-                                </dd>
-                            </div>
+                                <Line
+                                    label="First Deposit"
+                                    value={`ETB ${booking.deposit_amount}`}
+                                />
+                                <Line
+                                    label="Full Deposit − First Deposit"
+                                    value={`ETB ${booking.full_deposit_balance}`}
+                                />
 
-                            <div className="flex items-center justify-between gap-4">
-                                <dt className="text-muted-foreground">
-                                    Paid To Date
-                                </dt>
-                                <dd className="font-medium tabular-nums">
-                                    ETB {booking.paid_to_date}
-                                </dd>
-                            </div>
+                                <div className="flex items-baseline justify-between gap-4 rounded-lg border border-border/60 bg-white px-4 py-2.5">
+                                    <dt className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                                        <ShieldCheck className="h-4 w-4 text-primary" />
+                                        Safety Deposit
+                                    </dt>
+                                    <dd className="text-sm font-semibold tabular-nums">
+                                        ETB {booking.security_deposit}
+                                    </dd>
+                                </div>
 
-                            <div className="flex items-center justify-between gap-4">
-                                <dt className="text-muted-foreground">
-                                    Amount Due
-                                </dt>
-                                <dd className="font-medium tabular-nums">
-                                    ETB {booking.balance_remaining}
-                                </dd>
-                            </div>
-                        </dl>
-                    </div>
+                                <div className="border-t border-border pt-3">
+                                    <Line
+                                        label="Paid To Date"
+                                        value={`ETB ${booking.paid_to_date}`}
+                                    />
+                                    <Line
+                                        label="Amount Due"
+                                        value={`ETB ${booking.balance_remaining}`}
+                                    />
+                                </div>
+                            </dl>
+                        </div>
 
-                    {/* Payment details */}
-                    <div className="border-t border-dashed py-6">
-                        <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
-                            Payment Details
-                        </h2>
+                        {/* Payment details */}
+                        <div className="px-6 py-6 text-center">
+                            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                                Payment Details
+                            </h2>
 
-                        <div className="grid gap-2 text-sm sm:grid-cols-2">
-                            <div className="flex justify-between gap-4 sm:block">
-                                <span className="text-muted-foreground">Method</span>
-                                <span className="font-medium sm:block sm:mt-0.5">
-                                    {payment.payment_method}
-                                </span>
-                            </div>
+                            <div className="mx-auto grid w-full max-w-md gap-4 text-sm sm:grid-cols-2">
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                        Method
+                                    </p>
+                                    <p className="mt-0.5 font-medium">{payment.payment_method}</p>
+                                </div>
 
-                            <div className="flex justify-between gap-4 sm:block">
-                                <span className="text-muted-foreground">Reference</span>
-                                <span className="font-medium sm:block sm:mt-0.5">
-                                    {payment.transaction_reference ?? 'N/A'}
-                                </span>
-                            </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                        Reference
+                                    </p>
+                                    <p className="mt-0.5 font-medium">
+                                        {payment.transaction_reference ?? 'N/A'}
+                                    </p>
+                                </div>
 
-                            <div className="flex justify-between gap-4 sm:block">
-                                <span className="text-muted-foreground">Paid At</span>
-                                <span className="font-medium sm:block sm:mt-0.5">
-                                    {payment.paid_at
-                                        ? new Date(payment.paid_at).toLocaleString()
-                                        : 'N/A'}
-                                </span>
-                            </div>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                        Paid At
+                                    </p>
+                                    <p className="mt-0.5 font-medium">
+                                        {payment.paid_at
+                                            ? new Date(payment.paid_at).toLocaleString()
+                                            : 'N/A'}
+                                    </p>
+                                </div>
 
-                            <div className="flex justify-between gap-4 sm:block">
-                                <span className="text-muted-foreground">Amount</span>
-                                <span className="text-base font-bold sm:block sm:mt-0.5">
-                                    ETB {payment.amount}
-                                </span>
+                                <div>
+                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                        Amount Paid
+                                    </p>
+                                    <p className="mt-0.5 text-base font-bold tabular-nums">
+                                        ETB {payment.amount}
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* Footer */}
-                    <div className="border-t border-dashed pt-6 text-center">
-                        <Button onClick={() => window.print()} className="print:hidden">
-                            <Printer className="mr-2 h-4 w-4" />
-                            Print Receipt
-                        </Button>
+                        {/* Refunds */}
+                        {refunds.length > 0 && (
+                            <div className="border-t border-dashed px-6 py-6 text-center">
+                                <div className="mb-4 flex items-center justify-center gap-2 text-muted-foreground">
+                                    <RefreshCcw className="h-4 w-4" />
+                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                        Refunds
+                                    </h2>
+                                </div>
 
-                        <p className="mt-4 text-sm text-muted-foreground">
-                            Thank you for choosing {name}.
-                        </p>
+                                <div className="mx-auto w-full max-w-md space-y-3">
+                                    {refunds.map((refund) => (
+                                        <div
+                                            key={refund.id}
+                                            className="flex items-center justify-between gap-4 rounded-lg border border-border/60 bg-muted/40 px-4 py-3 text-left"
+                                        >
+                                            <div className="min-w-0">
+                                                <p className="text-sm font-semibold text-foreground">
+                                                    {refundLabel(refund.reason)}
+                                                </p>
+                                                <p className="mt-0.5 text-xs text-muted-foreground">
+                                                    {refund.reason}
+                                                </p>
+                                            </div>
 
-                        <p className="mt-1 text-xs text-muted-foreground/70">
-                            This receipt was issued for booking #{booking.id}. Keep it for
-                            your records.
-                        </p>
+                                            <div className="flex shrink-0 flex-col items-end gap-1">
+                                                <span className="text-sm font-bold tabular-nums">
+                                                    ETB {refund.amount}
+                                                </span>
+                                                <span
+                                                    className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${REFUND_STYLES[refund.status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}
+                                                >
+                                                    {refund.status === 'processed'
+                                                        ? 'Refunded'
+                                                        : 'Pending'}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Footer */}
+                        <div className="border-t border-dashed px-6 py-6 text-center">
+                            <Button onClick={() => window.print()} className="print:hidden">
+                                <Printer className="mr-2 h-4 w-4" />
+                                Print Receipt
+                            </Button>
+
+                            <p className="mt-4 text-sm text-muted-foreground">
+                                Thank you for choosing {name}.
+                            </p>
+
+                            <p className="mt-1 text-xs text-muted-foreground/70">
+                                This receipt was issued for booking #{booking.id}. Keep it for
+                                your records.
+                            </p>
+                        </div>
                     </div>
                 </div>
             </div>

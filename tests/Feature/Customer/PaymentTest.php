@@ -5,6 +5,7 @@ namespace Tests\Feature\Customer;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\Payment;
+use App\Models\Refund;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -247,6 +248,42 @@ class PaymentTest extends TestCase
             ->where('booking.days', 3)
             ->where('booking.daily_rate', '100.00')
             ->where('payment.amount', '300.00'));
+    }
+
+    public function test_receipt_includes_refunds_with_amount_status_and_reason(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $booking = $this->createBooking($owner, $customer, $car);
+
+        $refund = Refund::create([
+            'booking_id' => $booking->id,
+            'amount' => 400.00,
+            'reason' => 'Security deposit refund after deducting ETB 100.00 for repair costs.',
+            'status' => 'processed',
+            'processed_at' => now(),
+        ]);
+
+        $payment = Payment::create([
+            'booking_id' => $booking->id,
+            'amount' => 300.00,
+            'payment_method' => 'Cash',
+            'payment_status' => 'paid',
+            'paid_at' => now(),
+        ]);
+
+        $response = $this
+            ->actingAs($customer)
+            ->get(route('payments.receipt', $payment));
+
+        $response->assertOk();
+        $response->assertInertia(fn (AssertableInertia $page) => $page
+            ->component('receipt')
+            ->where('refunds.0.id', $refund->id)
+            ->where('refunds.0.amount', '400.00')
+            ->where('refunds.0.status', 'processed')
+            ->where('refunds.0.reason', 'Security deposit refund after deducting ETB 100.00 for repair costs.'));
     }
 
     public function test_customer_cannot_view_another_customers_receipt(): void

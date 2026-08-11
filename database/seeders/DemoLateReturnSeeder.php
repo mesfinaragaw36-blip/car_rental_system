@@ -5,11 +5,13 @@ namespace Database\Seeders;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CarImage;
 use App\Models\OwnerProfile;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class DemoLateReturnSeeder extends Seeder
 {
@@ -38,9 +40,9 @@ class DemoLateReturnSeeder extends Seeder
             ]
         );
 
-        $overdueCar = $this->demoCar('DEMO-1001', 'Toyota', 'Corolla', 2019, 'Sedan', 2200);
-        $onTimeCar = $this->demoCar('DEMO-1002', 'Toyota', 'RAV4', 2021, 'SUV', 3200);
-        $pickupCar = $this->demoCar('DEMO-1003', 'Suzuki', 'Swift', 2022, 'Hatchback', 1800);
+        $overdueCar = $this->demoCar('DEMO-1001', 'Toyota', 'Corolla', 2019, 'Sedan', 2200, 'fleet-sedan.png');
+        $onTimeCar = $this->demoCar('DEMO-1002', 'Toyota', 'RAV4', 2021, 'SUV', 3200, 'fleet-suv.png');
+        $pickupCar = $this->demoCar('DEMO-1003', 'Suzuki', 'Swift', 2022, 'Hatchback', 1800, 'fleet-luxury.png');
 
         $this->makeAvailable($overdueCar);
         $this->makeAvailable($onTimeCar);
@@ -76,9 +78,9 @@ class DemoLateReturnSeeder extends Seeder
         );
     }
 
-    private function demoCar(string $plate, string $brand, string $model, int $year, string $category, float $dailyPrice): Car
+    private function demoCar(string $plate, string $brand, string $model, int $year, string $category, float $dailyPrice, string $imageFile): Car
     {
-        return Car::updateOrCreate(
+        $car = Car::updateOrCreate(
             ['plate_number' => $plate],
             [
                 'owner_id' => User::where('email', 'demo.owner@carrental.com')->value('id'),
@@ -96,6 +98,30 @@ class DemoLateReturnSeeder extends Seeder
                 'description' => 'Demo vehicle for the late-return presentation.',
                 'approval_status' => 'approved',
                 'availability_status' => 'available',
+            ]
+        );
+
+        $this->attachDemoImage($car, $imageFile);
+
+        return $car;
+    }
+
+    private function attachDemoImage(Car $car, string $imageFile): void
+    {
+        $source = public_path("images/{$imageFile}");
+
+        if (! is_file($source)) {
+            return;
+        }
+
+        $path = 'demo/'.$imageFile;
+        Storage::disk('public')->put($path, file_get_contents($source));
+
+        CarImage::updateOrCreate(
+            ['car_id' => $car->id],
+            [
+                'image_path' => $path,
+                'is_primary' => true,
             ]
         );
     }
