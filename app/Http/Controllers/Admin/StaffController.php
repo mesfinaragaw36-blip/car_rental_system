@@ -3,12 +3,12 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\DriverProfile;
 use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,21 +45,36 @@ class StaffController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
-            'password' => ['required', 'string', 'min:8', 'confirmed'],
             'staff_role_id' => ['required', 'exists:roles,id'],
             'branch_id' => ['required', 'exists:locations,id'],
         ]);
 
-        User::create([
+            $staff = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
-            'password' => Hash::make($validated['password']),
+            'password' => '12345678',
             'role' => 'admin',
             'staff_role_id' => $validated['staff_role_id'],
             'branch_id' => $validated['branch_id'],
             'status' => 'active',
         ]);
+        // If this staff role grants driver access, provision a driver profile
+        // just like self-registered drivers used to get, so nothing about
+        // the driver experience changes — only how the account is created.
+        $role = Role::find($validated['staff_role_id']);
+
+        if ($role && in_array('driver.access', $role->permissions ?? [], true)) {
+            DriverProfile::firstOrCreate(
+                ['user_id' => $staff->id],
+                [
+                    'license_number' => 'PENDING',
+                    'experience_years' => 0,
+                    'availability' => 'available',
+                    'verification_status' => 'pending',
+                ]
+            );
+        }
 
         return redirect()->route('admin.staff.index')->with('toast', [
             'type' => 'success',

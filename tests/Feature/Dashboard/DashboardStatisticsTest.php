@@ -68,7 +68,7 @@ class DashboardStatisticsTest extends TestCase
 
     private function createDriver(): User
     {
-        $driver = User::factory()->create(['role' => 'driver']);
+        $role = \App\Models\Role::firstOrCreate(['name' => 'Driver'], ['permissions' => ['driver.access']]); $driver = User::factory()->create(['role' => 'admin', 'staff_role_id' => $role->id]);
 
         DriverProfile::create([
             'user_id' => $driver->id,

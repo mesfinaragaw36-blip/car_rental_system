@@ -16,8 +16,10 @@ class AssignmentController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
+        $isDriver = $user->hasDriverPermission();
+        $viewRole = $isDriver ? 'driver' : $user->role;
 
-        if ($user->role === 'admin' || $user->role === 'owner') {
+        if (($user->role === 'admin' && ! $isDriver) || $user->role === 'owner') {
             $query = BookingDriver::with(['booking.customer', 'booking.car', 'driver:id,name,phone'])
                 ->whereIn('status', ['assigned', 'accepted', 'completed']);
 
@@ -64,9 +66,9 @@ class AssignmentController extends Controller
         }
 
         return Inertia::render('assignments', [
-            'role' => $user->role,
+            'role' => $viewRole,
             'assignments' => $assignments,
-            'driverVerificationStatus' => $user->role === 'driver'
+            'driverVerificationStatus' => $isDriver
                 ? ($user->driverProfile?->verification_status ?? 'none')
                 : null,
         ]);
@@ -75,7 +77,7 @@ class AssignmentController extends Controller
     public function reject(BookingDriver $assignment): RedirectResponse
     {
         $user = auth()->user();
-        if ($assignment->driver_id !== $user->id && $user->role !== 'admin') {
+        if ($assignment->driver_id !== $user->id && ! $user->isFullAdmin()) {
             abort(403);
         }
         if ($assignment->status !== 'assigned') {
@@ -106,7 +108,7 @@ class AssignmentController extends Controller
     public function accept(BookingDriver $assignment): RedirectResponse
     {
         $user = auth()->user();
-        if ($assignment->driver_id !== $user->id && $user->role !== 'admin') {
+        if ($assignment->driver_id !== $user->id && ! $user->isFullAdmin()) {
             abort(403);
         }
         if ($assignment->status !== 'assigned') {

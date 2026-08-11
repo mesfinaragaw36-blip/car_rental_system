@@ -30,6 +30,12 @@ class RoleController extends Controller
                 'drivers.manage' => 'Suspend / Activate Drivers',
             ],
         ],
+        'driver_portal' => [
+            'label' => 'Driver Portal',
+            'items' => [
+                'driver.access' => 'Access Driver Portal (Assignments, Trip History, Profile)',
+            ],
+        ],
         'users' => [
             'label' => 'Users',
             'items' => [

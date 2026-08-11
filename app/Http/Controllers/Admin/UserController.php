@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DriverProfile;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -57,10 +56,10 @@ class UserController extends Controller
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            'role' => ['required', Rule::in(['customer', 'owner', 'driver'])],
+            'role' => ['required', Rule::in(['customer', 'owner'])],
         ]);
 
-        $user = User::create([
+        User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'phone' => $validated['phone'],
@@ -68,16 +67,6 @@ class UserController extends Controller
             'role' => $validated['role'],
             'status' => 'active',
         ]);
-
-        if ($validated['role'] === 'driver') {
-            DriverProfile::create([
-                'user_id' => $user->id,
-                'license_number' => 'PENDING',
-                'experience_years' => 0,
-                'availability' => 'available',
-                'verification_status' => 'pending',
-            ]);
-        }
 
         return redirect()->route('admin.users.index')->with('toast', [
             'type' => 'success',
@@ -90,7 +79,7 @@ class UserController extends Controller
         $user->load(['ownerProfile', 'driverProfile']);
 
         $driverReviews = [];
-        if ($user->role === 'driver') {
+        if ($user->hasDriverPermission()) {
             $driverReviews = $user->reviews()->with('reviewer')->latest()->take(10)->get()->map(function ($r) {
                 return [
                     'id' => $r->id,
@@ -120,7 +109,7 @@ class UserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone,'.$user->id],
-            'role' => ['required', Rule::in(['customer', 'owner', 'driver'])],
+            'role' => ['required', Rule::in(['customer', 'owner'])],
         ]);
 
         $user->update([

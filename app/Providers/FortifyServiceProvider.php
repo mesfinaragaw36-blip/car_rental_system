@@ -51,21 +51,23 @@ class FortifyServiceProvider extends ServiceProvider
         Fortify::createUsersUsing(CreateNewUser::class);
 
         // Block inactive users and redirect by role after login
-        Fortify::authenticateUsing(function (Request $request) {
-            $user = User::where('email', $request->email)->first();
+      Fortify::authenticateUsing(function (Request $request) {
+    $email = strtolower(trim($request->input('email')));
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
-                return null;
-            }
+    $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
 
-            if ($user->status !== 'active') {
-                throw ValidationException::withMessages([
-                    'email' => 'Your account is inactive. Please contact support.',
-                ]);
-            }
+    if (! $user || ! Hash::check($request->input('password'), $user->password)) {
+        return null;
+    }
 
-            return $user;
-        });
+    if ($user->status !== 'active') {
+        throw ValidationException::withMessages([
+            'email' => 'Your account is inactive. Please contact support.',
+        ]);
+    }
+
+    return $user;
+});
     }
 
     /**

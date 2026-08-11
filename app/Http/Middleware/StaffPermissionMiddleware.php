@@ -9,14 +9,19 @@ use Symfony\Component\HttpFoundation\Response;
 class StaffPermissionMiddleware
 {
     /**
-     * Map permission prefixes to allowed route name prefixes.
+     * Map permission names to allowed route name prefixes.
      */
     private const PERMISSION_ROUTE_MAP = [
         'users' => ['admin.users'],
-        'vehicles' => ['admin.vehicles', 'admin.vehicle-images', 'admin.vehicle-documents'],
+        'vehicles' => [
+            'admin.vehicles',
+            'admin.vehicle-images',
+            'admin.vehicle-documents',
+        ],
         'staff' => ['admin.staff'],
         'payments' => ['admin.payments'],
         'bookings.inspect' => ['inspections'],
+        'driver.access' => ['driver'],
     ];
 
     public function handle(Request $request, Closure $next): Response
@@ -27,8 +32,8 @@ class StaffPermissionMiddleware
             abort(403, 'Unauthorized.');
         }
 
-        // Full admin (no staff_role_id) has unrestricted access.
-        if ($user->role === 'admin' && $user->staff_role_id === null) {
+        // Full admin has unrestricted access.
+        if ($user->isFullAdmin()) {
             return $next($request);
         }
 
@@ -41,8 +46,23 @@ class StaffPermissionMiddleware
         $permissions = $staffRole->permissions ?? [];
         $routeName = $request->route()?->getName() ?? '';
 
-        // Check if any of the user's permissions grant access to this route
+        /*
+         * A staff account with driver.access is treated as a driver
+         * for driver routes, not as ordinary staff.
+         */
+        if (
+            in_array('driver.access', $permissions, true)
+            && str_starts_with($routeName, 'driver.')
+        ) {
+            return $next($request);
+        }
+
+        // Check the remaining staff permissions.
         foreach ($permissions as $permission) {
+            if ($permission === 'driver.access') {
+                continue;
+            }
+
             $prefixGroup = self::PERMISSION_ROUTE_MAP[$permission] ?? [];
 
             foreach ($prefixGroup as $prefix) {

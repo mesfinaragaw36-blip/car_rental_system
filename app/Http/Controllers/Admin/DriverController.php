@@ -13,7 +13,7 @@ class DriverController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = User::where('role', 'driver')
+        $query = User::drivers()
             ->with('driverProfile')
             ->withCount('driverAssignments');
 
@@ -41,7 +41,7 @@ class DriverController extends Controller
 
     public function suspend(User $driver): RedirectResponse
     {
-        abort_unless($driver->role === 'driver', 404);
+        abort_unless($driver->hasDriverPermission(), 404);
         $driver->update(['status' => 'suspended']);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Driver suspended.']);
@@ -49,7 +49,7 @@ class DriverController extends Controller
 
     public function activate(User $driver): RedirectResponse
     {
-        abort_unless($driver->role === 'driver', 404);
+        abort_unless($driver->hasDriverPermission(), 404);
         $driver->update(['status' => 'active']);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Driver activated.']);

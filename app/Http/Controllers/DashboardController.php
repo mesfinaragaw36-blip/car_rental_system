@@ -15,14 +15,17 @@ use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+   public function index(): Response
     {
         $user = auth()->user();
+
+        if ($user->hasDriverPermission()) {
+            return $this->driverDashboard();
+        }
 
         return match ($user->role) {
             'admin' => $this->adminDashboard(),
             'owner' => $this->ownerDashboard(),
-            'driver' => $this->driverDashboard(),
             default => $this->customerDashboard(),
         };
     }
