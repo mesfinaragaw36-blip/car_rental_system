@@ -57,6 +57,24 @@ class User extends Authenticatable
         return $this->belongsTo(Role::class, 'staff_role_id');
     }
 
+    /**
+     * Whether the user holds the given permission.
+     *
+     * Full admins and non-staff roles are not restricted by permissions.
+     */
+    public function hasPermission(string $permission): bool
+    {
+        if ($this->role !== 'admin') {
+            return true;
+        }
+
+        if ($this->staff_role_id === null) {
+            return true;
+        }
+
+        return in_array($permission, $this->staffRole?->permissions ?? [], true);
+    }
+
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'branch_id');

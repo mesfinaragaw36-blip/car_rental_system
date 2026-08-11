@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Trash2, Ban, PlayCircle, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface StaffRole {
@@ -54,9 +55,7 @@ function statusBadgeClass(status: string): string {
 export default function ShowStaff({ staff }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin =
-        props.auth.user.role === 'admin' &&
-        props.auth.user.staff_role_id === null;
+    const can = useCan();
 
     function handleSuspend(): void {
         if (confirm('Suspend this staff member?')) {
@@ -151,7 +150,7 @@ export default function ShowStaff({ staff }: Props) {
                             </div>
                         </div>
 
-                        {isFullAdmin && (
+                        {can('staff.manage') && (
                             <div className="flex gap-3 border-t pt-4">
                                 {staff.status === 'active' ? (
                                     <Button

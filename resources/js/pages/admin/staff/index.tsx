@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 const DEFAULT_PASSWORD = '12345678';
@@ -73,9 +74,7 @@ function statusBadgeClass(status: string): string {
 export default function StaffIndex({ staff, roles, locations }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin =
-        props.auth.user.role === 'admin' &&
-        props.auth.user.staff_role_id === null;
+    const can = useCan();
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -128,7 +127,7 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Staff Management</h1>
-                    {isFullAdmin && (
+                    {can('staff.create') && (
                         <Button onClick={openDialog}>
                             <Plus className="mr-2 h-4 w-4" />
                             Create Staff
@@ -230,7 +229,7 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        {isFullAdmin && (
+                                                        {can('staff.manage') && (
                                                             <>
                                                                 {member.status ===
                                                                 'active' ? (

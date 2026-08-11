@@ -1,6 +1,7 @@
 import { Head, useForm } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 
 interface Document {
     id: number;
@@ -21,6 +22,7 @@ interface Props {
 
 export default function VehicleDocuments({ documents = [] }: Props) {
     const form = useForm({ document_id: '' });
+    const can = useCan();
 
     function approveDocument(carId: number, documentId: number) {
         form.setData('document_id', String(documentId));
@@ -106,7 +108,12 @@ export default function VehicleDocuments({ documents = [] }: Props) {
                                                 <Button
                                                     type="button"
                                                     size="sm"
-                                                    disabled={form.processing}
+                                                    disabled={
+                                                        form.processing ||
+                                                        !can(
+                                                            'vehicles.documents',
+                                                        )
+                                                    }
                                                     onClick={() =>
                                                         approveDocument(
                                                             document.car_id,
@@ -121,7 +128,12 @@ export default function VehicleDocuments({ documents = [] }: Props) {
                                                     type="button"
                                                     variant="outline"
                                                     size="sm"
-                                                    disabled={form.processing}
+                                                    disabled={
+                                                        form.processing ||
+                                                        !can(
+                                                            'vehicles.documents',
+                                                        )
+                                                    }
                                                     onClick={() =>
                                                         rejectDocument(
                                                             document.car_id,

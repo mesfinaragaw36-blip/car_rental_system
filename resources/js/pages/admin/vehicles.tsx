@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface CarImage {
@@ -52,6 +53,7 @@ const APPROVAL_STYLES: Record<string, string> = {
 export default function AdminVehicles({ vehicles, filters }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
@@ -73,10 +75,14 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
     }
 
     function handleReject(id: number) {
-        if (confirm('Reject this vehicle?')) {
+        const reason = prompt(
+            'Please enter the reason for vehicle rejection:',
+        );
+
+        if (reason && reason.trim() !== '') {
             router.post(
                 `/admin/vehicles/${id}/reject`,
-                {},
+                { rejection_reason: reason },
                 { preserveScroll: true },
             );
         }
@@ -239,7 +245,10 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                             </Button>
                                                         </Link>
                                                         {v.approval_status ===
-                                                            'pending' && (
+                                                            'pending' &&
+                                                            can(
+                                                                'vehicles.approve',
+                                                            ) && (
                                                             <>
                                                                 <Button
                                                                     size="sm"

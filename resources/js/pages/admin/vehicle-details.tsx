@@ -1,7 +1,24 @@
-import { Head, Link, router } from '@inertiajs/react';
-import { FileText, CheckCircle, XCircle } from 'lucide-react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import {
+    ArrowLeft,
+    Calendar,
+    Car as CarIcon,
+    CheckCircle2,
+    FileText,
+    Fuel,
+    Gauge,
+    Palette,
+    Settings2,
+    Users,
+    XCircle,
+    Zap,
+} from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
+import { cn } from '@/lib/utils';
 
 interface VehicleDocument {
     id: number;
@@ -46,52 +63,184 @@ interface Props {
     vehicle: Vehicle;
 }
 
-const APPROVAL_STYLES: Record<string, string> = {
-    approved: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
-    pending: 'bg-yellow-100 text-yellow-800',
-};
+interface FlashProps {
+    toast?: { type: 'success' | 'error'; message: string };
+}
 
-function DetailRow({
+function StatusBadge({
+    label,
+    tone,
+}: {
+    label: string;
+    tone: 'green' | 'red' | 'yellow' | 'blue' | 'slate';
+}) {
+    const tones: Record<string, string> = {
+        green: 'bg-green-100 text-green-700 ring-green-600/20',
+        red: 'bg-red-100 text-red-700 ring-red-600/20',
+        yellow: 'bg-yellow-100 text-yellow-800 ring-yellow-600/20',
+        blue: 'bg-blue-100 text-blue-700 ring-blue-600/20',
+        slate: 'bg-slate-100 text-slate-600 ring-slate-500/20',
+    };
+
+    return (
+        <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${tones[tone]}`}
+        >
+            {label}
+        </span>
+    );
+}
+
+function approvalTone(status: string): 'green' | 'red' | 'yellow' | 'slate' {
+    if (status === 'approved') {
+        return 'green';
+    }
+
+    if (status === 'rejected') {
+        return 'red';
+    }
+
+    if (status === 'pending') {
+        return 'yellow';
+    }
+
+    return 'slate';
+}
+
+function documentTone(status: string): 'green' | 'red' | 'yellow' | 'slate' {
+    if (status === 'approved') {
+        return 'green';
+    }
+
+    if (status === 'rejected') {
+        return 'red';
+    }
+
+    if (status === 'pending') {
+        return 'yellow';
+    }
+
+    return 'slate';
+}
+
+function SpecTile({
+    icon: Icon,
     label,
     value,
 }: {
+    icon: LucideIcon;
     label: string;
-    value: string | number | null;
+    value: string | number;
 }) {
     return (
-        <div>
-            <p className="text-xs text-muted-foreground">{label}</p>
-            <p className="font-medium">{value ?? '—'}</p>
+        <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
+            <Icon className="h-4 w-4 text-blue-600" />
+            <p className="mt-2 text-xs text-slate-500">{label}</p>
+            <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                {value}
+            </p>
+        </div>
+    );
+}
+
+function CarGallery({ images }: { images: Vehicle['images'] }) {
+    const [activeImage, setActiveImage] = useState(0);
+    const currentImage = images[activeImage] ?? images[0];
+
+    return (
+        <div className="flex gap-3">
+            {images.length > 1 && (
+                <div className="flex flex-col gap-2">
+                    {images.map((img, index) => (
+                        <button
+                            key={img.id}
+                            type="button"
+                            onClick={() => setActiveImage(index)}
+                            className={cn(
+                                'h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition',
+                                index === activeImage
+                                    ? 'border-blue-600 shadow-sm'
+                                    : 'border-transparent opacity-60 hover:opacity-100',
+                            )}
+                        >
+                            <img
+                                src={`/storage/${img.image_path}`}
+                                alt=""
+                                className="h-full w-full object-cover"
+                            />
+                        </button>
+                    ))}
+                </div>
+            )}
+            <div className="flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
+                <div className="aspect-[4/3] w-full p-3">
+                    {currentImage ? (
+                        <img
+                            src={`/storage/${currentImage.image_path}`}
+                            alt=""
+                            className="h-full w-full object-contain"
+                        />
+                    ) : (
+                        <div className="flex h-full items-center justify-center">
+                            <CarIcon className="h-14 w-14 text-slate-300" />
+                        </div>
+                    )}
+                </div>
+            </div>
         </div>
     );
 }
 
 export default function VehicleDetails({ vehicle }: Props) {
+    const { props } = usePage<{ flash: FlashProps }>();
+    const toast = props.flash?.toast;
+    const can = useCan();
+
+    const images = [...(vehicle.images ?? [])].sort(
+        (a, b) => Number(b.is_primary) - Number(a.is_primary),
+    );
+
+    const specs: Array<{
+        icon: LucideIcon;
+        label: string;
+        value: string | number;
+    }> = [
+        {
+            icon: Settings2,
+            label: 'Transmission',
+            value: vehicle.transmission,
+        },
+        { icon: Fuel, label: 'Fuel Type', value: vehicle.fuel_type },
+        { icon: Users, label: 'Seats', value: vehicle.seats ?? '—' },
+        { icon: Calendar, label: 'Year', value: vehicle.year },
+        { icon: Palette, label: 'Color', value: vehicle.color },
+        {
+            icon: Zap,
+            label: 'Engine Size',
+            value: vehicle.engine_size ?? '—',
+        },
+        {
+            icon: Gauge,
+            label: 'Mileage',
+            value:
+                vehicle.mileage != null
+                    ? `${vehicle.mileage.toLocaleString()} km`
+                    : '—',
+        },
+        { icon: CarIcon, label: 'Category', value: vehicle.category },
+    ];
+
     function handleApprove() {
         router.post(`/admin/vehicles/${vehicle.id}/approve`);
     }
 
     function handleReject() {
-        const reason = prompt('Please enter the reason for vehicle rejection:');
+        const reason = prompt(
+            'Please enter the reason for vehicle rejection:',
+        );
+
         if (reason && reason.trim() !== '') {
             router.post(`/admin/vehicles/${vehicle.id}/reject`, {
-                rejection_reason: reason,
-            });
-        }
-    }
-
-    function handleApproveDoc(docId: number) {
-        router.post(`/admin/vehicles/${vehicle.id}/documents/approve`, {
-            document_id: docId,
-        });
-    }
-
-    function handleRejectDoc(docId: number) {
-        const reason = prompt('Please enter the reason for document rejection:');
-        if (reason && reason.trim() !== '') {
-            router.post(`/admin/vehicles/${vehicle.id}/documents/reject`, {
-                document_id: docId,
                 rejection_reason: reason,
             });
         }
@@ -101,275 +250,267 @@ export default function VehicleDetails({ vehicle }: Props) {
         <>
             <Head title={`${vehicle.brand} ${vehicle.model}`} />
 
-            <div className="max-w-4xl space-y-6 p-6">
-                <Link
-                    href="/admin/vehicles"
-                    className="text-sm text-muted-foreground hover:underline"
-                >
-                    ← Back to Vehicles
-                </Link>
-
-                {/* Vehicle Info */}
-                <Card>
-                    <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-2xl">
-                            {vehicle.brand} {vehicle.model} ({vehicle.year})
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                            <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${APPROVAL_STYLES[vehicle.approval_status] ?? 'bg-gray-100 text-gray-800'}`}
-                            >
-                                {vehicle.approval_status}
-                            </span>
-                            <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${vehicle.availability_status === 'available' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}
-                            >
-                                {vehicle.availability_status}
-                            </span>
-                        </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-5">
-                        {vehicle.images.length > 0 && (
-                            <div className="grid grid-cols-3 gap-2">
-                                {vehicle.images.map((img) => (
-                                    <img
-                                        key={img.id}
-                                        src={`/storage/${img.image_path}`}
-                                        alt="Vehicle"
-                                        className="h-32 w-full rounded-md object-cover"
-                                    />
-                                ))}
-                            </div>
-                        )}
-
-                        <div className="grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
-                            <DetailRow
-                                label="Owner"
-                                value={vehicle.owner.name}
-                            />
-                            <DetailRow
-                                label="Owner Email"
-                                value={vehicle.owner.email}
-                            />
-                            <DetailRow
-                                label="Plate Number"
-                                value={vehicle.plate_number}
-                            />
-                            <DetailRow
-                                label="Category"
-                                value={vehicle.category}
-                            />
-                            <DetailRow label="Color" value={vehicle.color} />
-                            <DetailRow
-                                label="Fuel Type"
-                                value={vehicle.fuel_type}
-                            />
-                            <DetailRow
-                                label="Transmission"
-                                value={vehicle.transmission}
-                            />
-                            <DetailRow
-                                label="Engine Size"
-                                value={vehicle.engine_size}
-                            />
-                            <DetailRow
-                                label="Mileage"
-                                value={
-                                    vehicle.mileage
-                                        ? `${vehicle.mileage} km`
-                                        : null
-                                }
-                            />
-                            <DetailRow label="Seats" value={vehicle.seats} />
-                            <DetailRow
-                                label="Daily Price"
-                                value={`ETB ${vehicle.daily_price}`}
-                            />
-                        </div>
-
-                        {vehicle.description && (
-                            <div>
-                                <p className="text-xs text-muted-foreground">
-                                    Description
-                                </p>
-                                <p className="text-sm">{vehicle.description}</p>
-                            </div>
-                        )}
-
-                        {vehicle.rejection_reason && (
-                            <div className="rounded-lg bg-red-50 p-3 text-red-800">
-                                <p className="text-xs font-semibold">Rejection Reason:</p>
-                                <p className="text-sm">{vehicle.rejection_reason}</p>
-                            </div>
-                        )}
-
-                        {vehicle.approval_status === 'pending' && (
-                            <div className="flex gap-3 border-t pt-4">
-                                <Button onClick={handleApprove}>
-                                    <CheckCircle className="mr-1.5 h-4 w-4" />{' '}
-                                    Approve Vehicle
-                                </Button>
-                                <Button
-                                    variant="destructive"
-                                    onClick={handleReject}
-                                >
-                                    <XCircle className="mr-1.5 h-4 w-4" />{' '}
-                                    Reject Vehicle
-                                </Button>
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {/* Documents */}
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <FileText className="h-5 w-5" />
-                            Vehicle Documents
-                        </CardTitle>
-                    </CardHeader>
-
-                    <CardContent>
-                        {vehicle.documents.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">
-                                No documents uploaded.
-                            </p>
-                        ) : (
-                            <div className="space-y-3">
-                                {vehicle.documents.map((doc) => (
-                                    <div
-                                        key={doc.id}
-                                        className="flex items-center justify-between rounded-lg border p-3"
-                                    >
-                                        <div className="space-y-0.5">
-                                            <p className="text-sm font-medium capitalize">
-                                                {doc.document_type.replace(
-                                                    /_/g,
-                                                    ' ',
-                                                )}
-                                            </p>
-                                            <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                                                {doc.expiry_date && (
-                                                    <span>
-                                                        Expires:{' '}
-                                                        {new Date(
-                                                            doc.expiry_date,
-                                                        ).toLocaleDateString()}
-                                                    </span>
-                                                )}
-                                                 <a
-                                                     href={`/storage/${doc.document_path}`}
-                                                     target="_blank"
-                                                     rel="noreferrer"
-                                                     className="text-primary hover:underline"
-                                                 >
-                                                     View file ↗
-                                                 </a>
-                                             </div>
-                                             {doc.rejection_reason && (
-                                                 <p className="mt-1 text-xs text-red-600">
-                                                     Reason: {doc.rejection_reason}
-                                                 </p>
-                                             )}
-                                         </div>
-
-                                        <div className="flex items-center gap-2">
-                                            <span
-                                                className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${APPROVAL_STYLES[doc.verification_status] ?? 'bg-gray-100 text-gray-800'}`}
-                                            >
-                                                {doc.verification_status}
-                                            </span>
-                                            {doc.verification_status ===
-                                                'pending' && (
-                                                <>
-                                                    <Button
-                                                        size="sm"
-                                                        onClick={() =>
-                                                            handleApproveDoc(
-                                                                doc.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <CheckCircle className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button
-                                                        size="sm"
-                                                        variant="destructive"
-                                                        onClick={() =>
-                                                            handleRejectDoc(
-                                                                doc.id,
-                                                            )
-                                                        }
-                                                    >
-                                                        <XCircle className="h-4 w-4" />
-                                                    </Button>
-                                                </>
-                                            )}
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
-                    </CardContent>
-                </Card>
-
-                {vehicle.reviews && vehicle.reviews.length > 0 && (
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                Reviews
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-3">
-                                {vehicle.reviews.map((r) => (
-                                    <div
-                                        key={r.id}
-                                        className="flex items-start justify-between rounded-lg border p-3"
-                                    >
-                                        <div>
-                                            <p className="font-medium">
-                                                {r.reviewer.name}
-                                            </p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {r.rating} ★ ·{' '}
-                                                {new Date(
-                                                    r.created_at,
-                                                ).toLocaleDateString()}
-                                            </p>
-                                            {r.review_text && (
-                                                <p className="mt-2 text-sm text-muted-foreground">
-                                                    {r.review_text}
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <Button
-                                                variant="destructive"
-                                                size="sm"
-                                                onClick={() => {
-                                                    if (
-                                                        confirm(
-                                                            'Delete this review?',
-                                                        )
-                                                    ) {
-                                                        router.delete(
-                                                            `/admin/reviews/${r.id}`,
-                                                        );
-                                                    }
-                                                }}
-                                            >
-                                                Delete
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
+            <div className="space-y-6 p-6">
+                {toast && (
+                    <div
+                        className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
+                        {toast.message}
+                    </div>
                 )}
+
+                <Card className="overflow-hidden">
+                    <div className="border-b bg-slate-50 px-5 py-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div className="flex flex-wrap items-center gap-2">
+                                <h2 className="text-lg font-bold">
+                                    {vehicle.brand} {vehicle.model}
+                                </h2>
+                                <StatusBadge
+                                    label={vehicle.approval_status.replace(
+                                        '_',
+                                        ' ',
+                                    )}
+                                    tone={approvalTone(vehicle.approval_status)}
+                                />
+                                <StatusBadge
+                                    label={vehicle.availability_status.replace(
+                                        '_',
+                                        ' ',
+                                    )}
+                                    tone={
+                                        vehicle.availability_status ===
+                                        'available'
+                                            ? 'green'
+                                            : 'slate'
+                                    }
+                                />
+                                <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
+                                    {vehicle.plate_number}
+                                </span>
+                            </div>
+                            <Link href="/admin/vehicles">
+                                <Button variant="ghost" size="sm">
+                                    <ArrowLeft className="mr-1 h-4 w-4" />{' '}
+                                    Back
+                                </Button>
+                            </Link>
+                        </div>
+                    </div>
+
+                    <CardContent className="space-y-6 p-5">
+                        <div className="grid gap-6 lg:grid-cols-2">
+                            <CarGallery images={images} />
+
+                            <div className="space-y-4">
+                                <div className="flex flex-wrap items-baseline justify-between gap-2">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">
+                                            {vehicle.year} ·{' '}
+                                            {vehicle.category} ·{' '}
+                                            {vehicle.owner.name}
+                                        </p>
+                                        <p className="mt-1 text-2xl font-bold">
+                                            ETB{' '}
+                                            {Number(
+                                                vehicle.daily_price,
+                                            ).toLocaleString()}
+                                            <span className="text-sm font-normal text-muted-foreground">
+                                                {' '}
+                                                / day
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div className="text-right text-sm">
+                                        <p className="text-muted-foreground">
+                                            Owner
+                                        </p>
+                                        <p className="text-lg font-bold">
+                                            {vehicle.owner.name}
+                                        </p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {vehicle.owner.email}
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
+                                    {specs.map((spec) => (
+                                        <SpecTile key={spec.label} {...spec} />
+                                    ))}
+                                </div>
+
+                                {vehicle.description && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold">
+                                            About this vehicle
+                                        </h3>
+                                        <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                                            {vehicle.description}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="space-y-4 border-t border-slate-100 pt-5">
+                            <div>
+                                <h3 className="flex items-center gap-2 text-sm font-semibold">
+                                    <FileText className="h-4 w-4 text-primary" />
+                                    Vehicle Documents
+                                </h3>
+                                {vehicle.documents.length === 0 ? (
+                                    <p className="mt-2 text-sm text-muted-foreground">
+                                        No documents uploaded.
+                                    </p>
+                                ) : (
+                                    <div className="mt-2 space-y-3">
+                                        {vehicle.documents.map((doc) => (
+                                            <div
+                                                key={doc.id}
+                                                className="flex flex-wrap items-center justify-between gap-3 rounded-lg border bg-slate-50/70 p-3"
+                                            >
+                                                <div className="space-y-0.5">
+                                                    <p className="text-sm font-medium capitalize">
+                                                        {doc.document_type.replace(
+                                                            /_/g,
+                                                            ' ',
+                                                        )}
+                                                    </p>
+                                                    <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
+                                                        {doc.expiry_date && (
+                                                            <span>
+                                                                Expires:{' '}
+                                                                {new Date(
+                                                                    doc.expiry_date,
+                                                                ).toLocaleDateString()}
+                                                            </span>
+                                                        )}
+                                                        <a
+                                                            href={`/storage/${doc.document_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                            className="text-primary hover:underline"
+                                                        >
+                                                            View file ↗
+                                                        </a>
+                                                    </div>
+                                                    {doc.rejection_reason && (
+                                                        <p className="mt-1 text-xs text-red-600">
+                                                            Reason:{' '}
+                                                            {doc.rejection_reason}
+                                                        </p>
+                                                    )}
+                                                </div>
+
+                                                <StatusBadge
+                                                    label={doc.verification_status.replace(
+                                                        '_',
+                                                        ' ',
+                                                    )}
+                                                    tone={documentTone(
+                                                        doc.verification_status,
+                                                    )}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            {vehicle.rejection_reason && (
+                                <div className="rounded-lg bg-red-50 p-3 text-red-800">
+                                    <p className="text-xs font-semibold">
+                                        Rejection Reason:
+                                    </p>
+                                    <p className="text-sm">
+                                        {vehicle.rejection_reason}
+                                    </p>
+                                </div>
+                            )}
+
+                            {vehicle.approval_status === 'pending' &&
+                                can('vehicles.approve') && (
+                                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-slate-50 p-4">
+                                    <div>
+                                        <p className="font-semibold">
+                                            Approve or reject this vehicle
+                                        </p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Approving makes it visible to
+                                            customers for rental bookings.
+                                        </p>
+                                    </div>
+                                    <div className="flex shrink-0 gap-2">
+                                        <Button onClick={handleApprove}>
+                                            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                                            Approve
+                                        </Button>
+                                        <Button
+                                            variant="destructive"
+                                            onClick={handleReject}
+                                        >
+                                            <XCircle className="mr-1.5 h-4 w-4" />
+                                            Reject
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
+                            {vehicle.reviews &&
+                                vehicle.reviews.length > 0 && (
+                                    <div>
+                                        <h3 className="text-sm font-semibold">
+                                            Reviews
+                                        </h3>
+                                        <div className="mt-2 space-y-3">
+                                            {vehicle.reviews.map((r) => (
+                                                <div
+                                                    key={r.id}
+                                                    className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-3"
+                                                >
+                                                    <div>
+                                                        <p className="font-medium">
+                                                            {r.reviewer.name}
+                                                        </p>
+                                                        <p className="text-sm text-muted-foreground">
+                                                            {r.rating} ★ ·{' '}
+                                                            {new Date(
+                                                                r.created_at,
+                                                            ).toLocaleDateString()}
+                                                        </p>
+                                                        {r.review_text && (
+                                                            <p className="mt-2 text-sm text-muted-foreground">
+                                                                {r.review_text}
+                                                            </p>
+                                                        )}
+                                                    </div>
+                                                    <Button
+                                                        variant="destructive"
+                                                        size="sm"
+                                                        onClick={() => {
+                                                            if (
+                                                                confirm(
+                                                                    'Delete this review?',
+                                                                )
+                                                            ) {
+                                                                router.delete(
+                                                                    `/admin/reviews/${r.id}`,
+                                                                );
+                                                            }
+                                                        }}
+                                                        disabled={!can('reviews.manage')}
+                                                    >
+                                                        Delete
+                                                    </Button>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
         </>
     );

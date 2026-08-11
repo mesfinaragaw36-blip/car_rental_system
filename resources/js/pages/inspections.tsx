@@ -23,8 +23,8 @@ import {
     XCircle,
     Zap,
 } from 'lucide-react';
-import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { GlareCard } from '@/components/ui/glare-card';
@@ -575,7 +575,10 @@ function InspectionForm({
             preserveScroll: true,
             onSuccess: () => {
                 reset();
-                if (onClose) onClose();
+
+                if (onClose) {
+onClose();
+}
             },
         });
     };

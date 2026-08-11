@@ -10,6 +10,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { useCan } from '@/hooks/use-can';
 
 type TransactionType = 'payment' | 'refund' | 'owner_payout' | 'driver_payout';
 
@@ -102,6 +103,7 @@ const ACTION_LABELS: Record<'refund' | 'owner_payout' | 'driver_payout', string>
 export default function AdminTransactions({ transactions, filters, summary }: Props) {
     const { props } = usePage<{ flash: FlashProps }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     const type = filters.type ?? 'all';
     const [selected, setSelected] = useState<Transaction | null>(null);
@@ -354,7 +356,10 @@ export default function AdminTransactions({ transactions, filters, summary }: Pr
                                                         {transaction.type !==
                                                             'payment' &&
                                                         transaction.status ===
-                                                            'pending' ? (
+                                                            'pending' &&
+                                                        can(
+                                                            'payments.manage',
+                                                        ) ? (
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"

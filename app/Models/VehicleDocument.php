@@ -13,6 +13,7 @@ class VehicleDocument extends Model
         'document_path',
         'expiry_date',
         'verification_status',
+        'rejection_reason',
     ];
 
     protected function casts(): array

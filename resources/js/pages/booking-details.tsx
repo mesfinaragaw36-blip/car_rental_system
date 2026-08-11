@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { useCan } from '@/hooks/use-can';
 import { approve, reject, cancel, complete } from '@/routes/bookings';
 import reviews from '@/routes/bookings/reviews';
 
@@ -143,6 +144,7 @@ export default function BookingDetails({ booking, role }: Props) {
         toast?: { type: string; message: string };
     }>();
     const toast = p.toast;
+    const can = useCan();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         reviewable_type: '',
@@ -185,9 +187,14 @@ export default function BookingDetails({ booking, role }: Props) {
                     `• ETB ${retainedAmount} (25%) is non-refundable\n\n` +
                     `Do you want to continue?`,
             );
-            if (!confirmed) return;
+
+            if (!confirmed) {
+return;
+}
         } else {
-            if (!window.confirm('Are you sure you want to cancel this booking?')) return;
+            if (!window.confirm('Are you sure you want to cancel this booking?')) {
+return;
+}
         }
 
         handleAction('cancel');
@@ -966,7 +973,8 @@ export default function BookingDetails({ booking, role }: Props) {
                             </div>
                         )}
                     {booking.status === 'returned' &&
-                        (role === 'admin' || role === 'owner') && (
+                        (role === 'owner' ||
+                            (role === 'admin' && can('bookings.manage'))) && (
                             <Button onClick={() => handleAction('complete')}>
                                 Mark Completed
                             </Button>

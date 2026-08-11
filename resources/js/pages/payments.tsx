@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, usePage, Link } from '@inertiajs/react';
 import {
     CircleDollarSign,
     Car,
@@ -9,11 +9,14 @@ import {
     Banknote,
     Smartphone,
     Building,
+    Eye,
 } from 'lucide-react';
 import { Search } from 'lucide-react';
 import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { receipt } from '@/routes/payments';
 interface Payment {
     id: number;
     type: string;
@@ -235,6 +238,9 @@ export default function Payments({ role, payments = [] }: Props) {
                                             <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
                                                 Status
                                             </th>
+                                            <th className="px-6 py-4 text-xs font-semibold tracking-wider uppercase">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -338,6 +344,23 @@ export default function Payments({ role, payments = [] }: Props) {
                                                                 1,
                                                             )}
                                                     </span>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <Button
+                                                        asChild
+                                                        variant="outline"
+                                                        size="sm"
+                                                        className="h-8 gap-1.5"
+                                                    >
+                                                        <Link
+                                                            href={receipt.url({
+                                                                payment: payment.id,
+                                                            })}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                            View
+                                                        </Link>
+                                                    </Button>
                                                 </td>
                                             </tr>
                                         ))}

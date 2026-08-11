@@ -40,8 +40,8 @@ Route::middleware(['auth'])->group(function () {
     // Bookings
     Route::get('/bookings', [BookingController::class, 'index'])->name('bookings.index');
     Route::get('/bookings/{booking}', [BookingController::class, 'show'])->name('bookings.show');
-    Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve');
-    Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject');
+    Route::post('/bookings/{booking}/approve', [BookingController::class, 'approve'])->name('bookings.approve')->middleware('staff_permission');
+    Route::post('/bookings/{booking}/reject', [BookingController::class, 'reject'])->name('bookings.reject')->middleware('staff_permission');
     Route::post('/bookings/{booking}/cancel', [BookingController::class, 'cancel'])->name('bookings.cancel');
     Route::post('/bookings/{booking}/assign-driver', [BookingController::class, 'assignDriver'])->name('bookings.assign-driver');
     Route::post('/bookings/{booking}/owner-no-show', [BookingDisputeController::class, 'store'])->name('bookings.owner-no-show');
@@ -49,7 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/bookings/{booking}/reviews/{review}', [ReviewController::class, 'update'])->name('bookings.reviews.update');
     Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])->name('reviews.destroy');
 
-    Route::post('/bookings/{booking}/complete', [BookingController::class, 'complete'])->name('bookings.complete');
+    Route::post('/bookings/{booking}/complete', [BookingController::class, 'complete'])->name('bookings.complete')->middleware('staff_permission');
     // Payments
     Route::get('/payments', [PaymentController::class, 'index'])->name('payments.index');
     Route::get('/bookings/{booking}/payment', [PaymentController::class, 'create'])->name('payments.create');
@@ -93,7 +93,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
 
     // Inspection staff routes
-    Route::middleware(['staff_permission'])->group(function () {
+    Route::middleware(['role:admin', 'staff_permission'])->group(function () {
         Route::get('/inspections', [InspectionController::class, 'index'])->name('inspections.index');
         Route::post('/inspections/{booking}/delivery', [InspectionController::class, 'confirmDelivery'])->name('inspections.delivery');
         Route::post('/inspections/{booking}/conduct', [InspectionController::class, 'conduct'])->name('inspections.conduct');
@@ -105,14 +105,14 @@ Route::middleware(['auth'])->group(function () {
     });
 
     // Booking disputes (admin)
-    Route::middleware(['role:admin'])->group(function () {
+    Route::middleware(['role:admin', 'staff_permission'])->group(function () {
         Route::get('/disputes', [BookingDisputeController::class, 'index'])->name('disputes.index');
         Route::post('/disputes/{dispute}/approve', [BookingDisputeController::class, 'approve'])->name('disputes.approve');
         Route::post('/disputes/{dispute}/reject', [BookingDisputeController::class, 'reject'])->name('disputes.reject');
     });
 
     // Admin-only routes
-    Route::middleware(['role:admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware(['role:admin', 'staff_permission'])->prefix('admin')->name('admin.')->group(function () {
         Route::get('/vehicles', [AdminVehicleController::class, 'index'])->name('vehicles');
         Route::get('/vehicles/{car}', [AdminVehicleController::class, 'show'])->name('vehicles.show');
         Route::post('/vehicles/{car}/approve', [AdminVehicleController::class, 'approve'])->name('vehicles.approve');

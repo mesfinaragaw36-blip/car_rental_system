@@ -2,6 +2,7 @@ import { Head, Link, router } from '@inertiajs/react';
 import { Edit, Trash2, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 
 interface Location {
     id: number;
@@ -15,6 +16,8 @@ interface Props {
 }
 
 export default function Index({ locations }: Props) {
+    const can = useCan();
+
     function deleteLocation(id: number) {
         if (confirm('Are you sure you want to delete this location?')) {
             router.delete(`/admin/locations/${id}`);
@@ -29,12 +32,14 @@ export default function Index({ locations }: Props) {
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Rental Locations</h1>
 
-                    <Link href="/admin/locations/create">
-                        <Button>
-                            <Plus className="mr-2 h-4 w-4" />
-                            Add Location
-                        </Button>
-                    </Link>
+                    {can('locations.manage') && (
+                        <Link href="/admin/locations/create">
+                            <Button>
+                                <Plus className="mr-2 h-4 w-4" />
+                                Add Location
+                            </Button>
+                        </Link>
+                    )}
                 </div>
 
                 <Card>
@@ -77,28 +82,32 @@ export default function Index({ locations }: Props) {
                                             </td>
 
                                             <td className="flex gap-2 p-3">
-                                                <Link
-                                                    href={`/admin/locations/${location.id}/edit`}
-                                                >
-                                                    <Button
-                                                        variant="outline"
-                                                        size="sm"
-                                                    >
-                                                        <Edit className="h-4 w-4" />
-                                                    </Button>
-                                                </Link>
+                                                {can('locations.manage') && (
+                                                    <>
+                                                        <Link
+                                                            href={`/admin/locations/${location.id}/edit`}
+                                                        >
+                                                            <Button
+                                                                variant="outline"
+                                                                size="sm"
+                                                            >
+                                                                <Edit className="h-4 w-4" />
+                                                            </Button>
+                                                        </Link>
 
-                                                <Button
-                                                    variant="destructive"
-                                                    size="sm"
-                                                    onClick={() =>
-                                                        deleteLocation(
-                                                            location.id,
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                        <Button
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() =>
+                                                                deleteLocation(
+                                                                    location.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </td>
                                         </tr>
                                     ))}

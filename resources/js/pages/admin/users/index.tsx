@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface User {
@@ -62,6 +63,7 @@ function statusBadgeClass(status: string): string {
 export default function Users({ users, filters }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [roleFilter, setRoleFilter] = useState(filters.role ?? '');
@@ -283,6 +285,7 @@ export default function Users({ users, filters }: Props) {
                                                             <Button
                                                                 size="sm"
                                                                 variant="outline"
+                                                                disabled={!can('users.edit')}
                                                             >
                                                                 <Edit className="h-4 w-4" />
                                                             </Button>

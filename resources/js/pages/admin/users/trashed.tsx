@@ -2,6 +2,7 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface User {
@@ -28,6 +29,7 @@ interface FlashProps {
 export default function TrashedUsers({ users }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     function handleRestore(id: number, name: string) {
         if (confirm(`Restore "${name}"?`)) {
@@ -120,6 +122,11 @@ export default function TrashedUsers({ users }: Props) {
                                                             handleRestore(
                                                                 u.id,
                                                                 u.name,
+                                                            )
+                                                        }
+                                                        disabled={
+                                                            !can(
+                                                                'users.delete',
                                                             )
                                                         }
                                                     >

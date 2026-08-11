@@ -14,6 +14,12 @@ import {
     FileCheck,
     UserCheck,
     Eye,
+    CalendarDays,
+    Scale,
+    ShieldCheck,
+    MapPin,
+    CarFront,
+    Star,
 } from 'lucide-react';
 import { useState } from 'react';
 import InputError from '@/components/input-error';
@@ -34,6 +40,7 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface Role {
@@ -59,11 +66,18 @@ interface FlashProps {
 }
 
 const GROUP_ICONS: Record<string, React.ElementType> = {
+    bookings: CalendarDays,
     users: UserCog,
     vehicles: Car,
-    staff: Users,
-    payments: CreditCard,
     profiles: FileCheck,
+    staff: Users,
+    drivers: UserCheck,
+    payments: CreditCard,
+    disputes: Scale,
+    roles: ShieldCheck,
+    locations: MapPin,
+    'car-types': CarFront,
+    reviews: Star,
 };
 
 const ROLE_ICONS: React.ElementType[] = [
@@ -187,9 +201,7 @@ function PermissionGroups({
 export default function RolesIndex({ roles, availablePermissions }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const isFullAdmin =
-        props.auth.user.role === 'admin' &&
-        props.auth.user.staff_role_id === null;
+    const can = useCan();
 
     const [viewRole, setViewRole] = useState<Role | null>(null);
     const [dialogOpen, setDialogOpen] = useState(false);
@@ -221,7 +233,7 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Roles & Permissions</h1>
-                    {isFullAdmin && (
+                    {can('roles.manage') && (
                         <Button onClick={() => setDialogOpen(true)}>
                             <Plus className="mr-2 h-4 w-4" />
                             Create Role
@@ -278,11 +290,16 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"
+                                                        disabled={
+                                                            !can(
+                                                                'roles.manage',
+                                                            )
+                                                        }
                                                     >
                                                         <Edit className="h-4 w-4" />
                                                     </Button>
                                                 </Link>
-                                                {isFullAdmin && (
+                                                {can('roles.manage') && (
                                                     <Button
                                                         size="sm"
                                                         variant="ghost"

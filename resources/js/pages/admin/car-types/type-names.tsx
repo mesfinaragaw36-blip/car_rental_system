@@ -23,6 +23,7 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { useCan } from '@/hooks/use-can';
 
 interface TypeName {
     id: number;
@@ -44,6 +45,7 @@ interface FlashProps {
 export default function TypeNamesIndex({ items }: Props) {
     const { props } = usePage<{ flash: FlashProps }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingItem, setEditingItem] = useState<TypeName | null>(null);
@@ -103,10 +105,12 @@ export default function TypeNamesIndex({ items }: Props) {
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Car Type Names</h1>
-                    <Button onClick={openCreate}>
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Type Name
-                    </Button>
+                    {can('car-types.manage') && (
+                        <Button onClick={openCreate}>
+                            <Plus className="mr-2 h-4 w-4" />
+                            Add Type Name
+                        </Button>
+                    )}
                 </div>
 
                 {toast && (
@@ -172,28 +176,32 @@ export default function TypeNamesIndex({ items }: Props) {
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <div className="flex items-center justify-end gap-1">
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    onClick={() =>
-                                                        openEdit(item)
-                                                    }
-                                                >
-                                                    <Pencil className="h-4 w-4" />
-                                                </Button>
-                                                <Button
-                                                    size="sm"
-                                                    variant="ghost"
-                                                    className="text-destructive hover:text-destructive"
-                                                    onClick={() =>
-                                                        handleDelete(
-                                                            item.id,
-                                                            item.name,
-                                                        )
-                                                    }
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </Button>
+                                                {can('car-types.manage') && (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            onClick={() =>
+                                                                openEdit(item)
+                                                            }
+                                                        >
+                                                            <Pencil className="h-4 w-4" />
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="text-destructive hover:text-destructive"
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    item.id,
+                                                                    item.name,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
+                                                    </>
+                                                )}
                                             </div>
                                         </TableCell>
                                     </TableRow>

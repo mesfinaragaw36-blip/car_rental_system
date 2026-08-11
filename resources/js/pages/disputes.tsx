@@ -1,6 +1,7 @@
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 import { approve, reject } from '@/routes/disputes';
 
 interface Dispute {
@@ -24,6 +25,8 @@ interface Dispute {
 }
 
 export default function Disputes({ disputes }: { disputes: { data: Dispute[] } }) {
+    const can = useCan();
+
     return (
         <>
             <Head title="Booking Disputes" />
@@ -54,7 +57,7 @@ export default function Disputes({ disputes }: { disputes: { data: Dispute[] } }
                                 <b>Status:</b> {dispute.status}
                             </p>
 
-                            {dispute.status === 'pending' && (
+                            {dispute.status === 'pending' && can('disputes.manage') && (
                                 <div className="flex gap-2">
                                     <Button
                                         size="sm"

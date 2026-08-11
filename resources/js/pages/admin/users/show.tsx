@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface OwnerProfile {
@@ -101,6 +102,7 @@ function verificationBadgeClass(status: string): string {
 export default function ShowUser({ user }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     function handleSuspend(): void {
         if (confirm('Are you sure you want to suspend this user?')) {
@@ -228,7 +230,7 @@ export default function ShowUser({ user }: Props) {
 
                         <div className="flex gap-3 border-t pt-4">
                             <Link href={`/admin/users/${user.id}/edit`}>
-                                <Button size="sm" variant="outline">
+                                <Button size="sm" variant="outline" disabled={!can('users.edit')}>
                                     <Edit className="mr-1.5 h-4 w-4" />
                                     Edit
                                 </Button>
@@ -238,12 +240,13 @@ export default function ShowUser({ user }: Props) {
                                     variant="destructive"
                                     size="sm"
                                     onClick={handleSuspend}
+                                    disabled={!can('users.manage')}
                                 >
                                     <Ban className="mr-1.5 h-4 w-4" />
                                     Suspend
                                 </Button>
                             ) : (
-                                <Button size="sm" onClick={handleActivate}>
+                                <Button size="sm" onClick={handleActivate} disabled={!can('users.manage')}>
                                     <PlayCircle className="mr-1.5 h-4 w-4" />
                                     Activate
                                 </Button>
@@ -252,6 +255,7 @@ export default function ShowUser({ user }: Props) {
                                 variant="destructive"
                                 size="sm"
                                 onClick={handleDelete}
+                                disabled={!can('users.delete')}
                             >
                                 <Trash2 className="mr-1.5 h-4 w-4" />
                                 Delete
@@ -330,6 +334,7 @@ export default function ShowUser({ user }: Props) {
                                     <Button
                                         size="sm"
                                         onClick={handleVerifyOwner}
+                                        disabled={!can('owner_profiles.verify')}
                                     >
                                         <CheckCircle className="mr-1.5 h-4 w-4" />
                                         Approve
@@ -338,6 +343,7 @@ export default function ShowUser({ user }: Props) {
                                         variant="destructive"
                                         size="sm"
                                         onClick={handleRejectOwner}
+                                        disabled={!can('owner_profiles.verify')}
                                     >
                                         <XCircle className="mr-1.5 h-4 w-4" />
                                         Reject
@@ -451,6 +457,7 @@ export default function ShowUser({ user }: Props) {
                                         <Button
                                             size="sm"
                                             onClick={handleVerifyDriver}
+                                            disabled={!can('driver_profiles.verify')}
                                         >
                                             <CheckCircle className="mr-1.5 h-4 w-4" />
                                             Approve
@@ -459,6 +466,7 @@ export default function ShowUser({ user }: Props) {
                                             variant="destructive"
                                             size="sm"
                                             onClick={handleRejectDriver}
+                                            disabled={!can('driver_profiles.verify')}
                                         >
                                             <XCircle className="mr-1.5 h-4 w-4" />
                                             Reject

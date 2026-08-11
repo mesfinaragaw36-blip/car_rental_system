@@ -25,6 +25,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { useCan } from '@/hooks/use-can';
 import { approve, reject, cancel, complete, ownerNoShow } from '@/routes/bookings';
 
 interface Booking {
@@ -116,6 +117,7 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
         toast?: { type: string; message: string };
     }>();
     const toast = p.toast;
+    const can = useCan();
     const [searchTerm, setSearchTerm] = useState(filters?.search ?? '');
     const [statusFilter, setStatusFilter] = useState(filters?.status ?? '');
 
@@ -520,8 +522,11 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     </span>
                                                 )}
                                             {booking.status === 'returned' &&
-                                                (role === 'admin' ||
-                                                    role === 'owner') && (
+                                                (role === 'owner' ||
+                                                    (role === 'admin' &&
+                                                        can(
+                                                            'bookings.manage',
+                                                        ))) && (
                                                     <Button
                                                         size="sm"
                                                         onClick={() =>

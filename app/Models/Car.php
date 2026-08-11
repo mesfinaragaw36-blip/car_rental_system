@@ -33,6 +33,7 @@ class Car extends Model
         'estimated_value',
         'description',
         'approval_status',
+        'rejection_reason',
         'availability_status',
     ];
 

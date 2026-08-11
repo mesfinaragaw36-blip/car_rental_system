@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             LocationSeeder::class,
             CarTypeNameSeeder::class,
             CarTypeSeeder::class,
+            DemoLateReturnSeeder::class,
         ]);
     }
 }

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
 interface DriverProfile {
@@ -47,6 +48,7 @@ const VERIFICATION_STYLES: Record<string, string> = {
 export default function AdminDrivers({ drivers, filters }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
+    const can = useCan();
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
@@ -247,32 +249,33 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        {d.status ===
-                                                        'active' ? (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() =>
-                                                                    handleSuspend(
-                                                                        d.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <Ban className="h-4 w-4" />
-                                                            </Button>
-                                                        ) : (
-                                                            <Button
-                                                                size="sm"
-                                                                variant="outline"
-                                                                onClick={() =>
-                                                                    handleActivate(
-                                                                        d.id,
-                                                                    )
-                                                                }
-                                                            >
-                                                                <PlayCircle className="h-4 w-4" />
-                                                            </Button>
-                                                        )}
+                                                        {can('drivers.manage') &&
+                                                            (d.status ===
+                                                            'active' ? (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() =>
+                                                                        handleSuspend(
+                                                                            d.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <Ban className="h-4 w-4" />
+                                                                </Button>
+                                                            ) : (
+                                                                <Button
+                                                                    size="sm"
+                                                                    variant="outline"
+                                                                    onClick={() =>
+                                                                        handleActivate(
+                                                                            d.id,
+                                                                        )
+                                                                    }
+                                                                >
+                                                                    <PlayCircle className="h-4 w-4" />
+                                                                </Button>
+                                                            ))}
                                                     </div>
                                                 </td>
                                             </tr>

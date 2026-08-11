@@ -54,7 +54,15 @@ class VehicleController extends Controller
 
     public function approve(Car $car)
     {
-        $car->update(['approval_status' => 'approved']);
+        $car->update([
+            'approval_status' => 'approved',
+            'rejection_reason' => null,
+        ]);
+
+        Inertia::flash('toast', [
+            'type' => 'success',
+            'message' => "{$car->brand} {$car->model} approved.",
+        ]);
 
         return redirect()->back();
     }
@@ -68,6 +76,11 @@ class VehicleController extends Controller
         $car->update([
             'approval_status' => 'rejected',
             'rejection_reason' => $validated['rejection_reason'],
+        ]);
+
+        Inertia::flash('toast', [
+            'type' => 'error',
+            'message' => "{$car->brand} {$car->model} rejected.",
         ]);
 
         return redirect()->back();

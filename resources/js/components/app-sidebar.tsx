@@ -31,15 +31,18 @@ import {
 import type { Auth, NavItem } from '@/types';
 
 const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
-    users: ['/admin/users'],
-    vehicles: [
-        '/admin/vehicles',
-        '/admin/vehicle-images',
-        '/admin/vehicle-documents',
-    ],
-    staff: ['/admin/staff'],
-    payments: ['/admin/transactions'],
+    'bookings.view': ['/bookings'],
     'bookings.inspect': ['/inspections'],
+    'vehicles.view': ['/admin/vehicles'],
+    'vehicles.documents': ['/admin/vehicle-documents'],
+    'users.view': ['/admin/users'],
+    'staff.view': ['/admin/staff'],
+    'drivers.view': ['/admin/drivers'],
+    'payments.view': ['/admin/transactions'],
+    'disputes.view': ['/disputes'],
+    'roles.view': ['/admin/roles'],
+    'locations.view': ['/admin/locations'],
+    'car-types.view': ['/admin/car-types/type-names'],
 };
 
 function getNavItems(
@@ -74,7 +77,9 @@ function getNavItems(
             });
         }
 
-        items.push({ title: 'Bookings', href: '/bookings', icon: BookOpen });
+        if (allowedRoutes.has('/bookings')) {
+            items.push({ title: 'Bookings', href: '/bookings', icon: BookOpen });
+        }
 
         if (allowedRoutes.has('/inspections')) {
             items.push({
@@ -89,6 +94,46 @@ function getNavItems(
                 title: 'Transactions',
                 href: '/admin/transactions',
                 icon: ReceiptText,
+            });
+        }
+
+        if (allowedRoutes.has('/admin/drivers')) {
+            items.push({
+                title: 'Drivers',
+                href: '/admin/drivers',
+                icon: UserCog,
+            });
+        }
+
+        if (allowedRoutes.has('/disputes')) {
+            items.push({ title: 'Disputes', href: '/disputes', icon: Wrench });
+        }
+
+        if (allowedRoutes.has('/admin/roles')) {
+            items.push({
+                title: 'Roles & Permissions',
+                href: '/admin/roles',
+                icon: Shield,
+            });
+        }
+
+        if (allowedRoutes.has('/admin/staff')) {
+            items.push({ title: 'Staff', href: '/admin/staff', icon: UserCog });
+        }
+
+        if (allowedRoutes.has('/admin/locations')) {
+            items.push({
+                title: 'Locations',
+                href: '/admin/locations',
+                icon: MapPin,
+            });
+        }
+
+        if (allowedRoutes.has('/admin/car-types/type-names')) {
+            items.push({
+                title: 'Car Types',
+                href: '/admin/car-types/type-names',
+                icon: Settings,
             });
         }
 
@@ -119,6 +164,7 @@ function getNavItems(
                 },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
+                { title: 'Disputes', href: '/disputes', icon: Wrench },
                 {
                     title: 'Roles & Permissions',
                     href: '/admin/roles',

@@ -19,15 +19,18 @@ class RoleController extends Controller
             'label' => 'Bookings',
             'items' => [
                 'bookings.view' => 'View Bookings',
+                'bookings.manage' => 'Approve / Reject Bookings',
                 'bookings.cancel' => 'Cancel Bookings',
                 'bookings.inspect' => 'Inspect Bookings',
             ],
         ],
-        'drivers' => [
-            'label' => 'Drivers',
+        'vehicles' => [
+            'label' => 'Vehicles',
             'items' => [
-                'drivers.view' => 'View Drivers',
-                'drivers.manage' => 'Suspend / Activate Drivers',
+                'vehicles.view' => 'View Vehicles',
+                'vehicles.approve' => 'Approve / Reject Vehicles',
+                'vehicles.documents' => 'Manage Vehicle Documents',
+                'vehicles.manage' => 'Delete / Toggle Availability',
             ],
         ],
         'users' => [
@@ -37,27 +40,7 @@ class RoleController extends Controller
                 'users.create' => 'Create Users',
                 'users.edit' => 'Edit Users',
                 'users.delete' => 'Delete Users',
-            ],
-        ],
-        'vehicles' => [
-            'label' => 'Vehicles',
-            'items' => [
-                'vehicles.view' => 'View Vehicles',
-                'vehicles.approve' => 'Approve / Reject Vehicles',
-                'vehicles.documents' => 'Manage Vehicle Documents',
-            ],
-        ],
-        'staff' => [
-            'label' => 'Staff',
-            'items' => [
-                'staff.view' => 'View Staff',
-                'staff.create' => 'Create Staff',
-            ],
-        ],
-        'payments' => [
-            'label' => 'Payments',
-            'items' => [
-                'payments.view' => 'View Payments',
+                'users.manage' => 'Suspend / Activate Users',
             ],
         ],
         'profiles' => [
@@ -65,6 +48,62 @@ class RoleController extends Controller
             'items' => [
                 'owner_profiles.verify' => 'Verify Owner Profiles',
                 'driver_profiles.verify' => 'Verify Driver Profiles',
+            ],
+        ],
+        'staff' => [
+            'label' => 'Staff',
+            'items' => [
+                'staff.view' => 'View Staff',
+                'staff.create' => 'Create Staff',
+                'staff.manage' => 'Suspend / Activate / Delete Staff',
+            ],
+        ],
+        'drivers' => [
+            'label' => 'Drivers',
+            'items' => [
+                'drivers.view' => 'View Drivers',
+                'drivers.manage' => 'Suspend / Activate Drivers',
+            ],
+        ],
+        'payments' => [
+            'label' => 'Payments & Transactions',
+            'items' => [
+                'payments.view' => 'View Transactions',
+                'payments.manage' => 'Process Refunds / Mark Payouts Paid',
+            ],
+        ],
+        'disputes' => [
+            'label' => 'Disputes',
+            'items' => [
+                'disputes.view' => 'View Disputes',
+                'disputes.manage' => 'Resolve Disputes',
+            ],
+        ],
+        'roles' => [
+            'label' => 'Roles & Permissions',
+            'items' => [
+                'roles.view' => 'View Roles',
+                'roles.manage' => 'Create / Edit / Delete Roles',
+            ],
+        ],
+        'locations' => [
+            'label' => 'Locations',
+            'items' => [
+                'locations.view' => 'View Locations',
+                'locations.manage' => 'Manage Locations',
+            ],
+        ],
+        'car-types' => [
+            'label' => 'Car Types',
+            'items' => [
+                'car-types.view' => 'View Car Types',
+                'car-types.manage' => 'Manage Car Types',
+            ],
+        ],
+        'reviews' => [
+            'label' => 'Reviews',
+            'items' => [
+                'reviews.manage' => 'Delete Reviews',
             ],
         ],
     ];
