@@ -55,9 +55,10 @@ interface Props {
     car: Car;
     role: string;
     locations: Location[];
+    needs_national_id?: boolean;
 }
 
-export default function CarDetails({ car, role, locations }: Props) {
+export default function CarDetails({ car, role, locations, needs_national_id = false }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -70,6 +71,7 @@ export default function CarDetails({ car, role, locations }: Props) {
         return_branch_id: '',
         need_driver: false,
         notes: '',
+        national_id_number: '',
     });
 
     const handleBook = (e: React.FormEvent) => {
@@ -364,6 +366,35 @@ export default function CarDetails({ car, role, locations }: Props) {
                                              />
                                          </div>
                                     </div>
+
+                                    {needs_national_id && (
+                                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                            <Label htmlFor="national_id_number">
+                                                National ID Number
+                                            </Label>
+                                            <p className="mb-2 text-xs text-amber-700">
+                                                Required for your first booking only. We will not ask for this again.
+                                            </p>
+                                            <Input
+    id="national_id_number"
+    type="text"
+    inputMode="numeric"
+    maxLength={12}
+    value={data.national_id_number}
+    onChange={(e) =>
+        setData(
+            'national_id_number',
+            e.target.value.replace(/\D/g, '').slice(0, 12),
+        )
+    }
+    placeholder="Fayda ID number"
+/>
+                                            <InputError
+                                                message={errors.national_id_number}
+                                            />
+                                        </div>
+                                    )}
+
                                     <div className="flex items-center gap-2">
                                         <input
                                             type="checkbox"
