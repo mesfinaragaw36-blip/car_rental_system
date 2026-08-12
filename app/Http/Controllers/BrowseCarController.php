@@ -26,6 +26,7 @@ class BrowseCarController extends Controller
         $cars = Car::with(['images', 'owner', 'carTypeName'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
+            ->ownerApproved()
             ->when($pickupDate && $returnDate, function ($q) use ($pickupDate, $returnDate) {
                 $q->whereDoesntHave('bookings', function ($booking) use ($pickupDate, $returnDate) {
                     $booking->whereNotIn('status', Booking::INACTIVE_STATUSES)
@@ -65,7 +66,9 @@ class BrowseCarController extends Controller
     {
         $user = auth()->user();
 
-        if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
+        $ownerApproved = $car->ownerIsApproved();
+
+        if ($car->approval_status !== 'approved' || $car->availability_status !== 'available' || ! $ownerApproved) {
             if (! ($user->role === 'owner' && $car->owner_id === $user->id) && $user->role !== 'admin') {
                 abort(404);
             }
@@ -107,6 +110,11 @@ class BrowseCarController extends Controller
         if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
             abort(404);
         }
+
+        if (! $car->ownerIsApproved()) {
+            abort(404);
+        }
+
         if ($car->owner_id === auth()->id()) {
             return back()->with('toast', ['type' => 'error', 'message' => 'You cannot book your own vehicle.']);
         }

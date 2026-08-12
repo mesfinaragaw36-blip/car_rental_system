@@ -22,9 +22,7 @@ class ProfileUpdateRequest extends FormRequest
 
         if ($this->user()->role === 'owner') {
             $rules = array_merge($rules, [
-                'business_name' => ['required', 'string', 'max:255'],
                 'national_id' => ['required', 'string', 'max:255'],
-                'trade_license_number' => ['required', 'string', 'max:255'],
             ]);
         }
 

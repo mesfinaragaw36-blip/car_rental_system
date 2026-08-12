@@ -47,10 +47,10 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
         $user->save();
-        if ($user->role === 'owner') {
+       if ($user->role === 'owner') {
             OwnerProfile::updateOrCreate(
                 ['user_id' => $user->id],
-                Arr::only($validated, ['business_name', 'national_id', 'trade_license_number'])
+                Arr::only($validated, ['national_id'])
             );
         }
         if ($user->hasDriverPermission()) {

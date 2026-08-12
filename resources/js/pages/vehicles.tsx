@@ -72,9 +72,9 @@ interface Vehicle {
 interface Props {
     role: string;
     vehicles: Vehicle[];
+    ownerVerificationStatus: string | null;
 }
-
-export default function Vehicles({ role, vehicles = [] }: Props) {
+export default function Vehicles({ role, vehicles = [], ownerVerificationStatus }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -154,11 +154,31 @@ export default function Vehicles({ role, vehicles = [] }: Props) {
                     )}
                 </div>
 
+                
                 {toast && (
                     <div
                         className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                     >
                         {toast.message}
+                    </div>
+                )}
+
+                {role === 'owner' && ownerVerificationStatus !== 'approved' && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
+                        <p className="font-semibold">
+                            Your account isn't verified yet
+                        </p>
+                        <p className="mt-1 text-sm">
+                            {ownerVerificationStatus === 'rejected'
+                                ? "Your owner verification was rejected. Your vehicles won't be visible to customers or bookable until this is resolved. Contact support for details."
+                                : "Your vehicles are saved but won't appear to customers or be bookable until your account is approved."}
+                        </p>
+                        <Link
+                            href="/settings/profile"
+                            className="mt-2 inline-block text-sm font-medium text-amber-900 underline"
+                        >
+                            Update your profile
+                        </Link>
                     </div>
                 )}
 
