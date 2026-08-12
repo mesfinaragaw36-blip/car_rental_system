@@ -10,7 +10,12 @@ import {
     Edit,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
@@ -18,6 +23,8 @@ interface OwnerProfile {
     id: number;
     business_name: string | null;
     national_id: string | null;
+    national_id_front_file_path: string | null;
+    national_id_back_file_path: string | null;
     trade_license_number: string | null;
     verification_status: string;
     verified_at: string | null;
@@ -49,7 +56,10 @@ interface UserData {
     driver_profile: DriverProfile | null;
     reviews?: Array<{
         id: number;
-        reviewer: { id: number; name: string };
+        reviewer: {
+            id: number;
+            name: string;
+        };
         rating: number;
         review_text: string | null;
         created_at: string;
@@ -172,16 +182,24 @@ export default function ShowUser({ user }: Props) {
                 {/* User Info Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-2xl">User Details</CardTitle>
+                        <CardTitle className="text-2xl">
+                            User Details
+                        </CardTitle>
+
                         <div className="flex items-center gap-2">
                             <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${roleBadgeClass(user.role)}`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${roleBadgeClass(
+                                    user.role,
+                                )}`}
                             >
                                 {user.role.charAt(0).toUpperCase() +
                                     user.role.slice(1)}
                             </span>
+
                             <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(user.status)}`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${statusBadgeClass(
+                                    user.status,
+                                )}`}
                             >
                                 {user.status.charAt(0).toUpperCase() +
                                     user.status.slice(1)}
@@ -197,18 +215,21 @@ export default function ShowUser({ user }: Props) {
                                 </p>
                                 <p className="font-medium">{user.name}</p>
                             </div>
+
                             <div>
                                 <p className="text-sm text-muted-foreground">
                                     Email
                                 </p>
                                 <p className="font-medium">{user.email}</p>
                             </div>
+
                             <div>
                                 <p className="text-sm text-muted-foreground">
                                     Phone
                                 </p>
                                 <p className="font-medium">{user.phone}</p>
                             </div>
+
                             <div>
                                 <p className="text-sm text-muted-foreground">
                                     Address
@@ -217,6 +238,7 @@ export default function ShowUser({ user }: Props) {
                                     {user.address ?? 'Not provided'}
                                 </p>
                             </div>
+
                             <div>
                                 <p className="text-sm text-muted-foreground">
                                     Joined
@@ -231,11 +253,16 @@ export default function ShowUser({ user }: Props) {
 
                         <div className="flex gap-3 border-t pt-4">
                             <Link href={`/admin/users/${user.id}/edit`}>
-                                <Button size="sm" variant="outline" disabled={!can('users.edit')}>
+                                <Button
+                                    size="sm"
+                                    variant="outline"
+                                    disabled={!can('users.edit')}
+                                >
                                     <Edit className="mr-1.5 h-4 w-4" />
                                     Edit
                                 </Button>
                             </Link>
+
                             {user.status === 'active' ? (
                                 <Button
                                     variant="destructive"
@@ -247,11 +274,16 @@ export default function ShowUser({ user }: Props) {
                                     Suspend
                                 </Button>
                             ) : (
-                                <Button size="sm" onClick={handleActivate} disabled={!can('users.manage')}>
+                                <Button
+                                    size="sm"
+                                    onClick={handleActivate}
+                                    disabled={!can('users.manage')}
+                                >
                                     <PlayCircle className="mr-1.5 h-4 w-4" />
                                     Activate
                                 </Button>
                             )}
+
                             <Button
                                 variant="destructive"
                                 size="sm"
@@ -273,8 +305,11 @@ export default function ShowUser({ user }: Props) {
                                 <User className="h-5 w-5" />
                                 Owner Profile
                             </CardTitle>
+
                             <span
-                                className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(user.owner_profile.verification_status)}`}
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(
+                                    user.owner_profile.verification_status,
+                                )}`}
                             >
                                 {user.owner_profile.verification_status
                                     .charAt(0)
@@ -296,6 +331,7 @@ export default function ShowUser({ user }: Props) {
                                             'Not provided'}
                                     </p>
                                 </div>
+
                                 <div>
                                     <p className="text-sm text-muted-foreground">
                                         National ID
@@ -305,6 +341,40 @@ export default function ShowUser({ user }: Props) {
                                             'Not provided'}
                                     </p>
                                 </div>
+
+                                {(
+                                    user.owner_profile
+                                        .national_id_front_file_path ||
+                                    user.owner_profile
+                                        .national_id_back_file_path
+                                ) && (
+                                    <div className="md:col-span-2 flex gap-4">
+                                        {user.owner_profile
+                                            .national_id_front_file_path && (
+                                            <a
+                                                href={`/storage/${user.owner_profile.national_id_front_file_path}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-primary underline"
+                                            >
+                                                View front of ID
+                                            </a>
+                                        )}
+
+                                        {user.owner_profile
+                                            .national_id_back_file_path && (
+                                            <a
+                                                href={`/storage/${user.owner_profile.national_id_back_file_path}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-primary underline"
+                                            >
+                                                View back of ID
+                                            </a>
+                                        )}
+                                    </div>
+                                )}
+
                                 <div>
                                     <p className="text-sm text-muted-foreground">
                                         Trade License
@@ -315,6 +385,7 @@ export default function ShowUser({ user }: Props) {
                                             'Not provided'}
                                     </p>
                                 </div>
+
                                 {user.owner_profile.verified_at && (
                                     <div>
                                         <p className="text-sm text-muted-foreground">
@@ -335,16 +406,21 @@ export default function ShowUser({ user }: Props) {
                                     <Button
                                         size="sm"
                                         onClick={handleVerifyOwner}
-                                        disabled={!can('owner_profiles.verify')}
+                                        disabled={
+                                            !can('owner_profiles.verify')
+                                        }
                                     >
                                         <CheckCircle className="mr-1.5 h-4 w-4" />
                                         Approve
                                     </Button>
+
                                     <Button
                                         variant="destructive"
                                         size="sm"
                                         onClick={handleRejectOwner}
-                                        disabled={!can('owner_profiles.verify')}
+                                        disabled={
+                                            !can('owner_profiles.verify')
+                                        }
                                     >
                                         <XCircle className="mr-1.5 h-4 w-4" />
                                         Reject
@@ -359,15 +435,18 @@ export default function ShowUser({ user }: Props) {
                 {user.driver_profile &&
                     (user.role === 'driver' ||
                         user.staff_role_id !== null) && (
-                    <>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
                                 <CardTitle className="flex items-center gap-2">
                                     <Car className="h-5 w-5" />
                                     Driver Profile
                                 </CardTitle>
+
                                 <span
-                                    className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(user.driver_profile.verification_status)}`}
+                                    className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(
+                                        user.driver_profile
+                                            .verification_status,
+                                    )}`}
                                 >
                                     {user.driver_profile.verification_status
                                         .charAt(0)
@@ -385,18 +464,22 @@ export default function ShowUser({ user }: Props) {
                                             License Number
                                         </p>
                                         <p className="font-medium">
-                                            {user.driver_profile.license_number}
+                                            {
+                                                user.driver_profile
+                                                    .license_number
+                                            }
                                         </p>
                                     </div>
+
                                     <div>
                                         <p className="text-sm text-muted-foreground">
                                             License Type
                                         </p>
                                         <p className="font-medium">
-                                            {user.driver_profile.license_type ??
-                                                'Not specified'}
+                                            {user.driver_profile.license_type}
                                         </p>
                                     </div>
+
                                     <div>
                                         <p className="text-sm text-muted-foreground">
                                             Experience
@@ -409,48 +492,41 @@ export default function ShowUser({ user }: Props) {
                                             years
                                         </p>
                                     </div>
+
                                     <div>
                                         <p className="text-sm text-muted-foreground">
                                             Location
                                         </p>
                                         <p className="font-medium">
-                                            {user.driver_profile.location ??
-                                                'Not specified'}
+                                            {user.driver_profile.location}
                                         </p>
                                     </div>
+
                                     <div>
                                         <p className="text-sm text-muted-foreground">
                                             Availability
                                         </p>
                                         <p className="font-medium">
-                                            {user.driver_profile.availability
-                                                .charAt(0)
-                                                .toUpperCase() +
-                                                user.driver_profile.availability.slice(
-                                                    1,
-                                                )}
+                                            {user.driver_profile.availability}
                                         </p>
                                     </div>
-                                </div>
 
-                                <div className="rounded-2xl border border-muted p-4">
-                                    <p className="text-sm text-muted-foreground">
-                                        Uploaded verification document
-                                    </p>
-                                    {user.driver_profile.license_file_path ? (
-                                        <a
-                                            href={`/storage/${user.driver_profile.license_file_path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-primary underline"
-                                        >
-                                            View uploaded document
-                                        </a>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                            No verification document uploaded
-                                            yet.
-                                        </p>
+                                    {user.driver_profile
+                                        .license_file_path && (
+                                        <div>
+                                            <p className="text-sm text-muted-foreground">
+                                                License Document
+                                            </p>
+
+                                            <a
+                                                href={`/storage/${user.driver_profile.license_file_path}`}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                                className="text-primary underline"
+                                            >
+                                                View license document
+                                            </a>
+                                        </div>
                                     )}
                                 </div>
 
@@ -460,16 +536,21 @@ export default function ShowUser({ user }: Props) {
                                         <Button
                                             size="sm"
                                             onClick={handleVerifyDriver}
-                                            disabled={!can('driver_profiles.verify')}
+                                            disabled={
+                                                !can('driver_profiles.verify')
+                                            }
                                         >
                                             <CheckCircle className="mr-1.5 h-4 w-4" />
                                             Approve
                                         </Button>
+
                                         <Button
                                             variant="destructive"
                                             size="sm"
                                             onClick={handleRejectDriver}
-                                            disabled={!can('driver_profiles.verify')}
+                                            disabled={
+                                                !can('driver_profiles.verify')
+                                            }
                                         >
                                             <XCircle className="mr-1.5 h-4 w-4" />
                                             Reject
@@ -478,62 +559,67 @@ export default function ShowUser({ user }: Props) {
                                 )}
                             </CardContent>
                         </Card>
-                        {user.reviews && user.reviews.length > 0 && (
-                            <Card>
-                                <CardHeader>
-                                    <CardTitle className="flex items-center gap-2">
-                                        Driver Reviews
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className="space-y-3">
-                                        {user.reviews.map((r) => (
-                                            <div
-                                                key={r.id}
-                                                className="flex items-start justify-between rounded-lg border p-3"
+                    )}
+
+                {/* Driver Reviews */}
+                {user.reviews && user.reviews.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                Driver Reviews
+                            </CardTitle>
+                        </CardHeader>
+
+                        <CardContent>
+                            <div className="space-y-3">
+                                {user.reviews.map((r) => (
+                                    <div
+                                        key={r.id}
+                                        className="flex items-start justify-between rounded-lg border p-3"
+                                    >
+                                        <div>
+                                            <p className="font-medium">
+                                                {r.reviewer.name}
+                                            </p>
+
+                                            <p className="text-sm text-muted-foreground">
+                                                {r.rating} ★ ·{' '}
+                                                {new Date(
+                                                    r.created_at,
+                                                ).toLocaleDateString()}
+                                            </p>
+
+                                            {r.review_text && (
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    {r.review_text}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={() => {
+                                                    if (
+                                                        confirm(
+                                                            'Delete this review?',
+                                                        )
+                                                    ) {
+                                                        router.delete(
+                                                            `/admin/reviews/${r.id}`,
+                                                        );
+                                                    }
+                                                }}
                                             >
-                                                <div>
-                                                    <p className="font-medium">
-                                                        {r.reviewer.name}
-                                                    </p>
-                                                    <p className="text-sm text-muted-foreground">
-                                                        {r.rating} ★ ·{' '}
-                                                        {new Date(
-                                                            r.created_at,
-                                                        ).toLocaleDateString()}
-                                                    </p>
-                                                    {r.review_text && (
-                                                        <p className="mt-2 text-sm text-muted-foreground">
-                                                            {r.review_text}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                                <div>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            if (
-                                                                confirm(
-                                                                    'Delete this review?',
-                                                                )
-                                                            ) {
-                                                                router.delete(
-                                                                    `/admin/reviews/${r.id}`,
-                                                                );
-                                                            }
-                                                        }}
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                                Delete
+                                            </Button>
+                                        </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-                        )}
-                    </>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
                 )}
             </div>
         </>
@@ -542,8 +628,17 @@ export default function ShowUser({ user }: Props) {
 
 ShowUser.layout = {
     breadcrumbs: [
-        { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Users', href: '/admin/users' },
-        { title: 'Details', href: '#' },
+        {
+            title: 'Dashboard',
+            href: '/admin/dashboard',
+        },
+        {
+            title: 'Users',
+            href: '/admin/users',
+        },
+        {
+            title: 'Details',
+            href: '#',
+        },
     ],
 };

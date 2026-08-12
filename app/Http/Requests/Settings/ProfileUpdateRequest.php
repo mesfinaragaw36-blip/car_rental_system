@@ -22,7 +22,9 @@ class ProfileUpdateRequest extends FormRequest
 
         if ($this->user()->role === 'owner') {
             $rules = array_merge($rules, [
-                'national_id' => ['required', 'string', 'max:255'],
+                'national_id' => ['required', 'digits:12'],
+                'national_id_front_file' => ['sometimes', 'file', 'image', 'max:10240'],
+                'national_id_back_file' => ['sometimes', 'file', 'image', 'max:10240'],
             ]);
         }
 

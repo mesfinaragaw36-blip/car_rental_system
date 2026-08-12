@@ -11,6 +11,8 @@ class OwnerProfile extends Model
         'user_id',
         'business_name',
         'national_id',
+        'national_id_front_file_path',
+        'national_id_back_file_path',
         'trade_license_number',
         'verification_status',
         'verified_at',

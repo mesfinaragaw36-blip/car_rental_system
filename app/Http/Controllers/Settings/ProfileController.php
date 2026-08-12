@@ -47,10 +47,20 @@ class ProfileController extends Controller
             $user->email_verified_at = null;
         }
         $user->save();
-       if ($user->role === 'owner') {
+        if ($user->role === 'owner') {
+            $ownerData = Arr::only($validated, ['national_id']);
+
+            if ($request->hasFile('national_id_front_file')) {
+                $ownerData['national_id_front_file_path'] = $request->file('national_id_front_file')->store('owner_documents', 'public');
+            }
+
+            if ($request->hasFile('national_id_back_file')) {
+                $ownerData['national_id_back_file_path'] = $request->file('national_id_back_file')->store('owner_documents', 'public');
+            }
+
             OwnerProfile::updateOrCreate(
                 ['user_id' => $user->id],
-                Arr::only($validated, ['national_id'])
+                $ownerData
             );
         }
         if ($user->hasDriverPermission()) {
