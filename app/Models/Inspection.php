@@ -33,6 +33,9 @@ class Inspection extends Model
         'damages',
         'notes',
         'photos',
+        'id_verified',
+        'id_verified_by',
+        'id_verified_at',
     ];
 
     protected function casts(): array
@@ -42,6 +45,8 @@ class Inspection extends Model
             'fuel_level' => 'integer',
             'damages' => 'array',
             'photos' => 'array',
+            'id_verified' => 'boolean',
+            'id_verified_at' => 'datetime',
         ];
     }
 
@@ -53,5 +58,10 @@ class Inspection extends Model
     public function conductedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'conducted_by');
+    }
+
+    public function idVerifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'id_verified_by');
     }
 }
