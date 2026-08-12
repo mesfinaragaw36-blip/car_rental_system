@@ -68,9 +68,6 @@ class AssignmentController extends Controller
         return Inertia::render('assignments', [
             'role' => $viewRole,
             'assignments' => $assignments,
-            'driverVerificationStatus' => $isDriver
-                ? ($user->driverProfile?->verification_status ?? 'none')
-                : null,
         ]);
     }
 
@@ -120,7 +117,7 @@ class AssignmentController extends Controller
 
         if ($booking->need_driver) {
             $days = Carbon::parse($booking->pickup_date)->diffInDays(Carbon::parse($booking->return_date));
-            $driverRate = $assignment->driver?->driverProfile?->daily_rate ?? config('driver.daily_fee', 0);
+            $driverRate = (float) config('driver.daily_fee', 0);
 
             $booking->update([
                 'total_price' => round(($booking->car->daily_price + $driverRate) * $days, 2),

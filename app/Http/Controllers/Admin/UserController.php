@@ -217,46 +217,4 @@ class UserController extends Controller
             'message' => 'Owner profile rejected.',
         ]);
     }
-
-    public function verifyDriver(User $user): RedirectResponse
-    {
-        $profile = $user->driverProfile;
-
-        if (! $profile) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'message' => 'No driver profile found for this user.',
-            ]);
-        }
-
-        $profile->update([
-            'verification_status' => 'approved',
-        ]);
-
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Driver profile verified.',
-        ]);
-    }
-
-    public function rejectDriver(User $user): RedirectResponse
-    {
-        $profile = $user->driverProfile;
-
-        if (! $profile) {
-            return back()->with('toast', [
-                'type' => 'error',
-                'message' => 'No driver profile found for this user.',
-            ]);
-        }
-
-        $profile->update([
-            'verification_status' => 'rejected',
-        ]);
-
-        return back()->with('toast', [
-            'type' => 'success',
-            'message' => 'Driver profile rejected.',
-        ]);
-    }
 }

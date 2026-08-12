@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 interface Role {
     id: number;
     name: string;
+    permissions: string[];
 }
 
 interface Location {
@@ -31,7 +32,16 @@ export default function CreateStaff({ roles, locations }: Props) {
         password_confirmation: '',
         staff_role_id: '',
         branch_id: '',
+        license_number: '',
+        license_type: '',
+        experience_years: '',
     });
+
+    const isDriverRole = roles.some(
+        (role) =>
+            role.id === Number(data.staff_role_id) &&
+            role.permissions.includes('driver.access'),
+    );
 
     function handleSubmit(e: React.FormEvent): void {
         e.preventDefault();
@@ -147,6 +157,88 @@ export default function CreateStaff({ roles, locations }: Props) {
                                 </select>
                                  <InputError message={errors.staff_role_id} />
                              </div>
+
+                             {isDriverRole && (
+                                 <>
+                                     <div className="space-y-1.5">
+                                         <Label htmlFor="license_number">
+                                             License Number
+                                         </Label>
+                                         <Input
+                                             id="license_number"
+                                             value={data.license_number}
+                                             onChange={(e) =>
+                                                 setData(
+                                                     'license_number',
+                                                     e.target.value,
+                                                 )
+                                             }
+                                             placeholder="e.g. DL-123456"
+                                         />
+                                         <InputError
+                                             message={errors.license_number}
+                                         />
+                                     </div>
+
+                                     <div className="space-y-1.5">
+                                         <Label htmlFor="license_type">
+                                             License Type
+                                         </Label>
+                                         <select
+                                             id="license_type"
+                                             value={data.license_type}
+                                             onChange={(e) =>
+                                                 setData(
+                                                     'license_type',
+                                                     e.target.value,
+                                                 )
+                                             }
+                                             className="w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm focus:ring-2 focus:ring-ring focus:outline-none"
+                                         >
+                                             <option value="">
+                                                 Select license type
+                                             </option>
+                                             <option value="አውቶ">አውቶ</option>
+                                             <option value="ህዝብ">ህዝብ</option>
+                                             <option value="ደረቅ ጭነት">
+                                                 ደረቅ ጭነት
+                                             </option>
+                                             <option value="ፈሳሽ ጭነት">
+                                                 ፈሳሽ ጭነት
+                                             </option>
+                                             <option value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
+                                                 ግንባታ መሣሪያዎች / ኮንስትራክሽን
+                                             </option>
+                                         </select>
+                                         <InputError
+                                             message={errors.license_type}
+                                         />
+                                     </div>
+
+                                     <div className="space-y-1.5">
+                                         <Label htmlFor="experience_years">
+                                             Experience (Years)
+                                         </Label>
+                                         <Input
+                                             id="experience_years"
+                                             type="number"
+                                             min="0"
+                                             max="50"
+                                             value={data.experience_years}
+                                             onChange={(e) =>
+                                                 setData(
+                                                     'experience_years',
+                                                     e.target.value,
+                                                 )
+                                             }
+                                             placeholder="e.g. 3"
+                                         />
+                                         <InputError
+                                             message={errors.experience_years}
+                                         />
+                                     </div>
+                                 </>
+                             )}
 
                              <div className="space-y-1.5">
                                  <Label htmlFor="branch_id">

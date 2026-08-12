@@ -54,11 +54,7 @@ class ProfileController extends Controller
             );
         }
         if ($user->hasDriverPermission()) {
-            $driverProfileData = Arr::only($validated, ['license_number', 'license_type', 'experience_years', 'daily_rate', 'location', 'availability']);
-            if ($request->hasFile('license_file')) {
-                $driverProfileData['license_file_path'] = $request->file('license_file')->store('driver_documents', 'public');
-            }
-            $driverProfileData['verification_status'] = 'pending';
+            $driverProfileData = Arr::only($validated, ['license_number', 'license_type', 'experience_years', 'location']);
             DriverProfile::updateOrCreate(['user_id' => $user->id], $driverProfileData);
         }
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);

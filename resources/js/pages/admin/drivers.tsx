@@ -10,8 +10,6 @@ import type { Auth } from '@/types';
 interface DriverProfile {
     license_number: string;
     experience_years: number;
-    availability: string;
-    verification_status: string;
 }
 
 interface Driver {
@@ -32,18 +30,12 @@ interface Paginated {
 
 interface Props {
     drivers: Paginated;
-    filters: { search?: string; status?: string; verification?: string };
+    filters: { search?: string; status?: string };
 }
 
 interface FlashProps {
     toast?: { type: 'success' | 'error'; message: string };
 }
-
-const VERIFICATION_STYLES: Record<string, string> = {
-    approved: 'bg-green-100 text-green-800',
-    rejected: 'bg-red-100 text-red-800',
-    pending: 'bg-yellow-100 text-yellow-800',
-};
 
 export default function AdminDrivers({ drivers, filters }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
@@ -52,9 +44,6 @@ export default function AdminDrivers({ drivers, filters }: Props) {
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
-    const [verification, setVerification] = useState(
-        filters.verification ?? '',
-    );
 
     function applyFilters() {
         router.get(
@@ -62,7 +51,6 @@ export default function AdminDrivers({ drivers, filters }: Props) {
             {
                 search: search || undefined,
                 status: status || undefined,
-                verification: verification || undefined,
             },
             { preserveState: true, replace: true },
         );
@@ -121,18 +109,6 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                                 <option value="active">Active</option>
                                 <option value="suspended">Suspended</option>
                             </select>
-                            <select
-                                value={verification}
-                                onChange={(e) =>
-                                    setVerification(e.target.value)
-                                }
-                                className="h-9 rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus:ring-1 focus:ring-ring focus:outline-none"
-                            >
-                                <option value="">All Verifications</option>
-                                <option value="pending">Pending</option>
-                                <option value="approved">Approved</option>
-                                <option value="rejected">Rejected</option>
-                            </select>
                             <Button type="submit" variant="secondary">
                                 Filter
                             </Button>
@@ -174,9 +150,6 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                                                 Assignments
                                             </th>
                                             <th className="pb-3 font-medium">
-                                                Verification
-                                            </th>
-                                            <th className="pb-3 font-medium">
                                                 Status
                                             </th>
                                             <th className="pb-3 text-right font-medium">
@@ -210,22 +183,6 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                                                 </td>
                                                 <td className="py-3 text-center">
                                                     {d.driver_assignments_count}
-                                                </td>
-                                                <td className="py-3">
-                                                    {d.driver_profile ? (
-                                                        <span
-                                                            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${VERIFICATION_STYLES[d.driver_profile.verification_status] ?? 'bg-gray-100 text-gray-800'}`}
-                                                        >
-                                                            {
-                                                                d.driver_profile
-                                                                    .verification_status
-                                                            }
-                                                        </span>
-                                                    ) : (
-                                                        <span className="text-xs text-muted-foreground">
-                                                            No profile
-                                                        </span>
-                                                    )}
                                                 </td>
                                                 <td className="py-3">
                                                     <span

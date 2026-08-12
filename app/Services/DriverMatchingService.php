@@ -22,9 +22,6 @@ class DriverMatchingService
     public function bestMatchFor(Booking $booking, array $excludeDriverIds = []): ?User
     {
         return User::drivers()
-            ->whereHas('driverProfile', fn ($query) => $query
-                ->where('verification_status', 'approved')
-                ->where('availability', 'available'))
             ->get()
             ->reject(fn (User $driver) => in_array($driver->id, $excludeDriverIds, true))
             ->reject(fn (User $driver) => $this->hasOverlappingAssignment($driver, $booking->pickup_date, $booking->return_date))

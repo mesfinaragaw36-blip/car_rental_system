@@ -27,15 +27,11 @@ class DriverController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        if ($request->filled('verification')) {
-            $query->whereHas('driverProfile', fn ($q) => $q->where('verification_status', $request->input('verification')));
-        }
-
         $drivers = $query->latest()->paginate(15)->withQueryString();
 
         return Inertia::render('admin/drivers', [
             'drivers' => $drivers,
-            'filters' => $request->only(['search', 'status', 'verification']),
+            'filters' => $request->only(['search', 'status']),
         ]);
     }
 

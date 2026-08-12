@@ -293,17 +293,16 @@ export default function Profile() {
                                             <option value="" disabled>
                                                 Select license type
                                             </option>
-                                            <option value="Light Vehicle">
-                                                Light Vehicle (የቀላል ተሽከርካሪ)
+                                            <option value="አውቶ">አውቶ</option>
+                                            <option value="ህዝብ">ህዝብ</option>
+                                            <option value="ደረቅ ጭነት">
+                                                ደረቅ ጭነት
                                             </option>
-                                            <option value="Heavy Vehicle">
-                                                Heavy Vehicle (የከባድ ተሽከርካሪ)
+                                            <option value="ፈሳሽ ጭነት">
+                                                ፈሳሽ ጭነት
                                             </option>
-                                            <option value="Motorcycle">
-                                                Motorcycle (ቢስክሌት)
-                                            </option>
-                                            <option value="Public Service">
-                                                Public Service (የህዝብ ትራንስፖርት)
+                                            <option value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
+                                                ግንባታ መሣሪያዎች / ኮንስትራክሽን
                                             </option>
                                         </select>
 
@@ -339,31 +338,6 @@ export default function Profile() {
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="daily_rate">
-                                            Daily Rate (ETB)
-                                        </Label>
-
-                                        <Input
-                                            id="daily_rate"
-                                            type="number"
-                                            min={0}
-                                            step="0.01"
-                                            className="mt-1 block w-full"
-                                            defaultValue={
-                                                profile?.daily_rate ?? ''
-                                            }
-                                            name="daily_rate"
-                                            required
-                                            placeholder="e.g. 500"
-                                        />
-
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.daily_rate}
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-2">
                                         <Label htmlFor="location">
                                             Location / City
                                         </Label>
@@ -383,88 +357,6 @@ export default function Profile() {
                                             className="mt-2"
                                             message={errors.location}
                                         />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="availability">
-                                            Availability
-                                        </Label>
-
-                                        <select
-                                            id="availability"
-                                            name="availability"
-                                            defaultValue={
-                                                profile?.availability ??
-                                                'available'
-                                            }
-                                            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-                                        >
-                                            <option value="available">
-                                                Available
-                                            </option>
-                                            <option value="unavailable">
-                                                Unavailable
-                                            </option>
-                                        </select>
-
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.availability}
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="license_file">
-                                            Upload necessary files
-                                        </Label>
-
-                                        <p className="text-sm text-muted-foreground">
-                                            Upload necessary files: license,
-                                            national ID, and years of experience
-                                            evidence all combined in one PDF.
-                                        </p>
-
-                                        <Input
-                                            id="license_file"
-                                            type="file"
-                                            className="mt-1 block w-full"
-                                            name="license_file"
-                                            accept="application/pdf"
-                                        />
-
-                                        {profile?.license_file_path && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Existing file:{' '}
-                                                <a
-                                                    className="text-primary underline"
-                                                    href={`/storage/${profile.license_file_path}`}
-                                                    target="_blank"
-                                                    rel="noreferrer"
-                                                >
-                                                    View upload
-                                                </a>
-                                            </p>
-                                        )}
-
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.license_file}
-                                        />
-                                    </div>
-
-                                    <div className="rounded-2xl border border-muted p-4">
-                                        <p className="text-sm font-medium text-muted-foreground">
-                                            Verification status
-                                        </p>
-                                        <p className="mt-2 text-base font-semibold capitalize">
-                                            {profile?.verification_status ??
-                                                'pending'}
-                                        </p>
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            Uploads and driver profile changes
-                                            will be reviewed by an
-                                            administrator.
-                                        </p>
                                     </div>
                                 </div>
                             )}

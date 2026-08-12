@@ -41,13 +41,26 @@ class StaffController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $validated = $request->validate([
+        $role = Role::find($request->input('staff_role_id'));
+        $isDriverRole = $role && in_array('driver.access', $role->permissions ?? [], true);
+
+        $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'staff_role_id' => ['required', 'exists:roles,id'],
             'branch_id' => ['required', 'exists:locations,id'],
-        ]);
+        ];
+
+        if ($isDriverRole) {
+            $rules = array_merge($rules, [
+                'license_number' => ['required', 'string', 'max:100'],
+                'license_type' => ['required', 'string', 'max:50'],
+                'experience_years' => ['required', 'integer', 'min:0', 'max:50'],
+            ]);
+        }
+
+        $validated = $request->validate($rules);
 
         $staff = User::create([
             'name' => $validated['name'],
@@ -59,21 +72,19 @@ class StaffController extends Controller
             'branch_id' => $validated['branch_id'],
             'status' => 'active',
         ]);
-        // If this staff role grants driver access, provision a driver profile
-        // just like self-registered drivers used to get, so nothing about
-        // the driver experience changes — only how the account is created.
-        $role = Role::find($validated['staff_role_id']);
 
-        if ($role && in_array('driver.access', $role->permissions ?? [], true)) {
-            DriverProfile::firstOrCreate(
-                ['user_id' => $staff->id],
-                [
-                    'license_number' => 'PENDING',
-                    'experience_years' => 0,
-                    'availability' => 'available',
-                    'verification_status' => 'pending',
-                ]
-            );
+        // Staff roles that grant driver access get a driver profile provisioned
+        // with the license details captured at creation time. Drivers are
+        // registered by admins, so profiles are considered verified.
+        if ($isDriverRole) {
+            DriverProfile::create([
+                'user_id' => $staff->id,
+                'license_number' => $validated['license_number'],
+                'license_type' => $validated['license_type'],
+                'experience_years' => $validated['experience_years'],
+                'availability' => 'available',
+                'verification_status' => 'approved',
+            ]);
         }
 
         return redirect()->route('admin.staff.index')->with('toast', [

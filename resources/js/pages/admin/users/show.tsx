@@ -29,8 +29,6 @@ interface DriverProfile {
     license_type: string;
     experience_years: number;
     location: string;
-    availability: string;
-    verification_status: string;
     license_file_path?: string | null;
 }
 
@@ -132,16 +130,6 @@ export default function ShowUser({ user }: Props) {
     function handleRejectOwner(): void {
         if (confirm('Are you sure you want to reject this owner profile?')) {
             router.post(`/admin/users/${user.id}/reject-owner`);
-        }
-    }
-
-    function handleVerifyDriver(): void {
-        router.post(`/admin/users/${user.id}/verify-driver`);
-    }
-
-    function handleRejectDriver(): void {
-        if (confirm('Are you sure you want to reject this driver profile?')) {
-            router.post(`/admin/users/${user.id}/reject-driver`);
         }
     }
 
@@ -366,16 +354,6 @@ export default function ShowUser({ user }: Props) {
                                     <Car className="h-5 w-5" />
                                     Driver Profile
                                 </CardTitle>
-                                <span
-                                    className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(user.driver_profile.verification_status)}`}
-                                >
-                                    {user.driver_profile.verification_status
-                                        .charAt(0)
-                                        .toUpperCase() +
-                                        user.driver_profile.verification_status.slice(
-                                            1,
-                                        )}
-                                </span>
                             </CardHeader>
 
                             <CardContent className="space-y-4">
@@ -418,24 +396,11 @@ export default function ShowUser({ user }: Props) {
                                                 'Not specified'}
                                         </p>
                                     </div>
-                                    <div>
-                                        <p className="text-sm text-muted-foreground">
-                                            Availability
-                                        </p>
-                                        <p className="font-medium">
-                                            {user.driver_profile.availability
-                                                .charAt(0)
-                                                .toUpperCase() +
-                                                user.driver_profile.availability.slice(
-                                                    1,
-                                                )}
-                                        </p>
-                                    </div>
                                 </div>
 
                                 <div className="rounded-2xl border border-muted p-4">
                                     <p className="text-sm text-muted-foreground">
-                                        Uploaded verification document
+                                        License document
                                     </p>
                                     {user.driver_profile.license_file_path ? (
                                         <a
@@ -448,34 +413,10 @@ export default function ShowUser({ user }: Props) {
                                         </a>
                                     ) : (
                                         <p className="text-sm text-muted-foreground">
-                                            No verification document uploaded
-                                            yet.
+                                            No license document uploaded yet.
                                         </p>
                                     )}
                                 </div>
-
-                                {user.driver_profile.verification_status ===
-                                    'pending' && (
-                                    <div className="flex gap-3 border-t pt-4">
-                                        <Button
-                                            size="sm"
-                                            onClick={handleVerifyDriver}
-                                            disabled={!can('driver_profiles.verify')}
-                                        >
-                                            <CheckCircle className="mr-1.5 h-4 w-4" />
-                                            Approve
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            onClick={handleRejectDriver}
-                                            disabled={!can('driver_profiles.verify')}
-                                        >
-                                            <XCircle className="mr-1.5 h-4 w-4" />
-                                            Reject
-                                        </Button>
-                                    </div>
-                                )}
                             </CardContent>
                         </Card>
                         {user.reviews && user.reviews.length > 0 && (

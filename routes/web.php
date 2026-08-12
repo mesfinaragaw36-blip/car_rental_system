@@ -92,7 +92,6 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['staff_permission'])->group(function () {
         Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
         Route::post('/driver/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
-        Route::post('/driver/toggle-availability', [DriverProfileController::class, 'toggleAvailability'])->name('driver.toggle-availability');
         Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
     });
 
@@ -153,8 +152,6 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
         Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])->name('users.verify-owner');
         Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])->name('users.reject-owner');
-        Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])->name('users.verify-driver');
-        Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
 
         Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
         Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');

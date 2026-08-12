@@ -8,7 +8,6 @@ import {
     CheckCircle,
     XCircle,
     ShieldCheck,
-    ShieldAlert,
     Truck,
 } from 'lucide-react';
 import { useState } from 'react';
@@ -36,7 +35,6 @@ interface DriverAssignment {
 interface Props {
     role: string;
     assignments: DriverAssignment[];
-    driverVerificationStatus?: string | null;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -63,7 +61,6 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 export default function Assignments({
     role,
     assignments = [],
-    driverVerificationStatus = null,
 }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
@@ -113,31 +110,6 @@ export default function Assignments({
                         {toast.message}
                     </div>
                 )}
-
-                {role === 'driver' &&
-                    driverVerificationStatus &&
-                    driverVerificationStatus !== 'approved' && (
-                        <div className="flex flex-col gap-4 rounded-2xl border border-amber-200 bg-amber-50 p-6 sm:flex-row sm:items-center">
-                            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-amber-100">
-                                <ShieldAlert className="h-6 w-6 text-amber-700" />
-                            </div>
-                            <div className="flex-1">
-                                <h2 className="text-lg font-bold text-amber-900">
-                                    Account Verification Required
-                                </h2>
-                                <p className="mt-1 text-sm text-amber-800">
-                                    Your driver account is currently pending. An
-                                    admin needs to verify your information
-                                    before you can be assigned trips.
-                                </p>
-                            </div>
-                            <Button asChild size="sm">
-                                <Link href="/driver/profile">
-                                    Go to Settings &rarr; Complete Your Profile
-                                </Link>
-                            </Button>
-                        </div>
-                    )}
 
                 <div className="grid gap-4 sm:grid-cols-3">
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">

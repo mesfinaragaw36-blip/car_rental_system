@@ -31,12 +31,9 @@ class ProfileUpdateRequest extends FormRequest
         if ($this->user()->hasDriverPermission()) {
             $rules = array_merge($rules, [
                 'license_number' => ['required', 'string', 'max:255'],
-                'license_type' => ['required', 'string', Rule::in(['Light Vehicle', 'Heavy Vehicle', 'Motorcycle', 'Public Service'])],
+                'license_type' => ['required', 'string', Rule::in(['አውቶ', 'ህዝብ', 'ደረቅ ጭነት', 'ፈሳሽ ጭነት', 'ግንባታ መሣሪያዎች / ኮንስትራክሽን'])],
                 'experience_years' => ['required', 'integer', 'min:0', 'max:50'],
-                'daily_rate' => ['required', 'numeric', 'min:0'],
                 'location' => ['required', 'string', 'max:255'],
-                'availability' => ['required', Rule::in(['available', 'unavailable'])],
-                'license_file' => ['sometimes', 'file', 'mimes:pdf', 'max:10240'],
             ]);
         }
 
