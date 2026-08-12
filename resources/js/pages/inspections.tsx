@@ -56,6 +56,9 @@ interface InspectionRecord {
     damages: Damage[] | null;
     notes: string | null;
     photos?: string[] | null;
+    id_verified?: boolean | null;
+    id_verified_by_name?: string | null;
+    id_verified_at?: string | null;
 }
 
 type DeliveryStatus = 'pending' | 'arrived' | 'failed';
@@ -97,7 +100,7 @@ interface Booking {
         car_type_name: { id: number; name: string } | null;
         images: CarImage[];
     };
-    customer: { id: number; name: string; phone: string } | null;
+    customer: { id: number; name: string; phone: string; national_id?: string | null } | null;
     owner: { id: number; name: string; phone: string } | null;
     inspections: InspectionRecord[];
 }
@@ -520,6 +523,7 @@ function InspectionForm({
             damages: [{ area: '', description: '' }] as Damage[],
             notes: '',
             photos: [] as File[],
+            id_verified: false,
         });
 
     const pickup = booking.inspections.find(
@@ -563,6 +567,11 @@ function InspectionForm({
         formData.append('fuel_level', data.fuel_level);
         formData.append('estimated_value', data.estimated_value);
         formData.append('notes', data.notes);
+        
+        if (type === 'pickup' && data.id_verified) {
+            formData.append('id_verified', '1');
+        }
+        
         damagesToSubmit.forEach((d, i) => {
             formData.append(`damages[${i}][area]`, d.area);
             formData.append(`damages[${i}][description]`, d.description);
@@ -767,6 +776,62 @@ onClose();
                 )}
             </div>
 
+            {type === 'pickup' && (
+                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <div className="space-y-3">
+                        <div className="flex items-start gap-3">
+                            <Users className="mt-0.5 h-5 w-5 text-blue-600" />
+                            <div className="flex-1">
+                                <p className="text-sm font-semibold text-blue-900">
+                                    Customer Identity Verification
+                                </p>
+                                <p className="mt-1 text-sm text-blue-700">
+                                    {booking.customer ? (
+                                        <>
+                                            <span className="font-medium">{booking.customer.name}</span>
+                                            {booking.customer.national_id ? (
+                                                <>
+                                                    {' · '}
+                                                    <span className="font-mono">
+                                                        National ID: {booking.customer.national_id}
+                                                    </span>
+                                                </>
+                                            ) : (
+                                                <span className="text-blue-600">
+                                                    {' · '}No National ID on file
+                                                </span>
+                                            )}
+                                        </>
+                                    ) : (
+                                        'Customer information not available'
+                                    )}
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-start gap-3 rounded-lg border border-blue-300 bg-white p-3">
+                            <input
+                                type="checkbox"
+                                id="id_verified"
+                                checked={data.id_verified}
+                                onChange={(e) => setData('id_verified', e.target.checked)}
+                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                            />
+                            <label htmlFor="id_verified" className="flex-1 cursor-pointer text-sm text-slate-900">
+                                <span className="font-semibold">I confirm that the customer's National ID has been physically checked and matches the customer.</span>
+                                <p className="mt-1 text-xs text-muted-foreground">
+                                    This verification is mandatory for pickup inspections and will be recorded with your staff ID and timestamp.
+                                </p>
+                            </label>
+                        </div>
+                        {errors.id_verified && (
+                            <p className="text-xs text-red-600">
+                                {errors.id_verified}
+                            </p>
+                        )}
+                    </div>
+                </div>
+            )}
+
             <div className="flex flex-wrap gap-2">
                 <Button
                     onClick={() => submitWith('approved')}
@@ -852,6 +917,31 @@ function InspectionBadges({
                         {inspection.fuel_level !== null &&
                             ` · ${inspection.fuel_level}% fuel`}
                     </p>
+                    {inspection.type === 'pickup' && (
+                        <div className="mt-2">
+                            {inspection.id_verified ? (
+                                <div className="flex items-center gap-1.5 text-sm">
+                                    <Check className="h-3.5 w-3.5 text-green-600" />
+                                    <span className="font-medium text-green-700">ID Verified</span>
+                                    {inspection.id_verified_by_name && (
+                                        <span className="text-muted-foreground">
+                                            · by {inspection.id_verified_by_name}
+                                        </span>
+                                    )}
+                                    {inspection.id_verified_at && (
+                                        <span className="text-muted-foreground">
+                                            · {new Date(inspection.id_verified_at).toLocaleString()}
+                                        </span>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="flex items-center gap-1.5 text-sm">
+                                    <X className="h-3.5 w-3.5 text-amber-600" />
+                                    <span className="font-medium text-amber-700">ID Verification Pending</span>
+                                </div>
+                            )}
+                        </div>
+                    )}
                     {inspection.damages && inspection.damages.length > 0 && (
                         <ul className="mt-2 list-inside list-disc text-red-600">
                             {inspection.damages.map((damage, i) => (

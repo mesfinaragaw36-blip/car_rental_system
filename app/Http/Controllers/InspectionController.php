@@ -22,7 +22,7 @@ class InspectionController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['customer', 'owner', 'car.images', 'car.carTypeName', 'inspections'])
+        $bookings = Booking::with(['customer.ownerProfile', 'owner', 'car.images', 'car.carTypeName', 'inspections.idVerifiedBy'])
             ->whereIn('status', ['deposit_paid', 'paid', 'picked_up', 'returned'])
             ->latest('return_date')
             ->get();
@@ -44,7 +44,7 @@ class InspectionController extends Controller
             'returned_at' => $booking->returned_at?->toDateTimeString(),
             'late_return_days' => $booking->returnLateDays(),
             'car' => $this->carPayload($booking->car),
-            'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone] : null,
+            'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'national_id' => $booking->customer->ownerProfile?->national_id] : null,
             'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
             'inspections' => $booking->inspections
                 ->map(fn (Inspection $inspection) => $this->inspectionPayload($inspection))
@@ -175,6 +175,7 @@ class InspectionController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
             'photos' => ['nullable', 'array'],
             'photos.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
+            'id_verified' => ['nullable', 'boolean'],
         ]);
 
         $type = $validated['type'];
@@ -182,6 +183,16 @@ class InspectionController extends Controller
 
         if ($error !== null) {
             return back()->with('toast', ['type' => 'error', 'message' => $error]);
+        }
+
+        // ID verification is mandatory for pickup inspections with approved status
+        if ($type === Inspection::TYPE_PICKUP && $validated['status'] === Inspection::STATUS_APPROVED) {
+            if (empty($validated['id_verified']) || $validated['id_verified'] !== true) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'ID verification is required to approve a pickup inspection.',
+                ])->withInput();
+            }
         }
 
         if ($type === Inspection::TYPE_PICKUP && $booking->hasInspection($type)) {
@@ -196,18 +207,27 @@ class InspectionController extends Controller
             }
         }
 
+        $inspectionData = [
+            'status' => $validated['status'],
+            'conducted_by' => $request->user()->id,
+            'conducted_at' => now(),
+            'mileage_reading' => $validated['mileage_reading'] ?? null,
+            'fuel_level' => $validated['fuel_level'] ?? null,
+            'damages' => $validated['damages'] ?? null,
+            'notes' => $validated['notes'] ?? null,
+            'photos' => $photoPaths,
+        ];
+
+        // Add ID verification data for pickup inspections
+        if ($type === Inspection::TYPE_PICKUP && ! empty($validated['id_verified'])) {
+            $inspectionData['id_verified'] = true;
+            $inspectionData['id_verified_by'] = $request->user()->id;
+            $inspectionData['id_verified_at'] = now();
+        }
+
         Inspection::updateOrCreate(
             ['booking_id' => $booking->id, 'type' => $type],
-            [
-                'status' => $validated['status'],
-                'conducted_by' => $request->user()->id,
-                'conducted_at' => now(),
-                'mileage_reading' => $validated['mileage_reading'] ?? null,
-                'fuel_level' => $validated['fuel_level'] ?? null,
-                'damages' => $validated['damages'] ?? null,
-                'notes' => $validated['notes'] ?? null,
-                'photos' => $photoPaths,
-            ]
+            $inspectionData
         );
 
         if ($type === Inspection::TYPE_PICKUP && $validated['status'] === Inspection::STATUS_ISSUES_FOUND) {
@@ -667,6 +687,9 @@ class InspectionController extends Controller
             'damages' => $inspection->damages,
             'notes' => $inspection->notes,
             'photos' => $inspection->photos ?? [],
+            'id_verified' => $inspection->id_verified,
+            'id_verified_by_name' => $inspection->idVerifiedBy?->name,
+            'id_verified_at' => $inspection->id_verified_at?->toDateTimeString(),
         ];
     }
 }
