@@ -127,7 +127,10 @@ class User extends Authenticatable
     {
         return $this->hasMany(BookingDriver::class, 'driver_id');
     }
-
+     public function customerIdentity(): HasOne
+    {
+    return $this->hasOne(CustomerIdentity::class);
+    }
     // NEW: Inspections performed by this inspector
     public function inspections(): HasMany
     {
