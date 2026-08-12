@@ -105,4 +105,21 @@ class Car extends Model
     {
         return $this->availablePeriods()->whereDate('end_date', '>=', now()->toDateString())->orderBy('start_date');
     }
+
+    /**
+     * Scope to cars whose owner has been verified by admin.
+     * Cars from unapproved owners should never be visible to customers or bookable.
+     */
+    public function scopeOwnerApproved($query)
+    {
+        return $query->whereHas('owner.ownerProfile', fn ($q) => $q->where('verification_status', 'approved'));
+    }
+
+    /**
+     * Whether this car's owner has been verified by admin.
+     */
+    public function ownerIsApproved(): bool
+    {
+        return $this->owner?->ownerProfile?->verification_status === 'approved';
+    }
 }

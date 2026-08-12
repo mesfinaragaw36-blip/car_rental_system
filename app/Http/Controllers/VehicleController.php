@@ -55,6 +55,9 @@ class VehicleController extends Controller
         return Inertia::render('vehicles', [
             'role' => $user->role,
             'vehicles' => $vehicles,
+            'ownerVerificationStatus' => $user->role === 'owner'
+                ? ($user->ownerProfile?->verification_status ?? 'pending')
+                : null,
         ]);
     }
 
