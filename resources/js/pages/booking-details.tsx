@@ -73,7 +73,7 @@ interface BookingDetails {
         year: number;
         plate_number: string;
         estimated_value?: string | number | null;
-    };
+    } | null;
     
         security_deposit: number;
         late_fee_deduction: number;
@@ -268,21 +268,24 @@ return;
                             </CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm">
-                            <p className="text-lg font-semibold">
-                                {booking.car.brand} {booking.car.model} (
-                                {booking.car.year})
-                            </p>
-                            <p className="text-muted-foreground">
-                                Plate: {booking.car.plate_number}
-                            </p>
-                            {booking.car.estimated_value ? (
-                                <p className="text-muted-foreground">
-                                    Estimated value: ETB{' '}
-                                    {Number(
-                                        booking.car.estimated_value,
-                                    ).toLocaleString()}
-                                </p>
-                            ) : null}
+                            {booking.car !== null ? (
+                                <>
+                                    <p className="text-lg font-semibold">
+                                        {booking.car.brand} {booking.car.model} ({booking.car.year})
+                                    </p>
+                                    <p className="text-muted-foreground">
+                                        Plate: {booking.car.plate_number}
+                                    </p>
+                                    {booking.car.estimated_value ? (
+                                        <p className="text-muted-foreground">
+                                            Estimated value: ETB{' '}
+                                            {Number(booking.car.estimated_value).toLocaleString()}
+                                        </p>
+                                    ) : null}
+                                </>
+                            ) : (
+                                <p className="text-muted-foreground">Vehicle details unavailable</p>
+                            )}
                             {booking.car_delivery_status && (
                                 <div className="mt-2 space-y-1 border-t pt-2">
                                     <p className="text-muted-foreground">

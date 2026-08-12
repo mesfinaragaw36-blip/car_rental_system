@@ -50,7 +50,7 @@ interface Booking {
         year?: number;
         plate_number?: string;
         images?: { id: number; image_path: string; is_primary: boolean }[];
-    };
+    } | null;
     payment: {
         id: number;
         payment_method: string;
@@ -300,7 +300,9 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                     </Card>
                 ) : (
                     <div className="space-y-5">
-                        {bookings.data.map((booking) => (
+                        {bookings.data.map((booking) => {
+                            const car = booking.car;
+                            return (
                             <Card
                                 key={booking.id}
                                 className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg"
@@ -316,17 +318,19 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     <div className="h-16 w-24 overflow-hidden rounded-xl bg-gray-100">
                                                         {(() => {
                                                             const carImage =
-                                                                booking.car?.images?.find(
-                                                                    (img) =>
-                                                                        img.is_primary,
-                                                                )?.image_path ??
-                                                                booking.car?.images?.[0]
-                                                                    ?.image_path;
+                                                                car !== null
+                                                                    ? (car.images?.find(
+                                                                            (img) =>
+                                                                                img.is_primary,
+                                                                        )?.image_path ??
+                                                                      car.images?.[0]
+                                                                          ?.image_path)
+                                                                    : undefined;
 
                                                             return carImage ? (
                                                                 <img
                                                                     src={`/storage/${carImage}`}
-                                                                    alt={`${booking.car.brand} ${booking.car.model}`}
+                                                                    alt={car ? `${car.brand} ${car.model}` : ''}
                                                                     className="h-full w-full object-cover"
                                                                 />
                                                             ) : (
@@ -338,16 +342,12 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     </div>
                                                     <div>
                                                         <p className="text-lg font-bold">
-                                                            {booking.car.brand}{' '}
-                                                            {booking.car.model}
+                                                            {car !== null ? car.brand : 'Unknown'}{' '}
+                                                            {car !== null ? car.model : 'Car'}
                                                         </p>
-                                                        {booking.car
-                                                            .plate_number && (
+                                                        {car !== null && car.plate_number && (
                                                             <p className="text-sm text-muted-foreground">
-                                                                {
-                                                                    booking.car
-                                                                        .plate_number
-                                                                }
+                                                                {car.plate_number}
                                                             </p>
                                                         )}
                                                     </div>
@@ -618,7 +618,8 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                     </div>
                                 </CardContent>
                             </Card>
-                        ))}
+                            );
+                        })}
                     </div>
                 )}
             </div>

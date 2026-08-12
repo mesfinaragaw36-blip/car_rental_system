@@ -111,7 +111,7 @@ class BookingController extends Controller
         $reviewTargets = [];
 
         if (in_array($booking->status, ['returned', 'completed'], true)) {
-            if ($user->role === 'customer') {
+            if ($user->role === 'customer' && $booking->car) {
                 $reviewTargets[] = [
                     'key' => 'car',
                     'label' => 'Vehicle',
@@ -150,7 +150,7 @@ class BookingController extends Controller
 
         $reviewList = $booking->reviews->map(function (Review $review) use ($booking) {
             $targetName = $review->reviewable_type === Car::class
-                ? $booking->car->brand.' '.$booking->car->model
+                ? ($booking->car ? $booking->car->brand.' '.$booking->car->model : 'Unknown Vehicle')
                 : match ($review->reviewable_id) {
                     $booking->owner_id => $booking->owner->name,
                     $booking->driverAssignment?->driver_id => $booking->driverAssignment->driver->name,
@@ -185,7 +185,7 @@ class BookingController extends Controller
                 'daily_rate' => $days > 0 ? number_format($booking->total_price / $days, 2) : '0.00',
                 'customer' => $booking->customer ? $this->customerPayload($booking, $user) : null,
                 'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
-                'car' => ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number],
+                'car' => $booking->car ? ['id' => $booking->car->id, 'brand' => $booking->car->brand, 'model' => $booking->car->model, 'year' => $booking->car->year, 'plate_number' => $booking->car->plate_number] : null,
                 'payment' => $booking->payment,
                 'refunds' => $booking->refunds->map(fn ($refund) => [
                     'id' => $refund->id,
