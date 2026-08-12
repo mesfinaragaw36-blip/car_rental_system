@@ -21,8 +21,7 @@ class DriverMatchingService
 
     public function bestMatchFor(Booking $booking, array $excludeDriverIds = []): ?User
     {
-        return User::query()
-            ->where('role', 'driver')
+        return User::drivers()
             ->whereHas('driverProfile', fn ($query) => $query
                 ->where('verification_status', 'approved')
                 ->where('availability', 'available'))

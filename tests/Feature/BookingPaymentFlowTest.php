@@ -320,7 +320,7 @@ class BookingPaymentFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
         $booking = $this->booking($owner, $customer, 'returned', [
             'returned_at' => now(),
             'need_driver' => true,

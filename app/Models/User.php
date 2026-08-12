@@ -52,6 +52,34 @@ class User extends Authenticatable
         return $this->hasOne(DriverProfile::class);
     }
 
+    /**
+     * Whether this user has the driver permission via their staff role.
+     * This is how the system recognizes a "driver" now, instead of a role column value.
+     */
+    public function hasDriverPermission(): bool
+    {
+        return $this->staff_role_id !== null
+            && in_array('driver.access', $this->staffRole?->permissions ?? [], true);
+    }
+
+    /**
+     * Whether this user is a full (non-staff) administrator.
+     */
+    public function isFullAdmin(): bool
+    {
+        return $this->role === 'admin' && $this->staff_role_id === null;
+    }
+
+    /**
+     * Scope to fetch users recognized as drivers (staff accounts with the driver permission).
+     */
+    public function scopeDrivers($query)
+    {
+        return $query->where('role', 'admin')
+            ->whereNotNull('staff_role_id')
+            ->whereHas('staffRole', fn ($q) => $q->whereJsonContains('permissions', 'driver.access'));
+    }
+
     public function staffRole(): BelongsTo
     {
         return $this->belongsTo(Role::class, 'staff_role_id');

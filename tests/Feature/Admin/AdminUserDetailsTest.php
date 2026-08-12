@@ -17,7 +17,7 @@ class AdminUserDetailsTest extends TestCase
         /** @var User $admin */
         $admin = User::factory()->create(['role' => 'admin']);
         /** @var User $driver */
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
 
         DriverProfile::create([
             'user_id' => $driver->id,

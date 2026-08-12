@@ -89,10 +89,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/assignments/{assignment}/reject', [AssignmentController::class, 'reject'])->name('assignments.reject');
 
     // Driver features
-    Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
-    Route::post('/driver/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
-    Route::post('/driver/toggle-availability', [DriverProfileController::class, 'toggleAvailability'])->name('driver.toggle-availability');
-    Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
+    Route::middleware(['staff_permission'])->group(function () {
+        Route::get('/driver/profile', [DriverProfileController::class, 'show'])->name('driver.profile');
+        Route::post('/driver/profile', [DriverProfileController::class, 'update'])->name('driver.profile.update');
+        Route::post('/driver/toggle-availability', [DriverProfileController::class, 'toggleAvailability'])->name('driver.toggle-availability');
+        Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])->name('driver.trip-history');
+    });
 
     // Inspection staff routes
     Route::middleware(['role:admin', 'staff_permission'])->group(function () {

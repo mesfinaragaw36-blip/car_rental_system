@@ -117,6 +117,12 @@ class StaffPermissionMiddleware
         'disputes.index' => ['disputes.view'],
         'disputes.approve' => ['disputes.manage'],
         'disputes.reject' => ['disputes.manage'],
+
+        // Driver portal (staff accounts granted the driver.access permission)
+        'driver.profile' => ['driver.access'],
+        'driver.profile.update' => ['driver.access'],
+        'driver.toggle-availability' => ['driver.access'],
+        'driver.trip-history' => ['driver.access'],
     ];
 
     public function handle(Request $request, Closure $next): Response

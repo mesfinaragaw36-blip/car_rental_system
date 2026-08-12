@@ -18,6 +18,11 @@ type PageProps = {
 export default function Profile() {
     const { auth, profile } = usePage<PageProps>().props;
     const role = auth.user.role;
+    const isDriver =
+        role === 'driver' ||
+        (role === 'admin' &&
+            auth.user.staff_role_id != null &&
+            (auth.user.permissions ?? []).includes('driver.access'));
 
     return (
         <>
@@ -227,7 +232,7 @@ export default function Profile() {
                                 </div>
                             )}
 
-                            {role === 'driver' && (
+                            {isDriver && (
                                 <div className="space-y-6">
                                     <div className="grid gap-2">
                                         <Label htmlFor="phone">

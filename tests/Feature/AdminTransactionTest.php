@@ -46,7 +46,7 @@ class AdminTransactionTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
 
         $refundBooking = $this->booking($owner, $customer, 'completed');
         Refund::create([
@@ -125,7 +125,7 @@ class AdminTransactionTest extends TestCase
         $admin = User::factory()->create(['role' => 'admin']);
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
 
         $booking = $this->booking($owner, $customer, 'completed');
         $assignment = BookingDriver::create([

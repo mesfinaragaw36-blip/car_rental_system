@@ -33,6 +33,12 @@ class RoleController extends Controller
                 'vehicles.manage' => 'Delete / Toggle Availability',
             ],
         ],
+        'driver_portal' => [
+            'label' => 'Driver Portal',
+            'items' => [
+                'driver.access' => 'Access Driver Portal (Assignments, Trip History, Profile)',
+            ],
+        ],
         'users' => [
             'label' => 'Users',
             'items' => [

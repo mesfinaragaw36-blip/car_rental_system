@@ -54,7 +54,7 @@ class AssignmentActionsTest extends TestCase
 
     private function createDriver(): User
     {
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
         DriverProfile::create([
             'user_id' => $driver->id,
             'license_number' => fake()->bothify('DL-#####'),

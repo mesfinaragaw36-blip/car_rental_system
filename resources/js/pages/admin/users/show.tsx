@@ -40,6 +40,7 @@ interface UserData {
     email: string;
     phone: string;
     role: string;
+    staff_role_id: number | null;
     status: string;
     address: string | null;
     created_at: string;
@@ -355,7 +356,9 @@ export default function ShowUser({ user }: Props) {
                 )}
 
                 {/* Driver Profile */}
-                {user.role === 'driver' && user.driver_profile && (
+                {user.driver_profile &&
+                    (user.role === 'driver' ||
+                        user.staff_role_id !== null) && (
                     <>
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">

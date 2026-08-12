@@ -64,7 +64,7 @@ class BookingManagementTest extends TestCase
      */
     private function createAvailableDriver(): User
     {
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
 
         DriverProfile::create([
             'user_id' => $driver->id,

@@ -36,7 +36,7 @@ class DriverOrchestrationTest extends TestCase
 
     private function createDriver(array $overrides = [], float $dailyRate = 0.0): User
     {
-        $driver = User::factory()->create(array_merge(['role' => 'driver'], $overrides));
+        $driver = User::factory()->driver()->create($overrides);
 
         DriverProfile::create([
             'user_id' => $driver->id,
@@ -109,7 +109,7 @@ class DriverOrchestrationTest extends TestCase
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
 
-        User::factory()->create(['role' => 'driver']);
+        User::factory()->driver()->create();
         $pendingDriver = $this->createDriver();
         $pendingDriver->driverProfile->update(['verification_status' => 'pending']);
         $unavailableDriver = $this->createDriver();

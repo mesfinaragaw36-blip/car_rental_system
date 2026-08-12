@@ -19,10 +19,13 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
+        if ($user->hasDriverPermission()) {
+            return $this->driverDashboard();
+        }
+
         return match ($user->role) {
             'admin' => $this->adminDashboard(),
             'owner' => $this->ownerDashboard(),
-            'driver' => $this->driverDashboard(),
             default => $this->customerDashboard(),
         };
     }

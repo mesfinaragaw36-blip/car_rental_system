@@ -121,7 +121,6 @@ export default function CreateUser() {
                                 >
                                     <option value="customer">Customer</option>
                                     <option value="owner">Owner</option>
-                                    <option value="driver">Driver</option>
                                 </select>
                                 <InputError message={errors.role} />
                             </div>

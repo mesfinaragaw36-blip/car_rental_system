@@ -43,6 +43,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'roles.view': ['/admin/roles'],
     'locations.view': ['/admin/locations'],
     'car-types.view': ['/admin/car-types/type-names'],
+    'driver.access': ['/assignments', '/driver/trip-history'],
 };
 
 function getNavItems(
@@ -134,6 +135,22 @@ function getNavItems(
                 title: 'Car Types',
                 href: '/admin/car-types/type-names',
                 icon: Settings,
+            });
+        }
+
+        if (allowedRoutes.has('/assignments')) {
+            items.push({
+                title: 'My Assignments',
+                href: '/assignments',
+                icon: Wrench,
+            });
+        }
+
+        if (allowedRoutes.has('/driver/trip-history')) {
+            items.push({
+                title: 'Trip History',
+                href: '/driver/trip-history',
+                icon: BookOpen,
             });
         }
 

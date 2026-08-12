@@ -332,7 +332,7 @@ class BookingController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'This booking did not request a driver.']);
         }
         $validated = $request->validate(['driver_id' => ['required', 'exists:users,id']]);
-        $driver = User::where('id', $validated['driver_id'])->where('role', 'driver')->whereHas('driverProfile', fn ($q) => $q->where('availability', 'available'))->firstOrFail();
+        $driver = User::drivers()->where('id', $validated['driver_id'])->whereHas('driverProfile', fn ($q) => $q->where('availability', 'available'))->firstOrFail();
         BookingDriver::updateOrCreate(['booking_id' => $booking->id], ['driver_id' => $driver->id, 'assigned_by' => $user->id, 'assigned_at' => now(), 'status' => 'assigned']);
 
         return back()->with('toast', ['type' => 'success', 'message' => 'Driver assigned.']);

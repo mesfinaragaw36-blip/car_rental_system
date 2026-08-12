@@ -69,6 +69,21 @@ class UserFactory extends Factory
         });
     }
 
+    public function driver(): static
+    {
+        return $this->state(function (array $attributes) {
+            $role = Role::create([
+                'name' => 'Driver Role '.fake()->unique()->word(),
+                'permissions' => ['driver.access'],
+            ]);
+
+            return [
+                'role' => 'admin',
+                'staff_role_id' => $role->id,
+            ];
+        });
+    }
+
     public function withPermissions(array $permissions): static
     {
         return $this->afterCreating(function (User $user) use ($permissions) {

@@ -52,9 +52,11 @@ class FortifyServiceProvider extends ServiceProvider
 
         // Block inactive users and redirect by role after login
         Fortify::authenticateUsing(function (Request $request) {
-            $user = User::where('email', $request->email)->first();
+            $email = strtolower(trim($request->input('email')));
 
-            if (! $user || ! Hash::check($request->password, $user->password)) {
+            $user = User::whereRaw('LOWER(email) = ?', [$email])->first();
+
+            if (! $user || ! Hash::check($request->input('password'), $user->password)) {
                 return null;
             }
 

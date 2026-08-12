@@ -17,7 +17,7 @@ class DriverProfileUploadTest extends TestCase
     {
         Storage::fake('public');
 
-        $driver = User::factory()->create(['role' => 'driver']);
+        $driver = User::factory()->driver()->create();
 
         $response = $this
             ->actingAs($driver)

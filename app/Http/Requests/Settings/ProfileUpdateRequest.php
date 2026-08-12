@@ -28,7 +28,7 @@ class ProfileUpdateRequest extends FormRequest
             ]);
         }
 
-        if ($this->user()->role === 'driver') {
+        if ($this->user()->hasDriverPermission()) {
             $rules = array_merge($rules, [
                 'license_number' => ['required', 'string', 'max:255'],
                 'license_type' => ['required', 'string', Rule::in(['Light Vehicle', 'Heavy Vehicle', 'Motorcycle', 'Public Service'])],
