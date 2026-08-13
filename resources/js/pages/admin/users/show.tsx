@@ -1,3 +1,4 @@
+import React from 'react'
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     User,
@@ -8,6 +9,7 @@ import {
     Ban,
     PlayCircle,
     Edit,
+    IdCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,6 +34,15 @@ interface DriverProfile {
     license_file_path?: string | null;
 }
 
+interface CustomerIdentity {
+    id: number;
+    national_id_number: string;
+    national_id_front_path: string | null;
+    national_id_back_path: string | null;
+    verification_status: string;
+    verified_at: string | null;
+}
+
 interface UserData {
     id: number;
     name: string;
@@ -45,6 +56,7 @@ interface UserData {
     updated_at: string;
     owner_profile: OwnerProfile | null;
     driver_profile: DriverProfile | null;
+    customer_identity: CustomerIdentity | null;
     reviews?: Array<{
         id: number;
         reviewer: { id: number; name: string };
@@ -97,7 +109,18 @@ function verificationBadgeClass(status: string): string {
             return 'bg-yellow-100 text-yellow-800';
     }
 }
-
+function DocumentLink({ path, label }: { path: string; label: string }) {
+    return React.createElement(
+        'a',
+        {
+            href: `/storage/${path}`,
+            target: '_blank',
+            rel: 'noreferrer',
+            className: 'text-primary underline',
+        },
+        label,
+    );
+}
 export default function ShowUser({ user }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
@@ -130,6 +153,16 @@ export default function ShowUser({ user }: Props) {
     function handleRejectOwner(): void {
         if (confirm('Are you sure you want to reject this owner profile?')) {
             router.post(`/admin/users/${user.id}/reject-owner`);
+        }
+    }
+
+    function handleVerifyCustomer(): void {
+        router.post(`/admin/users/${user.id}/verify-customer`);
+    }
+
+    function handleRejectCustomer(): void {
+        if (confirm('Are you sure you want to reject this customer verification?')) {
+            router.post(`/admin/users/${user.id}/reject-customer`);
         }
     }
 
@@ -343,6 +376,109 @@ export default function ShowUser({ user }: Props) {
                     </Card>
                 )}
 
+                {/* Customer Identity Verification */}
+                {user.role === 'customer' && user.customer_identity && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <IdCard className="h-5 w-5" />
+                                Customer Identity Verification
+                            </CardTitle>
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(user.customer_identity.verification_status)}`}
+                            >
+                                {user.customer_identity.verification_status
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                    user.customer_identity.verification_status.slice(
+                                        1,
+                                    )}
+                            </span>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">
+                                        National ID Number
+                                    </p>
+                                    <p className="font-medium">
+                                        {user.customer_identity.national_id_number}
+                                    </p>
+                                </div>
+                                {user.customer_identity.verified_at && (
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Verified At
+                                        </p>
+                                        <p className="font-medium">
+                                            {new Date(
+                                                user.customer_identity.verified_at,
+                                            ).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="rounded-2xl border border-muted p-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        ID front
+                                    </p>
+                                    {user.customer_identity.national_id_front_path ? (
+                               <DocumentLink
+                          path={user.customer_identity.national_id_front_path}
+                            label="View front photo"
+                             />
+                          ) : (
+                        <p className="text-sm text-muted-foreground">
+                                Not uploaded.
+                        </p>
+                               )}
+                                </div>
+                                <div className="rounded-2xl border border-muted p-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        ID back
+                                    </p>
+                                    {user.customer_identity.national_id_back_path ? (
+    <DocumentLink
+        path={user.customer_identity.national_id_back_path}
+        label="View back photo"
+    />
+) : (
+    <p className="text-sm text-muted-foreground">
+        Not uploaded.
+    </p>
+)}
+                                </div>
+                            </div>
+
+                            {user.customer_identity.verification_status ===
+                                'pending' && (
+                                <div className="flex gap-3 border-t pt-4">
+                                    <Button
+                                        size="sm"
+                                        onClick={handleVerifyCustomer}
+                                        disabled={!can('users.manage')}
+                                    >
+                                        <CheckCircle className="mr-1.5 h-4 w-4" />
+                                        Approve
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleRejectCustomer}
+                                        disabled={!can('users.manage')}
+                                    >
+                                        <XCircle className="mr-1.5 h-4 w-4" />
+                                        Reject
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
                 {/* Driver Profile */}
                 {user.driver_profile &&
                     (user.role === 'driver' ||
@@ -403,19 +539,15 @@ export default function ShowUser({ user }: Props) {
                                         License document
                                     </p>
                                     {user.driver_profile.license_file_path ? (
-                                        <a
-                                            href={`/storage/${user.driver_profile.license_file_path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-primary underline"
-                                        >
-                                            View uploaded document
-                                        </a>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                            No license document uploaded yet.
-                                        </p>
-                                    )}
+    <DocumentLink
+        path={user.driver_profile.license_file_path}
+        label="View uploaded document"
+    />
+) : (
+    <p className="text-sm text-muted-foreground">
+        No license document uploaded yet.
+    </p>
+)}
                                 </div>
                             </CardContent>
                         </Card>

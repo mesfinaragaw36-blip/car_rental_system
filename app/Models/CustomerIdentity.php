@@ -10,7 +10,18 @@ class CustomerIdentity extends Model
     protected $fillable = [
         'user_id',
         'national_id_number',
+        'national_id_front_path',
+        'national_id_back_path',
+        'verification_status',
+        'verified_at',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'verified_at' => 'datetime',
+        ];
+    }
 
     public function user(): BelongsTo
     {

@@ -39,6 +39,21 @@ class ProfileUpdateRequest extends FormRequest
             $rules = array_merge($rules, [
                 'address' => ['required', 'string', 'max:255'],
             ]);
+
+            $identity = $this->user()->customerIdentity;
+            $isLocked = $identity?->verification_status === 'approved';
+
+            if (! $isLocked) {
+                $rules = array_merge($rules, [
+                    'national_id_number' => [
+                        'required',
+                        'digits:12',
+                        Rule::unique('customer_identities', 'national_id_number')->ignore($this->user()->id, 'user_id'),
+                    ],
+                    'national_id_front' => [$identity ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+                    'national_id_back' => [$identity ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
+                ]);
+            }
         }
 
         return $rules;

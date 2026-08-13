@@ -6,7 +6,6 @@ use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CarTypeName;
-use App\Models\CustomerIdentity;
 use App\Models\Location;
 use App\Services\DriverMatchingService;
 use Carbon\Carbon;
@@ -27,7 +26,6 @@ class BrowseCarController extends Controller
         $cars = Car::with(['images', 'owner', 'carTypeName'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
-            ->ownerApproved()
             ->when($pickupDate && $returnDate, function ($q) use ($pickupDate, $returnDate) {
                 $q->whereDoesntHave('bookings', function ($booking) use ($pickupDate, $returnDate) {
                     $booking->whereNotIn('status', Booking::INACTIVE_STATUSES)
@@ -67,9 +65,7 @@ class BrowseCarController extends Controller
     {
         $user = auth()->user();
 
-        $ownerApproved = $car->ownerIsApproved();
-
-        if ($car->approval_status !== 'approved' || $car->availability_status !== 'available' || ! $ownerApproved) {
+        if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
             if (! ($user->role === 'owner' && $car->owner_id === $user->id) && $user->role !== 'admin') {
                 abort(404);
             }
@@ -103,7 +99,6 @@ class BrowseCarController extends Controller
             ]),
             'role' => $user->role,
             'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
-            'needs_national_id' => $user->role === 'customer' && ! $user->customerIdentity()->exists(),
         ]);
     }
 
@@ -112,34 +107,28 @@ class BrowseCarController extends Controller
         if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
             abort(404);
         }
-
-        if (! $car->ownerIsApproved()) {
-            abort(404);
-        }
-
         if ($car->owner_id === auth()->id()) {
             return back()->with('toast', ['type' => 'error', 'message' => 'You cannot book your own vehicle.']);
         }
 
         $user = auth()->user();
-        $needsNationalId = ! $user->customerIdentity()->exists();
+        $identity = $user->customerIdentity;
+
+        if (! $identity || $identity->verification_status !== 'approved') {
+            return redirect()->route('profile.edit')->with('toast', [
+                'type' => 'error',
+                'message' => 'You must verify your identity before booking a vehicle. Please submit your national ID to continue.',
+            ]);
+        }
 
         $validated = $request->validate([
-    'pickup_date' => ['required', 'date', 'after_or_equal:today'],
-    'return_date' => ['required', 'date', 'after:pickup_date'],
-    'pickup_branch_id' => ['required', 'exists:locations,id'],
-    'return_branch_id' => ['required', 'exists:locations,id'],
-    'need_driver' => ['nullable', 'boolean'],
-    'notes' => ['nullable', 'string', 'max:1000'],
-    'national_id_number' => [
-        $needsNationalId ? 'required' : 'nullable',
-        'digits:12',
-        'unique:customer_identities,national_id_number',
-    ],
-], [
-    'national_id_number.digits' => 'National ID number must be exactly 12 digits.',
-    'national_id_number.unique' => 'This national ID number is already registered to another customer.',
-]);
+            'pickup_date' => ['required', 'date', 'after_or_equal:today'],
+            'return_date' => ['required', 'date', 'after:pickup_date'],
+            'pickup_branch_id' => ['required', 'exists:locations,id'],
+            'return_branch_id' => ['required', 'exists:locations,id'],
+            'need_driver' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+        ]);
 
         $pickupBranch = Location::findOrFail($validated['pickup_branch_id']);
         $returnBranch = Location::findOrFail($validated['return_branch_id']);
@@ -160,7 +149,7 @@ class BrowseCarController extends Controller
             : max(1000.0, round($totalPrice * 0.20, 2));
 
         try {
-            $booking = DB::transaction(function () use ($car, $user, $needsNationalId, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
+            $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
                 Car::whereKey($car->id)->lockForUpdate()->first();
 
                 $hasOverlap = Booking::where('car_id', $car->id)
@@ -181,13 +170,6 @@ class BrowseCarController extends Controller
 
                 if ($hasBlock) {
                     throw new \RuntimeException('blocked');
-                }
-
-                if ($needsNationalId) {
-                    CustomerIdentity::create([
-                        'user_id' => $user->id,
-                        'national_id_number' => $validated['national_id_number'],
-                    ]);
                 }
 
                 return Booking::create([

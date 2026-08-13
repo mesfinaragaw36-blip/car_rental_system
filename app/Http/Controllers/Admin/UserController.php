@@ -76,7 +76,7 @@ class UserController extends Controller
 
     public function show(User $user): Response
     {
-        $user->load(['ownerProfile', 'driverProfile']);
+        $user->load(['ownerProfile', 'driverProfile', 'customerIdentity']);
 
         $driverReviews = [];
         if ($user->hasDriverPermission()) {
@@ -215,6 +215,61 @@ class UserController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Owner profile rejected.',
+        ]);
+    }
+
+    public function verifyCustomer(User $user): RedirectResponse
+    {
+        $identity = $user->customerIdentity;
+
+        if (! $identity) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No customer verification submission found for this user.',
+            ]);
+        }
+
+        $identity->update([
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
+        $user->notifyNow(
+            'Your account has been verified',
+            'Your national ID verification was approved. You can now book vehicles.',
+            'customer_verified',
+        );
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Customer verified.',
+        ]);
+    }
+
+    public function rejectCustomer(User $user): RedirectResponse
+    {
+        $identity = $user->customerIdentity;
+
+        if (! $identity) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No customer verification submission found for this user.',
+            ]);
+        }
+
+        $identity->update([
+            'verification_status' => 'rejected',
+        ]);
+
+        $user->notifyNow(
+            'Your verification was not approved',
+            'Your national ID verification was rejected. Please review your profile and resubmit.',
+            'customer_rejected',
+        );
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Customer verification rejected.',
         ]);
     }
 }
