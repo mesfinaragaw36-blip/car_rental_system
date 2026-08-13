@@ -14,35 +14,99 @@ use Inertia\Response;
 class UserController extends Controller
 {
     public function index(Request $request): Response
-    {
-        $query = User::where('role', '!=', 'admin')
-            ->orWhere(function ($q) {
-                $q->where('role', 'admin')->whereNull('staff_role_id');
-            });
+{
+    $baseQuery = function ($query) {
+        $query->where(function ($q) {
+            $q->where('role', '!=', 'admin')
+                ->orWhere(function ($q) {
+                    $q->where('role', 'admin')
+                        ->whereNull('staff_role_id');
+                });
+        });
+    };
 
-        if ($request->filled('search')) {
-            $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
-            });
-        }
+    $query = User::query();
 
-        if ($request->filled('role')) {
-            $query->where('role', $request->input('role'));
-        }
+    $baseQuery($query);
 
-        if ($request->filled('status')) {
-            $query->where('status', $request->input('status'));
-        }
+    // Load verification profiles so the frontend can display
+    // owner/driver verification status.
+    $query->with([
+        'ownerProfile:id,user_id,business_name,verification_status,verified_at',
+        'driverProfile:id,user_id,license_number,verification_status',
+    ]);
 
-        $users = $query->latest()->paginate(15)->withQueryString();
+    if ($request->filled('search')) {
+        $search = $request->input('search');
 
-        return Inertia::render('admin/users/index', [
-            'users' => $users,
-            'filters' => $request->only(['search', 'role', 'status']),
-        ]);
+        $query->where(function ($q) use ($search) {
+            $q->where('name', 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('phone', 'like', "%{$search}%");
+        });
     }
+
+    if ($request->filled('role')) {
+        $query->where('role', $request->input('role'));
+    }
+
+    // This is the ACCOUNT status, not verification status.
+    if ($request->filled('status')) {
+        $query->where('status', $request->input('status'));
+    }
+
+    $users = $query
+        ->latest()
+        ->paginate(15)
+        ->withQueryString();
+
+    /*
+     * Dashboard statistics
+     */
+    $statsQuery = User::query();
+    $baseQuery($statsQuery);
+
+    $total = (clone $statsQuery)->count();
+
+    $owners = (clone $statsQuery)
+        ->where('role', 'owner')
+        ->count();
+
+    $pending = (clone $statsQuery)
+        ->where(function ($q) {
+            $q->whereHas('ownerProfile', function ($q) {
+                $q->where('verification_status', 'pending');
+            })->orWhereHas('driverProfile', function ($q) {
+                $q->where('verification_status', 'pending');
+            });
+        })
+        ->count();
+
+    $approved = (clone $statsQuery)
+        ->where(function ($q) {
+            $q->whereHas('ownerProfile', function ($q) {
+                $q->where('verification_status', 'approved');
+            })->orWhereHas('driverProfile', function ($q) {
+                $q->where('verification_status', 'approved');
+            });
+        })
+        ->count();
+
+    return Inertia::render('admin/users/index', [
+        'users' => $users,
+        'filters' => $request->only([
+            'search',
+            'role',
+            'status',
+        ]),
+        'stats' => [
+            'total' => $total,
+            'owners' => $owners,
+            'pending' => $pending,
+            'approved' => $approved,
+        ],
+    ]);
+}
 
     public function create(): Response
     {
