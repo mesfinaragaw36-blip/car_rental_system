@@ -116,7 +116,7 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
             <div className="space-y-6 p-6">
                 <Link
                     href="/vehicles"
-                    className="inline-flex items-center gap-2 rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"
+                    className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
                 >
                     ← Back to Vehicles
                 </Link>
@@ -569,7 +569,7 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
                                                 />
 
                                                 {image.is_primary && (
-                                                    <span className="absolute top-2 left-2 rounded-full bg-blue-600 px-2 py-1 text-xs font-medium text-white">
+                                                    <span className="absolute top-2 left-2 rounded-full bg-primary px-2 py-1 text-xs font-medium text-white">
                                                         Primary
                                                     </span>
                                                 )}
@@ -721,7 +721,7 @@ export default function EditVehicle({ vehicle, carTypeNames }: Props) {
                                                         href={`/storage/${document.document_path}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-sm font-medium text-blue-600 hover:underline"
+                                                        className="text-sm font-medium text-primary hover:underline"
                                                     >
                                                         View Document
                                                     </a>

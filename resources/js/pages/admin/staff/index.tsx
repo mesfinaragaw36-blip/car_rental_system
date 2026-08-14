@@ -207,7 +207,7 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                                     {member.phone}
                                                 </td>
                                                  <td className="py-3">
-                                                     <span className="rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-medium text-purple-800">
+                                                     <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-primary">
                                                          {member.staff_role?.name ??
                                                              'Unassigned'}
                                                      </span>

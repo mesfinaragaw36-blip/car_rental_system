@@ -250,7 +250,7 @@ export default function PaymentForm({
                 {/* Back */}
                 <Link
                     href="/bookings"
-                    className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-blue-600"
+                    className="inline-flex items-center gap-2 text-sm text-muted-foreground transition hover:text-primary"
                 >
                     <ArrowLeft className="h-4 w-4" />
                     Back to Bookings
@@ -292,7 +292,7 @@ export default function PaymentForm({
                 <Card className="rounded-2xl border-0 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <CarFront className="h-5 w-5 text-blue-600" />
+                            <CarFront className="h-5 w-5 text-primary" />
                             Booking Summary
                         </CardTitle>
                     </CardHeader>
@@ -450,7 +450,7 @@ export default function PaymentForm({
                 <Card className="rounded-2xl border-0 shadow-lg">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2">
-                            <Wallet className="h-5 w-5 text-blue-600" />
+                            <Wallet className="h-5 w-5 text-primary" />
                             Payment Method
                         </CardTitle>
                     </CardHeader>
@@ -479,8 +479,8 @@ export default function PaymentForm({
                                             disabled={processing}
                                             className={`rounded-xl border p-5 text-left transition-all duration-200 ${
                                                 method === item.value
-                                                    ? 'border-blue-500 bg-blue-50 shadow-md'
-                                                    : 'hover:border-blue-300 hover:bg-blue-50'
+                                                    ? 'border-primary bg-accent shadow-md'
+                                                    : 'hover:border-primary/40 hover:bg-accent/60'
                                             } ${
                                                 processing
                                                     ? 'cursor-not-allowed opacity-60'
@@ -507,18 +507,18 @@ export default function PaymentForm({
 
                             {/* Selected payment amount */}
                             {method && (
-                                <div className="flex items-center justify-between rounded-xl border border-blue-200 bg-blue-50 p-4">
+                                <div className="flex items-center justify-between rounded-xl border border-accent bg-accent p-4">
                                     <div>
-                                        <p className="text-sm text-blue-700">
+                                        <p className="text-sm text-primary">
                                             {paymentDescription}
                                         </p>
 
-                                        <p className="text-2xl font-bold text-blue-900">
+                                        <p className="text-2xl font-bold text-primary">
                                             ETB {formatETB(paymentAmount)}
                                         </p>
                                     </div>
 
-                                    <Wallet className="h-8 w-8 text-blue-600" />
+                                    <Wallet className="h-8 w-8 text-primary" />
                                 </div>
                             )}
 
@@ -551,11 +551,11 @@ export default function PaymentForm({
 
                             {/* Bank Transfer / Telebirr / CBE Birr */}
                             {showRefInput && (
-                                <div className="space-y-4 rounded-xl border-2 border-blue-200 bg-blue-50 p-4">
+                                <div className="space-y-4 rounded-xl border-2 border-accent bg-accent p-4">
                                     {/* Company account */}
                                     {COMPANY_ACCOUNTS[method] && (
-                                        <div className="rounded-lg border border-blue-300 bg-white p-3">
-                                            <p className="text-sm font-bold text-blue-900">
+                                        <div className="rounded-lg border border-primary/40 bg-white p-3">
+                                            <p className="text-sm font-bold text-primary">
                                                 Send Payment To
                                             </p>
 
@@ -578,7 +578,7 @@ export default function PaymentForm({
                                                 ))}
                                             </div>
 
-                                            <p className="mt-3 text-xs text-blue-700">
+                                            <p className="mt-3 text-xs text-primary">
                                                 Complete the payment first,
                                                 then enter the transaction
                                                 reference below. The payment
@@ -591,11 +591,11 @@ export default function PaymentForm({
                                     {/* Transaction reference */}
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-bold">
-                                            <Hash className="h-4 w-4 text-blue-600" />
+                                            <Hash className="h-4 w-4 text-primary" />
 
                                             Transaction Reference
 
-                                            <span className="rounded bg-blue-600 px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white">
+                                            <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white">
                                                 Required
                                             </span>
                                         </Label>
@@ -610,10 +610,10 @@ export default function PaymentForm({
                                                 )
                                             }
                                             disabled={processing}
-                                            className="border-blue-300 bg-white focus-visible:ring-blue-400"
+                                            className="border-primary/40 bg-white focus-visible:ring-primary/50"
                                         />
 
-                                        <p className="text-xs text-blue-700">
+                                        <p className="text-xs text-primary">
                                             Enter the receipt or transaction
                                             number exactly as shown in your{' '}
                                             {METHOD_LABELS[method]} app or
@@ -621,7 +621,7 @@ export default function PaymentForm({
                                         </p>
 
                                         {!transactionRef.trim() && (
-                                            <p className="text-xs font-medium text-blue-800">
+                                            <p className="text-xs font-medium text-primary">
                                                 Payment cannot be submitted
                                                 without the transaction
                                                 reference.

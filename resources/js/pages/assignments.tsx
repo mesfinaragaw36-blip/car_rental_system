@@ -48,7 +48,7 @@ interface Props {
 
 const STATUS_STYLES: Record<string, string> = {
     assigned: 'bg-amber-50/40 text-amber-700 border-amber-200',
-    accepted: 'bg-blue-50/60 text-blue-700 border-blue-200',
+    accepted: 'bg-accent/70 text-primary border-accent',
     rejected: 'bg-red-50/60 text-red-700 border-red-200',
     completed: 'bg-emerald-50/60 text-emerald-700 border-emerald-200',
 };
@@ -125,8 +125,8 @@ export default function Assignments({
                 <div className="grid gap-4 sm:grid-cols-3">
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50">
-                                <Clock className="h-5 w-5 text-purple-600" />
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent">
+                                <Clock className="h-5 w-5 text-primary" />
                             </div>
 
                             <div>
@@ -143,8 +143,8 @@ export default function Assignments({
 
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
-                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
-                                <Truck className="h-5 w-5 text-blue-600" />
+                            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent">
+                                <Truck className="h-5 w-5 text-primary" />
                             </div>
 
                             <div>
@@ -216,8 +216,8 @@ export default function Assignments({
                                         {/* Car Header */}
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
-                                                    <Car className="h-5 w-5 text-blue-700" />
+                                                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-accent">
+                                                    <Car className="h-5 w-5 text-primary" />
                                                 </div>
 
                                                 <div>

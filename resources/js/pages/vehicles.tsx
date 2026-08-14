@@ -148,7 +148,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                    {(role === 'admin' ||
                     (role === 'owner' && ownerVerificationStatus === 'approved')) && (
                     <Link href="/vehicles/create">
-                        <Button className="bg-blue-900 hover:bg-blue-950">
+                        <Button className="bg-primary hover:bg-primary/90">
                             <Plus className="mr-2 h-4 w-4" /> Add Cars
                         </Button>
                     </Link>
@@ -204,7 +204,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                             {(role === 'admin' ||
                             (role === 'owner' && ownerVerificationStatus === 'approved')) && (
                             <Link href="/vehicles/create">
-                                <Button className="bg-blue-900 hover:bg-blue-950">
+                                <Button className="bg-primary hover:bg-primary/90">
                                     <Plus className="mr-2 h-4 w-4" /> Add Car
                                 </Button>
                             </Link>
@@ -249,7 +249,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                                                     {vehicle.model}
                                                 </h3>
                                                 <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
-                                                    <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                                                    <Settings2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                                                     {vehicle.transmission}
                                                 </p>
                                                 {vehicle.average_rating !==
@@ -323,7 +323,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                         <div className="w-full space-y-4">
                         <div className="rounded-xl border border-slate-200 p-4 text-left">
                             <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                                <CalendarRange className="h-4 w-4 text-blue-600" />{' '}
+                                <CalendarRange className="h-4 w-4 text-primary" />{' '}
                                 Available Dates
                             </h3>
                             <p className="mt-1 text-xs text-slate-500">

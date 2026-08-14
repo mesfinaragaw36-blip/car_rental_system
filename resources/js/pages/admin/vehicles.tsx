@@ -48,7 +48,7 @@ interface FlashProps {
 const APPROVAL_STYLES: Record<string, string> = {
     approved: 'bg-green-100 text-green-800',
     rejected: 'bg-red-100 text-red-800',
-    pending: 'bg-yellow-100 text-yellow-800',
+    pending: 'bg-brand-soft text-brand',
 };
 
 export default function AdminVehicles({ vehicles, filters }: Props) {
@@ -119,7 +119,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                         </p>
                     </div>
                     <Link href="/vehicles/create">
-                        <Button className="bg-blue-900 hover:bg-blue-950">
+                        <Button className="bg-primary hover:bg-primary/90">
                             <Plus className="mr-2 h-4 w-4" /> Add Car
                         </Button>
                     </Link>
@@ -252,7 +252,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                         {v.approval_status === 'pending' && (
                                                             <span
                                                                 title="Awaiting admin approval"
-                                                                className="inline-flex items-center text-yellow-500"
+                                                                className="inline-flex items-center text-brand"
                                                             >
                                                                 <Clock className="h-3.5 w-3.5 animate-pulse" />
                                                             </span>

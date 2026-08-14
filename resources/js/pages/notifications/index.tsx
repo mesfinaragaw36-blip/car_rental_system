@@ -58,7 +58,7 @@ const TYPE_META: Record<
 > = {
     booking_locked: {
         icon: Lock,
-        tone: 'bg-blue-50 text-blue-600',
+        tone: 'bg-accent text-primary',
         label: 'Booking locked',
     },
     car_arrived: {
@@ -93,17 +93,17 @@ const TYPE_META: Record<
     },
     booking_paid: {
         icon: Wallet,
-        tone: 'bg-blue-50 text-blue-600',
+        tone: 'bg-accent text-primary',
         label: 'Payment received',
     },
     booking_picked_up: {
         icon: KeyRound,
-        tone: 'bg-indigo-50 text-indigo-600',
+        tone: 'bg-accent text-primary',
         label: 'Vehicle picked up',
     },
     booking_returned: {
         icon: Undo2,
-        tone: 'bg-violet-50 text-violet-600',
+        tone: 'bg-accent text-primary',
         label: 'Vehicle returned',
     },
     booking_completed: {
@@ -239,8 +239,8 @@ const markRead = (event: React.MouseEvent<HTMLButtonElement>) => {
                         {meta.label}
                     </span>
                     {unread && (
-                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-blue-600">
-                            <span className="h-1.5 w-1.5 rounded-full bg-blue-500" />
+                        <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-primary">
+                            <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                             New
                         </span>
                     )}

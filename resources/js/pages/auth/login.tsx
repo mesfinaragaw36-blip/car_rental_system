@@ -137,7 +137,7 @@ export default function Login({ status, canResetPassword }: Props) {
                             <TextLink
                                 href={register()}
                                 tabIndex={6}
-                                className="font-semibold text-accent no-underline hover:underline"
+                                className="font-semibold text-primary no-underline hover:underline"
                             >
                                 Create one free
                             </TextLink>

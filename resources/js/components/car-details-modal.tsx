@@ -83,7 +83,7 @@ function SpecTile({
 }) {
     return (
         <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-            <Icon className="h-4 w-4 text-blue-600" />
+            <Icon className="h-4 w-4 text-primary" />
             <p className="mt-2 text-xs text-slate-500">{label}</p>
             <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
                 {value}
@@ -257,7 +257,7 @@ export function CarDetailsModal({
 
                     {car.owner && (
                         <div className="mt-5 flex items-center gap-3 rounded-xl bg-slate-50 p-3">
-                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                                 {getInitials(car.owner.name)}
                             </div>
                             <div className="min-w-0">

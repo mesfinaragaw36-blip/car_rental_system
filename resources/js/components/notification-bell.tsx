@@ -89,7 +89,7 @@ export function NotificationBell() {
                                 </p>
                             </div>
                             {!notification.read_at && (
-                                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-blue-500" />
+                                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
                             )}
                         </DropdownMenuItem>
                     ))

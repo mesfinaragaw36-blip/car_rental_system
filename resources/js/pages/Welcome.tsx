@@ -322,8 +322,8 @@ export default function Welcome() {
 
                     <div className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 items-center lg:grid-cols-2 lg:gap-12">
                     <div className="py-12 text-center lg:py-0 lg:text-left">
-                        <div className="inline-flex animate-in items-center gap-2 rounded-full border border-accent/25 bg-accent/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-accent uppercase duration-700 fade-in slide-in-from-bottom-4">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
+                        <div className="inline-flex animate-in items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-primary uppercase duration-700 fade-in slide-in-from-bottom-4">
+                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
                             Available across Ethiopia
                         </div>
 
@@ -375,7 +375,7 @@ export default function Welcome() {
                                     key={point}
                                     className="flex items-center gap-1.5"
                                 >
-                                    <CheckCircle className="h-4 w-4 text-accent" />
+                                    <CheckCircle className="h-4 w-4 text-primary" />
                                     {point}
                                 </span>
                             ))}
@@ -428,7 +428,7 @@ export default function Welcome() {
                 <section id="features" className="scroll-mt-24 bg-white py-24">
                     <div className="mx-auto max-w-7xl px-6">
                         <Reveal className="mx-auto max-w-2xl text-center">
-                            <p className="text-[11px] font-semibold tracking-widest text-accent uppercase">
+                            <p className="text-[11px] font-semibold tracking-widest text-primary uppercase">
                                 Why Ethio Car Rental
                             </p>
                             <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -449,7 +449,7 @@ export default function Welcome() {
                                         className="h-full"
                                     >
                                         <div className="group h-full bg-white p-8 transition-colors duration-300 hover:bg-neutral-50">
-                                            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-accent/10 group-hover:text-accent">
+                                            <div className="mb-5 flex h-11 w-11 items-center justify-center rounded-xl bg-primary/5 text-primary transition-all duration-300 group-hover:scale-110 group-hover:bg-primary/10 group-hover:text-primary">
                                                 <Icon className="h-5 w-5" />
                                             </div>
                                             <h3 className="text-base font-bold tracking-tight">
@@ -470,7 +470,7 @@ export default function Welcome() {
                 <section id="fleet" className="scroll-mt-24 py-24">
                     <div className="mx-auto max-w-7xl px-6">
                         <Reveal className="mx-auto max-w-2xl text-center">
-                            <p className="text-[11px] font-semibold tracking-widest text-accent uppercase">
+                            <p className="text-[11px] font-semibold tracking-widest text-primary uppercase">
                                 Our fleet
                             </p>
                             <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
@@ -495,7 +495,7 @@ export default function Welcome() {
                 >
                     <div className="mx-auto max-w-6xl px-6">
                         <Reveal className="mx-auto max-w-2xl text-center">
-                            <p className="text-[11px] font-semibold tracking-widest text-accent uppercase">
+                            <p className="text-[11px] font-semibold tracking-widest text-primary uppercase">
                                 How it works
                             </p>
                             <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">

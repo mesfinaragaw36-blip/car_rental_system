@@ -116,12 +116,12 @@ interface Props {
 const STATUS_STYLES: Record<string, string> = {
     pending: 'bg-amber-50/40 text-amber-700 border-amber-200',
     confirmed: 'bg-amber-50/40 text-amber-700 border-amber-200',
-    approved: 'bg-blue-50/60 text-blue-700 border-blue-200',
+    approved: 'bg-accent/70 text-primary border-accent',
     rejected: 'bg-red-50/60 text-red-700 border-red-200',
-    deposit_paid: 'bg-blue-50/60 text-blue-700 border-blue-200',
+    deposit_paid: 'bg-accent/70 text-primary border-accent',
     paid: 'bg-emerald-50/60 text-emerald-700 border-emerald-200',
-    picked_up: 'bg-purple-50/60 text-purple-700 border-purple-200',
-    returned: 'bg-indigo-50/60 text-indigo-700 border-indigo-200',
+    picked_up: 'bg-accent/70 text-primary border-accent',
+    returned: 'bg-accent/70 text-primary border-accent',
     completed: 'bg-green-50/60 text-green-700 border-green-200',
     cancelled: 'bg-slate-50/60 text-slate-700 border-slate-200',
 };
@@ -132,9 +132,9 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
         <Clock className="h-5 w-5 text-amber-600" />
     ),
     'Deposit Paid': (
-        <CheckCircle className="h-5 w-5 text-blue-600" />
+        <CheckCircle className="h-5 w-5 text-primary" />
     ),
-    Active: <Car className="h-5 w-5 text-blue-600" />,
+    Active: <Car className="h-5 w-5 text-primary" />,
     Completed: (
         <CheckCheck className="h-5 w-5 text-emerald-600" />
     ),
@@ -269,7 +269,7 @@ export default function Bookings({
                                 Awaiting Deposit
                             </p>
 
-                            <p className="mt-1 text-3xl font-bold text-yellow-600">
+                            <p className="mt-1 text-3xl font-bold text-brand">
                                 {stats?.awaiting_deposit ?? 0}
                             </p>
                         </CardContent>
@@ -281,7 +281,7 @@ export default function Bookings({
                                 Deposit Paid
                             </p>
 
-                            <p className="mt-1 text-3xl font-bold text-blue-600">
+                            <p className="mt-1 text-3xl font-bold text-primary">
                                 {stats?.deposit_paid ?? 0}
                             </p>
                         </CardContent>
@@ -412,7 +412,7 @@ export default function Bookings({
 
                     <Button
                         onClick={applyFilters}
-                        className="rounded-xl bg-blue-600 px-6 hover:bg-blue-700"
+                        className="rounded-xl bg-primary px-6 hover:bg-primary/90"
                     >
                         <Search className="mr-2 h-4 w-4" />
                         Filter
@@ -590,7 +590,7 @@ export default function Bookings({
 
                                                 {/* Driver */}
                                                 {booking.need_driver && (
-                                                    <span className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">
+                                                    <span className="inline-flex items-center gap-1 rounded-full border border-accent bg-accent px-3 py-1 text-xs font-medium text-primary">
                                                         <User className="h-3 w-3" />
                                                         Driver requested
                                                     </span>
@@ -630,7 +630,7 @@ export default function Bookings({
                                                                     <div
                                                                         className={`h-3 w-3 rounded-full ${
                                                                             active
-                                                                                ? 'bg-blue-600'
+                                                                                ? 'bg-primary'
                                                                                 : 'bg-gray-300'
                                                                         }`}
                                                                     />

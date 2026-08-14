@@ -83,8 +83,8 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_STYLES: Record<string, string> = {
-    booking_deposit: 'bg-blue-50 text-blue-700 border-blue-200',
-    balance: 'bg-violet-50 text-violet-700 border-violet-200',
+    booking_deposit: 'bg-accent text-primary border-accent',
+    balance: 'bg-accent text-primary border-accent',
     security_deposit: 'bg-slate-100 text-slate-700 border-slate-200',
     extra_charge: 'bg-red-50 text-red-700 border-red-200',
 };
@@ -407,7 +407,7 @@ export default function Payments({
                                                     key={
                                                         payment.id
                                                     }
-                                                    className="border-b transition-all duration-200 last:border-0 hover:bg-blue-50/40"
+                                                    className="border-b transition-all duration-200 last:border-0 hover:bg-accent/50"
                                                 >
                                                     {/* Booking */}
                                                     <td className="px-6 py-4">
@@ -422,8 +422,8 @@ export default function Payments({
                                                     {/* Vehicle */}
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-2.5">
-                                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-50">
-                                                                <Car className="h-4 w-4 text-blue-600" />
+                                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
+                                                                <Car className="h-4 w-4 text-primary" />
                                                             </div>
 
                                                             <div>

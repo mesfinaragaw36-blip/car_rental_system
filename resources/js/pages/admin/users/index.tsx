@@ -158,11 +158,11 @@ function getVerificationIcon(user: UserData) {
 function getRoleClasses(role: string): string {
     switch (role) {
         case 'owner':
-            return 'border-blue-200 bg-blue-50 text-blue-700';
+            return 'border-accent bg-accent text-primary';
         case 'driver':
             return 'border-orange-200 bg-orange-50 text-orange-700';
         case 'admin':
-            return 'border-purple-200 bg-purple-50 text-purple-700';
+            return 'border-accent bg-accent text-primary';
         default:
             return 'border-slate-200 bg-slate-50 text-slate-600';
     }
@@ -196,7 +196,7 @@ function identityBadgeClass(status: string): string {
         case 'rejected':
             return 'bg-red-100 text-red-800';
         default:
-            return 'bg-yellow-100 text-yellow-800';
+            return 'bg-brand-soft text-brand';
     }
 }
 
@@ -265,10 +265,10 @@ export default function UsersIndex({ users, filters, stats }: Props) {
 
         <div className="space-y-6">
             {/* Header */}
-            <div className="rounded-3xl bg-gradient-to-r from-blue-900 via-blue-700 to-sky-600 p-8 text-white shadow-lg">
+            <div className="rounded-3xl bg-gradient-to-r from-primary via-[#1d4370] to-[#14294a] p-8 text-white shadow-lg">
                 <div className="flex items-center justify-between">
                     <div>
-                        <p className="text-sm font-medium text-blue-100">
+                        <p className="text-sm font-medium text-white/80">
                             Administration
                         </p>
 
@@ -276,7 +276,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                             Users
                         </h1>
 
-                        <p className="mt-2 max-w-xl text-sm text-blue-100">
+                        <p className="mt-2 max-w-xl text-sm text-white/80">
                             Manage user accounts, verification status, and
                             access.
                         </p>
@@ -302,7 +302,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                             </p>
                         </div>
 
-                        <div className="rounded-xl bg-gradient-to-br from-blue-900 to-sky-600 p-3 text-white shadow-sm">
+                        <div className="rounded-xl bg-gradient-to-br from-primary to-[#1d4370] p-3 text-white shadow-sm">
                             <Users className="h-5 w-5" />
                         </div>
                     </CardContent>
@@ -319,7 +319,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 </p>
                             </div>
 
-                            <div className="rounded-xl bg-blue-50 p-3 text-blue-600">
+                            <div className="rounded-xl bg-accent p-3 text-primary">
                                 <UserRound className="h-5 w-5" />
                             </div>
                         </CardContent>

@@ -121,8 +121,8 @@ function StatusBadge({
     const tones: Record<string, string> = {
         green: 'bg-green-100 text-green-700 ring-green-600/20',
         red: 'bg-red-100 text-red-700 ring-red-600/20',
-        yellow: 'bg-yellow-100 text-yellow-800 ring-yellow-600/20',
-        blue: 'bg-blue-100 text-blue-700 ring-blue-600/20',
+        yellow: 'bg-brand-soft text-brand ring-brand/20',
+        blue: 'bg-accent text-primary ring-primary/10',
         slate: 'bg-slate-100 text-slate-600 ring-slate-500/20',
     };
 
@@ -158,7 +158,7 @@ function SpecTile({
 }) {
     return (
         <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
-            <Icon className="h-4 w-4 text-blue-600" />
+            <Icon className="h-4 w-4 text-primary" />
             <p className="mt-2 text-xs text-slate-500">{label}</p>
             <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
                 {value}
@@ -183,7 +183,7 @@ function CarGallery({ images }: { images: CarImage[] }) {
                             className={cn(
                                 'h-14 w-20 shrink-0 overflow-hidden rounded-lg border-2 transition',
                                 index === activeImage
-                                    ? 'border-blue-600 shadow-sm'
+                                    ? 'border-primary shadow-sm'
                                     : 'border-transparent opacity-60 hover:opacity-100',
                             )}
                         >
@@ -249,7 +249,7 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                     ) : status === 'failed' ? (
                         <TriangleAlert className="mt-0.5 h-5 w-5 text-red-600" />
                     ) : (
-                        <Truck className="mt-0.5 h-5 w-5 text-yellow-600" />
+                        <Truck className="mt-0.5 h-5 w-5 text-brand" />
                     )}
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
@@ -355,7 +355,7 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                     {status === 'arrived' ? (
                         <PackageCheck className="mt-0.5 h-5 w-5 text-green-600" />
                     ) : (
-                        <KeyRound className="mt-0.5 h-5 w-5 text-yellow-600" />
+                        <KeyRound className="mt-0.5 h-5 w-5 text-brand" />
                     )}
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
@@ -458,11 +458,11 @@ function SnapshotDiff({
     );
 
     return (
-        <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-sm">
-            <p className="flex items-center gap-1.5 font-semibold text-blue-800">
+        <div className="rounded-lg border border-accent bg-accent p-3 text-sm">
+            <p className="flex items-center gap-1.5 font-semibold text-primary">
                 <Timer className="h-4 w-4" /> Diff vs pickup snapshot
             </p>
-            <div className="mt-2 grid gap-2 text-blue-900 sm:grid-cols-3">
+            <div className="mt-2 grid gap-2 text-primary sm:grid-cols-3">
                 <p>
                     Miles driven:{' '}
                     <span className="font-semibold">
@@ -495,7 +495,7 @@ function SnapshotDiff({
                 </ul>
             )}
             {newDamages.length === 0 && submitted.length === 0 && (
-                <p className="mt-2 text-blue-700">
+                <p className="mt-2 text-primary">
                     No new damages reported yet. Remember to record any damages
                     found during the return inspection.
                 </p>
@@ -893,9 +893,9 @@ function InspectionBadges({
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="flex items-center gap-1.5 font-semibold capitalize">
                             {inspection.type === 'pickup' ? (
-                                <ArrowDownToLine className="h-4 w-4 text-blue-600" />
+                                <ArrowDownToLine className="h-4 w-4 text-primary" />
                             ) : (
-                                <Gauge className="h-4 w-4 text-indigo-600" />
+                                <Gauge className="h-4 w-4 text-primary" />
                             )}
                             {inspection.type} inspection
                         </span>

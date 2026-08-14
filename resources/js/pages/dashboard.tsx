@@ -133,17 +133,17 @@ function StatCard({
 }
 
 const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
-    assigned: 'bg-yellow-100 text-yellow-800',
-    accepted: 'bg-blue-100 text-blue-800',
+    assigned: 'bg-brand-soft text-brand',
+    accepted: 'bg-accent text-primary',
 };
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-blue-100 text-blue-800',
-    paid: 'bg-green-100 text-green-800',
-    picked_up: 'bg-purple-100 text-purple-800',
-    completed: 'bg-gray-100 text-gray-800',
-    cancelled: 'bg-red-100 text-red-800',
+    pending: 'bg-brand-soft text-brand',
+    approved: 'bg-accent text-primary',
+    paid: 'bg-emerald-50 text-emerald-700',
+    picked_up: 'bg-accent text-primary',
+    completed: 'bg-muted text-muted-foreground',
+    cancelled: 'bg-red-50 text-red-700',
 };
 
 function formatMonth(ym: string): string {
@@ -241,20 +241,20 @@ function PieChart({
                 className="h-52 w-52 rounded-full"
                 style={{
                     background: `conic-gradient(
-                        #2563eb 0% ${activePercent}%,
-                        #22c55e ${activePercent}% 100%
+                        #1a365d 0% ${activePercent}%,
+                        #ff6b00 ${activePercent}% 100%
                     )`,
                 }}
             />
 
             <div className="mt-6 flex gap-6">
                 <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-blue-600"></span>
+                    <span className="h-3 w-3 rounded-full bg-primary"></span>
                     <span className="text-sm">Active ({active})</span>
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-green-500"></span>
+                    <span className="h-3 w-3 rounded-full bg-brand"></span>
                     <span className="text-sm">Completed ({completed})</span>
                 </div>
             </div>
@@ -295,7 +295,7 @@ export default function Dashboard({
                                     <h1 className="text-2xl font-bold tracking-tight">
                                         Admin Dashboard
                                     </h1>
-                                    <p className="mt-1 text-blue-200">
+                                    <p className="mt-1 text-white/80">
                                         Platform overview at a glance.
                                     </p>
                                 </div>
@@ -314,7 +314,7 @@ export default function Dashboard({
                                         icon={
                                             <CircleDollarSign className="h-4 w-4" />
                                         }
-                                        accent="text-orange-600"
+                                        accent="text-brand"
                                     />
                                     <StatCard
                                         title="Active Bookings"
@@ -396,36 +396,36 @@ export default function Dashboard({
                                                     return (
                                                         <div className="space-y-6">
                                                             <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                                                                <div className="rounded-lg bg-blue-50/80 p-3">
-                                                                    <p className="text-[11px] font-medium text-blue-600">
+                                                                <div className="rounded-lg bg-accent p-3">
+                                                                    <p className="text-[11px] font-medium text-primary">
                                                                         Total
                                                                         Revenue
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-blue-900">
+                                                                    <p className="text-lg font-bold text-primary">
                                                                         ETB{' '}
                                                                         {
                                                                             s.total_revenue
                                                                         }
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-orange-50/80 p-3">
-                                                                    <p className="text-[11px] font-medium text-orange-600">
+                                                                <div className="rounded-lg bg-brand-soft p-3">
+                                                                    <p className="text-[11px] font-medium text-brand">
                                                                         Total
                                                                         Commission
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-orange-900">
+                                                                    <p className="text-lg font-bold text-brand">
                                                                         ETB{' '}
                                                                         {
                                                                             s.total_commission
                                                                         }
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-slate-50/80 p-3">
-                                                                    <p className="text-[11px] font-medium text-slate-600">
+                                                                <div className="rounded-lg bg-muted p-3">
+                                                                    <p className="text-[11px] font-medium text-muted-foreground">
                                                                         Monthly
                                                                         Avg
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-slate-900">
+                                                                    <p className="text-lg font-bold text-foreground">
                                                                         ETB{' '}
                                                                         {avgMonthly.toFixed(
                                                                             2,
@@ -443,8 +443,8 @@ export default function Dashboard({
                                                                         )}
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-purple-50/80 p-3">
-                                                                    <p className="text-[11px] font-medium text-purple-600">
+                                                                <div className="rounded-lg bg-accent p-3">
+                                                                    <p className="text-[11px] font-medium text-primary">
                                                                         MoM
                                                                         Growth
                                                                     </p>
@@ -522,7 +522,7 @@ export default function Dashboard({
                                                 <span className="text-sm text-muted-foreground">
                                                     Awaiting Deposit
                                                 </span>
-                                                <span className="text-lg font-bold text-amber-600">
+                                                <span className="text-lg font-bold text-brand">
                                                     {s.pending_bookings}
                                                 </span>
                                             </div>
@@ -538,7 +538,7 @@ export default function Dashboard({
                                                 <span className="text-sm text-muted-foreground">
                                                     Commission Rate
                                                 </span>
-                                                <span className="text-lg font-bold text-orange-600">
+                                                <span className="text-lg font-bold text-brand">
                                                     {s.commission_rate}%
                                                 </span>
                                             </div>
@@ -559,7 +559,7 @@ export default function Dashboard({
                                                 <span className="text-sm text-muted-foreground group-hover:text-foreground">
                                                     Pending Drivers
                                                 </span>
-                                                <span className="text-lg font-bold text-amber-600">
+                                                <span className="text-lg font-bold text-brand">
                                                     {s.pending_drivers}
                                                 </span>
                                             </Link>
@@ -570,7 +570,7 @@ export default function Dashboard({
                                                 <span className="text-sm text-muted-foreground group-hover:text-foreground">
                                                     Pending Owners
                                                 </span>
-                                                <span className="text-lg font-bold text-amber-600">
+                                                <span className="text-lg font-bold text-brand">
                                                     {s.pending_owners}
                                                 </span>
                                             </Link>
@@ -608,11 +608,11 @@ export default function Dashboard({
 
                         return (
                             <>
-                                <div className="rounded-2xl bg-gradient-to-br from-blue-900 via-blue-800 to-blue-950 p-8 text-white">
+                                <div className="rounded-2xl bg-gradient-to-br from-primary via-[#1d4370] to-[#14294a] p-8 text-white">
                                     <h1 className="text-2xl font-bold tracking-tight">
                                         Welcome back!
                                     </h1>
-                                    <p className="mt-1 text-blue-200">
+                                    <p className="mt-1 text-white/80">
                                         Here&apos;s what&apos;s happening with
                                         your fleet today.
                                     </p>
@@ -637,13 +637,13 @@ export default function Dashboard({
                                         title="Rented"
                                         value={s.rented_vehicles}
                                         icon={<BookOpen className="h-4 w-4" />}
-                                        accent="text-blue-600"
+                                        accent="text-primary"
                                     />
                                     <StatCard
                                         title="Pending Approval"
                                         value={s.pending_vehicles}
                                         icon={<Clock className="h-4 w-4" />}
-                                        accent="text-yellow-600"
+                                        accent="text-brand"
                                     />
                                 </div>
 
@@ -659,7 +659,7 @@ export default function Dashboard({
                                         value={s.pending_bookings}
                                         icon={<Clock className="h-4 w-4" />}
                                         href="/bookings"
-                                        accent="text-yellow-600"
+                                        accent="text-brand"
                                     />
                                     <StatCard
                                         title="Total Earnings"
@@ -704,8 +704,8 @@ export default function Dashboard({
                                                                         fill={
                                                                             [
                                                                                 '#22C55E',
-                                                                                '#2563EB',
-                                                                                '#F59E0B',
+                                                                                '#1A365D',
+                                                                                '#FF6B00',
                                                                                 '#EF4444',
                                                                             ][
                                                                                 index
@@ -802,7 +802,7 @@ export default function Dashboard({
                                         <CardTitle>Recent Bookings</CardTitle>
                                         <Link
                                             href="/bookings"
-                                            className="text-xs font-medium text-blue-600 hover:underline"
+                                            className="text-xs font-medium text-primary hover:underline"
                                         >
                                             View all →
                                         </Link>
@@ -834,7 +834,7 @@ export default function Dashboard({
                                                             </p>
                                                         </div>
                                                         <span
-                                                            className={`rounded-full px-3 py-1 text-xs font-medium ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-gray-100 text-gray-800'}`}
+                                                            className={`rounded-full px-3 py-1 text-xs font-medium ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-muted text-muted-foreground'}`}
                                                         >
                                                             {b.status}
                                                         </span>
@@ -860,7 +860,7 @@ export default function Dashboard({
                                         value={s.pending_assignments}
                                         icon={<Clock className="h-4 w-4" />}
                                         href="/assignments"
-                                        accent="text-yellow-600"
+                                        accent="text-brand"
                                     />
                                     <StatCard
                                         title="Active Trips"
@@ -883,7 +883,7 @@ export default function Dashboard({
                                         </CardTitle>
                                         <Link
                                             href="/assignments"
-                                            className="text-xs text-blue-600 hover:underline"
+                                            className="text-xs text-primary hover:underline"
                                         >
                                             View all →
                                         </Link>
@@ -933,7 +933,7 @@ export default function Dashboard({
                                                                     </p>
                                                                 </div>
                                                                 <span
-                                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${ASSIGNMENT_STATUS_STYLES[assignment.status] ?? 'bg-gray-100 text-gray-800'}`}
+                                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${ASSIGNMENT_STATUS_STYLES[assignment.status] ?? 'bg-muted text-muted-foreground'}`}
                                                                 >
                                                                     {
                                                                         assignment.status

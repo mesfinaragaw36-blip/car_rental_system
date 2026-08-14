@@ -94,7 +94,7 @@ const PAYMENT_TYPE_LABELS: Record<string, string> = {
 };
 
 const STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
+    pending: 'bg-brand-soft text-brand',
     paid: 'bg-green-100 text-green-800',
     processed: 'bg-green-100 text-green-800',
     failed: 'bg-red-100 text-red-800',
@@ -414,7 +414,7 @@ export default function AdminTransactions({
                                                     className="border-b last:border-0"
                                                 >
                                                     <td className="py-3">
-                                                        <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-800">
+                                                        <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-primary">
                                                             {
                                                                 TYPE_LABELS[
                                                                     transaction
@@ -477,7 +477,7 @@ export default function AdminTransactions({
                                                             transaction,
                                                         ) && (
                                                             <div className="mt-1">
-                                                                <span className="text-xs font-medium text-yellow-700">
+                                                                <span className="text-xs font-medium text-brand">
                                                                     Awaiting
                                                                     cash
                                                                     confirmation
@@ -637,7 +637,7 @@ export default function AdminTransactions({
                                     />
 
                                     {isPendingCashPayment(selected) && (
-                                        <div className="rounded-lg border border-yellow-300 bg-yellow-50 p-3 text-sm text-yellow-800">
+                                        <div className="rounded-lg border border-brand/30 bg-brand-soft p-3 text-sm text-brand">
                                             <p className="font-semibold">
                                                 Cash payment awaiting
                                                 confirmation

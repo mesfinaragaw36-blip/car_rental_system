@@ -198,7 +198,7 @@ export default function Register({ passwordRules }: Props) {
                             <TextLink
                                 href={login()}
                                 tabIndex={8}
-                                className="font-semibold text-accent no-underline hover:underline"
+                                className="font-semibold text-primary no-underline hover:underline"
                             >
                                 Sign in
                             </TextLink>

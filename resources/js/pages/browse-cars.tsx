@@ -142,7 +142,7 @@ export default function BrowseCars({
                         size="lg"
                         className={
                             activeFilterCount > 0
-                                ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                ? 'bg-primary text-white hover:bg-primary/90'
                                 : undefined
                         }
                         onClick={() => setFiltersOpen((open) => !open)}
@@ -150,7 +150,7 @@ export default function BrowseCars({
                         <SlidersHorizontal className="mr-2 h-4 w-4" />
                         Filters
                         {activeFilterCount > 0 && (
-                            <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-blue-700">
+                            <span className="ml-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-white px-1.5 text-xs font-semibold text-primary">
                                 {activeFilterCount}
                             </span>
                         )}
@@ -256,7 +256,7 @@ export default function BrowseCars({
 
                         <div className="flex gap-2">
                             <Button
-                                className="bg-blue-600 text-white hover:bg-blue-700"
+                                className="bg-primary text-white hover:bg-primary/90"
                                 onClick={() => {
                                     applyFilters();
                                     setFiltersOpen(false);
@@ -316,7 +316,7 @@ export default function BrowseCars({
                                                     {car.brand} {car.model}
                                                 </h3>
                                                 <p className="mt-0.5 flex items-center gap-1.5 text-sm text-slate-500">
-                                                    <Settings2 className="h-3.5 w-3.5 shrink-0 text-blue-600" />
+                                                    <Settings2 className="h-3.5 w-3.5 shrink-0 text-primary" />
                                                     {car.transmission}
                                                 </p>
                                                 {car.average_rating !==
@@ -366,7 +366,7 @@ export default function BrowseCars({
                             </Button>
                             <Button
                                 asChild
-                                className="flex-1 bg-blue-600 text-white hover:bg-blue-700"
+                                className="flex-1 bg-primary text-white hover:bg-primary/90"
                             >
                                 <Link
                                     href={

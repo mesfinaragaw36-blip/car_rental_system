@@ -98,7 +98,7 @@ export default function VehicleDocuments({ documents = [] }: Props) {
                                                         : document.verification_status ===
                                                             'rejected'
                                                           ? 'bg-rose-100 text-rose-800'
-                                                          : 'bg-yellow-100 text-yellow-800'
+                                                          : 'bg-brand-soft text-brand'
                                                 }`}
                                             >
                                                 {document.verification_status}

@@ -35,7 +35,7 @@ export default function AuthSimpleLayout({
                 />
 
                 <div className="relative z-10 flex flex-col items-center text-center">
-                    <span className="inline-flex items-center gap-2 rounded-full border border-accent/25 bg-accent/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-accent uppercase">
+                    <span className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-primary uppercase">
                         <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-accent" />
                         Available across Ethiopia
                     </span>
@@ -68,7 +68,7 @@ export default function AuthSimpleLayout({
                                 key={point}
                                 className="flex items-center gap-1.5"
                             >
-                                <CheckCircle className="h-4 w-4 text-accent" />
+                                <CheckCircle className="h-4 w-4 text-primary" />
                                 {point}
                             </span>
                         ))}

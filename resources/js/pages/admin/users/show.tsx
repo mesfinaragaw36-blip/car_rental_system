@@ -93,7 +93,7 @@ interface FlashProps {
 function roleBadgeClass(role: string): string {
     switch (role) {
         case 'owner':
-            return 'bg-blue-100 text-blue-800';
+            return 'bg-accent text-primary';
         case 'driver':
         return 'bg-orange-100 text-orange-800';
         default:
@@ -119,7 +119,7 @@ function verificationBadgeClass(status: string): string {
         case 'rejected':
             return 'bg-red-100 text-red-800';
         default:
-            return 'bg-yellow-100 text-yellow-800';
+            return 'bg-brand-soft text-brand';
     }
 }
 function DocumentLink({ path, label }: { path: string; label: string }) {

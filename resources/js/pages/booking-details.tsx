@@ -143,14 +143,14 @@ interface Props {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-yellow-100 text-yellow-800',
-    confirmed: 'bg-yellow-100 text-yellow-800',
-    approved: 'bg-blue-100 text-blue-800',
+    pending: 'bg-brand-soft text-brand',
+    confirmed: 'bg-brand-soft text-brand',
+    approved: 'bg-accent text-primary',
     rejected: 'bg-red-100 text-red-800',
-    deposit_paid: 'bg-blue-100 text-blue-800',
+    deposit_paid: 'bg-accent text-primary',
     paid: 'bg-green-100 text-green-800',
-    picked_up: 'bg-purple-100 text-purple-800',
-    returned: 'bg-indigo-100 text-indigo-800',
+    picked_up: 'bg-accent text-primary',
+    returned: 'bg-accent text-primary',
     completed: 'bg-green-100 text-green-800',
     cancelled: 'bg-gray-100 text-gray-800',
 };
@@ -313,7 +313,7 @@ return;
                                                 : booking.car_delivery_status ===
                                                     'failed'
                                                   ? 'bg-red-100 text-red-700'
-                                                  : 'bg-yellow-100 text-yellow-700'
+                                                  : 'bg-brand-soft text-brand'
                                         }`}
                                     >
                                         {booking.car_delivery_status.replace(
@@ -693,12 +693,12 @@ return;
                                     )}
 
                                     {booking.payout && (
-                                        <div className="rounded-lg border border-blue-100 bg-blue-50 p-3 text-xs">
-                                            <p className="font-semibold text-blue-800">
+                                        <div className="rounded-lg border border-accent bg-accent p-3 text-xs">
+                                            <p className="font-semibold text-primary">
                                                 Owner payout ·{' '}
                                                 {booking.payout.status}
                                             </p>
-                                            <p className="text-blue-700">
+                                            <p className="text-primary">
                                                 Gross ETB{' '}
                                                 {booking.payout.gross_amount} ·
                                                 Commission ETB{' '}
@@ -825,9 +825,9 @@ return;
                                     <div className="flex flex-wrap items-center justify-between gap-2">
                                         <span className="flex items-center gap-2 font-semibold capitalize">
                                             {inspection.type === 'pickup' ? (
-                                                <ArrowDownToLine className="h-4 w-4 text-blue-600" />
+                                                <ArrowDownToLine className="h-4 w-4 text-primary" />
                                             ) : (
-                                                <Gauge className="h-4 w-4 text-indigo-600" />
+                                                <Gauge className="h-4 w-4 text-primary" />
                                             )}
                                             {inspection.type} inspection
                                         </span>
@@ -840,7 +840,7 @@ return;
                                                         : inspection.status ===
                                                             'issues_found'
                                                           ? 'bg-red-100 text-red-700'
-                                                          : 'bg-yellow-100 text-yellow-800'
+                                                          : 'bg-brand-soft text-brand'
                                                 }`}
                                             >
                                                 {inspection.status ===
@@ -1295,11 +1295,11 @@ return;
                     {role === 'customer' &&
                         booking.status === 'deposit_paid' &&
                         !booking.pickup_inspection_approved && (
-                            <div className="w-full rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">
+                            <div className="w-full rounded-lg border border-accent bg-accent p-4 text-sm text-primary">
                                 <p className="font-medium">
                                     Your vehicle is being prepared
                                 </p>
-                                <p className="mt-1 text-blue-700">
+                                <p className="mt-1 text-primary">
                                     Once the pre-rental inspection passes and
                                     the car is ready, you will be notified to
                                     pay the remaining balance and the refundable
