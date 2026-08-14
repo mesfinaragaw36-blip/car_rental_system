@@ -288,25 +288,6 @@ export default function PaymentForm({
                     </div>
                 )}
 
-                {/* Payment confirmation notice */}
-                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
-                    <div className="flex items-start gap-3">
-                        <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
-
-                        <div>
-                            <p className="font-semibold text-emerald-900">
-                                Payment applied instantly
-                            </p>
-
-                            <p className="mt-1 text-sm text-emerald-800">
-                                Once you submit your payment, it is recorded
-                                as <strong>Paid</strong> and the vehicle moves
-                                to the pickup inspection queue automatically.
-                            </p>
-                        </div>
-                    </div>
-                </div>
-
                 {/* Booking Summary */}
                 <Card className="rounded-2xl border-0 shadow-lg">
                     <CardHeader>

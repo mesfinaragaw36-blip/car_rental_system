@@ -27,6 +27,7 @@ import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -1357,15 +1358,15 @@ function InspectionCard({
         booking.status === 'paid';
 
     return (
-        <Card
+        <GlareCard
             className={cn(
-                'w-full cursor-pointer gap-2 overflow-hidden py-0 transition-shadow hover:shadow-md',
+                'w-full cursor-pointer',
                 active && 'ring-2 ring-primary',
             )}
             onClick={onSelect}
         >
-            <div className="w-full p-2">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+            <div className="w-full p-2.5">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
                     {image ? (
                         <img
                             src={`/storage/${image}`}
@@ -1391,7 +1392,7 @@ function InspectionCard({
                     )}
                 </div>
 
-                <div className="mt-2 flex items-start justify-between gap-2 px-0.5 pb-0.5">
+                <div className="mt-3 flex items-start justify-between gap-3 px-1 pb-1">
                     <div className="min-w-0">
                         <h3 className="truncate text-xs font-bold text-slate-900">
                             {car.brand} {car.model}
@@ -1413,7 +1414,7 @@ function InspectionCard({
                     </div>
                 </div>
             </div>
-        </Card>
+        </GlareCard>
     );
 }
 
