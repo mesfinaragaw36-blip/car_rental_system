@@ -37,7 +37,6 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'vehicles.documents': ['/admin/vehicle-documents'],
     'users.view': ['/admin/users'],
     'staff.view': ['/admin/staff'],
-    'drivers.view': ['/admin/drivers'],
     'payments.view': ['/admin/transactions'],
     'disputes.view': ['/disputes'],
     'roles.view': ['/admin/roles'],
@@ -72,7 +71,7 @@ function getNavItems(
 
         if (allowedRoutes.has('/admin/vehicles')) {
             items.push({
-                title: 'Vehicles',
+                title: 'Cars',
                 href: '/admin/vehicles',
                 icon: Car,
             });
@@ -95,14 +94,6 @@ function getNavItems(
                 title: 'Transactions',
                 href: '/admin/transactions',
                 icon: ReceiptText,
-            });
-        }
-
-        if (allowedRoutes.has('/admin/drivers')) {
-            items.push({
-                title: 'Drivers',
-                href: '/admin/drivers',
-                icon: UserCog,
             });
         }
 
@@ -166,7 +157,7 @@ function getNavItems(
                     href: '/admin/car-types/type-names',
                     icon: Settings,
                 },
-                { title: 'Vehicles', href: '/admin/vehicles', icon: Car },
+                { title: 'Cars', href: '/admin/vehicles', icon: Car },
                 { title: 'Browse Cars', href: '/browse-cars', icon: Search },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
                 {
@@ -180,7 +171,6 @@ function getNavItems(
                     icon: ReceiptText,
                 },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
-                { title: 'Drivers', href: '/admin/drivers', icon: UserCog },
                 { title: 'Disputes', href: '/disputes', icon: Wrench },
                 {
                     title: 'Roles & Permissions',
@@ -195,7 +185,7 @@ function getNavItems(
         case 'owner':
             return [
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-                { title: 'My Vehicles', href: '/vehicles', icon: Car },
+                { title: 'My Cars', href: '/vehicles', icon: Car },
                 { title: 'Bookings', href: '/bookings', icon: BookOpen },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 {
@@ -217,7 +207,6 @@ function getNavItems(
 
         default: // customer
             return [
-                { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
                 { title: 'Browse Cars', href: '/browse-cars', icon: Search },
                 { title: 'My Bookings', href: '/bookings', icon: BookOpen },
                 {

@@ -212,7 +212,16 @@ class DashboardStatisticsTest extends TestCase
 
     // ─── Customer ─────────────────────────────────────────────────────────────
 
-    public function test_customer_sees_correct_active_booking_count(): void
+    public function test_customer_is_redirected_to_browse_cars_instead_of_dashboard(): void
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        $response = $this->actingAs($customer)->get(route('dashboard'));
+
+        $response->assertRedirect(route('cars.index'));
+    }
+
+    public function test_customer_with_active_bookings_is_still_redirected_to_browse_cars(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -220,16 +229,13 @@ class DashboardStatisticsTest extends TestCase
 
         $this->createBooking($owner, $customer, $car, ['status' => 'confirmed']);
         $this->createBooking($owner, $customer, $car, ['status' => 'deposit_paid']);
-        $this->createBooking($owner, $customer, $car, ['status' => 'completed']);
 
         $response = $this->actingAs($customer)->get(route('dashboard'));
 
-        $response->assertInertia(
-            fn ($page) => $page->where('stats.active_bookings', 2)
-        );
+        $response->assertRedirect(route('cars.index'));
     }
 
-    public function test_customer_sees_correct_past_booking_count(): void
+    public function test_customer_with_past_bookings_is_still_redirected_to_browse_cars(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -237,16 +243,13 @@ class DashboardStatisticsTest extends TestCase
 
         $this->createBooking($owner, $customer, $car, ['status' => 'completed']);
         $this->createBooking($owner, $customer, $car, ['status' => 'returned']);
-        $this->createBooking($owner, $customer, $car, ['status' => 'pending']);
 
         $response = $this->actingAs($customer)->get(route('dashboard'));
 
-        $response->assertInertia(
-            fn ($page) => $page->where('stats.past_bookings', 2)
-        );
+        $response->assertRedirect(route('cars.index'));
     }
 
-    public function test_customer_sees_upcoming_returns_sorted_by_date(): void
+    public function test_customer_with_upcoming_returns_is_still_redirected_to_browse_cars(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -256,39 +259,10 @@ class DashboardStatisticsTest extends TestCase
             'status' => 'deposit_paid',
             'return_date' => now()->addDays(10)->toDateString(),
         ]);
-        $this->createBooking($owner, $customer, $car, [
-            'status' => 'deposit_paid',
-            'return_date' => now()->addDays(3)->toDateString(),
-        ]);
 
         $response = $this->actingAs($customer)->get(route('dashboard'));
 
-        $response->assertInertia(function ($page) {
-            $returns = $page->toArray()['props']['stats']['upcoming_returns'];
-            $this->assertCount(2, $returns);
-            $this->assertLessThan($returns[1]['return_date'], $returns[0]['return_date']);
-        });
-    }
-
-    public function test_customer_upcoming_returns_limited_to_five(): void
-    {
-        $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
-        $car = $this->createCar($owner);
-
-        for ($i = 1; $i <= 7; $i++) {
-            $this->createBooking($owner, $customer, $car, [
-                'status' => 'deposit_paid',
-                'return_date' => now()->addDays($i + 1)->toDateString(),
-            ]);
-        }
-
-        $response = $this->actingAs($customer)->get(route('dashboard'));
-
-        $response->assertInertia(function ($page) {
-            $returns = $page->toArray()['props']['stats']['upcoming_returns'];
-            $this->assertCount(5, $returns);
-        });
+        $response->assertRedirect(route('cars.index'));
     }
 
     // ─── Driver ───────────────────────────────────────────────────────────────

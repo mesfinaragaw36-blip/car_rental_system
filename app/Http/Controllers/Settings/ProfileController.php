@@ -103,6 +103,10 @@ class ProfileController extends Controller
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
+        if ($user->role === 'owner') {
+            return to_route('vehicles.index');
+        }
+
         return to_route('profile.edit');
     }
 

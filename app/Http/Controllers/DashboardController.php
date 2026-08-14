@@ -9,13 +9,14 @@ use App\Models\DriverProfile;
 use App\Models\OwnerProfile;
 use App\Models\Payment;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(): Response|RedirectResponse
     {
         $user = auth()->user();
 
@@ -23,10 +24,13 @@ class DashboardController extends Controller
             return $this->driverDashboard();
         }
 
+        if ($user->role === 'customer') {
+            return to_route('cars.index');
+        }
+
         return match ($user->role) {
             'admin' => $this->adminDashboard(),
             'owner' => $this->ownerDashboard(),
-            default => $this->customerDashboard(),
         };
     }
 
@@ -131,79 +135,65 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function customerDashboard(): Response
+    private function driverDashboard(): Response
     {
-        $customerId = auth()->id();
+        $driverId = auth()->id();
+
+        $recentAssignments = BookingDriver::with([
+            'booking.customer',
+            'booking.car',
+        ])
+            ->where('driver_id', $driverId)
+            ->whereIn('status', [
+                BookingDriver::STATUS_ASSIGNED,
+                BookingDriver::STATUS_ACCEPTED,
+            ])
+            ->latest('assigned_at')
+            ->get()
+            ->map(fn (BookingDriver $assignment) => [
+                'id' => $assignment->id,
+                'status' => $assignment->status,
+                'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
+
+                'booking' => [
+                    'id' => $assignment->booking->id,
+                    'pickup_date' => $assignment->booking->pickup_date->toDateString(),
+                    'return_date' => $assignment->booking->return_date->toDateString(),
+                    'pickup_location' => $assignment->booking->pickup_location,
+                    'return_location' => $assignment->booking->return_location,
+                ],
+
+                'customer' => [
+                    'name' => $assignment->booking->customer->name,
+                    'phone' => $assignment->booking->customer->phone,
+                ],
+
+                'car' => [
+                    'brand' => $assignment->booking->car->brand,
+                    'model' => $assignment->booking->car->model,
+                    'year' => $assignment->booking->car->year,
+                    'plate_number' => $assignment->booking->car->plate_number,
+                ],
+            ]);
 
         return Inertia::render('dashboard', [
-            'role' => 'customer',
+            'role' => 'driver',
+
             'stats' => [
-                'active_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['confirmed', 'deposit_paid', 'paid', 'picked_up'])->count(),
-                'past_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['returned', 'completed'])->count(),
-                'upcoming_returns' => Booking::with('car:id,brand,model')->where('customer_id', $customerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->where('return_date', '>=', now()->toDateString())->orderBy('return_date')->limit(5)->get()->map(fn (Booking $booking) => [
-                    'id' => $booking->id,
-                    'vehicle' => $booking->car->brand.' '.$booking->car->model,
-                    'return_date' => $booking->return_date->toDateString(),
-                ]),
+                'pending_assignments' => BookingDriver::where('driver_id', $driverId)
+                    ->where('status', BookingDriver::STATUS_ASSIGNED)
+                    ->count(),
+
+                'active_trips' => BookingDriver::where('driver_id', $driverId)
+                    ->where('status', BookingDriver::STATUS_ACCEPTED)
+                    ->count(),
+
+                'completed_trips' => BookingDriver::where('driver_id', $driverId)
+                    ->where('status', BookingDriver::STATUS_COMPLETED)
+                    ->count(),
             ],
+
+            'recentAssignments' => $recentAssignments,
         ]);
     }
-
-   private function driverDashboard(): Response
-{
-    $driverId = auth()->id();
-
-    $recentAssignments = BookingDriver::with([
-        'booking.customer',
-        'booking.car',
-    ])
-        ->where('driver_id', $driverId)
-        ->whereIn('status', [
-            BookingDriver::STATUS_ACCEPTED,
-            BookingDriver::STATUS_COMPLETED,
-        ])
-        ->latest('assigned_at')
-        ->get()
-        ->map(fn (BookingDriver $assignment) => [
-            'id' => $assignment->id,
-            'status' => $assignment->status,
-            'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
-
-            'booking' => [
-                'id' => $assignment->booking->id,
-                'pickup_date' => $assignment->booking->pickup_date->toDateString(),
-                'return_date' => $assignment->booking->return_date->toDateString(),
-                'pickup_location' => $assignment->booking->pickup_location,
-                'return_location' => $assignment->booking->return_location,
-            ],
-
-            'customer' => [
-                'name' => $assignment->booking->customer->name,
-                'phone' => $assignment->booking->customer->phone,
-            ],
-
-            'car' => [
-                'brand' => $assignment->booking->car->brand,
-                'model' => $assignment->booking->car->model,
-                'year' => $assignment->booking->car->year,
-                'plate_number' => $assignment->booking->car->plate_number,
-            ],
-        ]);
-
-    return Inertia::render('dashboard', [
-        'role' => 'driver',
-
-        'stats' => [
-            'active_assignments' => BookingDriver::where('driver_id', $driverId)
-                ->where('status', BookingDriver::STATUS_ACCEPTED)
-                ->count(),
-
-            'completed_trips' => BookingDriver::where('driver_id', $driverId)
-                ->where('status', BookingDriver::STATUS_COMPLETED)
-                ->count(),
-        ],
-
-        'recentAssignments' => $recentAssignments,
-    ]);
-}
 }

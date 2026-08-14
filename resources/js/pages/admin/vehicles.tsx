@@ -77,7 +77,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
 
     function handleReject(id: number) {
         const reason = prompt(
-            'Please enter the reason for vehicle rejection:',
+            'Please enter the reason for Car rejection:',
         );
 
         if (reason && reason.trim() !== '') {
@@ -90,7 +90,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
     }
 
     function handleDelete(id: number) {
-        if (confirm('Are you sure you want to delete this vehicle? This action cannot be undone.')) {
+        if (confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
             router.delete(`/admin/vehicles/${id}`, { preserveScroll: true });
         }
     }
@@ -107,20 +107,20 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
 
     return (
         <>
-            <Head title="Vehicles" />
+            <Head title="Cars" />
 
             <div className="space-y-6 p-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">Vehicles</h1>
+                        <h1 className="text-3xl font-bold">Cars</h1>
                         <p className="mt-2 text-muted-foreground">
-                            Manage all vehicles in one page, including owner
+                            Manage all cars in one page, including owner
                             listings and admin approvals.
                         </p>
                     </div>
                     <Link href="/vehicles/create">
                         <Button className="bg-blue-900 hover:bg-blue-950">
-                            <Plus className="mr-2 h-4 w-4" /> Add Vehicle
+                            <Plus className="mr-2 h-4 w-4" /> Add Car
                         </Button>
                     </Link>
                 </div>
@@ -173,12 +173,12 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                 {/* Table */}
                 <Card>
                     <CardHeader>
-                        <CardTitle>All Vehicles</CardTitle>
+                        <CardTitle>All Cars</CardTitle>
                     </CardHeader>
                     <CardContent>
                         {vehicles.data.length === 0 ? (
                             <p className="text-muted-foreground">
-                                No vehicles found.
+                                No cars found.
                             </p>
                         ) : (
                             <div className="overflow-x-auto">
@@ -186,7 +186,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                     <thead>
                                         <tr className="border-b text-left text-muted-foreground">
                                             <th className="pb-3 font-medium">
-                                                Vehicle
+                                                Cars
                                             </th>
                                             <th className="pb-3 font-medium">
                                                 Plate
@@ -293,7 +293,7 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                          <Button
                                                              size="sm"
                                                              variant="outline"
-                                                             title="Delete vehicle"
+                                                             title="Delete Car"
                                                              className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
                                                              onClick={() => handleDelete(v.id)}
                                                          >
@@ -342,6 +342,6 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
 AdminVehicles.layout = {
     breadcrumbs: [
         { title: 'Dashboard', href: '/admin/dashboard' },
-        { title: 'Vehicles', href: '/admin/vehicles' },
+        { title: 'Cars', href: '/admin/vehicles' },
     ],
 };
