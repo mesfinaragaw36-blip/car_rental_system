@@ -21,6 +21,7 @@ class BrowseCarController extends Controller
 
     public function index(Request $request): Response
     {
+        $user = auth()->user();
         $pickupDate = $request->pickup_date;
         $returnDate = $request->return_date;
         $cars = Car::with(['images', 'owner', 'carTypeName'])
@@ -56,7 +57,8 @@ class BrowseCarController extends Controller
         return Inertia::render('browse-cars', [
             'cars' => $cars,
             'carTypeNames' => CarTypeName::orderBy('name')->get(['id', 'name']),
-            'role' => auth()->user()->role,
+            'role' => $user->role,
+            'verification_status' => $user->role === 'customer' ? $user->customerIdentity?->verification_status : null,
             'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price']),
         ]);
     }
@@ -98,6 +100,7 @@ class BrowseCarController extends Controller
                     ]),
             ]),
             'role' => $user->role,
+            'verification_status' => $user->role === 'customer' ? $user->customerIdentity?->verification_status : null,
             'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }

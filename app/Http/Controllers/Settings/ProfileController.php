@@ -36,6 +36,13 @@ class ProfileController extends Controller
             $profile['review_count'] = $user->reviews()->count();
         }
 
+        if ($request->query('booking_gate') === 'requires_approval') {
+            Inertia::flash('toast', [
+                'type' => 'error',
+                'message' => 'You must be approved before booking a car. Please submit your national ID to complete verification.',
+            ]);
+        }
+
         return Inertia::render('settings/profile', [
             'mustVerifyEmail' => $user instanceof MustVerifyEmail,
             'status' => $request->session()->get('status'),

@@ -5,6 +5,7 @@ namespace Tests\Feature\Customer;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -52,10 +53,24 @@ class BookingSubmissionTest extends TestCase
         return Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
     }
 
+    private function createApprovedCustomer(): User
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => fake()->numerify('##############'),
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
+        return $customer;
+    }
+
     public function test_customer_can_submit_a_booking_request(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createApprovedCustomer();
         $car = $this->createCar($owner);
         $branch = $this->createBranch();
 
@@ -85,7 +100,7 @@ class BookingSubmissionTest extends TestCase
     public function test_booking_total_price_is_calculated_from_days_and_daily_price(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createApprovedCustomer();
         $car = $this->createCar($owner); // daily_price = 100
         $branch = $this->createBranch();
 
@@ -107,7 +122,7 @@ class BookingSubmissionTest extends TestCase
     public function test_customer_can_request_a_driver_with_booking(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createApprovedCustomer();
         $car = $this->createCar($owner);
         $branch = $this->createBranch();
 
@@ -130,7 +145,7 @@ class BookingSubmissionTest extends TestCase
     public function test_booking_requires_pickup_and_return_dates(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createApprovedCustomer();
         $car = $this->createCar($owner);
         $branch = $this->createBranch();
 
@@ -148,7 +163,7 @@ class BookingSubmissionTest extends TestCase
     public function test_return_date_must_be_after_pickup_date(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createApprovedCustomer();
         $car = $this->createCar($owner);
         $branch = $this->createBranch();
 
@@ -202,5 +217,25 @@ class BookingSubmissionTest extends TestCase
 
         $response->assertNotFound();
         $this->assertDatabaseMissing('bookings', ['customer_id' => $customer->id]);
+    }
+
+    public function test_customer_without_approved_identity_is_redirected_to_profile_page(): void
+    {
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $car = $this->createCar($owner);
+        $branch = $this->createBranch();
+
+        $response = $this
+            ->actingAs($customer)
+            ->post(route('cars.book', $car), [
+                'pickup_date' => now()->addDays(2)->toDateString(),
+                'return_date' => now()->addDays(5)->toDateString(),
+                'pickup_branch_id' => $branch->id,
+                'return_branch_id' => $branch->id,
+            ]);
+
+        $response->assertRedirect(route('profile.edit'));
+        $this->assertDatabaseMissing('bookings', ['car_id' => $car->id]);
     }
 }

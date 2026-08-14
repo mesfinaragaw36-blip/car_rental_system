@@ -13,6 +13,7 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { edit as editProfile } from '@/routes/profile';
 
 interface CarImage {
     id: number;
@@ -50,6 +51,8 @@ interface CarTypeName {
 interface Props {
     cars: Car[];
     carTypeNames: CarTypeName[];
+    role: string;
+    verification_status?: string | null;
     filters: {
         search?: string;
         category?: string;
@@ -63,6 +66,8 @@ interface Props {
 export default function BrowseCars({
     cars = [],
     carTypeNames = [],
+    role,
+    verification_status = null,
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -77,6 +82,9 @@ export default function BrowseCars({
 
     const [pickupDate, setPickupDate] = useState(filters.pickup_date ?? '');
     const [returnDate, setReturnDate] = useState(filters.return_date ?? '');
+
+    const needsApproval =
+        role === 'customer' && verification_status !== 'approved';
 
     const activeFilterCount = [
         search,
@@ -172,7 +180,9 @@ export default function BrowseCars({
                                 <Input
                                     type="date"
                                     value={pickupDate}
-                                    onChange={(e) => setPickupDate(e.target.value)}
+                                    onChange={(e) =>
+                                        setPickupDate(e.target.value)
+                                    }
                                 />
                             </div>
 
@@ -181,7 +191,9 @@ export default function BrowseCars({
                                 <Input
                                     type="date"
                                     value={returnDate}
-                                    onChange={(e) => setReturnDate(e.target.value)}
+                                    onChange={(e) =>
+                                        setReturnDate(e.target.value)
+                                    }
                                 />
                             </div>
                         </div>
@@ -364,20 +376,39 @@ export default function BrowseCars({
                             >
                                 Close
                             </Button>
-                            <Button
-                                asChild
-                                className="flex-1 bg-primary text-white hover:bg-primary/90"
-                            >
-                                <Link
-                                    href={
-                                        selectedCar
-                                            ? `/cars/${selectedCar.id}`
-                                            : '#'
-                                    }
+                            {needsApproval ? (
+                                <Button
+                                    className="flex-1 bg-primary text-white hover:bg-primary/90"
+                                    onClick={() => {
+                                        setDetailsOpen(false);
+                                        router.get(
+                                            editProfile.url({
+                                                query: {
+                                                    booking_gate:
+                                                        'requires_approval',
+                                                },
+                                            }),
+                                        );
+                                    }}
                                 >
                                     Book Now
-                                </Link>
-                            </Button>
+                                </Button>
+                            ) : (
+                                <Button
+                                    asChild
+                                    className="flex-1 bg-primary text-white hover:bg-primary/90"
+                                >
+                                    <Link
+                                        href={
+                                            selectedCar
+                                                ? `/cars/${selectedCar.id}`
+                                                : '#'
+                                        }
+                                    >
+                                        Book Now
+                                    </Link>
+                                </Button>
+                            )}
                         </>
                     }
                 />

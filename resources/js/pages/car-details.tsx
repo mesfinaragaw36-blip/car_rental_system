@@ -1,4 +1,4 @@
-import { Head, useForm, usePage } from '@inertiajs/react';
+import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { book } from '@/routes/cars';
+import { edit as editProfile } from '@/routes/profile';
 
 interface Car {
     id: number;
@@ -54,10 +55,16 @@ interface Location {
 interface Props {
     car: Car;
     role: string;
+    verification_status?: string | null;
     locations: Location[];
 }
 
-export default function CarDetails({ car, role, locations }: Props) {
+export default function CarDetails({
+    car,
+    role,
+    verification_status = null,
+    locations,
+}: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -258,7 +265,26 @@ export default function CarDetails({ car, role, locations }: Props) {
                 )}
 
                 {role === 'customer' &&
-                    car.availability_status === 'available' && (
+                    car.availability_status === 'available' &&
+                    (verification_status !== 'approved' ? (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Approval Required</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                                <p className="text-sm text-muted-foreground">
+                                    You need to be approved before booking a
+                                    car. Please submit your national ID on your
+                                    profile page to complete verification.
+                                </p>
+                                <Button asChild>
+                                    <Link href={editProfile.url()}>
+                                        Go to Profile
+                                    </Link>
+                                </Button>
+                            </CardContent>
+                        </Card>
+                    ) : (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Book This Car</CardTitle>
@@ -307,62 +333,86 @@ export default function CarDetails({ car, role, locations }: Props) {
                                                 message={errors.return_date}
                                             />
                                         </div>
-                                         <div>
-                                             <Label htmlFor="pickup_branch_id">
-                                                 Pickup Location
-                                             </Label>
-                                             <Select
-                                                 value={data.pickup_branch_id}
-                                                 onValueChange={(value) =>
-                                                     setData('pickup_branch_id', value)
-                                                 }
-                                             >
-                                                 <SelectTrigger>
-                                                     <SelectValue placeholder="Select a pickup branch" />
-                                                 </SelectTrigger>
-                                                 <SelectContent>
-                                                     {locations.map((location) => (
-                                                         <SelectItem
-                                                             key={location.id}
-                                                             value={String(location.id)}
-                                                         >
-                                                             {location.name}, {location.city}
-                                                         </SelectItem>
-                                                     ))}
-                                                 </SelectContent>
-                                             </Select>
-                                             <InputError
-                                                 message={errors.pickup_branch_id}
-                                             />
-                                         </div>
-                                         <div>
-                                             <Label htmlFor="return_branch_id">
-                                                 Return Location
-                                             </Label>
-                                             <Select
-                                                 value={data.return_branch_id}
-                                                 onValueChange={(value) =>
-                                                     setData('return_branch_id', value)
-                                                 }
-                                             >
-                                                 <SelectTrigger>
-                                                     <SelectValue placeholder="Select a return branch" />
-                                                 </SelectTrigger>
-                                                 <SelectContent>
-                                                     {locations.map((location) => (
-                                                         <SelectItem
-                                                             key={location.id}
-                                                             value={String(location.id)}
-                                                         >
-                                                             {location.name}, {location.city}
-                                                         </SelectItem>
-                                                     ))}
-                                                 </SelectContent>
-                                             </Select>
-                                             <InputError
-                                                 message={errors.return_branch_id}
-                                             />
-                                         </div>
+                                        <div>
+                                            <Label htmlFor="pickup_branch_id">
+                                                Pickup Location
+                                            </Label>
+                                            <Select
+                                                value={data.pickup_branch_id}
+                                                onValueChange={(value) =>
+                                                    setData(
+                                                        'pickup_branch_id',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a pickup branch" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {locations.map(
+                                                        (location) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    location.id
+                                                                }
+                                                                value={String(
+                                                                    location.id,
+                                                                )}
+                                                            >
+                                                                {location.name},{' '}
+                                                                {location.city}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors.pickup_branch_id
+                                                }
+                                            />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="return_branch_id">
+                                                Return Location
+                                            </Label>
+                                            <Select
+                                                value={data.return_branch_id}
+                                                onValueChange={(value) =>
+                                                    setData(
+                                                        'return_branch_id',
+                                                        value,
+                                                    )
+                                                }
+                                            >
+                                                <SelectTrigger>
+                                                    <SelectValue placeholder="Select a return branch" />
+                                                </SelectTrigger>
+                                                <SelectContent>
+                                                    {locations.map(
+                                                        (location) => (
+                                                            <SelectItem
+                                                                key={
+                                                                    location.id
+                                                                }
+                                                                value={String(
+                                                                    location.id,
+                                                                )}
+                                                            >
+                                                                {location.name},{' '}
+                                                                {location.city}
+                                                            </SelectItem>
+                                                        ),
+                                                    )}
+                                                </SelectContent>
+                                            </Select>
+                                            <InputError
+                                                message={
+                                                    errors.return_branch_id
+                                                }
+                                            />
+                                        </div>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         <input
@@ -397,7 +447,7 @@ export default function CarDetails({ car, role, locations }: Props) {
                                 </form>
                             </CardContent>
                         </Card>
-                    )}
+                    ))}
             </div>
         </>
     );

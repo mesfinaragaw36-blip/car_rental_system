@@ -2,8 +2,10 @@
 
 namespace Tests\Feature;
 
+use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\Location;
 use App\Models\OwnerProfile;
 use App\Models\User;
@@ -18,6 +20,13 @@ class CustomerBookingTest extends TestCase
     {
         $customer = User::factory()->create(['role' => 'customer']);
         $owner = User::factory()->create(['role' => 'owner']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
 
         OwnerProfile::create([
             'user_id' => $owner->id,
@@ -49,7 +58,6 @@ class CustomerBookingTest extends TestCase
             'pickup_branch_id' => $branch->id,
             'return_branch_id' => $branch->id,
             'need_driver' => true,
-            'national_id_number' => '123456789012',
         ]);
 
         $response->assertRedirect(route('bookings.index'));
@@ -62,11 +70,6 @@ class CustomerBookingTest extends TestCase
             'total_price' => 200.00,
             'deposit_amount' => 500.00,
             'status' => 'confirmed',
-        ]);
-        $this->assertDatabaseHas('customer_identities', [
-            'user_id' => $customer->id,
-            'national_id_number' => '123456789012',
-            'verification_status' => 'pending',
         ]);
     }
 
@@ -91,7 +94,7 @@ class CustomerBookingTest extends TestCase
 
         $branch = Location::create(['name' => 'Airport Branch', 'address' => 'Airport Road', 'city' => 'Addis Ababa']);
 
-        $booking = \App\Models\Booking::create([
+        $booking = Booking::create([
             'customer_id' => $customer->id,
             'owner_id' => $owner->id,
             'car_id' => $car->id,
@@ -107,7 +110,7 @@ class CustomerBookingTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        \App\Models\CustomerIdentity::create([
+        CustomerIdentity::create([
             'user_id' => $customer->id,
             'national_id_number' => '123456789012',
             'verification_status' => 'pending',
@@ -142,7 +145,7 @@ class CustomerBookingTest extends TestCase
 
         $branch = Location::create(['name' => 'Airport Branch', 'address' => 'Airport Road', 'city' => 'Addis Ababa']);
 
-        $booking = \App\Models\Booking::create([
+        $booking = Booking::create([
             'customer_id' => $customer->id,
             'owner_id' => $owner->id,
             'car_id' => $car->id,
@@ -158,7 +161,7 @@ class CustomerBookingTest extends TestCase
             'status' => 'confirmed',
         ]);
 
-        \App\Models\CustomerIdentity::create([
+        CustomerIdentity::create([
             'user_id' => $customer->id,
             'national_id_number' => '123456789012',
             'verification_status' => 'approved',

@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\Location;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,6 +38,20 @@ class CarAvailabilityTest extends TestCase
     private function createBranch(): Location
     {
         return Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
+    }
+
+    private function createCustomer(): User
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => fake()->numerify('##############'),
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
+        return $customer;
     }
 
     public function test_owner_can_pause_vehicle_and_it_leaves_browse(): void
@@ -199,7 +214,7 @@ class CarAvailabilityTest extends TestCase
     public function test_booking_within_available_range_is_allowed(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createCustomer();
         $car = $this->car($owner);
         $branch = $this->createBranch();
 
@@ -226,7 +241,7 @@ class CarAvailabilityTest extends TestCase
     public function test_completed_booking_does_not_block_rebooking_same_vehicle(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createCustomer();
         $car = $this->car($owner);
         $branch = $this->createBranch();
 
@@ -260,7 +275,7 @@ class CarAvailabilityTest extends TestCase
     public function test_returned_booking_does_not_block_rebooking_same_vehicle(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
-        $customer = User::factory()->create(['role' => 'customer']);
+        $customer = $this->createCustomer();
         $car = $this->car($owner);
         $branch = $this->createBranch();
 

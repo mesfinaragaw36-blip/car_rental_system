@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Settings;
 
+use App\Models\CustomerIdentity;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,6 +25,13 @@ class ProfileUpdateTest extends TestCase
     public function test_profile_information_can_be_updated()
     {
         $user = User::factory()->create();
+
+        CustomerIdentity::create([
+            'user_id' => $user->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
 
         $response = $this
             ->actingAs($user)
@@ -48,6 +56,13 @@ class ProfileUpdateTest extends TestCase
     public function test_email_verification_status_is_unchanged_when_the_email_address_is_unchanged()
     {
         $user = User::factory()->create();
+
+        CustomerIdentity::create([
+            'user_id' => $user->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
 
         $response = $this
             ->actingAs($user)
