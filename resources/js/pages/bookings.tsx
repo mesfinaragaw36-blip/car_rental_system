@@ -57,6 +57,8 @@ interface Booking {
         payment_status: string;
         paid_at: string | null;
     } | null;
+    identity_approved?: boolean;
+    identity_status?: string | null;
     driver_assignment?: {
         driver: { id: number; name: string } | null;
         status?: string;
@@ -582,7 +584,8 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                 booking.status ===
                                                     'confirmed' &&
                                                 !booking.payment &&
-                                                hasAssignedDriver(booking) && (
+                                                hasAssignedDriver(booking) &&
+                                                booking.identity_approved && (
                                                     <Button size="sm" asChild>
                                                         <Link
                                                             href={`/bookings/${booking.id}/payment`}
@@ -590,6 +593,17 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                             Pay Deposit
                                                         </Link>
                                                     </Button>
+                                                )}
+                                            {role === 'customer' &&
+                                                booking.status ===
+                                                    'confirmed' &&
+                                                !booking.payment &&
+                                                booking.identity_approved ===
+                                                    false && (
+                                                    <span className="flex items-center gap-1 text-sm font-medium text-amber-600">
+                                                        <Clock className="h-4 w-4" />{' '}
+                                                        Awaiting ID approval
+                                                    </span>
                                                 )}
                                             {role === 'customer' &&
                                                 booking.payment

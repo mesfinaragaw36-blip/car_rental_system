@@ -49,6 +49,10 @@ class BookingController extends Controller
                 ->where('type', 'owner_no_show')
                 ->exists();
 
+            $identity = $user->customerIdentity;
+            $booking->identity_approved = $user->role !== 'customer' || $identity === null || $identity->isApproved();
+            $booking->identity_status = $user->role === 'customer' ? $identity?->verification_status : null;
+
             if ($user->role !== 'admin' && $user->id !== $booking->customer_id && $booking->customer) {
                 unset($booking->customer->email);
             }
@@ -77,7 +81,7 @@ class BookingController extends Controller
             abort(403);
         }
 
-        $booking->load(['customer', 'owner', 'car', 'payments', 'refunds', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name', 'disputes', 'ownerPayout']);
+        $booking->load(['customer', 'owner', 'car', 'payments', 'refunds', 'driverAssignment.driver', 'driverAssignment.driver:id,name,phone', 'reviews.reviewer', 'inspections.conductedBy:id,name', 'inspections.idVerifiedBy:id,name', 'disputes', 'ownerPayout']);
 
         $userReviews = Review::where('booking_id', $booking->id)
             ->where('reviewer_id', $user->id)
@@ -217,12 +221,18 @@ class BookingController extends Controller
                         'fuel_level' => $inspection->fuel_level,
                         'damages' => $inspection->damages,
                         'notes' => $inspection->notes,
+                        'photos' => $inspection->photos ?? [],
+                        'id_verified' => $inspection->id_verified,
+                        'id_verified_by_name' => $inspection->idVerifiedBy?->name,
+                        'id_verified_at' => $inspection->id_verified_at?->toDateTimeString(),
                     ])
                     ->values(),
                 'reviewed' => $reviewed,
                 'review_targets' => $reviewTargets,
                 'can_review' => count($reviewTargets) > 0,
                 'reviews' => $reviewList,
+                'identity_approved' => $user->role !== 'customer' || $user->customerIdentity === null || $user->customerIdentity->isApproved(),
+                'identity_status' => $user->role === 'customer' ? $user->customerIdentity?->verification_status : null,
                 'late_days' => $booking->late_days,
                 'late_fee' => $booking->late_fee,
                 'additional_charge' => $booking->late_fee > $booking->securityDepositAmount()

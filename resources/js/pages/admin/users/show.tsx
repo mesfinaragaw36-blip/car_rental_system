@@ -32,6 +32,14 @@ interface DriverProfile {
     license_file_path?: string | null;
 }
 
+interface CustomerIdentity {
+    id: number;
+    national_id_number: string;
+    verification_status: string;
+    verified_at: string | null;
+    verified_by_name?: string | null;
+}
+
 interface UserData {
     id: number;
     name: string;
@@ -45,6 +53,7 @@ interface UserData {
     updated_at: string;
     owner_profile: OwnerProfile | null;
     driver_profile: DriverProfile | null;
+    customer_identity: CustomerIdentity | null;
     reviews?: Array<{
         id: number;
         reviewer: { id: number; name: string };
@@ -130,6 +139,20 @@ export default function ShowUser({ user }: Props) {
     function handleRejectOwner(): void {
         if (confirm('Are you sure you want to reject this owner profile?')) {
             router.post(`/admin/users/${user.id}/reject-owner`);
+        }
+    }
+
+    function handleVerifyCustomerIdentity(): void {
+        router.post(`/admin/users/${user.id}/verify-customer-identity`);
+    }
+
+    function handleRejectCustomerIdentity(): void {
+        if (
+            confirm(
+                'Are you sure you want to reject this customer identity?',
+            )
+        ) {
+            router.post(`/admin/users/${user.id}/reject-customer-identity`);
         }
     }
 
@@ -333,6 +356,89 @@ export default function ShowUser({ user }: Props) {
                                         size="sm"
                                         onClick={handleRejectOwner}
                                         disabled={!can('owner_profiles.verify')}
+                                    >
+                                        <XCircle className="mr-1.5 h-4 w-4" />
+                                        Reject
+                                    </Button>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                )}
+
+                {/* Customer Identity */}
+                {user.customer_identity && (
+                    <Card>
+                        <CardHeader className="flex flex-row items-center justify-between">
+                            <CardTitle className="flex items-center gap-2">
+                                <User className="h-5 w-5" />
+                                Customer Identity
+                            </CardTitle>
+                            <span
+                                className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(user.customer_identity.verification_status)}`}
+                            >
+                                {user.customer_identity.verification_status
+                                    .charAt(0)
+                                    .toUpperCase() +
+                                    user.customer_identity.verification_status.slice(
+                                        1,
+                                    )}
+                            </span>
+                        </CardHeader>
+
+                        <CardContent className="space-y-4">
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">
+                                        National ID
+                                    </p>
+                                    <p className="font-medium">
+                                        {user.customer_identity.national_id_number}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">
+                                        Verified By
+                                    </p>
+                                    <p className="font-medium">
+                                        {user.customer_identity.verified_by_name ??
+                                            'Not yet verified'}
+                                    </p>
+                                </div>
+                                {user.customer_identity.verified_at && (
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">
+                                            Verified At
+                                        </p>
+                                        <p className="font-medium">
+                                            {new Date(
+                                                user.customer_identity.verified_at,
+                                            ).toLocaleDateString()}
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {user.customer_identity.verification_status ===
+                                'pending' && (
+                                <div className="flex gap-3 border-t pt-4">
+                                    <Button
+                                        size="sm"
+                                        onClick={
+                                            handleVerifyCustomerIdentity
+                                        }
+                                        disabled={!can('customer_identities.verify')}
+                                    >
+                                        <CheckCircle className="mr-1.5 h-4 w-4" />
+                                        Approve
+                                    </Button>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={
+                                            handleRejectCustomerIdentity
+                                        }
+                                        disabled={!can('customer_identities.verify')}
                                     >
                                         <XCircle className="mr-1.5 h-4 w-4" />
                                         Reject

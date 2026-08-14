@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Location;
+use App\Models\OwnerProfile;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -17,6 +18,13 @@ class CustomerBookingTest extends TestCase
     {
         $customer = User::factory()->create(['role' => 'customer']);
         $owner = User::factory()->create(['role' => 'owner']);
+
+        OwnerProfile::create([
+            'user_id' => $owner->id,
+            'business_name' => 'Test Rentals',
+            'national_id' => 'OWNER-ID-001',
+            'verification_status' => 'approved',
+        ]);
 
         $car = Car::factory()->create([
             'owner_id' => $owner->id,
@@ -41,6 +49,7 @@ class CustomerBookingTest extends TestCase
             'pickup_branch_id' => $branch->id,
             'return_branch_id' => $branch->id,
             'need_driver' => true,
+            'national_id_number' => '123456789012',
         ]);
 
         $response->assertRedirect(route('bookings.index'));
@@ -54,5 +63,111 @@ class CustomerBookingTest extends TestCase
             'deposit_amount' => 500.00,
             'status' => 'confirmed',
         ]);
+        $this->assertDatabaseHas('customer_identities', [
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'pending',
+        ]);
+    }
+
+    public function test_customer_with_unapproved_identity_cannot_pay_deposit()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        OwnerProfile::create([
+            'user_id' => $owner->id,
+            'business_name' => 'Test Rentals',
+            'national_id' => 'OWNER-ID-001',
+            'verification_status' => 'approved',
+        ]);
+
+        $car = Car::factory()->create([
+            'owner_id' => $owner->id,
+            'approval_status' => 'approved',
+            'availability_status' => 'available',
+            'daily_price' => 100.00,
+        ]);
+
+        $branch = Location::create(['name' => 'Airport Branch', 'address' => 'Airport Road', 'city' => 'Addis Ababa']);
+
+        $booking = \App\Models\Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(2),
+            'return_date' => now()->addDays(4),
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
+            'pickup_location' => 'Airport Branch, Addis Ababa',
+            'return_location' => 'Airport Branch, Addis Ababa',
+            'need_driver' => false,
+            'total_price' => 200.00,
+            'deposit_amount' => 500.00,
+            'status' => 'confirmed',
+        ]);
+
+        \App\Models\CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'pending',
+        ]);
+
+        $this->actingAs($customer);
+
+        $this->get(route('payments.create', $booking))
+            ->assertRedirect();
+        $this->get(route('payments.create', $booking))
+            ->assertSessionHas('toast', ['type' => 'error', 'message' => 'Your national ID is awaiting admin approval. You can pay the deposit once your identity has been verified.']);
+    }
+
+    public function test_customer_with_approved_identity_can_view_deposit_payment()
+    {
+        $customer = User::factory()->create(['role' => 'customer']);
+        $owner = User::factory()->create(['role' => 'owner']);
+
+        OwnerProfile::create([
+            'user_id' => $owner->id,
+            'business_name' => 'Test Rentals',
+            'national_id' => 'OWNER-ID-001',
+            'verification_status' => 'approved',
+        ]);
+
+        $car = Car::factory()->create([
+            'owner_id' => $owner->id,
+            'approval_status' => 'approved',
+            'availability_status' => 'available',
+            'daily_price' => 100.00,
+        ]);
+
+        $branch = Location::create(['name' => 'Airport Branch', 'address' => 'Airport Road', 'city' => 'Addis Ababa']);
+
+        $booking = \App\Models\Booking::create([
+            'customer_id' => $customer->id,
+            'owner_id' => $owner->id,
+            'car_id' => $car->id,
+            'pickup_date' => now()->addDays(2),
+            'return_date' => now()->addDays(4),
+            'pickup_branch_id' => $branch->id,
+            'return_branch_id' => $branch->id,
+            'pickup_location' => 'Airport Branch, Addis Ababa',
+            'return_location' => 'Airport Branch, Addis Ababa',
+            'need_driver' => false,
+            'total_price' => 200.00,
+            'deposit_amount' => 500.00,
+            'status' => 'confirmed',
+        ]);
+
+        \App\Models\CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
+        $this->actingAs($customer);
+
+        $this->get(route('payments.create', $booking))
+            ->assertOk();
     }
 }

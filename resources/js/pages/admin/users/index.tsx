@@ -15,6 +15,8 @@ interface User {
     role: string;
     status: string;
     created_at: string;
+    customer_identity_status?: string | null;
+    has_customer_identity?: boolean;
 }
 
 interface PaginatedUsers {
@@ -57,6 +59,17 @@ function statusBadgeClass(status: string): string {
             return 'bg-red-100 text-red-800';
         default:
             return 'bg-gray-100 text-gray-800';
+    }
+}
+
+function identityBadgeClass(status: string): string {
+    switch (status) {
+        case 'approved':
+            return 'bg-green-100 text-green-800';
+        case 'rejected':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-yellow-100 text-yellow-800';
     }
 }
 
@@ -218,6 +231,9 @@ export default function Users({ users, filters }: Props) {
                                                 Status
                                             </th>
                                             <th className="pb-3 font-medium">
+                                                ID Verification
+                                            </th>
+                                            <th className="pb-3 font-medium">
                                                 Created
                                             </th>
                                             <th className="pb-3 text-right font-medium">
@@ -261,6 +277,37 @@ export default function Users({ users, filters }: Props) {
                                                                 1,
                                                             )}
                                                     </span>
+                                                </td>
+                                                <td className="py-3">
+                                                    {user.has_customer_identity ? (
+                                                        <span
+                                                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium ${identityBadgeClass(user.customer_identity_status ?? 'pending')}`}
+                                                        >
+                                                            {(user.customer_identity_status ??
+                                                                'pending') ===
+                                                            'pending' && (
+                                                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
+                                                            )}
+                                                            {user.role ===
+                                                            'customer'
+                                                                ? 'ID '
+                                                                : 'Verif. '}
+                                                            {(
+                                                                user.customer_identity_status ??
+                                                                'pending'
+                                                            )
+                                                                .charAt(0)
+                                                                .toUpperCase() +
+                                                                (
+                                                                    user.customer_identity_status ??
+                                                                    'pending'
+                                                                ).slice(1)}
+                                                        </span>
+                                                    ) : (
+                                                        <span className="text-xs text-muted-foreground">
+                                                            Not submitted
+                                                        </span>
+                                                    )}
                                                 </td>
                                                 <td className="py-3 text-muted-foreground">
                                                     {new Date(

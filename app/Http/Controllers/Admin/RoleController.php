@@ -53,6 +53,7 @@ class RoleController extends Controller
             'label' => 'Profile Verification',
             'items' => [
                 'owner_profiles.verify' => 'Verify Owner Profiles',
+                'customer_identities.verify' => 'Verify Customer Identities',
             ],
         ],
         'staff' => [

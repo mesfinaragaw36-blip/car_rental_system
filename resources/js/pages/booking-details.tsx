@@ -16,6 +16,10 @@ import {
     Gauge,
     CheckCircle2,
     XCircle,
+    Eye,
+    EyeOff,
+    Check,
+    X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -50,6 +54,10 @@ interface InspectionHistory {
     fuel_level: number | null;
     damages: Damage[] | null;
     notes: string | null;
+    photos?: string[] | null;
+    id_verified?: boolean;
+    id_verified_by_name?: string | null;
+    id_verified_at?: string | null;
 }
 
 interface BookingDetails {
@@ -110,6 +118,8 @@ interface BookingDetails {
     } | null;
     driver: { id: number; name: string; phone: string } | null;
     driver_status: string | null;
+    identity_approved?: boolean;
+    identity_status?: string | null;
     picked_up_at: string | null;
     returned_at: string | null;
     reviewed?: Record<string, boolean>;
@@ -161,6 +171,10 @@ export default function BookingDetails({ booking, role }: Props) {
 
     const [selectedReviewTarget, setSelectedReviewTarget] =
         useState<ReviewTarget | null>(null);
+
+    const [expandedInspection, setExpandedInspection] = useState<
+        number | null
+    >(null);
 
     const handleAction = (action: string) => {
         const routeMap: Record<string, any> = {
@@ -817,26 +831,55 @@ return;
                                             )}
                                             {inspection.type} inspection
                                         </span>
-                                        <span
-                                            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                                                inspection.status === 'approved'
-                                                    ? 'bg-green-100 text-green-700'
-                                                    : inspection.status ===
-                                                        'issues_found'
-                                                      ? 'bg-red-100 text-red-700'
-                                                      : 'bg-yellow-100 text-yellow-800'
-                                            }`}
-                                        >
-                                            {inspection.status ===
-                                            'approved' ? (
-                                                <CheckCircle2 className="h-3.5 w-3.5" />
-                                            ) : (
-                                                <XCircle className="h-3.5 w-3.5" />
-                                            )}
-                                            {inspection.status ===
-                                            'issues_found'
-                                                ? 'Rejected'
-                                                : inspection.status}
+                                        <span className="flex items-center gap-2">
+                                            <span
+                                                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+                                                    inspection.status ===
+                                                    'approved'
+                                                        ? 'bg-green-100 text-green-700'
+                                                        : inspection.status ===
+                                                            'issues_found'
+                                                          ? 'bg-red-100 text-red-700'
+                                                          : 'bg-yellow-100 text-yellow-800'
+                                                }`}
+                                            >
+                                                {inspection.status ===
+                                                'approved' ? (
+                                                    <CheckCircle2 className="h-3.5 w-3.5" />
+                                                ) : (
+                                                    <XCircle className="h-3.5 w-3.5" />
+                                                )}
+                                                {inspection.status ===
+                                                'issues_found'
+                                                    ? 'Rejected'
+                                                    : inspection.status}
+                                            </span>
+                                            <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="icon"
+                                                onClick={() =>
+                                                    setExpandedInspection(
+                                                        expandedInspection ===
+                                                            inspection.id
+                                                            ? null
+                                                            : inspection.id,
+                                                    )
+                                                }
+                                                title={
+                                                    expandedInspection ===
+                                                    inspection.id
+                                                        ? 'Hide details'
+                                                        : 'Show details'
+                                                }
+                                            >
+                                                {expandedInspection ===
+                                                inspection.id ? (
+                                                    <EyeOff className="h-4 w-4" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" />
+                                                )}
+                                            </Button>
                                         </span>
                                     </div>
                                     <p className="mt-1 text-sm text-muted-foreground">
@@ -848,26 +891,111 @@ return;
                                         {inspection.fuel_level !== null &&
                                             ` · ${inspection.fuel_level}% fuel`}
                                     </p>
-                                    {inspection.damages &&
-                                        inspection.damages.length > 0 && (
-                                            <ul className="mt-2 list-inside list-disc text-sm text-red-600">
-                                                {inspection.damages.map(
-                                                    (damage, i) => (
-                                                        <li key={i}>
-                                                            <span className="font-medium">
-                                                                {damage.area}
-                                                            </span>{' '}
-                                                            -{' '}
-                                                            {damage.description}
-                                                        </li>
-                                                    ),
+                                    {expandedInspection === inspection.id && (
+                                        <div className="mt-3 space-y-2 border-t border-slate-100 pt-3">
+                                            {inspection.type === 'pickup' && (
+                                                <div>
+                                                    {inspection.id_verified ? (
+                                                        <div className="flex items-center gap-1.5 text-sm">
+                                                            <Check className="h-3.5 w-3.5 text-green-600" />
+                                                            <span className="font-medium text-green-700">
+                                                                ID Verified
+                                                            </span>
+                                                            {inspection.id_verified_by_name && (
+                                                                <span className="text-muted-foreground">
+                                                                    · by{' '}
+                                                                    {
+                                                                        inspection.id_verified_by_name
+                                                                    }
+                                                                </span>
+                                                            )}
+                                                            {inspection.id_verified_at && (
+                                                                <span className="text-muted-foreground">
+                                                                    ·{' '}
+                                                                    {new Date(
+                                                                        inspection.id_verified_at,
+                                                                    ).toLocaleString()}
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex items-center gap-1.5 text-sm">
+                                                            <X className="h-3.5 w-3.5 text-amber-600" />
+                                                            <span className="font-medium text-amber-700">
+                                                                ID Verification
+                                                                Pending
+                                                            </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {inspection.damages &&
+                                                inspection.damages.length >
+                                                    0 && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                                                            Damages
+                                                        </p>
+                                                        <ul className="mt-1 list-inside list-disc text-sm text-red-600">
+                                                            {inspection.damages.map(
+                                                                (damage, i) => (
+                                                                    <li
+                                                                        key={i}
+                                                                    >
+                                                                        <span className="font-medium">
+                                                                            {
+                                                                                damage.area
+                                                                            }
+                                                                        </span>{' '}
+                                                                        -{' '}
+                                                                        {
+                                                                            damage.description
+                                                                        }
+                                                                    </li>
+                                                                ),
+                                                            )}
+                                                        </ul>
+                                                    </div>
                                                 )}
-                                            </ul>
-                                        )}
-                                    {inspection.notes && (
-                                        <p className="mt-2 text-sm text-muted-foreground">
-                                            {inspection.notes}
-                                        </p>
+                                            {inspection.notes && (
+                                                <div>
+                                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        Notes
+                                                    </p>
+                                                    <p className="mt-1 text-sm text-muted-foreground">
+                                                        {inspection.notes}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {inspection.photos &&
+                                                inspection.photos.length >
+                                                    0 && (
+                                                    <div>
+                                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                            Evidence Photos
+                                                        </p>
+                                                        <div className="mt-2 flex flex-wrap gap-2">
+                                                            {inspection.photos.map(
+                                                                (path, i) => (
+                                                                    <a
+                                                                        key={i}
+                                                                        href={`/storage/${path}`}
+                                                                        target="_blank"
+                                                                        rel="noreferrer"
+                                                                        className="block h-16 w-16 overflow-hidden rounded-md border shadow-sm hover:opacity-90"
+                                                                    >
+                                                                        <img
+                                                                            src={`/storage/${path}`}
+                                                                            alt="Evidence"
+                                                                            className="h-full w-full object-cover"
+                                                                        />
+                                                                    </a>
+                                                                ),
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                        </div>
                                     )}
                                 </div>
                             ))
@@ -1128,6 +1256,22 @@ return;
                     {role === 'customer' &&
                         booking.status === 'confirmed' &&
                         !booking.payment &&
+                        booking.identity_approved === false && (
+                            <div className="w-full rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                                <p className="font-medium">
+                                    Awaiting national ID approval
+                                </p>
+                                <p className="mt-1 text-amber-700">
+                                    Your national ID is pending admin approval.
+                                    Once verified, you will be able to pay the
+                                    deposit and lock your booking.
+                                </p>
+                            </div>
+                        )}
+                    {role === 'customer' &&
+                        booking.status === 'confirmed' &&
+                        !booking.payment &&
+                        booking.identity_approved !== false &&
                         (!booking.need_driver ||
                             booking.driver_status === 'assigned' ||
                             booking.driver_status === 'accepted') && (

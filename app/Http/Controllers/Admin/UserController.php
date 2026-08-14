@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\CustomerIdentity;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -36,7 +37,14 @@ class UserController extends Controller
             $query->where('status', $request->input('status'));
         }
 
-        $users = $query->latest()->paginate(15)->withQueryString();
+        $users = $query->with('customerIdentity:id,user_id,verification_status')->latest()->paginate(15)->withQueryString();
+
+        $users->getCollection()->transform(function (User $user) {
+            return array_merge($user->toArray(), [
+                'customer_identity_status' => $user->customerIdentity?->verification_status,
+                'has_customer_identity' => $user->customerIdentity !== null,
+            ]);
+        });
 
         return Inertia::render('admin/users/index', [
             'users' => $users,
@@ -76,7 +84,7 @@ class UserController extends Controller
 
     public function show(User $user): Response
     {
-        $user->load(['ownerProfile', 'driverProfile']);
+        $user->load(['ownerProfile', 'driverProfile', 'customerIdentity.verifiedBy:id,name']);
 
         $driverReviews = [];
         if ($user->hasDriverPermission()) {
@@ -91,8 +99,16 @@ class UserController extends Controller
             })->toArray();
         }
 
+        $userArray = $user->toArray();
+
+        if ($user->customerIdentity) {
+            $userArray['customer_identity'] = array_merge($user->customerIdentity->toArray(), [
+                'verified_by_name' => $user->customerIdentity->verifiedBy?->name,
+            ]);
+        }
+
         return Inertia::render('admin/users/show', [
-            'user' => array_merge($user->toArray(), ['reviews' => $driverReviews]),
+            'user' => array_merge($userArray, ['reviews' => $driverReviews]),
         ]);
     }
 
@@ -215,6 +231,52 @@ class UserController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Owner profile rejected.',
+        ]);
+    }
+
+    public function verifyCustomerIdentity(User $user): RedirectResponse
+    {
+        $identity = $user->customerIdentity;
+
+        if (! $identity) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No customer identity found for this user.',
+            ]);
+        }
+
+        $identity->update([
+            'verification_status' => CustomerIdentity::STATUS_APPROVED,
+            'verified_by' => auth()->id(),
+            'verified_at' => now(),
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Customer identity verified.',
+        ]);
+    }
+
+    public function rejectCustomerIdentity(User $user): RedirectResponse
+    {
+        $identity = $user->customerIdentity;
+
+        if (! $identity) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No customer identity found for this user.',
+            ]);
+        }
+
+        $identity->update([
+            'verification_status' => CustomerIdentity::STATUS_REJECTED,
+            'verified_by' => auth()->id(),
+            'verified_at' => now(),
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Customer identity rejected.',
         ]);
     }
 }

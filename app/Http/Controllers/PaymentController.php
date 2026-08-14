@@ -7,6 +7,7 @@ use App\Models\BookingDriver;
 use App\Models\Inspection;
 use App\Models\Payment;
 use App\Models\Refund;
+use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -65,6 +66,9 @@ class PaymentController extends Controller
         }
         if ($booking->hasPaidDeposit()) {
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking has already been paid.']);
+        }
+        if ($this->customerIdentityNotApproved($user)) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'Your national ID is awaiting admin approval. You can pay the deposit once your identity has been verified.']);
         }
 
         if ($booking->need_driver) {
@@ -183,6 +187,9 @@ class PaymentController extends Controller
         }
         if ($booking->status !== Booking::STATUS_CONFIRMED) {
             return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'This booking is not awaiting a deposit payment.']);
+        }
+        if ($this->customerIdentityNotApproved($user)) {
+            return redirect()->back()->with('toast', ['type' => 'error', 'message' => 'Your national ID is awaiting admin approval. You can pay the deposit once your identity has been verified.']);
         }
 
         if ($booking->need_driver) {
@@ -504,5 +511,16 @@ class PaymentController extends Controller
                 'processed_at' => $refund->processed_at?->toDateTimeString(),
             ])->values(),
         ]);
+    }
+
+    private function customerIdentityNotApproved(User $user): bool
+    {
+        if ($user->role === 'admin') {
+            return false;
+        }
+
+        $identity = $user->customerIdentity;
+
+        return $identity !== null && ! $identity->isApproved();
     }
 }

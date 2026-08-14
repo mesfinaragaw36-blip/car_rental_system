@@ -56,6 +56,8 @@ class StaffPermissionMiddleware
         'admin.users.reject-owner' => ['owner_profiles.verify'],
         'admin.users.verify-driver' => ['driver_profiles.verify'],
         'admin.users.reject-driver' => ['driver_profiles.verify'],
+        'admin.users.verify-customer-identity' => ['customer_identities.verify'],
+        'admin.users.reject-customer-identity' => ['customer_identities.verify'],
 
         // Admin staff
         'admin.staff.index' => ['staff.view'],
