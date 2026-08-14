@@ -1,3 +1,4 @@
+import React from 'react'
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     User,
@@ -8,6 +9,7 @@ import {
     Ban,
     PlayCircle,
     Edit,
+    IdCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,6 +49,8 @@ interface CustomerIdentity {
     verification_status: string;
     verified_at: string | null;
     verified_by_name?: string | null;
+    national_id_front_path: string | null;
+    national_id_back_path: string | null;
 }
 
 interface UserData {
@@ -118,7 +122,18 @@ function verificationBadgeClass(status: string): string {
             return 'bg-yellow-100 text-yellow-800';
     }
 }
-
+function DocumentLink({ path, label }: { path: string; label: string }) {
+    return React.createElement(
+        'a',
+        {
+            href: `/storage/${path}`,
+            target: '_blank',
+            rel: 'noreferrer',
+            className: 'text-primary underline',
+        },
+        label,
+    );
+}
 export default function ShowUser({ user }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
@@ -459,7 +474,7 @@ export default function ShowUser({ user }: Props) {
                     <Card>
                         <CardHeader className="flex flex-row items-center justify-between">
                             <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" />
+                                <IdCard className="h-5 w-5" />
                                 Customer Identity
                             </CardTitle>
                             <span
@@ -478,7 +493,7 @@ export default function ShowUser({ user }: Props) {
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
                                     <p className="text-sm text-muted-foreground">
-                                        National ID
+                                        National ID Number
                                     </p>
                                     <p className="font-medium">
                                         {user.customer_identity.national_id_number}
@@ -505,6 +520,39 @@ export default function ShowUser({ user }: Props) {
                                         </p>
                                     </div>
                                 )}
+                            </div>
+
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="rounded-2xl border border-muted p-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        ID front
+                                    </p>
+                                    {user.customer_identity.national_id_front_path ? (
+                                        <DocumentLink
+                                            path={user.customer_identity.national_id_front_path}
+                                            label="View front photo"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            Not uploaded.
+                                        </p>
+                                    )}
+                                </div>
+                                <div className="rounded-2xl border border-muted p-4">
+                                    <p className="text-sm text-muted-foreground">
+                                        ID back
+                                    </p>
+                                    {user.customer_identity.national_id_back_path ? (
+                                        <DocumentLink
+                                            path={user.customer_identity.national_id_back_path}
+                                            label="View back photo"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            Not uploaded.
+                                        </p>
+                                    )}
+                                </div>
                             </div>
 
                             {user.customer_identity.verification_status ===
@@ -623,19 +671,15 @@ export default function ShowUser({ user }: Props) {
                                         License document
                                     </p>
                                     {user.driver_profile.license_file_path ? (
-                                        <a
-                                            href={`/storage/${user.driver_profile.license_file_path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="text-primary underline"
-                                        >
-                                            View uploaded document
-                                        </a>
-                                    ) : (
-                                        <p className="text-sm text-muted-foreground">
-                                            No license document uploaded yet.
-                                        </p>
-                                    )}
+    <DocumentLink
+        path={user.driver_profile.license_file_path}
+        label="View uploaded document"
+    />
+) : (
+    <p className="text-sm text-muted-foreground">
+        No license document uploaded yet.
+    </p>
+)}
                                 </div>
 
                                 {user.driver_profile.verification_status ===

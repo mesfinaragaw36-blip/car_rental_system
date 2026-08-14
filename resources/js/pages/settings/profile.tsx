@@ -15,6 +15,17 @@ type PageProps = {
     profile?: Record<string, string | number | null>;
 };
 
+function verificationBadgeClass(status: string): string {
+    switch (status) {
+        case 'approved':
+            return 'bg-green-100 text-green-800';
+        case 'rejected':
+            return 'bg-red-100 text-red-800';
+        default:
+            return 'bg-yellow-100 text-yellow-800';
+    }
+}
+
 export default function Profile() {
     const { auth, profile } = usePage<PageProps>().props;
     const role = auth.user.role;
@@ -23,6 +34,12 @@ export default function Profile() {
         (role === 'admin' &&
             auth.user.staff_role_id != null &&
             (auth.user.permissions ?? []).includes('driver.access'));
+
+    const verificationStatus = String(
+        profile?.verification_status ?? 'unverified',
+    );
+    const isApproved = verificationStatus === 'approved';
+    const isRejected = verificationStatus === 'rejected';
 
     return (
         <>
@@ -146,6 +163,113 @@ export default function Profile() {
                                             message={errors.address}
                                         />
                                     </div>
+
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Identity verification status
+                                        </p>
+                                        <span
+                                            className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(verificationStatus)}`}
+                                        >
+                                            {verificationStatus
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                verificationStatus.slice(1)}
+                                        </span>
+                                    </div>
+
+                                    {isApproved ? (
+                                        <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                                            <p className="text-sm text-green-800">
+                                                Your identity has been
+                                                verified. You can book
+                                                vehicles.
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-6">
+                                            {isRejected && (
+                                                <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
+                                                    <p className="text-sm text-red-800">
+                                                        Your previous
+                                                        submission was
+                                                        rejected. Please
+                                                        review and resubmit
+                                                        your details below.
+                                                    </p>
+                                                </div>
+                                            )}
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id_number">
+                                                    National ID Number
+                                                </Label>
+
+                                                <Input
+                                                    id="national_id_number"
+                                                    className="mt-1 block w-full"
+                                                    defaultValue={
+                                                        profile?.national_id_number ??
+                                                        ''
+                                                    }
+                                                    name="national_id_number"
+                                                    inputMode="numeric"
+                                                    maxLength={12}
+                                                    required
+                                                    placeholder="12-digit Fayda ID number"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={
+                                                        errors.national_id_number
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id_front">
+                                                    National ID - Front photo
+                                                </Label>
+
+                                                <Input
+                                                    id="national_id_front"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="mt-1 block w-full"
+                                                    name="national_id_front"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={
+                                                        errors.national_id_front
+                                                    }
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id_back">
+                                                    National ID - Back photo
+                                                </Label>
+
+                                                <Input
+                                                    id="national_id_back"
+                                                    type="file"
+                                                    accept="image/*"
+                                                    className="mt-1 block w-full"
+                                                    name="national_id_back"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={
+                                                        errors.national_id_back
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             )}
 

@@ -18,6 +18,8 @@ class CustomerIdentity extends Model
         'national_id_number',
         'verification_status',
         'verified_by',
+        'national_id_front_path',
+        'national_id_back_path',
         'verified_at',
     ];
 

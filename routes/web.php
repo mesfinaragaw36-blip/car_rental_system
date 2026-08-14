@@ -156,6 +156,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
         Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])->name('users.verify-customer-identity');
         Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])->name('users.reject-customer-identity');
+        Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])->name('users.verify-customer');
+        Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])->name('users.reject-customer');
 
         Route::get('/staff', [StaffController::class, 'index'])->name('staff.index');
         Route::get('/staff/create', [StaffController::class, 'create'])->name('staff.create');
