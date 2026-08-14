@@ -213,6 +213,7 @@ class InspectionTest extends TestCase
                 'type' => Inspection::TYPE_PICKUP,
                 'status' => Inspection::STATUS_APPROVED,
                 'estimated_value' => 2500000,
+                'id_verified' => true,
             ])
             ->assertRedirect()
             ->assertSessionHas('toast.type', 'success');
@@ -237,6 +238,53 @@ class InspectionTest extends TestCase
             'user_id' => $owner->id,
             'type' => 'inspection_approved',
             'related_id' => $booking->id,
+        ]);
+    }
+
+    public function test_approved_pickup_inspection_accepts_string_boolean_id_verification_from_form(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, Booking::STATUS_DEPOSIT_PAID);
+
+        $this->actingAs($admin)
+            ->post(route('inspections.conduct', ['booking' => $booking->id]), [
+                'type' => Inspection::TYPE_PICKUP,
+                'status' => Inspection::STATUS_APPROVED,
+                'id_verified' => '1',
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'success');
+
+        $inspection = Inspection::where('booking_id', $booking->id)
+            ->where('type', Inspection::TYPE_PICKUP)
+            ->first();
+
+        $this->assertNotNull($inspection);
+        $this->assertTrue((bool) $inspection->id_verified);
+        $this->assertSame($admin->id, $inspection->id_verified_by);
+    }
+
+    public function test_approved_pickup_inspection_rejects_missing_id_verification(): void
+    {
+        $admin = $this->admin();
+        $owner = User::factory()->create(['role' => 'owner']);
+        $customer = User::factory()->create(['role' => 'customer']);
+        $booking = $this->booking($owner, $customer, Booking::STATUS_DEPOSIT_PAID);
+
+        $this->actingAs($admin)
+            ->post(route('inspections.conduct', ['booking' => $booking->id]), [
+                'type' => Inspection::TYPE_PICKUP,
+                'status' => Inspection::STATUS_APPROVED,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('toast.type', 'error')
+            ->assertSessionHas('toast.message', 'ID verification is required to approve a pickup inspection.');
+
+        $this->assertDatabaseMissing('inspections', [
+            'booking_id' => $booking->id,
+            'type' => Inspection::TYPE_PICKUP,
         ]);
     }
 
@@ -298,6 +346,7 @@ class InspectionTest extends TestCase
                 'mileage_reading' => 45230,
                 'fuel_level' => 75,
                 'notes' => 'No issues.',
+                'id_verified' => true,
             ])
             ->assertRedirect()
             ->assertSessionHas('toast.type', 'success');

@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\Inspection;
 use App\Models\Location;
 use App\Models\OwnerPayout;
@@ -54,6 +55,14 @@ class BookingPaymentFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
         $car = Car::factory()->create([
             'owner_id' => $owner->id,
             'approval_status' => 'approved',

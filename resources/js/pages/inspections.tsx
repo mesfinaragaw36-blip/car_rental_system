@@ -27,7 +27,6 @@ import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -777,18 +776,20 @@ onClose();
             </div>
 
             {type === 'pickup' && (
-                <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                <div className="rounded-lg border border-slate-200 bg-white p-4">
                     <div className="space-y-3">
                         <div className="flex items-start gap-3">
-                            <Users className="mt-0.5 h-5 w-5 text-blue-600" />
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                <Users className="h-5 w-5 text-primary" />
+                            </div>
                             <div className="flex-1">
-                                <p className="text-sm font-semibold text-blue-900">
+                                <p className="text-sm font-semibold text-slate-900">
                                     Customer Identity Verification
                                 </p>
-                                <p className="mt-1 text-sm text-blue-700">
+                                <p className="mt-1 text-sm text-muted-foreground">
                                     {booking.customer ? (
                                         <>
-                                            <span className="font-medium">{booking.customer.name}</span>
+                                            <span className="font-medium text-slate-900">{booking.customer.name}</span>
                                             {booking.customer.national_id ? (
                                                 <>
                                                     {' · '}
@@ -797,8 +798,8 @@ onClose();
                                                     </span>
                                                 </>
                                             ) : (
-                                                <span className="text-blue-600">
-                                                    {' · '}No National ID on file
+                                                <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                                    No National ID on file
                                                 </span>
                                             )}
                                         </>
@@ -808,15 +809,15 @@ onClose();
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 rounded-lg border border-blue-300 bg-white p-3">
+                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
                             <input
                                 type="checkbox"
                                 id="id_verified"
                                 checked={data.id_verified}
                                 onChange={(e) => setData('id_verified', e.target.checked)}
-                                className="mt-0.5 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-2 focus:ring-blue-500"
+                                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
                             />
-                            <label htmlFor="id_verified" className="flex-1 cursor-pointer text-sm text-slate-900">
+                            <label htmlFor="id_verified" className="flex-1 cursor-pointer text-sm text-slate-700">
                                 <span className="font-semibold">I confirm that the customer's National ID has been physically checked and matches the customer.</span>
                                 <p className="mt-1 text-xs text-muted-foreground">
                                     This verification is mandatory for pickup inspections and will be recorded with your staff ID and timestamp.
@@ -1356,12 +1357,15 @@ function InspectionCard({
         booking.status === 'paid';
 
     return (
-        <GlareCard
-            className={cn('w-full cursor-pointer', active && 'ring-2 ring-blue-600')}
+        <Card
+            className={cn(
+                'w-full cursor-pointer gap-2 overflow-hidden py-0 transition-shadow hover:shadow-md',
+                active && 'ring-2 ring-primary',
+            )}
             onClick={onSelect}
         >
-            <div className="w-full p-1.5">
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[12px] p-1">
+            <div className="w-full p-2">
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                     {image ? (
                         <img
                             src={`/storage/${image}`}
@@ -1409,7 +1413,7 @@ function InspectionCard({
                     </div>
                 </div>
             </div>
-        </GlareCard>
+        </Card>
     );
 }
 

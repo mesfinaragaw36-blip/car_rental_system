@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\Location;
 use App\Models\Payment;
 use App\Models\Refund;
@@ -38,6 +39,14 @@ class BookingDepositFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
         $car = $this->car($owner);
         $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole', 'city' => 'Addis Ababa']);
 
@@ -67,6 +76,14 @@ class BookingDepositFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
         $car = $this->car($owner);
         $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole', 'city' => 'Addis Ababa']);
 
@@ -99,6 +116,14 @@ class BookingDepositFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
         $car = $this->car($owner);
 
         $booking = Booking::create([
@@ -146,6 +171,14 @@ class BookingDepositFlowTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
+
+        CustomerIdentity::create([
+            'user_id' => $customer->id,
+            'national_id_number' => '123456789012',
+            'verification_status' => 'approved',
+            'verified_at' => now(),
+        ]);
+
         $car = $this->car($owner);
 
         $booking = Booking::create([

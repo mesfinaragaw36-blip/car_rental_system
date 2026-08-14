@@ -179,6 +179,7 @@ class InspectionController extends Controller
         ]);
 
         $type = $validated['type'];
+        $idVerified = $request->boolean('id_verified');
         $error = $this->validateBookingState($booking, $type);
 
         if ($error !== null) {
@@ -187,7 +188,7 @@ class InspectionController extends Controller
 
         // ID verification is mandatory for pickup inspections with approved status
         if ($type === Inspection::TYPE_PICKUP && $validated['status'] === Inspection::STATUS_APPROVED) {
-            if (empty($validated['id_verified']) || $validated['id_verified'] !== true) {
+            if (! $idVerified) {
                 return back()->with('toast', [
                     'type' => 'error',
                     'message' => 'ID verification is required to approve a pickup inspection.',
@@ -219,7 +220,7 @@ class InspectionController extends Controller
         ];
 
         // Add ID verification data for pickup inspections
-        if ($type === Inspection::TYPE_PICKUP && ! empty($validated['id_verified'])) {
+        if ($type === Inspection::TYPE_PICKUP && $idVerified) {
             $inspectionData['id_verified'] = true;
             $inspectionData['id_verified_by'] = $request->user()->id;
             $inspectionData['id_verified_at'] = now();

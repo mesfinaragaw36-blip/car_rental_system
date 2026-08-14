@@ -6,7 +6,6 @@ import {
     CalendarDays,
     Wallet,
     CheckCircle,
-    Clock,
 } from 'lucide-react';
 import { useState } from 'react';
 
@@ -290,21 +289,19 @@ export default function PaymentForm({
                 )}
 
                 {/* Payment confirmation notice */}
-                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4">
+                <div className="rounded-xl border border-emerald-200 bg-emerald-50 p-4">
                     <div className="flex items-start gap-3">
-                        <Clock className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" />
+                        <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-emerald-600" />
 
                         <div>
-                            <p className="font-semibold text-amber-900">
-                                Payment requires admin confirmation
+                            <p className="font-semibold text-emerald-900">
+                                Payment applied instantly
                             </p>
 
-                            <p className="mt-1 text-sm text-amber-800">
-                                After you submit your payment, it will be
-                                recorded as <strong>Pending</strong>. An
-                                administrator will verify the payment and
-                                confirm it before it is marked as{' '}
-                                <strong>Paid</strong>.
+                            <p className="mt-1 text-sm text-emerald-800">
+                                Once you submit your payment, it is recorded
+                                as <strong>Paid</strong> and the vehicle moves
+                                to the pickup inspection queue automatically.
                             </p>
                         </div>
                     </div>

@@ -8,6 +8,7 @@ use App\Models\Inspection;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -142,16 +143,14 @@ class PaymentController extends Controller
         ) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking is not awaiting a deposit payment.',
+                'message' => 'This booking is not awaiting a deposit payment.',
             ]);
         }
 
         if ($booking->hasPaidDeposit()) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking has already received a deposit payment.',
+                'message' => 'This booking has already received a deposit payment.',
             ]);
         }
 
@@ -172,8 +171,7 @@ class PaymentController extends Controller
         if ($pendingDeposit) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'A deposit payment is already awaiting admin confirmation.',
+                'message' => 'A deposit payment has already been submitted for this booking.',
             ]);
         }
         if ($this->customerIdentityNotApproved($user)) {
@@ -192,8 +190,7 @@ class PaymentController extends Controller
             if (! $hasDriver) {
                 return redirect()->back()->with('toast', [
                     'type' => 'error',
-                    'message' =>
-                        'Payment is not available until a driver is assigned to this trip.',
+                    'message' => 'Payment is not available until a driver is assigned to this trip.',
                 ]);
             }
         }
@@ -231,17 +228,13 @@ class PaymentController extends Controller
                     2
                 ),
 
-                'pickup_date' =>
-                    $booking->pickup_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateString(),
 
-                'return_date' =>
-                    $booking->return_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
 
-                'pickup_location' =>
-                    $booking->pickup_location,
+                'pickup_location' => $booking->pickup_location,
 
-                'return_location' =>
-                    $booking->return_location,
+                'return_location' => $booking->return_location,
 
                 'car' => $booking->car?->only([
                     'brand',
@@ -249,16 +242,13 @@ class PaymentController extends Controller
                     'plate_number',
                 ]),
 
-                'need_driver' =>
-                    $booking->need_driver,
+                'need_driver' => $booking->need_driver,
 
-                'driver' =>
-                    $booking->driverAssignment?->driver
+                'driver' => $booking->driverAssignment?->driver
                         ? [
-                            'name' =>
-                                $booking->driverAssignment
-                                    ->driver
-                                    ->name,
+                            'name' => $booking->driverAssignment
+                                ->driver
+                                ->name,
                         ]
                         : null,
             ],
@@ -288,16 +278,14 @@ class PaymentController extends Controller
         ) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking is not awaiting the pickup balance payment.',
+                'message' => 'This booking is not awaiting the pickup balance payment.',
             ]);
         }
 
         if ($booking->hasPaidBalance()) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'The balance has already been paid for this booking.',
+                'message' => 'The balance has already been paid for this booking.',
             ]);
         }
 
@@ -308,8 +296,7 @@ class PaymentController extends Controller
         ) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'You can pay the balance once the vehicle passes the pickup inspection.',
+                'message' => 'You can pay the balance once the vehicle passes the pickup inspection.',
             ]);
         }
 
@@ -330,8 +317,7 @@ class PaymentController extends Controller
         if ($pendingPickupPayment) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'A pickup payment is already awaiting admin confirmation.',
+                'message' => 'A pickup payment is already awaiting admin confirmation.',
             ]);
         }
 
@@ -368,17 +354,13 @@ class PaymentController extends Controller
                     2
                 ),
 
-                'pickup_date' =>
-                    $booking->pickup_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateString(),
 
-                'return_date' =>
-                    $booking->return_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
 
-                'pickup_location' =>
-                    $booking->pickup_location,
+                'pickup_location' => $booking->pickup_location,
 
-                'return_location' =>
-                    $booking->return_location,
+                'return_location' => $booking->return_location,
 
                 'car' => $booking->car?->only([
                     'brand',
@@ -386,16 +368,13 @@ class PaymentController extends Controller
                     'plate_number',
                 ]),
 
-                'need_driver' =>
-                    $booking->need_driver,
+                'need_driver' => $booking->need_driver,
 
-                'driver' =>
-                    $booking->driverAssignment?->driver
+                'driver' => $booking->driverAssignment?->driver
                         ? [
-                            'name' =>
-                                $booking->driverAssignment
-                                    ->driver
-                                    ->name,
+                            'name' => $booking->driverAssignment
+                                ->driver
+                                ->name,
                         ]
                         : null,
             ],
@@ -434,8 +413,7 @@ class PaymentController extends Controller
         if (! $extraCharge) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'There is no outstanding extra charge for this booking.',
+                'message' => 'There is no outstanding extra charge for this booking.',
             ]);
         }
 
@@ -459,11 +437,9 @@ class PaymentController extends Controller
                     2
                 ),
 
-                'pickup_date' =>
-                    $booking->pickup_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateString(),
 
-                'return_date' =>
-                    $booking->return_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
 
                 'car' => $booking->car?->only([
                     'brand',
@@ -471,8 +447,7 @@ class PaymentController extends Controller
                     'plate_number',
                 ]),
 
-                'need_driver' =>
-                    $booking->need_driver,
+                'need_driver' => $booking->need_driver,
 
                 'driver' => null,
             ],
@@ -508,8 +483,7 @@ class PaymentController extends Controller
         ) {
             return redirect()->back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking is not awaiting a deposit payment.',
+                'message' => 'This booking is not awaiting a deposit payment.',
             ]);
         }
         if ($this->customerIdentityNotApproved($user)) {
@@ -528,8 +502,7 @@ class PaymentController extends Controller
             if (! $hasDriver) {
                 return redirect()->back()->with('toast', [
                     'type' => 'error',
-                    'message' =>
-                        'Payment is not available until a driver is assigned.',
+                    'message' => 'Payment is not available until a driver is assigned.',
                 ]);
             }
         }
@@ -537,8 +510,7 @@ class PaymentController extends Controller
         if ($booking->hasPaidDeposit()) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking has already received a deposit payment.',
+                'message' => 'This booking has already received a deposit payment.',
             ]);
         }
 
@@ -546,7 +518,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -604,40 +576,36 @@ class PaymentController extends Controller
                 }
 
                 /*
-                 * IMPORTANT:
-                 * All payment methods remain pending.
-                 * Admin must confirm the payment.
+                 * The payment is applied immediately.
+                 * No admin confirmation is required.
                  */
-                Payment::create([
-                    'booking_id' =>
-                        $lockedBooking->id,
+                $payment = Payment::create([
+                    'booking_id' => $lockedBooking->id,
 
-                    'type' =>
-                        Payment::TYPE_DEPOSIT,
+                    'type' => Payment::TYPE_DEPOSIT,
 
-                    'amount' =>
-                        $depositAmount,
+                    'amount' => $depositAmount,
 
-                    'payment_method' =>
-                        $validated['payment_method'],
+                    'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference']
+                    'transaction_reference' => $validated['transaction_reference']
                         ?? null,
 
-                    'payment_status' =>
-                        'pending',
+                    'payment_status' => 'pending',
 
                     'paid_at' => null,
                 ]);
+
+                $this->confirmPayment(
+                    $payment,
+                    now()
+                );
             });
         } catch (\RuntimeException $e) {
             $message = match ($e->getMessage()) {
-                'pending' =>
-                    'A deposit payment is already awaiting admin confirmation.',
+                'pending' => 'A deposit payment has already been submitted for this booking.',
 
-                default =>
-                    'This booking is no longer available for deposit payment.',
+                default => 'This booking is no longer available for deposit payment.',
             };
 
             return back()->with('toast', [
@@ -650,8 +618,7 @@ class PaymentController extends Controller
             ->route('bookings.index')
             ->with('toast', [
                 'type' => 'success',
-                'message' =>
-                    'Payment submitted successfully. Your payment is pending admin confirmation.',
+                'message' => 'Deposit paid successfully. Your booking is confirmed and the owner has been notified.',
             ]);
     }
 
@@ -679,16 +646,14 @@ class PaymentController extends Controller
         ) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This booking is not awaiting the pickup balance payment.',
+                'message' => 'This booking is not awaiting the pickup balance payment.',
             ]);
         }
 
         if ($booking->hasPaidBalance()) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'The balance has already been paid for this booking.',
+                'message' => 'The balance has already been paid for this booking.',
             ]);
         }
 
@@ -699,8 +664,7 @@ class PaymentController extends Controller
         ) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'You can pay the balance once the vehicle passes the pickup inspection.',
+                'message' => 'You can pay the balance once the vehicle passes the pickup inspection.',
             ]);
         }
 
@@ -708,7 +672,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -778,56 +742,65 @@ class PaymentController extends Controller
                 }
 
                 $paymentData = [
-                    'booking_id' =>
-                        $lockedBooking->id,
+                    'booking_id' => $lockedBooking->id,
 
-                    'payment_method' =>
-                        $validated['payment_method'],
+                    'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference']
+                    'transaction_reference' => $validated['transaction_reference']
                         ?? null,
 
-                    'payment_status' =>
-                        'pending',
+                    'payment_status' => 'pending',
 
                     'paid_at' => null,
                 ];
 
+                $createdPayment = null;
+
                 if ($balance > 0) {
-                    Payment::create([
-                        ...$paymentData,
+                    $createdPayment =
+                        Payment::create([
+                            ...$paymentData,
 
-                        'type' =>
-                            Payment::TYPE_BALANCE,
+                            'type' => Payment::TYPE_BALANCE,
 
-                        'amount' =>
-                            $balance,
-                    ]);
+                            'amount' => $balance,
+                        ]);
                 }
 
                 if ($securityDeposit > 0) {
-                    Payment::create([
-                        ...$paymentData,
+                    $securityPayment =
+                        Payment::create([
+                            ...$paymentData,
 
-                        'type' =>
-                            Payment::TYPE_SECURITY_DEPOSIT,
+                            'type' => Payment::TYPE_SECURITY_DEPOSIT,
 
-                        'amount' =>
-                            $securityDeposit,
-                    ]);
+                            'amount' => $securityDeposit,
+                        ]);
+
+                    if ($createdPayment === null) {
+                        $createdPayment =
+                            $securityPayment;
+                    }
+                }
+
+                if ($createdPayment) {
+                    /*
+                     * Payments are applied immediately.
+                     * No admin confirmation is required.
+                     */
+                    $this->confirmPayment(
+                        $createdPayment,
+                        now()
+                    );
                 }
             });
         } catch (\RuntimeException $e) {
             $message = match ($e->getMessage()) {
-                'pending' =>
-                    'A pickup payment is already awaiting admin confirmation.',
+                'pending' => 'A pickup payment has already been submitted for this booking.',
 
-                'already-paid' =>
-                    'The balance has already been paid for this booking.',
+                'already-paid' => 'The balance has already been paid for this booking.',
 
-                default =>
-                    'This booking is no longer available for pickup payment.',
+                default => 'This booking is no longer available for pickup payment.',
             };
 
             return back()->with('toast', [
@@ -840,15 +813,14 @@ class PaymentController extends Controller
             ->route('bookings.index')
             ->with('toast', [
                 'type' => 'success',
-                'message' =>
-                    'Payment submitted successfully. Your payment is pending admin confirmation.',
+                'message' => 'Payment received successfully. Your booking is fully paid.',
             ]);
     }
 
     /**
      * Store an extra charge payment.
      *
-     * All payment methods remain pending until admin confirmation.
+     * The payment is applied immediately.
      */
     public function storeExtraCharge(
         Request $request,
@@ -867,7 +839,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -903,27 +875,29 @@ class PaymentController extends Controller
                 }
 
                 $extraCharge->update([
-                    'payment_method' =>
-                        $validated['payment_method'],
+                    'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference']
+                    'transaction_reference' => $validated['transaction_reference']
                         ?? null,
 
-                    /*
-                     * Always pending.
-                     */
-                    'payment_status' =>
-                        'pending',
+                    'payment_status' => 'pending',
 
                     'paid_at' => null,
                 ]);
+
+                /*
+                 * The payment is applied immediately.
+                 * No admin confirmation is required.
+                 */
+                $this->confirmPayment(
+                    $extraCharge,
+                    now()
+                );
             });
         } catch (\RuntimeException $e) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' =>
-                    'This extra charge has already been submitted or no longer exists.',
+                'message' => 'This extra charge has already been submitted or no longer exists.',
             ]);
         }
 
@@ -931,8 +905,7 @@ class PaymentController extends Controller
             ->route('payments.index')
             ->with('toast', [
                 'type' => 'success',
-                'message' =>
-                    'Payment submitted successfully. It is pending admin confirmation.',
+                'message' => 'Extra charge paid successfully.',
             ]);
     }
 
@@ -994,249 +967,22 @@ class PaymentController extends Controller
                     );
                 }
 
-                $booking = Booking::whereKey(
-                    $lockedPayment->booking_id
-                )
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
                 $now = now();
 
-                /*
-                 * ------------------------------------------------------
-                 * BOOKING DEPOSIT
-                 * ------------------------------------------------------
-                 */
-                if (
-                    $lockedPayment->type ===
-                    Payment::TYPE_DEPOSIT
-                ) {
-                    if (
-                        $booking->status !==
-                        Booking::STATUS_CONFIRMED
-                    ) {
-                        throw new \RuntimeException(
-                            'invalid-booking-status'
-                        );
-                    }
-
-                    $lockedPayment->update([
-                        'payment_status' =>
-                            'paid',
-
-                        'paid_at' =>
-                            $now,
-                    ]);
-
-                    $booking->update([
-                        'status' =>
-                            Booking::STATUS_DEPOSIT_PAID,
-
-                        'deposit_paid_at' =>
-                            $now,
-                    ]);
-
-                    $this->notifyDepositPaid(
-                        $booking,
-                        (float) $lockedPayment->amount
-                    );
-
-                    return;
-                }
-
-                /*
-                 * ------------------------------------------------------
-                 * PICKUP BALANCE / SECURITY DEPOSIT
-                 * ------------------------------------------------------
-                 */
-                if (
-                    $lockedPayment->type ===
-                        Payment::TYPE_BALANCE
-                    ||
-                    $lockedPayment->type ===
-                        Payment::TYPE_SECURITY_DEPOSIT
-                ) {
-                    if (
-                        $booking->status !==
-                        Booking::STATUS_DEPOSIT_PAID
-                    ) {
-                        throw new \RuntimeException(
-                            'invalid-booking-status'
-                        );
-                    }
-
-                    /*
-                     * The balance and security deposit are
-                     * submitted together.
-                     *
-                     * Confirm all pending pickup payments
-                     * for this booking.
-                     */
-                    $pickupPayments = Payment::where(
-                        'booking_id',
-                        $booking->id
-                    )
-                        ->whereIn('type', [
-                            Payment::TYPE_BALANCE,
-                            Payment::TYPE_SECURITY_DEPOSIT,
-                        ])
-                        ->where(
-                            'payment_status',
-                            'pending'
-                        )
-                        ->lockForUpdate()
-                        ->get();
-
-                    if ($pickupPayments->isEmpty()) {
-                        throw new \RuntimeException(
-                            'already-confirmed'
-                        );
-                    }
-
-                    foreach (
-                        $pickupPayments as $pickupPayment
-                    ) {
-                        $pickupPayment->update([
-                            'payment_status' =>
-                                'paid',
-
-                            'paid_at' =>
-                                $now,
-                        ]);
-                    }
-
-                    /*
-                     * Check whether both required components
-                     * are now paid.
-                     */
-                    $balancePaid =
-                        $booking->balanceAmount() <= 0
-                        ||
-                        Payment::where(
-                            'booking_id',
-                            $booking->id
-                        )
-                            ->where(
-                                'type',
-                                Payment::TYPE_BALANCE
-                            )
-                            ->where(
-                                'payment_status',
-                                'paid'
-                            )
-                            ->exists();
-
-                    $securityDepositPaid =
-                        $booking->securityDepositAmount() <= 0
-                        ||
-                        Payment::where(
-                            'booking_id',
-                            $booking->id
-                        )
-                            ->where(
-                                'type',
-                                Payment::TYPE_SECURITY_DEPOSIT
-                            )
-                            ->where(
-                                'payment_status',
-                                'paid'
-                            )
-                            ->exists();
-
-                    if (
-                        $balancePaid &&
-                        $securityDepositPaid
-                    ) {
-                        $balance =
-                            $booking->balanceAmount();
-
-                        $securityDeposit =
-                            $booking->securityDepositAmount();
-
-                        $booking->update([
-                            'status' =>
-                                Booking::STATUS_PAID,
-
-                            'balance_paid_at' =>
-                                $now,
-
-                            'security_deposit_paid_at' =>
-                                $now,
-                        ]);
-
-                        $booking->loadMissing('car');
-
-                        if ($booking->car) {
-                            $booking->car->update([
-                                'availability_status' =>
-                                    'booked',
-                            ]);
-                        }
-
-                        $this->notifyBookingFullyPaid(
-                            $booking,
-                            $balance,
-                            $securityDeposit
-                        );
-                    }
-
-                    return;
-                }
-
-                /*
-                 * ------------------------------------------------------
-                 * EXTRA CHARGE
-                 * ------------------------------------------------------
-                 */
-                if (
-                    $lockedPayment->type ===
-                    Payment::TYPE_EXTRA_CHARGE
-                ) {
-                    $lockedPayment->update([
-                        'payment_status' =>
-                            'paid',
-
-                        'paid_at' =>
-                            $now,
-                    ]);
-
-                    $booking->loadMissing(
-                        'owner',
-                        'car'
-                    );
-
-                    $booking->owner?->notifyNow(
-                        "Extra charge settled - Booking #{$booking->id}",
-                        sprintf(
-                            'The customer paid the outstanding repair/late fee balance for your %s %s.',
-                            $booking->car?->brand,
-                            $booking->car?->model,
-                        ),
-                        'extra_charge_paid',
-                        Booking::class,
-                        $booking->id,
-                    );
-
-                    return;
-                }
-
-                throw new \RuntimeException(
-                    'unsupported-type'
+                $this->confirmPayment(
+                    $lockedPayment,
+                    $now
                 );
             });
         } catch (\RuntimeException $e) {
             $message = match ($e->getMessage()) {
-                'already-confirmed' =>
-                    'This payment has already been confirmed.',
+                'already-confirmed' => 'This payment has already been confirmed.',
 
-                'invalid-method' =>
-                    'This payment method is not supported by the system.',
+                'invalid-method' => 'This payment method is not supported by the system.',
 
-                'invalid-booking-status' =>
-                    'This booking is no longer in the correct payment stage.',
+                'invalid-booking-status' => 'This booking is no longer in the correct payment stage.',
 
-                default =>
-                    'This payment could not be confirmed.',
+                default => 'This payment could not be confirmed.',
             };
 
             return back()->with('toast', [
@@ -1247,9 +993,239 @@ class PaymentController extends Controller
 
         return back()->with('toast', [
             'type' => 'success',
-            'message' =>
-                'Payment confirmed successfully.',
+            'message' => 'Payment confirmed successfully.',
         ]);
+    }
+
+    /**
+     * Apply the payment to the booking.
+     *
+     * Marks the payment as paid and performs the
+     * associated booking transition and notifications.
+     *
+     * Used by the admin confirm flow and by the
+     * customer-facing store methods so payments are
+     * applied immediately.
+     */
+    private function confirmPayment(
+        Payment $payment,
+        CarbonInterface $now
+    ): void {
+        $booking = Booking::whereKey(
+            $payment->booking_id
+        )
+            ->lockForUpdate()
+            ->firstOrFail();
+
+        /*
+         * ------------------------------------------------------
+         * BOOKING DEPOSIT
+         * ------------------------------------------------------
+         */
+        if (
+            $payment->type ===
+            Payment::TYPE_DEPOSIT
+        ) {
+            if (
+                $booking->status !==
+                Booking::STATUS_CONFIRMED
+            ) {
+                throw new \RuntimeException(
+                    'invalid-booking-status'
+                );
+            }
+
+            $payment->update([
+                'payment_status' => 'paid',
+
+                'paid_at' => $now,
+            ]);
+
+            $booking->update([
+                'status' => Booking::STATUS_DEPOSIT_PAID,
+
+                'deposit_paid_at' => $now,
+            ]);
+
+            $this->notifyDepositPaid(
+                $booking,
+                (float) $payment->amount
+            );
+
+            return;
+        }
+
+        /*
+         * ------------------------------------------------------
+         * PICKUP BALANCE / SECURITY DEPOSIT
+         * ------------------------------------------------------
+         */
+        if (
+            $payment->type ===
+                Payment::TYPE_BALANCE
+            ||
+            $payment->type ===
+                Payment::TYPE_SECURITY_DEPOSIT
+        ) {
+            if (
+                $booking->status !==
+                Booking::STATUS_DEPOSIT_PAID
+            ) {
+                throw new \RuntimeException(
+                    'invalid-booking-status'
+                );
+            }
+
+            /*
+             * The balance and security deposit are
+             * submitted together.
+             *
+             * Confirm all pending pickup payments
+             * for this booking.
+             */
+            $pickupPayments = Payment::where(
+                'booking_id',
+                $booking->id
+            )
+                ->whereIn('type', [
+                    Payment::TYPE_BALANCE,
+                    Payment::TYPE_SECURITY_DEPOSIT,
+                ])
+                ->where(
+                    'payment_status',
+                    'pending'
+                )
+                ->lockForUpdate()
+                ->get();
+
+            if ($pickupPayments->isEmpty()) {
+                throw new \RuntimeException(
+                    'already-confirmed'
+                );
+            }
+
+            foreach (
+                $pickupPayments as $pickupPayment
+            ) {
+                $pickupPayment->update([
+                    'payment_status' => 'paid',
+
+                    'paid_at' => $now,
+                ]);
+            }
+
+            /*
+             * Check whether both required components
+             * are now paid.
+             */
+            $balancePaid =
+                $booking->balanceAmount() <= 0
+                ||
+                Payment::where(
+                    'booking_id',
+                    $booking->id
+                )
+                    ->where(
+                        'type',
+                        Payment::TYPE_BALANCE
+                    )
+                    ->where(
+                        'payment_status',
+                        'paid'
+                    )
+                    ->exists();
+
+            $securityDepositPaid =
+                $booking->securityDepositAmount() <= 0
+                ||
+                Payment::where(
+                    'booking_id',
+                    $booking->id
+                )
+                    ->where(
+                        'type',
+                        Payment::TYPE_SECURITY_DEPOSIT
+                    )
+                    ->where(
+                        'payment_status',
+                        'paid'
+                    )
+                    ->exists();
+
+            if (
+                $balancePaid &&
+                $securityDepositPaid
+            ) {
+                $balance =
+                    $booking->balanceAmount();
+
+                $securityDeposit =
+                    $booking->securityDepositAmount();
+
+                $booking->update([
+                    'status' => Booking::STATUS_PAID,
+
+                    'balance_paid_at' => $now,
+
+                    'security_deposit_paid_at' => $now,
+                ]);
+
+                $booking->loadMissing('car');
+
+                if ($booking->car) {
+                    $booking->car->update([
+                        'availability_status' => 'booked',
+                    ]);
+                }
+
+                $this->notifyBookingFullyPaid(
+                    $booking,
+                    $balance,
+                    $securityDeposit
+                );
+            }
+
+            return;
+        }
+
+        /*
+         * ------------------------------------------------------
+         * EXTRA CHARGE
+         * ------------------------------------------------------
+         */
+        if (
+            $payment->type ===
+            Payment::TYPE_EXTRA_CHARGE
+        ) {
+            $payment->update([
+                'payment_status' => 'paid',
+
+                'paid_at' => $now,
+            ]);
+
+            $booking->loadMissing(
+                'owner',
+                'car'
+            );
+
+            $booking->owner?->notifyNow(
+                "Extra charge settled - Booking #{$booking->id}",
+                sprintf(
+                    'The customer paid the outstanding repair/late fee balance for your %s %s.',
+                    $booking->car?->brand,
+                    $booking->car?->model,
+                ),
+                'extra_charge_paid',
+                Booking::class,
+                $booking->id,
+            );
+
+            return;
+        }
+
+        throw new \RuntimeException(
+            'unsupported-type'
+        );
     }
 
     /**
@@ -1318,8 +1294,7 @@ class PaymentController extends Controller
                 Payment::TYPE_SECURITY_DEPOSIT
             )
             ->sum(
-                fn (Payment $paidPayment) =>
-                    (float) $paidPayment->amount
+                fn (Payment $paidPayment) => (float) $paidPayment->amount
             );
 
         $balanceRemaining = round(
@@ -1339,174 +1314,135 @@ class PaymentController extends Controller
                 'type_label' => match (
                     $payment->type
                 ) {
-                    Payment::TYPE_DEPOSIT =>
-                        'Booking Deposit',
+                    Payment::TYPE_DEPOSIT => 'Booking Deposit',
 
-                    Payment::TYPE_BALANCE =>
-                        'Balance Payment',
+                    Payment::TYPE_BALANCE => 'Balance Payment',
 
-                    Payment::TYPE_SECURITY_DEPOSIT =>
-                        'Security Deposit',
+                    Payment::TYPE_SECURITY_DEPOSIT => 'Security Deposit',
 
-                    Payment::TYPE_EXTRA_CHARGE =>
-                        'Extra Charge',
+                    Payment::TYPE_EXTRA_CHARGE => 'Extra Charge',
 
-                    default =>
-                        'Payment',
+                    default => 'Payment',
                 },
 
-                'amount' =>
-                    $payment->amount,
+                'amount' => $payment->amount,
 
-                'payment_method' =>
-                    $payment->payment_method,
+                'payment_method' => $payment->payment_method,
 
-                'transaction_reference' =>
-                    $payment->transaction_reference,
+                'transaction_reference' => $payment->transaction_reference,
 
-                'payment_status' =>
-                    $payment->payment_status,
+                'payment_status' => $payment->payment_status,
 
-                'paid_at' =>
-                    $payment->paid_at?->toDateTimeString(),
+                'paid_at' => $payment->paid_at?->toDateTimeString(),
             ],
 
             'booking' => [
-                'id' =>
-                    $booking->id,
+                'id' => $booking->id,
 
-                'pickup_date' =>
-                    $booking->pickup_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateString(),
 
-                'return_date' =>
-                    $booking->return_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
 
-                'pickup_location' =>
-                    $booking->pickup_location,
+                'pickup_location' => $booking->pickup_location,
 
-                'return_location' =>
-                    $booking->return_location,
+                'return_location' => $booking->return_location,
 
-                'need_driver' =>
-                    $booking->need_driver,
+                'need_driver' => $booking->need_driver,
 
-                'total_price' =>
-                    number_format(
-                        $totalPrice,
-                        2
-                    ),
+                'total_price' => number_format(
+                    $totalPrice,
+                    2
+                ),
 
-                'days' =>
-                    $days,
+                'days' => $days,
 
-                'daily_rate' =>
-                    number_format(
-                        $dailyRate,
-                        2
-                    ),
+                'daily_rate' => number_format(
+                    $dailyRate,
+                    2
+                ),
 
-                'subtotal' =>
-                    number_format(
-                        $rentalSubtotal,
-                        2
-                    ),
+                'subtotal' => number_format(
+                    $rentalSubtotal,
+                    2
+                ),
 
-                'driver_fee' =>
-                    number_format(
-                        $driverFee,
-                        2
-                    ),
+                'driver_fee' => number_format(
+                    $driverFee,
+                    2
+                ),
 
-                'deposit_amount' =>
-                    number_format(
-                        $booking->depositAmount(),
-                        2
-                    ),
+                'deposit_amount' => number_format(
+                    $booking->depositAmount(),
+                    2
+                ),
 
-                'full_deposit' =>
-                    number_format(
-                        $totalPrice,
-                        2
-                    ),
+                'full_deposit' => number_format(
+                    $totalPrice,
+                    2
+                ),
 
-                'full_deposit_balance' =>
-                    number_format(
-                        $booking->balanceAmount(),
-                        2
-                    ),
+                'full_deposit_balance' => number_format(
+                    $booking->balanceAmount(),
+                    2
+                ),
 
-                'security_deposit' =>
-                    number_format(
-                        $booking->securityDepositAmount(),
-                        2
-                    ),
+                'security_deposit' => number_format(
+                    $booking->securityDepositAmount(),
+                    2
+                ),
 
-                'paid_to_date' =>
-                    number_format(
-                        $paidToDate,
-                        2
-                    ),
+                'paid_to_date' => number_format(
+                    $paidToDate,
+                    2
+                ),
 
-                'balance_remaining' =>
-                    number_format(
-                        $balanceRemaining,
-                        2
-                    ),
+                'balance_remaining' => number_format(
+                    $balanceRemaining,
+                    2
+                ),
             ],
 
             'customer' => $booking->customer
                 ? [
-                    'name' =>
-                        $booking->customer->name,
+                    'name' => $booking->customer->name,
 
-                    'email' =>
-                        $booking->customer->email,
+                    'email' => $booking->customer->email,
 
-                    'phone' =>
-                        $booking->customer->phone,
+                    'phone' => $booking->customer->phone,
                 ]
                 : null,
 
             'car' => $booking->car
                 ? [
-                    'brand' =>
-                        $booking->car->brand,
+                    'brand' => $booking->car->brand,
 
-                    'model' =>
-                        $booking->car->model,
+                    'model' => $booking->car->model,
 
-                    'plate_number' =>
-                        $booking->car->plate_number,
+                    'plate_number' => $booking->car->plate_number,
                 ]
                 : null,
 
-            'refunds' =>
-                $booking->refunds
-                    ->map(
-                        fn (
-                            Refund $refund
-                        ) => [
-                            'id' =>
-                                $refund->id,
+            'refunds' => $booking->refunds
+                ->map(
+                    fn (
+                        Refund $refund
+                    ) => [
+                        'id' => $refund->id,
 
-                            'amount' =>
-                                number_format(
-                                    (float) $refund->amount,
-                                    2
-                                ),
+                        'amount' => number_format(
+                            (float) $refund->amount,
+                            2
+                        ),
 
-                            'reason' =>
-                                $refund->reason,
+                        'reason' => $refund->reason,
 
-                            'status' =>
-                                $refund->status,
+                        'status' => $refund->status,
 
-                            'processed_at' =>
-                                $refund->processed_at
-                                    ?->toDateTimeString(),
-                        ]
-                    )
-                    ->values(),
+                        'processed_at' => $refund->processed_at
+                            ?->toDateTimeString(),
+                    ]
+                )
+                ->values(),
         ]);
     }
 
