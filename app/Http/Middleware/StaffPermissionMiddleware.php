@@ -123,6 +123,10 @@ class StaffPermissionMiddleware
         'driver.profile.update' => ['driver.access'],
         'driver.toggle-availability' => ['driver.access'],
         'driver.trip-history' => ['driver.access'],
+
+        //reports
+        'admin.reports.index' => ['reports.view'],
+        
     ];
 
     public function handle(Request $request, Closure $next): Response

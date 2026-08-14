@@ -22,6 +22,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -139,6 +140,7 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/transactions/refunds/{refund}/process', [TransactionController::class, 'processRefund'])->name('transactions.refunds.process');
         Route::post('/transactions/owner-payouts/{payout}/mark-paid', [TransactionController::class, 'markOwnerPaid'])->name('transactions.owner-payouts.mark-paid');
         Route::post('/transactions/driver-payouts/{assignment}/mark-paid', [TransactionController::class, 'markDriverPaid'])->name('transactions.driver-payouts.mark-paid');
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
 
         Route::get('/users', [UserController::class, 'index'])->name('users.index');
         Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
