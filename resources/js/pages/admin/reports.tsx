@@ -13,7 +13,6 @@ import { FormEvent, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import AppLayout from '@/layouts/app-layout';
 
 type Summary = {
     total_bookings: number;
@@ -132,10 +131,10 @@ export default function Reports({
     );
 
     return (
-        <AppLayout>
+        <>
             <Head title="Reports" />
 
-            <div className="space-y-6">
+            <div className="space-y-6 p-6">
                 {/* Header */}
                 <div
                     className="rounded-2xl p-8 text-white"
@@ -597,6 +596,6 @@ export default function Reports({
                     </CardContent>
                 </Card>
             </div>
-        </AppLayout>
+        </>
     );
 }
