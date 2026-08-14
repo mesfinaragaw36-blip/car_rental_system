@@ -1,4 +1,4 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, usePage } from '@inertiajs/react';
 import {
     Car,
     User,
@@ -10,10 +10,7 @@ import {
     ShieldCheck,
     Truck,
 } from 'lucide-react';
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { accept, reject } from '@/routes/assignments';
 
 interface DriverAssignment {
     id: number;
@@ -27,9 +24,21 @@ interface DriverAssignment {
         return_location: string;
         status: string;
     };
-    customer: { name: string; phone: string };
-    car: { brand: string; model: string; year: number; plate_number: string };
-    driver?: { id: number; name: string; phone: string } | null;
+    customer: {
+        name: string;
+        phone: string;
+    };
+    car: {
+        brand: string;
+        model: string;
+        year: number;
+        plate_number: string;
+    };
+    driver?: {
+        id: number;
+        name: string;
+        phone: string;
+    } | null;
 }
 
 interface Props {
@@ -45,10 +54,10 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const STATUS_DESCRIPTIONS: Record<string, string> = {
-    assigned: 'Accepted — awaiting driver response',
-    accepted: 'Driver confirmed — ready for customer payment',
-    completed: 'Trip completed successfully',
-    rejected: 'This assignment was declined',
+    assigned: 'Trip assigned to you by the company.',
+    accepted: 'Assignment confirmed and ready for the trip.',
+    completed: 'Trip completed successfully.',
+    rejected: 'This assignment was declined.',
 };
 
 const STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -63,179 +72,221 @@ export default function Assignments({
     assignments = [],
 }: Props) {
     const { props: p } = usePage<{
-        toast?: { type: string; message: string };
+        toast?: {
+            type: string;
+            message: string;
+        };
     }>();
+
     const toast = p.toast;
-    const [processingId, setProcessingId] = useState<number | null>(null);
-
-    const handleAction = (id: number, action: 'accept' | 'reject') => {
-        if (action === 'reject' && !confirm('Reject this assignment?')) {
-            return;
-        }
-
-        setProcessingId(id);
-        const routeMap = { accept, reject };
-        router.post(
-            routeMap[action].url({ assignment: id }),
-            {},
-            {
-                preserveScroll: true,
-                onFinish: () => setProcessingId(null),
-            },
-        );
-    };
 
     const pendingCount = assignments.filter(
         (a) => a.status === 'assigned',
     ).length;
+
     const activeCount = assignments.filter(
         (a) => a.status === 'accepted',
+    ).length;
+
+    const completedCount = assignments.filter(
+        (a) => a.status === 'completed',
     ).length;
 
     return (
         <>
             <Head title="Assignments" />
+
             <div className="space-y-8 p-6">
+                {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold">My Assignments</h1>
+                    <h1 className="text-3xl font-bold">
+                        My Assignments
+                    </h1>
+
                     <p className="mt-2 text-muted-foreground">
-                        Manage driver assignments and trip approvals.
+                        View your assigned trips and rental details.
                     </p>
                 </div>
 
+                {/* Toast */}
                 {toast && (
                     <div
-                        className={`rounded-lg px-4 py-3 text-sm font-medium ${toast.type === 'success' ? 'border border-green-200 bg-green-50 text-green-800' : 'border border-red-200 bg-red-50 text-red-800'}`}
+                        className={`rounded-lg px-4 py-3 text-sm font-medium ${
+                            toast.type === 'success'
+                                ? 'border border-green-200 bg-green-50 text-green-800'
+                                : 'border border-red-200 bg-red-50 text-red-800'
+                        }`}
                     >
                         {toast.message}
                     </div>
                 )}
 
+                {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-3">
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-purple-50">
                                 <Clock className="h-5 w-5 text-purple-600" />
                             </div>
+
                             <div>
                                 <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                    Pending
+                                    Assigned
                                 </p>
+
                                 <p className="mt-0.5 text-2xl font-bold">
                                     {pendingCount}
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
+
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-blue-50">
                                 <Truck className="h-5 w-5 text-blue-600" />
                             </div>
+
                             <div>
                                 <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                     Active
                                 </p>
+
                                 <p className="mt-0.5 text-2xl font-bold">
                                     {activeCount}
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
+
                     <Card className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md">
                         <CardContent className="flex items-center gap-4 p-5">
                             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50">
                                 <CheckCircle className="h-5 w-5 text-emerald-600" />
                             </div>
+
                             <div>
                                 <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
                                     Completed
                                 </p>
+
                                 <p className="mt-0.5 text-2xl font-bold">
-                                    {
-                                        assignments.filter(
-                                            (a) => a.status === 'completed',
-                                        ).length
-                                    }
+                                    {completedCount}
                                 </p>
                             </div>
                         </CardContent>
                     </Card>
                 </div>
 
+                {/* Empty State */}
                 {assignments.length === 0 ? (
                     <Card className="overflow-hidden rounded-2xl">
                         <CardContent className="flex flex-col items-center justify-center py-16">
                             <Car className="mb-4 h-16 w-16 text-slate-400" />
+
                             <h2 className="text-xl font-semibold">
                                 No assignments yet
                             </h2>
+
                             <p className="mt-2 text-center text-muted-foreground">
-                                {role === 'owner'
-                                    ? 'Assignments will appear here when drivers claim your bookings.'
-                                    : 'The owner will assign you to a booking when a customer requests a driver.'}
+                                Your assigned trips will appear here when
+                                the company assigns you to a booking.
                             </p>
                         </CardContent>
                     </Card>
                 ) : (
+                    /* Assignment List */
                     <div className="space-y-5">
                         {assignments.map((a) => (
                             <Card
                                 key={a.id}
                                 className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg"
                             >
+                                {/* Status Bar */}
                                 <div
-                                    className={`h-1.5 w-full ${STATUS_STYLES[a.status]?.split(' ')[0] ?? 'bg-slate-200'}`}
+                                    className={`h-1.5 w-full ${
+                                        STATUS_STYLES[a.status]?.split(
+                                            ' ',
+                                        )[0] ?? 'bg-slate-200'
+                                    }`}
                                 />
+
                                 <CardContent className="p-6">
                                     <div className="flex flex-col gap-5">
+                                        {/* Car Header */}
                                         <div className="flex items-start justify-between gap-4">
                                             <div className="flex items-center gap-3">
                                                 <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50">
                                                     <Car className="h-5 w-5 text-blue-700" />
                                                 </div>
+
                                                 <div>
                                                     <p className="text-lg font-bold">
                                                         {a.car.brand}{' '}
                                                         {a.car.model}
                                                     </p>
+
                                                     <p className="text-sm text-muted-foreground">
                                                         {a.car.year} &bull;{' '}
                                                         {a.car.plate_number}
                                                     </p>
                                                 </div>
                                             </div>
+
+                                            {/* Status */}
                                             <span
-                                                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${STATUS_STYLES[a.status] ?? 'border-slate-200 bg-slate-50 text-slate-700'}`}
+                                                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                                                    STATUS_STYLES[
+                                                        a.status
+                                                    ] ??
+                                                    'border-slate-200 bg-slate-50 text-slate-700'
+                                                }`}
                                             >
-                                                {STATUS_ICONS[a.status]}{' '}
+                                                {STATUS_ICONS[a.status]}
+
                                                 {a.status}
                                             </span>
                                         </div>
 
+                                        {/* Status Description */}
                                         <p className="text-sm text-muted-foreground">
-                                            {STATUS_DESCRIPTIONS[a.status] ??
-                                                a.status}
+                                            {STATUS_DESCRIPTIONS[
+                                                a.status
+                                            ] ?? a.status}
                                         </p>
 
+                                        {/* Customer / Driver */}
                                         <div className="grid gap-4 sm:grid-cols-2">
+                                            {/* Customer */}
                                             <div className="space-y-2">
                                                 <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                                     Customer
                                                 </p>
+
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                     <span>
-                                                        {a.customer.name}
+                                                        {
+                                                            a.customer
+                                                                .name
+                                                        }
                                                     </span>
                                                 </div>
+
                                                 <div className="flex items-center gap-2 text-sm">
                                                     <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                     <span>
-                                                        {a.customer.phone}
+                                                        {
+                                                            a.customer
+                                                                .phone
+                                                        }
                                                     </span>
                                                 </div>
                                             </div>
+
+                                            {/* Driver */}
                                             {a.driver &&
                                                 (role === 'owner' ||
                                                     role === 'admin') && (
@@ -243,94 +294,74 @@ export default function Assignments({
                                                         <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                                             Driver
                                                         </p>
+
                                                         <div className="flex items-center gap-2 text-sm">
                                                             <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                             <span>
-                                                                {a.driver.name}
+                                                                {
+                                                                    a.driver
+                                                                        .name
+                                                                }
                                                             </span>
                                                         </div>
+
                                                         <div className="flex items-center gap-2 text-sm">
                                                             <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                             <span>
-                                                                {a.driver.phone}
+                                                                {
+                                                                    a.driver
+                                                                        .phone
+                                                                }
                                                             </span>
                                                         </div>
                                                     </div>
                                                 )}
                                         </div>
 
+                                        {/* Trip Details */}
                                         <div className="grid gap-3 rounded-xl border p-4 sm:grid-cols-2">
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                 <span className="font-medium">
                                                     Pickup:
                                                 </span>
+
                                                 <span className="text-muted-foreground">
                                                     {a.booking.pickup_date}{' '}
                                                     &mdash;{' '}
-                                                    {a.booking.pickup_location}
+                                                    {
+                                                        a.booking
+                                                            .pickup_location
+                                                    }
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center gap-2 text-sm">
                                                 <Calendar className="h-4 w-4 shrink-0 text-muted-foreground" />
+
                                                 <span className="font-medium">
                                                     Return:
                                                 </span>
+
                                                 <span className="text-muted-foreground">
                                                     {a.booking.return_date}{' '}
                                                     &mdash;{' '}
-                                                    {a.booking.return_location}
+                                                    {
+                                                        a.booking
+                                                            .return_location
+                                                    }
                                                 </span>
                                             </div>
                                         </div>
 
-                                        <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-                                            <div className="flex flex-wrap gap-2">
-                                                {a.status === 'assigned' && (
-                                                    <>
-                                                        <Button
-                                                            size="sm"
-                                                            className="bg-emerald-600 hover:bg-emerald-700"
-                                                            disabled={
-                                                                processingId ===
-                                                                a.id
-                                                            }
-                                                            onClick={() =>
-                                                                handleAction(
-                                                                    a.id,
-                                                                    'accept',
-                                                                )
-                                                            }
-                                                        >
-                                                            {processingId ===
-                                                            a.id
-                                                                ? 'Processing…'
-                                                                : 'Accept Trip'}
-                                                        </Button>
-                                                        <Button
-                                                            size="sm"
-                                                            variant="destructive"
-                                                            disabled={
-                                                                processingId ===
-                                                                a.id
-                                                            }
-                                                            onClick={() =>
-                                                                handleAction(
-                                                                    a.id,
-                                                                    'reject',
-                                                                )
-                                                            }
-                                                        >
-                                                            {processingId ===
-                                                            a.id
-                                                                ? 'Processing…'
-                                                                : 'Reject'}
-                                                        </Button>
-                                                    </>
-                                                )}
-                                            </div>
+                                        {/* Assignment Information */}
+                                        <div className="flex items-center justify-end border-t pt-4">
                                             <p className="text-xs text-muted-foreground">
-                                                Assigned at {a.assigned_at}
+                                                Assigned at{' '}
+                                                {a.assigned_at}
                                             </p>
                                         </div>
                                     </div>
@@ -346,7 +377,13 @@ export default function Assignments({
 
 Assignments.layout = {
     breadcrumbs: [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Assignments', href: '/assignments' },
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        {
+            title: 'Assignments',
+            href: '/assignments',
+        },
     ],
 };
