@@ -108,18 +108,30 @@ class Car extends Model
 
     /**
      * Scope to cars whose owner has been verified by admin.
-     * Cars from unapproved owners should never be visible to customers or bookable.
+     * Admin-created cars do not require owner verification.
      */
     public function scopeOwnerApproved($query)
     {
-        return $query->whereHas('owner.ownerProfile', fn ($q) => $q->where('verification_status', 'approved'));
+        return $query->where(function ($q) {
+            $q->whereHas('owner', function ($ownerQuery) {
+                $ownerQuery->where('role', 'admin');
+            })
+                ->orWhereHas('owner.ownerProfile', function ($profileQuery) {
+                    $profileQuery->where('verification_status', 'approved');
+                });
+        });
     }
 
     /**
-     * Whether this car's owner has been verified by admin.
+     * Whether this car's owner is allowed to have the car visible/bookable.
+     * Admin-created cars do not require owner verification.
      */
     public function ownerIsApproved(): bool
     {
+        if ($this->owner?->role === 'admin') {
+            return true;
+        }
+
         return $this->owner?->ownerProfile?->verification_status === 'approved';
     }
 }

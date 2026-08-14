@@ -14,6 +14,7 @@ import {
     ClipboardCheck,
     Bell,
     ReceiptText,
+    BarChart3,
 } from 'lucide-react';
 
 import AppLogo from '@/components/app-logo';
@@ -38,6 +39,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'users.view': ['/admin/users'],
     'staff.view': ['/admin/staff'],
     'payments.view': ['/admin/transactions'],
+    'reports.view': ['/admin/reports'],
     'disputes.view': ['/disputes'],
     'roles.view': ['/admin/roles'],
     'locations.view': ['/admin/locations'],
@@ -96,6 +98,14 @@ function getNavItems(
                 icon: ReceiptText,
             });
         }
+
+            if (allowedRoutes.has('/admin/reports')) {
+        items.push({
+            title: 'Reports',
+            href: '/admin/reports',
+            icon: BarChart3,
+        });
+    }
 
         if (allowedRoutes.has('/disputes')) {
             items.push({ title: 'Disputes', href: '/disputes', icon: Wrench });
@@ -169,6 +179,11 @@ function getNavItems(
                     title: 'Transactions',
                     href: '/admin/transactions',
                     icon: ReceiptText,
+                },
+                {
+                    title: 'Reports',
+                    href: '/admin/reports',
+                    icon: BarChart3,
                 },
                 { title: 'My Assignments', href: '/assignments', icon: Wrench },
                 { title: 'Disputes', href: '/disputes', icon: Wrench },

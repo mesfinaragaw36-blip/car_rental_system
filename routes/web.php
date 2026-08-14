@@ -20,6 +20,7 @@ use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
@@ -41,7 +42,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/dashboard', [DashboardController::class, 'index'])
         ->name('dashboard');
-
 
     // =========================================================
     // Bookings
@@ -83,7 +83,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('bookings.complete')
         ->middleware('staff_permission');
 
-
     // =========================================================
     // Payments
     // =========================================================
@@ -122,7 +121,6 @@ Route::middleware(['auth'])->group(function () {
         ->name('payments.confirm')
         ->middleware(['role:admin', 'staff_permission']);
 
-
     // =========================================================
     // Notifications
     // =========================================================
@@ -135,7 +133,6 @@ Route::middleware(['auth'])->group(function () {
 
     Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])
         ->name('notifications.read');
-
 
     // =========================================================
     // Vehicles - Owner Management
@@ -177,7 +174,6 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/vehicles/{car}/available-periods/{availablePeriod}', [VehicleController::class, 'destroyAvailablePeriod'])
         ->name('vehicles.available-periods.destroy');
 
-
     // =========================================================
     // Browse Cars
     // =========================================================
@@ -191,14 +187,12 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/cars/{car}/book', [BrowseCarController::class, 'book'])
         ->name('cars.book');
 
-
     // =========================================================
     // Assignments
     // =========================================================
 
     Route::get('/assignments', [AssignmentController::class, 'index'])
         ->name('assignments.index');
-
 
     // =========================================================
     // Driver Features
@@ -215,7 +209,6 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])
             ->name('driver.trip-history');
     });
-
 
     // =========================================================
     // Inspection Staff Routes
@@ -248,7 +241,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('inspections.complete');
     });
 
-
     // =========================================================
     // Booking Disputes - Admin
     // =========================================================
@@ -265,7 +257,6 @@ Route::middleware(['auth'])->group(function () {
             ->name('disputes.reject');
     });
 
-
     // =========================================================
     // Admin Routes
     // =========================================================
@@ -275,25 +266,25 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.')
         ->group(function () {
 
-        Route::get('/users', [UserController::class, 'index'])->name('users.index');
-        Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-        Route::post('/users', [UserController::class, 'store'])->name('users.store');
-        Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-        Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-        Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-        Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-        Route::get('/users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
-        Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
-        Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
-        Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
-        Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])->name('users.verify-owner');
-        Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])->name('users.reject-owner');
-        Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])->name('users.verify-driver');
-        Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
-        Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])->name('users.verify-customer-identity');
-        Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])->name('users.reject-customer-identity');
-        Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])->name('users.verify-customer');
-        Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])->name('users.reject-customer');
+            Route::get('/users', [UserController::class, 'index'])->name('users.index');
+            Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
+            Route::post('/users', [UserController::class, 'store'])->name('users.store');
+            Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
+            Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
+            Route::get('/users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
+            Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
+            Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
+            Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
+            Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])->name('users.verify-owner');
+            Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])->name('users.reject-owner');
+            Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])->name('users.verify-driver');
+            Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
+            Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])->name('users.verify-customer-identity');
+            Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])->name('users.reject-customer-identity');
+            Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])->name('users.verify-customer');
+            Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])->name('users.reject-customer');
 
             // -------------------------------------------------
             // Vehicles
@@ -338,7 +329,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])
                 ->name('vehicle-documents.store');
 
-
             // -------------------------------------------------
             // Drivers
             // -------------------------------------------------
@@ -351,7 +341,6 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])
                 ->name('drivers.activate');
-
 
             // -------------------------------------------------
             // Transactions
@@ -372,6 +361,12 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/transactions/payments/{payment}/mark-cash-paid', [TransactionController::class, 'markCashPaid'])
                 ->name('transactions.payments.mark-cash-paid');
 
+            // -------------------------------------------------
+            // Reports
+            // -------------------------------------------------
+
+            Route::get('/reports', [ReportController::class, 'index'])
+                ->name('reports.index');
 
             // -------------------------------------------------
             // Users
@@ -418,7 +413,6 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])
                 ->name('users.reject-owner');
 
-
             // -------------------------------------------------
             // Staff
             // -------------------------------------------------
@@ -443,7 +437,6 @@ Route::middleware(['auth'])->group(function () {
 
             Route::post('/staff/{staff}/activate', [StaffController::class, 'activate'])
                 ->name('staff.activate');
-
 
             // -------------------------------------------------
             // Roles
@@ -470,7 +463,6 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
                 ->name('roles.destroy');
 
-
             // -------------------------------------------------
             // Car Types
             // -------------------------------------------------
@@ -487,14 +479,12 @@ Route::middleware(['auth'])->group(function () {
             Route::delete('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])
                 ->name('car-types.type-names.destroy');
 
-
             // -------------------------------------------------
             // Locations
             // -------------------------------------------------
 
             Route::resource('locations', LocationController::class)
                 ->except(['show']);
-
 
             // -------------------------------------------------
             // Reviews

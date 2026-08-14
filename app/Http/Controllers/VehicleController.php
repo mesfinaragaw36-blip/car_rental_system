@@ -115,7 +115,7 @@ class VehicleController extends Controller
             'category' => 'required|string|max:100',
             'color' => 'required|string|max:50',
             'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
-            'transmission' => 'required|in:Manual,Automatic, Semi',
+            'transmission' => 'required|in:Manual,Automatic,Semi',
             'car_type_name_id' => 'nullable|exists:car_type_names,id',
             'daily_price' => 'required|numeric|min:0',
             'availability_status' => 'nullable|in:available,maintenance',
