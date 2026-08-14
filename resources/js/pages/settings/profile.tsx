@@ -185,7 +185,8 @@ export default function Profile() {
                                     }
                                     name="national_id"
                                     required
-                                    placeholder="National ID"
+                                    maxLength={12}
+                                    placeholder="12-digit National ID number(FIN)"
                                 />
 
                                 <InputError
@@ -193,6 +194,83 @@ export default function Profile() {
                                     message={errors.national_id}
                                 />
                             </div>
+                                    
+                    
+                                     <div className="grid gap-2">
+                                <Label htmlFor="national_id_front_file">
+                                    National ID photo (front)
+                                </Label>
+
+                                <p className="text-sm text-muted-foreground">
+                                    Upload a clear photo of the front of your National ID card.
+                                </p>
+
+                                <Input
+                                    id="national_id_front_file"
+                                    type="file"
+                                    className="mt-1 block w-full"
+                                    name="national_id_front_file"
+                                    accept="image/*"
+                                />
+
+                                {profile?.national_id_front_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Existing file:{' '}
+                                        
+                                            className="text-primary underline"
+                                            href={`/storage/${profile.national_id_front_file_path}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        <a>
+                                            View upload
+                                        </a>
+                                    </p>
+                                )}
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.national_id_front_file}
+                                />
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="national_id_back_file">
+                                    National ID photo (back)
+                                </Label>
+
+                                <p className="text-sm text-muted-foreground">
+                                    Upload a clear photo of the back of your National ID card.
+                                </p>
+
+                                <Input
+                                    id="national_id_back_file"
+                                    type="file"
+                                    className="mt-1 block w-full"
+                                    name="national_id_back_file"
+                                    accept="image/*"
+                                />
+
+                                {profile?.national_id_back_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Existing file:{' '}
+                                        
+                                            className="text-primary underline"
+                                            href={`/storage/${profile.national_id_back_file_path}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                        
+                                        <a>
+                                            View upload
+                                        </a>
+                                    </p>
+                                )}
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.national_id_back_file}
+                                />
+                            </div>
+
 
                             <div className="rounded-2xl border border-muted p-4">
                                 <p className="text-sm font-medium text-muted-foreground">

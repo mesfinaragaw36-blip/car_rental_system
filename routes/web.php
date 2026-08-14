@@ -152,6 +152,8 @@ Route::middleware(['auth'])->group(function () {
         Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
         Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])->name('users.verify-owner');
         Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])->name('users.reject-owner');
+        Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])->name('users.verify-driver');
+        Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
         Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])->name('users.verify-customer-identity');
         Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])->name('users.reject-customer-identity');
 

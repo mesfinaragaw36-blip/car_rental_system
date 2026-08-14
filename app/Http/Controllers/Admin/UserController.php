@@ -16,16 +16,34 @@ class UserController extends Controller
 {
     public function index(Request $request): Response
     {
-        $query = User::where('role', '!=', 'admin')
-            ->orWhere(function ($q) {
-                $q->where('role', 'admin')->whereNull('staff_role_id');
+        $baseQuery = function ($query) {
+            $query->where(function ($q) {
+                $q->where('role', '!=', 'admin')
+                    ->orWhere(function ($q) {
+                        $q->where('role', 'admin')
+                            ->whereNull('staff_role_id');
+                    });
             });
+        };
+
+        $query = User::query();
+
+        $baseQuery($query);
+
+        // Load verification profiles so the frontend can display
+        // owner/driver verification status.
+        $query->with([
+            'ownerProfile:id,user_id,business_name,verification_status,verified_at',
+            'driverProfile:id,user_id,license_number,verification_status',
+        ]);
 
         if ($request->filled('search')) {
             $search = $request->input('search');
+
             $query->where(function ($q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
@@ -33,11 +51,16 @@ class UserController extends Controller
             $query->where('role', $request->input('role'));
         }
 
+        // This is the ACCOUNT status, not verification status.
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
         }
 
-        $users = $query->with('customerIdentity:id,user_id,verification_status')->latest()->paginate(15)->withQueryString();
+        $users = $query
+            ->with('customerIdentity:id,user_id,verification_status')
+            ->latest()
+            ->paginate(15)
+            ->withQueryString();
 
         $users->getCollection()->transform(function (User $user) {
             return array_merge($user->toArray(), [
@@ -46,9 +69,51 @@ class UserController extends Controller
             ]);
         });
 
+        /*
+         * Dashboard statistics
+         */
+        $statsQuery = User::query();
+        $baseQuery($statsQuery);
+
+        $total = (clone $statsQuery)->count();
+
+        $owners = (clone $statsQuery)
+            ->where('role', 'owner')
+            ->count();
+
+        $pending = (clone $statsQuery)
+            ->where(function ($q) {
+                $q->whereHas('ownerProfile', function ($q) {
+                    $q->where('verification_status', 'pending');
+                })->orWhereHas('driverProfile', function ($q) {
+                    $q->where('verification_status', 'pending');
+                });
+            })
+            ->count();
+
+        $approved = (clone $statsQuery)
+            ->where(function ($q) {
+                $q->whereHas('ownerProfile', function ($q) {
+                    $q->where('verification_status', 'approved');
+                })->orWhereHas('driverProfile', function ($q) {
+                    $q->where('verification_status', 'approved');
+                });
+            })
+            ->count();
+
         return Inertia::render('admin/users/index', [
             'users' => $users,
-            'filters' => $request->only(['search', 'role', 'status']),
+            'filters' => $request->only([
+                'search',
+                'role',
+                'status',
+            ]),
+            'stats' => [
+                'total' => $total,
+                'owners' => $owners,
+                'pending' => $pending,
+                'approved' => $approved,
+            ],
         ]);
     }
 
@@ -277,6 +342,48 @@ class UserController extends Controller
         return back()->with('toast', [
             'type' => 'success',
             'message' => 'Customer identity rejected.',
+        ]);
+    }
+
+    public function verifyDriver(User $user): RedirectResponse
+    {
+        $profile = $user->driverProfile;
+
+        if (! $profile) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No driver profile found for this user.',
+            ]);
+        }
+
+        $profile->update([
+            'verification_status' => 'approved',
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Driver profile verified.',
+        ]);
+    }
+
+    public function rejectDriver(User $user): RedirectResponse
+    {
+        $profile = $user->driverProfile;
+
+        if (! $profile) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'No driver profile found for this user.',
+            ]);
+        }
+
+        $profile->update([
+            'verification_status' => 'rejected',
+        ]);
+
+        return back()->with('toast', [
+            'type' => 'success',
+            'message' => 'Driver profile rejected.',
         ]);
     }
 }
