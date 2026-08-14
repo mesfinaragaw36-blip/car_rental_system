@@ -29,6 +29,7 @@ interface Car {
     seats?: number;
     description?: string;
     availability_status: string;
+    is_currently_booked: boolean;
     photo: string | null;
     car_type_name?: { name: string };
     owner: { id: number; name: string; phone: string; email: string };
@@ -53,7 +54,7 @@ interface Location {
 
 interface Props {
     car: Car;
-    role: string;
+    role: string | null;
     locations: Location[];
 }
 
@@ -257,8 +258,52 @@ export default function CarDetails({ car, role, locations }: Props) {
                     </Card>
                 )}
 
+                {car.is_currently_booked && (
+                    <Card className="border-red-200 bg-red-50">
+                        <CardHeader>
+                            <CardTitle className="text-red-800">
+                                Currently Booked
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-red-700">
+                                This vehicle is currently booked and not available for new reservations at this time. Please check back later or browse other available vehicles.
+                            </p>
+                        </CardContent>
+                    </Card>
+                )}
+
+                {!role && !car.is_currently_booked && (
+                    <Card className="border-primary/30 bg-primary/5">
+                        <CardHeader>
+                            <CardTitle>Ready to Book?</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3">
+                            <p className="text-sm text-muted-foreground">
+                                Sign in or create an account to book this vehicle.
+                            </p>
+                            <div className="flex gap-3">
+                                <Button
+                                    asChild
+                                    variant="outline"
+                                    className="flex-1"
+                                >
+                                    <a href="/login">Log in</a>
+                                </Button>
+                                <Button
+                                    asChild
+                                    className="flex-1 bg-primary text-white hover:bg-primary/90"
+                                >
+                                    <a href="/register">Sign up</a>
+                                </Button>
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
+
                 {role === 'customer' &&
-                    car.availability_status === 'available' && (
+                    car.availability_status === 'available' &&
+                    !car.is_currently_booked && (
                         <Card>
                             <CardHeader>
                                 <CardTitle>Book This Car</CardTitle>

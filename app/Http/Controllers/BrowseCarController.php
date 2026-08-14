@@ -48,16 +48,24 @@ class BrowseCarController extends Controller
             ->when($request->max_price, fn ($q, $v) => $q->where('daily_price', '<=', $v))
             ->latest()
             ->get()
-            ->map(fn (Car $car) => array_merge($car->toArray(), [
-                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
-                'review_count' => $car->reviews()->count(),
-            ]));
+            ->map(function (Car $car) {
+                $hasActiveBooking = $car->bookings()
+                    ->whereNotIn('status', Booking::INACTIVE_STATUSES)
+                    ->whereDate('return_date', '>=', now()->toDateString())
+                    ->exists();
+
+                return array_merge($car->toArray(), [
+                    'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                    'review_count' => $car->reviews()->count(),
+                    'is_currently_booked' => $hasActiveBooking,
+                ]);
+            });
 
         return Inertia::render('browse-cars', [
             'cars' => $cars,
             'carTypeNames' => CarTypeName::orderBy('name')->get(['id', 'name']),
-            'role' => auth()->user()->role,
-            'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price']),
+            'role' => auth()->check() ? auth()->user()->role : null,
+            'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price', 'pickup_date', 'return_date']),
         ]);
     }
 
@@ -66,7 +74,7 @@ class BrowseCarController extends Controller
         $user = auth()->user();
 
         if ($car->approval_status !== 'approved' || $car->availability_status !== 'available') {
-            if (! ($user->role === 'owner' && $car->owner_id === $user->id) && $user->role !== 'admin') {
+            if (! $user || ! (($user->role === 'owner' && $car->owner_id === $user->id) || $user->role === 'admin')) {
                 abort(404);
             }
         }
@@ -82,11 +90,17 @@ class BrowseCarController extends Controller
             ];
         })->toArray();
 
+        $hasActiveBooking = $car->bookings()
+            ->whereNotIn('status', Booking::INACTIVE_STATUSES)
+            ->whereDate('return_date', '>=', now()->toDateString())
+            ->exists();
+
         return Inertia::render('car-details', [
             'car' => array_merge($car->toArray(), [
                 'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $car->reviews()->count(),
                 'recent_reviews' => $recent,
+                'is_currently_booked' => $hasActiveBooking,
                 'available_periods' => $car->availablePeriods()
                     ->whereDate('end_date', '>=', now()->toDateString())
                     ->orderBy('start_date')
@@ -97,7 +111,7 @@ class BrowseCarController extends Controller
                         'end_date' => $period->end_date->toDateString(),
                     ]),
             ]),
-            'role' => $user->role,
+            'role' => $user ? $user->role : null,
             'locations' => Location::orderBy('name')->get(['id', 'name', 'city']),
         ]);
     }

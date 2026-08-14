@@ -35,6 +35,7 @@ interface Car {
     seats: number | null;
     description: string | null;
     availability_status: string;
+    is_currently_booked: boolean;
     images: CarImage[];
     owner: { id: number; name: string; phone: string };
     car_type_name?: { id: number; name: string };
@@ -50,6 +51,7 @@ interface CarTypeName {
 interface Props {
     cars: Car[];
     carTypeNames: CarTypeName[];
+    role: string | null;
     filters: {
         search?: string;
         category?: string;
@@ -63,6 +65,7 @@ interface Props {
 export default function BrowseCars({
     cars = [],
     carTypeNames = [],
+    role,
     filters,
 }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
@@ -286,6 +289,7 @@ export default function BrowseCars({
                     <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
                         {cars.map((car) => {
                             const image = getPrimaryImage(car);
+                            const isBooked = car.is_currently_booked;
 
                             return (
                                 <GlareCard
@@ -297,7 +301,7 @@ export default function BrowseCars({
                                     }}
                                 >
                                     <div className="w-full p-2.5">
-                                        <div className="aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
+                                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
                                             {image ? (
                                                 <img
                                                     src={`/storage/${image.image_path}`}
@@ -307,6 +311,11 @@ export default function BrowseCars({
                                             ) : (
                                                 <div className="flex h-full items-center justify-center">
                                                     <Car className="h-12 w-12 text-slate-300" />
+                                                </div>
+                                            )}
+                                            {isBooked && (
+                                                <div className="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
+                                                    Currently Booked
                                                 </div>
                                             )}
                                         </div>
@@ -364,20 +373,29 @@ export default function BrowseCars({
                             >
                                 Close
                             </Button>
-                            <Button
-                                asChild
-                                className="flex-1 bg-primary text-white hover:bg-primary/90"
-                            >
-                                <Link
-                                    href={
-                                        selectedCar
-                                            ? `/cars/${selectedCar.id}`
-                                            : '#'
-                                    }
+                            {selectedCar?.is_currently_booked ? (
+                                <Button
+                                    disabled
+                                    className="flex-1 bg-slate-400 text-white cursor-not-allowed"
                                 >
-                                    Book Now
-                                </Link>
-                            </Button>
+                                    Currently Booked
+                                </Button>
+                            ) : (
+                                <Button
+                                    asChild
+                                    className="flex-1 bg-primary text-white hover:bg-primary/90"
+                                >
+                                    <Link
+                                        href={
+                                            selectedCar
+                                                ? `/cars/${selectedCar.id}`
+                                                : '#'
+                                        }
+                                    >
+                                        {role === 'customer' ? 'Book Now' : 'View Details'}
+                                    </Link>
+                                </Button>
+                            )}
                         </>
                     }
                 />
