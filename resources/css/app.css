@@ -81,11 +81,11 @@
     --popover-foreground: #1a1a1a;
     --primary: #1a365d;
     --primary-foreground: #ffffff;
-    --secondary: #ff6b00;
+    --secondary: #1a365d;
     --secondary-foreground: #ffffff;
     --muted: #f0f1f3;
     --muted-foreground: #6b7280;
-    --accent: #ff6b00;
+    --accent: #1a365d;
     --accent-foreground: #ffffff;
     --destructive: #dc2626;
     --destructive-foreground: #ffffff;

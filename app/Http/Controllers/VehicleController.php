@@ -61,18 +61,53 @@ class VehicleController extends Controller
         ]);
     }
 
-    public function create(): Response
-    {
-        return Inertia::render('create-vehicle', [
-            'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'carTypes' => CarType::where('is_active', true)->with('carTypeName:id,name')->orderBy('brand')->orderBy('model')->get(),
-            'locations' => Location::orderBy('name')->get(['id', 'name']),
-        ]);
+   public function create(): Response|RedirectResponse
+{
+    $user = auth()->user();
+
+    if (
+        $user->role === 'owner' &&
+        $user->ownerProfile?->verification_status !== 'approved'
+    ) {
+        return redirect()
+            ->route('profile.edit')
+            ->with('toast', [
+                'type' => 'error',
+                'message' => 'Please verify your owner profile before adding a vehicle.',
+            ]);
     }
 
+    return Inertia::render('create-vehicle', [
+        'carTypeNames' => CarTypeName::where('is_active', true)
+            ->where('is_active', true)
+            ->orderBy('name')
+            ->get(['id', 'name']),
+        'carTypes' => CarType::where('is_active', true)
+            ->with('carTypeName:id,name')
+            ->orderBy('brand')
+            ->orderBy('model')
+            ->get(),
+        'locations' => Location::orderBy('name')->get(['id', 'name']),
+    ]);
+}
+
     public function store(Request $request): RedirectResponse
-    {
-        $validated = $request->validate([
+{
+    $user = auth()->user();
+
+    if (
+        $user->role === 'owner' &&
+        $user->ownerProfile?->verification_status !== 'approved'
+    ) {
+        return redirect()
+            ->route('profile.edit')
+            ->with('toast', [
+                'type' => 'error',
+                'message' => 'Please verify your owner profile before adding a vehicle.',
+            ]);
+    }
+
+            $validated = $request->validate([
             'brand' => 'required|string|max:100',
             'model' => 'required|string|max:100',
             'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),

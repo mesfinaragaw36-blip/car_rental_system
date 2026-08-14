@@ -6,9 +6,15 @@ use Illuminate\Http\RedirectResponse;
 use Laravel\Fortify\Contracts\LoginResponse as LoginResponseContract;
 
 class LoginResponse implements LoginResponseContract
+{  
+public function toResponse($request): RedirectResponse
 {
-    public function toResponse($request): RedirectResponse
-    {
-        return redirect()->intended('/dashboard');
+    $user = $request->user();
+
+    if ($user->role === 'customer') {
+        return to_route('cars.index');
     }
+
+    return redirect()->intended('/dashboard');
 }
+ }

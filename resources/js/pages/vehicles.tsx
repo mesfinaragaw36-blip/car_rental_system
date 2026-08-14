@@ -85,7 +85,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
     const [detailsOpen, setDetailsOpen] = useState(false);
 
     const handleDelete = (id: number) => {
-        if (confirm('Are you sure you want to delete this vehicle?')) {
+        if (confirm('Are you sure you want to delete this Car?')) {
             router.delete(destroy.url({ car: id }), { preserveScroll: true });
         }
     };
@@ -136,23 +136,25 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
 
     return (
         <>
-            <Head title="My Vehicles" />
+            <Head title="My Cars" />
             <div className="space-y-8 p-6">
                 <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                     <div>
-                        <h1 className="text-3xl font-bold">My Vehicles</h1>
+                        <h1 className="text-3xl font-bold">My Cars</h1>
                         <p className="mt-2 text-muted-foreground">
-                            Manage all your listed vehicles in one place.
+                            Manage all your listed cars in one place.
                         </p>
                     </div>
-                    {(role === 'owner' || role === 'admin') && (
-                        <Link href="/vehicles/create">
-                            <Button className="bg-blue-900 hover:bg-blue-950">
-                                <Plus className="mr-2 h-4 w-4" /> Add Vehicle
-                            </Button>
-                        </Link>
-                    )}
+                   {(role === 'admin' ||
+                    (role === 'owner' && ownerVerificationStatus === 'approved')) && (
+                    <Link href="/vehicles/create">
+                        <Button className="bg-blue-900 hover:bg-blue-950">
+                            <Plus className="mr-2 h-4 w-4" /> Add Cars
+                        </Button>
+                    </Link>
+                )}
                 </div>
+            
 
                 
                 {toast && (
@@ -166,18 +168,24 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                 {role === 'owner' && ownerVerificationStatus !== 'approved' && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-amber-900">
                         <p className="font-semibold">
-                            Your account isn't verified yet
+                            {ownerVerificationStatus === 'rejected'
+                                ? 'Your owner profile verification was rejected'
+                                : 'Your owner profile is not verified yet'}
                         </p>
+
                         <p className="mt-1 text-sm">
                             {ownerVerificationStatus === 'rejected'
-                                ? "Your owner verification was rejected. Your vehicles won't be visible to customers or bookable until this is resolved. Contact support for details."
-                                : "Your vehicles are saved but won't appear to customers or be bookable until your account is approved."}
+                                ? 'Please update your owner profile and resubmit it for verification before adding a car.'
+                                : 'Please complete and verify your owner profile before adding a car.'}
                         </p>
+
                         <Link
                             href="/settings/profile"
                             className="mt-2 inline-block text-sm font-medium text-amber-900 underline"
                         >
-                            Update your profile
+                            {ownerVerificationStatus === 'rejected'
+                                ? 'Update your profile'
+                                : 'Complete your profile'}
                         </Link>
                     </div>
                 )}
@@ -187,20 +195,20 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                         <CardContent className="flex flex-col items-center justify-center py-16">
                             <Car className="mb-4 h-16 w-16 text-slate-400" />
                             <h2 className="text-xl font-semibold">
-                                No vehicles yet
+                                No cars yet
                             </h2>
                             <p className="mt-2 text-center text-muted-foreground">
                                 Start growing your fleet by adding your first
-                                vehicle.
+                                car.
                             </p>
-                            {(role === 'owner' || role === 'admin') && (
-                                <Link href="/vehicles/create" className="mt-6">
-                                    <Button className="bg-blue-900 hover:bg-blue-950">
-                                        <Plus className="mr-2 h-4 w-4" /> Add
-                                        Vehicle
-                                    </Button>
-                                </Link>
-                            )}
+                            {(role === 'admin' ||
+                            (role === 'owner' && ownerVerificationStatus === 'approved')) && (
+                            <Link href="/vehicles/create">
+                                <Button className="bg-blue-900 hover:bg-blue-950">
+                                    <Plus className="mr-2 h-4 w-4" /> Add Car
+                                </Button>
+                            </Link>
+                        )}
                         </CardContent>
                     </Card>
                 ) : (
@@ -319,7 +327,7 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                                 Available Dates
                             </h3>
                             <p className="mt-1 text-xs text-slate-500">
-                                Customers can only book this vehicle during these date
+                                Customers can only book this car during these date
                                 ranges.
                             </p>
 
@@ -408,5 +416,5 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
 }
 
 Vehicles.layout = {
-    breadcrumbs: [{ title: 'Vehicles', href: '/vehicles' }],
+    breadcrumbs: [{ title: 'Cars', href: '/vehicles' }],
 };

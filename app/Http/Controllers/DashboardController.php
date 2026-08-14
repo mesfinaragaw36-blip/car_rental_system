@@ -11,23 +11,27 @@ use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
+use Illuminate\Http\RedirectResponse;
 use Inertia\Response;
 
 class DashboardController extends Controller
 {
-    public function index(): Response
+    public function index(): Response|RedirectResponse
     {
         $user = auth()->user();
 
         if ($user->hasDriverPermission()) {
-            return $this->driverDashboard();
-        }
+    return $this->driverDashboard();
+}
 
-        return match ($user->role) {
-            'admin' => $this->adminDashboard(),
-            'owner' => $this->ownerDashboard(),
-            default => $this->customerDashboard(),
-        };
+if ($user->role === 'customer') {
+    return to_route('cars.index');
+}
+
+return match ($user->role) {
+    'admin' => $this->adminDashboard(),
+    'owner' => $this->ownerDashboard(),
+};
     }
 
     private function adminDashboard(): Response
@@ -128,24 +132,6 @@ class DashboardController extends Controller
             ],
             'monthlyData' => $monthlyData,
             'recentBookings' => $recentBookings,
-        ]);
-    }
-
-    private function customerDashboard(): Response
-    {
-        $customerId = auth()->id();
-
-        return Inertia::render('dashboard', [
-            'role' => 'customer',
-            'stats' => [
-                'active_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['confirmed', 'deposit_paid', 'paid', 'picked_up'])->count(),
-                'past_bookings' => Booking::where('customer_id', $customerId)->whereIn('status', ['returned', 'completed'])->count(),
-                'upcoming_returns' => Booking::with('car:id,brand,model')->where('customer_id', $customerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->where('return_date', '>=', now()->toDateString())->orderBy('return_date')->limit(5)->get()->map(fn (Booking $booking) => [
-                    'id' => $booking->id,
-                    'vehicle' => $booking->car->brand.' '.$booking->car->model,
-                    'return_date' => $booking->return_date->toDateString(),
-                ]),
-            ],
         ]);
     }
 
