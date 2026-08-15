@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
+use App\Models\DriverProfile;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -20,11 +21,11 @@ class CreateNewUser implements CreatesNewUsers
     {
         Validator::make($input, [
             ...$this->profileRules(),
-            'role' => ['required', 'string', Rule::in(['customer', 'owner'])],
+            'role' => ['required', 'string', Rule::in(['customer', 'owner', 'driver'])],
             'password' => $this->passwordRules(),
         ])->validate();
 
-        return User::create([
+        $user = User::create([
             'name' => $input['name'],
             'email' => $input['email'],
             'phone' => $input['phone'],
@@ -32,5 +33,15 @@ class CreateNewUser implements CreatesNewUsers
             'status' => 'active',
             'password' => $input['password'],
         ]);
+
+        if ($user->role === 'driver') {
+         DriverProfile::create([
+        'user_id' => $user->id,
+        'license_number' => 'PENDING',
+        'verification_status' => 'pending',
+    ]);
+}
+
+        return $user;
     }
 }

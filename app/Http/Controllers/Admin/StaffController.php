@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\DriverProfile;
 use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
@@ -31,7 +30,8 @@ class StaffController extends Controller
 
     public function create(): Response
     {
-        $roles = Role::all();
+        // Driver is no longer an admin-created staff role.
+        $roles = Role::where('name', '!=', 'Driver')->get();
 
         return Inertia::render('admin/staff/create', [
             'roles' => $roles,
@@ -42,25 +42,21 @@ class StaffController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $role = Role::find($request->input('staff_role_id'));
-        $isDriverRole = $role && in_array('driver.access', $role->permissions ?? [], true);
 
-        $rules = [
+        // Drivers must register as drivers and cannot be created as staff.
+        abort_if(
+            $role && in_array('driver.access', $role->permissions ?? [], true),
+            403,
+            'Driver accounts must be registered as drivers and cannot be created as staff.'
+        );
+
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email'],
             'phone' => ['required', 'string', 'max:20', 'unique:users,phone'],
             'staff_role_id' => ['required', 'exists:roles,id'],
             'branch_id' => ['required', 'exists:locations,id'],
-        ];
-
-        if ($isDriverRole) {
-            $rules = array_merge($rules, [
-                'license_number' => ['required', 'string', 'max:100'],
-                'license_type' => ['required', 'string', 'max:50'],
-                'experience_years' => ['required', 'integer', 'min:0', 'max:50'],
-            ]);
-        }
-
-        $validated = $request->validate($rules);
+        ]);
 
         $staff = User::create([
             'name' => $validated['name'],
@@ -73,20 +69,6 @@ class StaffController extends Controller
             'status' => 'active',
         ]);
 
-        // Staff roles that grant driver access get a driver profile provisioned
-        // with the license details captured at creation time. Drivers are
-        // registered by admins, so profiles are considered verified.
-        if ($isDriverRole) {
-            DriverProfile::create([
-                'user_id' => $staff->id,
-                'license_number' => $validated['license_number'],
-                'license_type' => $validated['license_type'],
-                'experience_years' => $validated['experience_years'],
-                'availability' => 'available',
-                'verification_status' => 'approved',
-            ]);
-        }
-
         return redirect()->route('admin.staff.index')->with('toast', [
             'type' => 'success',
             'message' => 'Staff member created successfully.',
@@ -95,18 +77,33 @@ class StaffController extends Controller
 
     public function show(User $staff): Response
     {
-        abort_unless($staff->role === 'admin' && $staff->staff_role_id !== null, 404);
+        abort_unless(
+            $staff->role === 'admin' && $staff->staff_role_id !== null,
+            404
+        );
 
         $staff->load(['staffRole', 'branch']);
 
         return Inertia::render('admin/staff/show', [
-            'staff' => $staff->only(['id', 'name', 'email', 'phone', 'status', 'created_at', 'staff_role', 'branch']),
+            'staff' => $staff->only([
+                'id',
+                'name',
+                'email',
+                'phone',
+                'status',
+                'created_at',
+                'staff_role',
+                'branch',
+            ]),
         ]);
     }
 
     public function destroy(User $staff): RedirectResponse
     {
-        abort_unless($staff->role === 'admin' && $staff->staff_role_id !== null, 404);
+        abort_unless(
+            $staff->role === 'admin' && $staff->staff_role_id !== null,
+            404
+        );
 
         $staff->delete();
 
@@ -118,9 +115,14 @@ class StaffController extends Controller
 
     public function suspend(User $staff): RedirectResponse
     {
-        abort_unless($staff->role === 'admin' && $staff->staff_role_id !== null, 404);
+        abort_unless(
+            $staff->role === 'admin' && $staff->staff_role_id !== null,
+            404
+        );
 
-        $staff->update(['status' => 'suspended']);
+        $staff->update([
+            'status' => 'suspended',
+        ]);
 
         return back()->with('toast', [
             'type' => 'success',
@@ -130,9 +132,14 @@ class StaffController extends Controller
 
     public function activate(User $staff): RedirectResponse
     {
-        abort_unless($staff->role === 'admin' && $staff->staff_role_id !== null, 404);
+        abort_unless(
+            $staff->role === 'admin' && $staff->staff_role_id !== null,
+            404
+        );
 
-        $staff->update(['status' => 'active']);
+        $staff->update([
+            'status' => 'active',
+        ]);
 
         return back()->with('toast', [
             'type' => 'success',

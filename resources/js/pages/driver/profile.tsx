@@ -20,6 +20,7 @@ interface DriverProfile {
     experience_years: number;
     location: string;
     license_file_path?: string | null;
+    verification_status?: string;
     average_rating?: number;
     review_count?: number;
     recent_reviews?: Array<{
@@ -35,16 +36,53 @@ interface Props {
     profile: DriverProfile | null;
 }
 
+function verificationBanner(status: string | undefined) {
+    switch (status) {
+        case 'pending':
+            return {
+                classes: 'bg-amber-50 text-amber-800 border border-amber-200',
+                title: 'Your profile is under review',
+                message:
+                    "Thanks for submitting your details. An admin is reviewing your profile and will approve it shortly. You'll be able to receive trip assignments once approved.",
+            };
+
+        case 'approved':
+            return {
+                classes:
+                    'bg-emerald-50 text-emerald-800 border border-emerald-200',
+                title: 'Your profile is verified',
+                message:
+                    "You're all set. You can now receive chauffeur trip assignments.",
+            };
+
+        case 'rejected':
+            return {
+                classes: 'bg-red-50 text-red-800 border border-red-200',
+                title: 'Your profile needs changes',
+                message:
+                    'Your submission was not approved. Please review your details below and resubmit.',
+            };
+
+        default:
+            return null;
+    }
+}
+
 export default function DriverProfilePage({ profile }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
     const toast = p.toast;
     const isNew = !profile;
+    const banner = profile
+        ? verificationBanner(profile.verification_status)
+        : null;
 
     const [licenseNumber, setLicenseNumber] = useState(
-        profile?.license_number ?? '',
-    );
+    profile?.license_number && profile.license_number !== 'PENDING'
+        ? profile.license_number
+        : '',
+);
     const [licenseType, setLicenseType] = useState(profile?.license_type ?? '');
     const [experienceYears, setExperienceYears] = useState(
         String(profile?.experience_years ?? ''),
@@ -87,6 +125,13 @@ export default function DriverProfilePage({ profile }: Props) {
                         className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                     >
                         {toast.message}
+                    </div>
+                )}
+
+                {!isNew && banner && (
+                    <div className={`rounded-lg p-4 ${banner.classes}`}>
+                        <p className="font-semibold">{banner.title}</p>
+                        <p className="mt-1 text-sm">{banner.message}</p>
                     </div>
                 )}
 

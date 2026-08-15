@@ -12,11 +12,16 @@ class BookingDriver extends Model
         'driver_id',
         'assigned_by',
         'assigned_at',
+        'response_deadline',
+        'responded_at',
+        'rejection_reason',
         'status',
         'earnings',
         'payout_status',
         'paid_at',
     ];
+
+    public const STATUS_PENDING = 'pending';
 
     public const STATUS_ASSIGNED = 'assigned';
 
@@ -26,14 +31,14 @@ class BookingDriver extends Model
 
     public const STATUS_COMPLETED = 'completed';
 
-    public const STATUS_PENDING = 'pending';
-
     public const STATUS_PAID = 'paid';
 
     protected function casts(): array
     {
         return [
             'assigned_at' => 'datetime',
+            'response_deadline' => 'datetime',
+            'responded_at' => 'datetime',
             'earnings' => 'decimal:2',
             'paid_at' => 'datetime',
         ];

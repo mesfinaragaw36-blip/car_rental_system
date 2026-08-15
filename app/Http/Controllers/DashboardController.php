@@ -20,7 +20,7 @@ class DashboardController extends Controller
     {
         $user = auth()->user();
 
-        if ($user->hasDriverPermission()) {
+        if ($user->role === 'driver') {
             return $this->driverDashboard();
         }
 
@@ -40,6 +40,7 @@ class DashboardController extends Controller
 
         $paidPayments = Payment::where('payment_status', 'paid')
             ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT);
+
         $totalRevenue = (float) (clone $paidPayments)->sum('amount');
         $totalCommission = round($totalRevenue * $commissionRate / 100, 2);
 
@@ -63,8 +64,13 @@ class DashboardController extends Controller
         return Inertia::render('dashboard', [
             'role' => 'admin',
             'stats' => [
-                'total_users' => User::where('role', '!=', 'admin')->orWhere(fn ($q) => $q->where('role', 'admin')->whereNull('staff_role_id'))->count(),
-                'active_users' => User::where('status', 'active')->where(fn ($q) => $q->where('role', '!=', 'admin')->orWhere(fn ($q2) => $q2->where('role', 'admin')->whereNull('staff_role_id')))->count(),
+                'total_users' => User::where('role', '!=', 'admin')
+                    ->orWhere(fn ($q) => $q->where('role', 'admin')->whereNull('staff_role_id'))
+                    ->count(),
+                'active_users' => User::where('status', 'active')
+                    ->where(fn ($q) => $q->where('role', '!=', 'admin')
+                        ->orWhere(fn ($q2) => $q2->where('role', 'admin')->whereNull('staff_role_id')))
+                    ->count(),
                 'total_vehicles' => Car::count(),
                 'pending_vehicles' => Car::where('approval_status', 'pending')->count(),
                 'total_bookings' => Booking::count(),
@@ -123,12 +129,29 @@ class DashboardController extends Controller
             'role' => 'owner',
             'stats' => [
                 'total_vehicles' => $vehicles->count(),
-                'active_bookings' => Booking::where('owner_id', $ownerId)->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])->count(),
-                'pending_bookings' => Booking::where('owner_id', $ownerId)->where('status', 'confirmed')->count(),
-                'total_earnings' => number_format((float) Payment::where('payment_status', 'paid')->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))->sum('amount'), 2),
-                'available_vehicles' => (clone $vehicles)->where('approval_status', 'approved')->where('availability_status', 'available')->count(),
-                'rented_vehicles' => (clone $vehicles)->where('availability_status', 'booked')->count(),
-                'pending_vehicles' => (clone $vehicles)->where('approval_status', 'pending')->count(),
+                'active_bookings' => Booking::where('owner_id', $ownerId)
+                    ->whereIn('status', ['deposit_paid', 'paid', 'picked_up'])
+                    ->count(),
+                'pending_bookings' => Booking::where('owner_id', $ownerId)
+                    ->where('status', 'confirmed')
+                    ->count(),
+                'total_earnings' => number_format(
+                    (float) Payment::where('payment_status', 'paid')
+                        ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)
+                        ->whereHas('booking', fn ($q) => $q->where('owner_id', $ownerId))
+                        ->sum('amount'),
+                    2
+                ),
+                'available_vehicles' => (clone $vehicles)
+                    ->where('approval_status', 'approved')
+                    ->where('availability_status', 'available')
+                    ->count(),
+                'rented_vehicles' => (clone $vehicles)
+                    ->where('availability_status', 'booked')
+                    ->count(),
+                'pending_vehicles' => (clone $vehicles)
+                    ->where('approval_status', 'pending')
+                    ->count(),
             ],
             'monthlyData' => $monthlyData,
             'recentBookings' => $recentBookings,

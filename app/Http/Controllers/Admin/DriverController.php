@@ -36,18 +36,18 @@ class DriverController extends Controller
     }
 
     public function suspend(User $driver): RedirectResponse
-    {
-        abort_unless($driver->hasDriverPermission(), 404);
-        $driver->update(['status' => 'suspended']);
+{
+    abort_unless($driver->role === 'driver', 404);
+    $driver->update(['status' => 'suspended']);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Driver suspended.']);
-    }
+    return back()->with('toast', ['type' => 'success', 'message' => 'Driver suspended.']);
+}
 
-    public function activate(User $driver): RedirectResponse
-    {
-        abort_unless($driver->hasDriverPermission(), 404);
-        $driver->update(['status' => 'active']);
+public function activate(User $driver): RedirectResponse
+{
+    abort_unless($driver->role === 'driver', 404);
+    $driver->update(['status' => 'active']);
 
-        return back()->with('toast', ['type' => 'success', 'message' => 'Driver activated.']);
-    }
+    return back()->with('toast', ['type' => 'success', 'message' => 'Driver activated.']);
+}
 }

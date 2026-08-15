@@ -53,31 +53,11 @@ class User extends Authenticatable
     }
 
     /**
-     * Whether this user has the driver permission via their staff role.
-     * This is how the system recognizes a "driver" now, instead of a role column value.
-     */
-    public function hasDriverPermission(): bool
-    {
-        return $this->staff_role_id !== null
-            && in_array('driver.access', $this->staffRole?->permissions ?? [], true);
-    }
-
-    /**
-     * Whether this user is a full (non-staff) administrator.
-     */
-    public function isFullAdmin(): bool
-    {
-        return $this->role === 'admin' && $this->staff_role_id === null;
-    }
-
-    /**
-     * Scope to fetch users recognized as drivers (staff accounts with the driver permission).
+     * Scope to fetch users recognized as drivers.
      */
     public function scopeDrivers($query)
     {
-        return $query->where('role', 'admin')
-            ->whereNotNull('staff_role_id')
-            ->whereHas('staffRole', fn ($q) => $q->whereJsonContains('permissions', 'driver.access'));
+        return $query->where('role', 'driver');
     }
 
     public function staffRole(): BelongsTo
@@ -127,10 +107,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(BookingDriver::class, 'driver_id');
     }
-     public function customerIdentity(): HasOne
+
+    public function customerIdentity(): HasOne
     {
-    return $this->hasOne(CustomerIdentity::class);
+        return $this->hasOne(CustomerIdentity::class);
     }
+
     // NEW: Inspections performed by this inspector
     public function inspections(): HasMany
     {

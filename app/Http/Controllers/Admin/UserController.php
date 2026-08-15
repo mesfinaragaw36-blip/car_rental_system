@@ -152,7 +152,7 @@ class UserController extends Controller
         $user->load(['ownerProfile', 'driverProfile', 'customerIdentity.verifiedBy:id,name']);
 
         $driverReviews = [];
-        if ($user->hasDriverPermission()) {
+        if ($user->role === 'driver') {
             $driverReviews = $user->reviews()->with('reviewer')->latest()->take(10)->get()->map(function ($r) {
                 return [
                     'id' => $r->id,

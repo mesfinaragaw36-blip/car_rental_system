@@ -10,7 +10,6 @@ use App\Http\Controllers\Admin\TransactionController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\Admin\VehicleDocumentController;
-use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingDisputeController;
 use App\Http\Controllers\BrowseCarController;
@@ -111,12 +110,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])
         ->name('payments.receipt');
 
-    /*
-     * Admin payment confirmation.
-     *
-     * All supported payment methods are confirmed
-     * through PaymentController::confirm().
-     */
     Route::post('/payments/{payment}/confirm', [PaymentController::class, 'confirm'])
         ->name('payments.confirm')
         ->middleware(['role:admin', 'staff_permission']);
@@ -188,27 +181,43 @@ Route::middleware(['auth'])->group(function () {
         ->name('cars.book');
 
     // =========================================================
-    // Assignments
+    // Driver Routes
     // =========================================================
 
-    Route::get('/assignments', [AssignmentController::class, 'index'])
-        ->name('assignments.index');
+    Route::middleware('staff_permission')->group(function () {
 
-    // =========================================================
-    // Driver Features
-    // =========================================================
+        // Driver assignments
+        // =========================================================
+// Driver Routes
+// =========================================================
 
-    Route::middleware(['staff_permission'])->group(function () {
+Route::middleware(['role:driver'])->group(function () {
 
-        Route::get('/driver/profile', [DriverProfileController::class, 'show'])
-            ->name('driver.profile');
+    // Driver profile must always be accessible.
+    // Incomplete drivers are redirected here by
+    // EnsureDriverProfileComplete.
+    Route::get('/driver/profile', [DriverProfileController::class, 'show'])
+        ->name('driver.profile');
 
-        Route::post('/driver/profile', [DriverProfileController::class, 'update'])
-            ->name('driver.profile.update');
+    Route::post('/driver/profile', [DriverProfileController::class, 'update'])
+        ->name('driver.profile.update');
+
+    // Driver dashboard / working features
+    Route::middleware('driver.profile.complete')->group(function () {
+
+        Route::get('/driver/assignments', [DriverBookingController::class, 'index'])
+            ->name('driver.assignments.index');
+
+        Route::post('/driver/assignments/{assignment}/accept', [DriverBookingController::class, 'accept'])
+            ->name('driver.assignments.accept');
+
+        Route::post('/driver/assignments/{assignment}/reject', [DriverBookingController::class, 'reject'])
+            ->name('driver.assignments.reject');
 
         Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])
             ->name('driver.trip-history');
     });
+});
 
     // =========================================================
     // Inspection Staff Routes
@@ -266,25 +275,66 @@ Route::middleware(['auth'])->group(function () {
         ->name('admin.')
         ->group(function () {
 
-            Route::get('/users', [UserController::class, 'index'])->name('users.index');
-            Route::get('/users/create', [UserController::class, 'create'])->name('users.create');
-            Route::post('/users', [UserController::class, 'store'])->name('users.store');
-            Route::get('/users/{user}', [UserController::class, 'show'])->name('users.show');
-            Route::get('/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
-            Route::put('/users/{user}', [UserController::class, 'update'])->name('users.update');
-            Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-            Route::get('/users/trashed', [UserController::class, 'trashed'])->name('users.trashed');
-            Route::post('/users/{id}/restore', [UserController::class, 'restore'])->name('users.restore');
-            Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])->name('users.suspend');
-            Route::post('/users/{user}/activate', [UserController::class, 'activate'])->name('users.activate');
-            Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])->name('users.verify-owner');
-            Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])->name('users.reject-owner');
-            Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])->name('users.verify-driver');
-            Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])->name('users.reject-driver');
-            Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])->name('users.verify-customer-identity');
-            Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])->name('users.reject-customer-identity');
-            Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])->name('users.verify-customer');
-            Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])->name('users.reject-customer');
+            // -------------------------------------------------
+            // Users
+            // -------------------------------------------------
+
+            Route::get('/users', [UserController::class, 'index'])
+                ->name('users.index');
+
+            Route::get('/users/create', [UserController::class, 'create'])
+                ->name('users.create');
+
+            Route::post('/users', [UserController::class, 'store'])
+                ->name('users.store');
+
+            Route::get('/users/trashed', [UserController::class, 'trashed'])
+                ->name('users.trashed');
+
+            Route::get('/users/{user}', [UserController::class, 'show'])
+                ->name('users.show');
+
+            Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+                ->name('users.edit');
+
+            Route::put('/users/{user}', [UserController::class, 'update'])
+                ->name('users.update');
+
+            Route::delete('/users/{user}', [UserController::class, 'destroy'])
+                ->name('users.destroy');
+
+            Route::post('/users/{id}/restore', [UserController::class, 'restore'])
+                ->name('users.restore');
+
+            Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])
+                ->name('users.suspend');
+
+            Route::post('/users/{user}/activate', [UserController::class, 'activate'])
+                ->name('users.activate');
+
+            Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])
+                ->name('users.verify-owner');
+
+            Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])
+                ->name('users.reject-owner');
+
+            Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])
+                ->name('users.verify-driver');
+
+            Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])
+                ->name('users.reject-driver');
+
+            Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])
+                ->name('users.verify-customer-identity');
+
+            Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])
+                ->name('users.reject-customer-identity');
+
+            Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])
+                ->name('users.verify-customer');
+
+            Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])
+                ->name('users.reject-customer');
 
             // -------------------------------------------------
             // Vehicles
@@ -343,6 +393,13 @@ Route::middleware(['auth'])->group(function () {
                 ->name('drivers.activate');
 
             // -------------------------------------------------
+            // Driver Assignments - Admin
+            // -------------------------------------------------
+
+            Route::get('/driver/assignments', [DriverBookingController::class, 'adminIndex'])
+                ->name('driver.assignments.index');
+
+            // -------------------------------------------------
             // Transactions
             // -------------------------------------------------
 
@@ -367,51 +424,6 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/reports', [ReportController::class, 'index'])
                 ->name('reports.index');
-
-            // -------------------------------------------------
-            // Users
-            // -------------------------------------------------
-
-            Route::get('/users', [UserController::class, 'index'])
-                ->name('users.index');
-
-            Route::get('/users/create', [UserController::class, 'create'])
-                ->name('users.create');
-
-            Route::post('/users', [UserController::class, 'store'])
-                ->name('users.store');
-
-            // IMPORTANT:
-            // Static route must come before /users/{user}
-            Route::get('/users/trashed', [UserController::class, 'trashed'])
-                ->name('users.trashed');
-
-            Route::get('/users/{user}', [UserController::class, 'show'])
-                ->name('users.show');
-
-            Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-                ->name('users.edit');
-
-            Route::put('/users/{user}', [UserController::class, 'update'])
-                ->name('users.update');
-
-            Route::delete('/users/{user}', [UserController::class, 'destroy'])
-                ->name('users.destroy');
-
-            Route::post('/users/{id}/restore', [UserController::class, 'restore'])
-                ->name('users.restore');
-
-            Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])
-                ->name('users.suspend');
-
-            Route::post('/users/{user}/activate', [UserController::class, 'activate'])
-                ->name('users.activate');
-
-            Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])
-                ->name('users.verify-owner');
-
-            Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])
-                ->name('users.reject-owner');
 
             // -------------------------------------------------
             // Staff
@@ -496,3 +508,4 @@ Route::middleware(['auth'])->group(function () {
 });
 
 require __DIR__.'/settings.php';
+});
