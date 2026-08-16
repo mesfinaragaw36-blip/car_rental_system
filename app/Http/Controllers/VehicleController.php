@@ -334,8 +334,76 @@ class VehicleController extends Controller
 
         ]);
         // Only content changes (not available-date ranges or availability status)
-        // require the vehicle to be reviewed by an admin again.
+        // require the vehicle to be reviewed by an admin again. If the edited
+        // content no longer matches an admin configuration, it is submitted as a
+        // configuration request instead of being saved.
         if ($user->role !== 'admin' && $this->contentChanged($car, $validated, $request)) {
+            $template = CarType::where('is_active', true)
+                ->where('brand', $validated['brand'])
+                ->where('model', $validated['model'])
+                ->get()
+                ->first(fn (CarType $carType) => $carType->matchesYear($validated['year']));
+
+            if ($template === null) {
+                $exists = CarTypeRequest::where('requested_by', auth()->id())
+                    ->where('brand', $validated['brand'])
+                    ->where('model', $validated['model'])
+                    ->where('year', $validated['year'])
+                    ->where('status', 'pending')
+                    ->exists();
+
+                if ($exists) {
+                    return back()->with('toast', [
+                        'type' => 'error',
+                        'message' => 'You already have a pending request for this configuration.',
+                    ]);
+                }
+
+                $photos = [];
+
+                if ($request->hasFile('photos')) {
+                    foreach ($request->file('photos') as $photo) {
+                        $photos[] = $photo->store('car-photos', 'public');
+                    }
+                }
+
+                $documentPath = null;
+
+                if ($request->hasFile('ownership_document')) {
+                    $documentPath = $request->file('ownership_document')
+                        ->store('vehicle_documents', 'public');
+                }
+
+                CarTypeRequest::create([
+                    'requested_by' => auth()->id(),
+                    'brand' => $validated['brand'],
+                    'model' => $validated['model'],
+                    'year' => $validated['year'],
+                    'category' => $validated['category'],
+                    'color' => $validated['color'],
+                    'fuel_type' => $validated['fuel_type'],
+                    'transmission' => $validated['transmission'],
+                    'engine_size' => $validated['engine_size'] ?? null,
+                    'seats' => $validated['seats'] ?? null,
+                    'plate_number' => $validated['plate_number'],
+                    'daily_price' => $validated['daily_price'],
+                    'mileage' => $validated['mileage'] ?? null,
+                    'description' => $validated['description'] ?? null,
+                    'availability_status' => $validated['availability_status'] ?? 'available',
+                    'photos' => $photos,
+                    'document_path' => $documentPath,
+                    'primary_photo_index' => $validated['primary_photo_index'] ?? 0,
+                    'ownership_expiry' => $validated['ownership_expiry'] ?? null,
+                    'available_periods' => $validated['available_periods'] ?? [],
+                    'status' => 'pending',
+                ]);
+
+                return back()->with('toast', [
+                    'type' => 'success',
+                    'message' => 'Your changes do not match an existing configuration and were submitted as a configuration request.',
+                ]);
+            }
+
             $validated['approval_status'] = 'pending';
         }
 

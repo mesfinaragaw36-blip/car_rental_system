@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Owner;
 
+use App\Models\Car;
 use App\Models\CarType;
 use App\Models\OwnerProfile;
 use App\Models\User;
@@ -142,5 +143,56 @@ class VehicleConfigValidationTest extends TestCase
             'plate_number' => 'CONFOK1',
             'approval_status' => 'pending',
         ]);
+    }
+
+    public function test_owner_editing_a_car_to_an_unregistered_configuration_creates_a_request(): void
+    {
+        $owner = $this->approvedOwner();
+
+        $car = Car::create([
+            'brand' => 'Toyota',
+            'model' => 'Corolla',
+            'year' => 2023,
+            'plate_number' => 'EDITREQ1',
+            'category' => 'Sedan',
+            'color' => 'White',
+            'fuel_type' => 'Petrol',
+            'transmission' => 'Automatic',
+            'daily_price' => 3000,
+            'engine_size' => '1.8L',
+            'mileage' => 5000,
+            'seats' => 5,
+            'owner_id' => $owner->id,
+            'approval_status' => 'approved',
+            'availability_status' => 'available',
+        ]);
+
+        $this->actingAs($owner)->put(route('vehicles.update', $car), [
+            'brand' => 'Tesla',
+            'model' => 'Model 3',
+            'year' => 2024,
+            'plate_number' => 'EDITREQ1',
+            'category' => 'Sedan',
+            'color' => 'White',
+            'fuel_type' => 'Electric',
+            'transmission' => 'Automatic',
+            'engine_size' => 'N/A',
+            'mileage' => 10000,
+            'seats' => 5,
+            'daily_price' => 5000,
+        ])->assertSessionHas('toast.type', 'success');
+
+        $this->assertDatabaseHas('car_type_requests', [
+            'requested_by' => $owner->id,
+            'brand' => 'Tesla',
+            'model' => 'Model 3',
+            'year' => '2024',
+            'plate_number' => 'EDITREQ1',
+            'status' => 'pending',
+        ]);
+
+        $car->refresh();
+        $this->assertSame('Toyota', $car->brand);
+        $this->assertSame('approved', $car->approval_status);
     }
 }

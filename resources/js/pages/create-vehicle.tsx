@@ -438,17 +438,6 @@ export default function CreateVehicle({ carTypes, rejectedRequest }: Props) {
                     </div>
                 )}
 
-                {!matchedConfig && (
-                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-                        <p className="font-medium">Configuration not found</p>
-                        <p className="mt-1">
-                            This exact configuration isn&apos;t in the catalog
-                            yet. Your submission will be sent to the admin as a
-                            configuration request.
-                        </p>
-                    </div>
-                )}
-
                 <form onSubmit={submit} className="space-y-6">
                     {step === 1 && (
                         <Card>
