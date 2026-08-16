@@ -537,7 +537,7 @@ export default function Profile() {
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Save
+                                    Submit
                                 </Button>
                             </div>
                         </>
