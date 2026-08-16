@@ -31,7 +31,6 @@ interface Car {
     description?: string;
     availability_status: string;
     photo: string | null;
-    car_type_name?: { name: string };
     owner: { id: number; name: string; phone: string; email: string };
     images?: { id: number; image_path: string; is_primary: boolean }[];
     average_rating?: number;
@@ -176,14 +175,6 @@ export default function CarDetails({
                                         Mileage:
                                     </span>
                                     <span>{car.mileage} km</span>
-                                </>
-                            )}
-                            {car.car_type_name && (
-                                <>
-                                    <span className="text-muted-foreground">
-                                        Type:
-                                    </span>
-                                    <span>{car.car_type_name.name}</span>
                                 </>
                             )}
                         </div>

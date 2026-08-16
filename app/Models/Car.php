@@ -22,7 +22,6 @@ class Car extends Model
         'year',
         'plate_number',
         'category',
-        'car_type_name_id',
         'color',
         'fuel_type',
         'transmission',
@@ -51,11 +50,6 @@ class Car extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
-    }
-
-    public function carTypeName(): BelongsTo
-    {
-        return $this->belongsTo(CarTypeName::class);
     }
 
     public function images(): HasMany

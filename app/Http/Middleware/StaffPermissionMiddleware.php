@@ -80,10 +80,13 @@ class StaffPermissionMiddleware
         'admin.roles.destroy' => ['roles.manage'],
 
         // Admin car types
-        'admin.car-types.type-names' => ['car-types.view', 'car-types.manage'],
-        'admin.car-types.type-names.store' => ['car-types.manage'],
-        'admin.car-types.type-names.update' => ['car-types.manage'],
-        'admin.car-types.type-names.destroy' => ['car-types.manage'],
+        'admin.car-types.configurations' => ['car-types.view', 'car-types.manage'],
+        'admin.car-types.configurations.store' => ['car-types.manage'],
+        'admin.car-types.configurations.update' => ['car-types.manage'],
+        'admin.car-types.configurations.destroy' => ['car-types.manage'],
+        'admin.car-types.configurations.toggle' => ['car-types.manage'],
+        'admin.car-types.configurations.requests.approve' => ['car-types.manage'],
+        'admin.car-types.configurations.requests.reject' => ['car-types.manage'],
 
         // Admin locations
         'admin.locations.index' => ['locations.view', 'locations.manage'],

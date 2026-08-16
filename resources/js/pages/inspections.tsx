@@ -97,7 +97,6 @@ interface Booking {
         engine_size: string | null;
         mileage: number | null;
         description: string | null;
-        car_type_name: { id: number; name: string } | null;
         images: CarImage[];
     };
     customer: { id: number; name: string; phone: string; national_id?: string | null } | null;
@@ -1108,7 +1107,7 @@ function BookingDetail({
         {
             icon: CarIcon,
             label: 'Category',
-            value: car.car_type_name?.name ?? car.category,
+            value: car.category,
         },
     ];
 
@@ -1146,7 +1145,7 @@ function BookingDetail({
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    {car.year} · {car.car_type_name?.name ?? car.category} · {car.plate_number}
+                                    {car.year} · {car.category} · {car.plate_number}
                                 </p>
                                 <p className="mt-1 text-2xl font-bold">
                                     ETB {Number(car.daily_price).toLocaleString()}

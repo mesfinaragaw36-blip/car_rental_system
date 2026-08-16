@@ -1,10 +1,27 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Clock, Eye, Plus, Power, PowerOff, Search, Trash2 } from 'lucide-react';
+import {
+    CheckCircle2,
+    Clock,
+    Eye,
+    FileText,
+    Plus,
+    Search,
+    Trash2,
+    XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { useCan } from '@/hooks/use-can';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
 import type { Auth } from '@/types';
 
@@ -39,6 +56,30 @@ interface Paginated {
 interface Props {
     vehicles: Paginated;
     filters: { status?: string; search?: string };
+    requests: ConfigurationRequest[];
+}
+
+interface ConfigurationRequest {
+    id: number;
+    brand: string;
+    model: string;
+    year: string;
+    category: string | null;
+    color: string | null;
+    fuel_type: string | null;
+    transmission: string | null;
+    engine_size: string | null;
+    seats: number | null;
+    plate_number: string | null;
+    daily_price: string | number | null;
+    mileage: number | null;
+    description: string | null;
+    availability_status: string | null;
+    note: string | null;
+    photos: string[];
+    document_path: string | null;
+    requester: string;
+    created_at: string | null;
 }
 
 interface FlashProps {
@@ -51,13 +92,17 @@ const APPROVAL_STYLES: Record<string, string> = {
     pending: 'bg-brand-soft text-brand',
 };
 
-export default function AdminVehicles({ vehicles, filters }: Props) {
+export default function AdminVehicles({ vehicles, filters, requests }: Props) {
     const { props } = usePage<{ flash: FlashProps; auth: Auth }>();
     const toast = props.flash?.toast;
-    const can = useCan();
 
     const [search, setSearch] = useState(filters.search ?? '');
     const [status, setStatus] = useState(filters.status ?? '');
+    const [selectedRequest, setSelectedRequest] =
+        useState<ConfigurationRequest | null>(null);
+    const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+    const [rejectReason, setRejectReason] = useState('');
+    const [approving, setApproving] = useState(false);
 
     function applyFilters() {
         router.get(
@@ -68,29 +113,55 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
     }
 
     function handleApprove(id: number) {
+        if (
+            !confirm(
+                "Create this configuration and approve the owner's vehicle?",
+            )
+        ) {
+            return;
+        }
+
+        setApproving(true);
         router.post(
-            `/admin/vehicles/${id}/approve`,
+            `/car-types/configurations/requests/${id}/approve`,
             {},
-            { preserveScroll: true },
+            {
+                preserveScroll: true,
+                onSuccess: () => setSelectedRequest(null),
+                onFinish: () => setApproving(false),
+            },
         );
     }
 
-    function handleReject(id: number) {
-        const reason = prompt(
-            'Please enter the reason for Car rejection:',
-        );
+    function openRejectDialog() {
+        setRejectReason('');
+        setRejectDialogOpen(true);
+    }
 
-        if (reason && reason.trim() !== '') {
-            router.post(
-                `/admin/vehicles/${id}/reject`,
-                { rejection_reason: reason },
-                { preserveScroll: true },
-            );
+    function handleReject() {
+        if (!selectedRequest || rejectReason.trim() === '') {
+            return;
         }
+
+        router.post(
+            `/car-types/configurations/requests/${selectedRequest.id}/reject`,
+            { admin_note: rejectReason },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setRejectDialogOpen(false);
+                    setSelectedRequest(null);
+                },
+            },
+        );
     }
 
     function handleDelete(id: number) {
-        if (confirm('Are you sure you want to delete this car? This action cannot be undone.')) {
+        if (
+            confirm(
+                'Are you sure you want to delete this car? This action cannot be undone.',
+            )
+        ) {
             router.delete(`/admin/vehicles/${id}`, { preserveScroll: true });
         }
     }
@@ -100,8 +171,13 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
         const msg = isActive
             ? 'Deactivate this vehicle? It will be hidden from bookings.'
             : 'Reactivate this vehicle?';
+
         if (confirm(msg)) {
-            router.post(`/admin/vehicles/${id}/toggle-status`, {}, { preserveScroll: true });
+            router.post(
+                `/admin/vehicles/${id}/toggle-status`,
+                {},
+                { preserveScroll: true },
+            );
         }
     }
 
@@ -124,7 +200,6 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                         </Button>
                     </Link>
                 </div>
-
 
                 {toast && (
                     <div
@@ -169,6 +244,65 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                         </form>
                     </CardContent>
                 </Card>
+
+                {/* Configuration Requests */}
+                {requests.length > 0 && (
+                    <Card>
+                        <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                                Configuration Requests
+                                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">
+                                    {requests.length}
+                                </span>
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                            <div className="divide-y">
+                                {requests.map((req) => (
+                                    <div
+                                        key={req.id}
+                                        className="flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0"
+                                    >
+                                        <div className="min-w-0">
+                                            <p className="font-medium">
+                                                {req.brand} {req.model}{' '}
+                                                <span className="font-normal text-muted-foreground">
+                                                    ({req.year})
+                                                </span>
+                                            </p>
+                                            <p className="mt-0.5 text-sm text-muted-foreground">
+                                                {req.requester} ·{' '}
+                                                {req.plate_number ?? 'no plate'}
+                                                {req.category
+                                                    ? ` · ${req.category}`
+                                                    : ''}
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0 items-center gap-3">
+                                            {req.photos.length > 0 && (
+                                                <img
+                                                    src={`/storage/${req.photos[0]}`}
+                                                    alt=""
+                                                    className="h-10 w-14 rounded-md object-cover"
+                                                />
+                                            )}
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                onClick={() =>
+                                                    setSelectedRequest(req)
+                                                }
+                                            >
+                                                <Eye className="mr-1 h-4 w-4" />
+                                                Review
+                                            </Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </CardContent>
+                    </Card>
+                )}
 
                 {/* Table */}
                 <Card>
@@ -249,7 +383,8 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                         >
                                                             {v.approval_status}
                                                         </span>
-                                                        {v.approval_status === 'pending' && (
+                                                        {v.approval_status ===
+                                                            'pending' && (
                                                             <span
                                                                 title="Awaiting admin approval"
                                                                 className="inline-flex items-center text-brand"
@@ -272,33 +407,56 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                         <button
-                                                             role="switch"
-                                                             aria-checked={v.availability_status !== 'inactive'}
-                                                             title={v.availability_status === 'inactive' ? 'Reactivate vehicle' : 'Deactivate vehicle'}
-                                                             className={cn(
-                                                                 "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 mx-1",
-                                                                 v.availability_status !== 'inactive' ? "border-green-500 bg-green-50" : "border-slate-300 bg-slate-100"
-                                                             )}
-                                                             onClick={() => handleToggleStatus(v.id, v.availability_status)}
-                                                         >
-                                                             <span
-                                                                 aria-hidden="true"
-                                                                 className={cn(
-                                                                     "pointer-events-none inline-block h-4 w-4 transform rounded-full shadow-sm transition duration-200 ease-in-out",
-                                                                     v.availability_status !== 'inactive' ? "translate-x-5 bg-green-600" : "translate-x-0.5 bg-slate-400"
-                                                                 )}
-                                                             />
-                                                         </button>
-                                                         <Button
-                                                             size="sm"
-                                                             variant="outline"
-                                                             title="Delete Car"
-                                                             className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
-                                                             onClick={() => handleDelete(v.id)}
-                                                         >
-                                                             <Trash2 className="h-4 w-4" />
-                                                         </Button>
+                                                        <button
+                                                            role="switch"
+                                                            aria-checked={
+                                                                v.availability_status !==
+                                                                'inactive'
+                                                            }
+                                                            title={
+                                                                v.availability_status ===
+                                                                'inactive'
+                                                                    ? 'Reactivate vehicle'
+                                                                    : 'Deactivate vehicle'
+                                                            }
+                                                            className={cn(
+                                                                'relative mx-1 inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none',
+                                                                v.availability_status !==
+                                                                    'inactive'
+                                                                    ? 'border-green-500 bg-green-50'
+                                                                    : 'border-slate-300 bg-slate-100',
+                                                            )}
+                                                            onClick={() =>
+                                                                handleToggleStatus(
+                                                                    v.id,
+                                                                    v.availability_status,
+                                                                )
+                                                            }
+                                                        >
+                                                            <span
+                                                                aria-hidden="true"
+                                                                className={cn(
+                                                                    'pointer-events-none inline-block h-4 w-4 transform rounded-full shadow-sm transition duration-200 ease-in-out',
+                                                                    v.availability_status !==
+                                                                        'inactive'
+                                                                        ? 'translate-x-5 bg-green-600'
+                                                                        : 'translate-x-0.5 bg-slate-400',
+                                                                )}
+                                                            />
+                                                        </button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            title="Delete Car"
+                                                            className="border-red-200 text-red-600 hover:bg-red-50 hover:text-red-700"
+                                                            onClick={() =>
+                                                                handleDelete(
+                                                                    v.id,
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </Button>
                                                     </div>
                                                 </td>
                                             </tr>
@@ -335,6 +493,222 @@ export default function AdminVehicles({ vehicles, filters }: Props) {
                     </CardContent>
                 </Card>
             </div>
+
+            <Dialog
+                open={selectedRequest !== null}
+                onOpenChange={(open) => {
+                    if (!open) {
+                        setSelectedRequest(null);
+                    }
+                }}
+            >
+                <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-2xl">
+                    <DialogHeader>
+                        <DialogTitle>
+                            {selectedRequest?.brand} {selectedRequest?.model}{' '}
+                            <span className="font-normal text-muted-foreground">
+                                ({selectedRequest?.year})
+                            </span>
+                        </DialogTitle>
+                    </DialogHeader>
+
+                    {selectedRequest && (
+                        <div className="space-y-4">
+                            <div className="flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-muted-foreground">
+                                <span>
+                                    Requested by {selectedRequest.requester}
+                                </span>
+                                {selectedRequest.created_at && (
+                                    <span>{selectedRequest.created_at}</span>
+                                )}
+                            </div>
+
+                            <div className="grid gap-3 sm:grid-cols-2">
+                                {[
+                                    ['Category', selectedRequest.category],
+                                    ['Color', selectedRequest.color],
+                                    ['Fuel type', selectedRequest.fuel_type],
+                                    [
+                                        'Transmission',
+                                        selectedRequest.transmission,
+                                    ],
+                                    [
+                                        'Engine size',
+                                        selectedRequest.engine_size,
+                                    ],
+                                    ['Seats', selectedRequest.seats],
+                                    ['Plate', selectedRequest.plate_number],
+                                    [
+                                        'Daily price',
+                                        selectedRequest.daily_price
+                                            ? `ETB ${selectedRequest.daily_price}`
+                                            : null,
+                                    ],
+                                    [
+                                        'Mileage',
+                                        selectedRequest.mileage != null
+                                            ? `${selectedRequest.mileage} km`
+                                            : null,
+                                    ],
+                                    [
+                                        'Availability',
+                                        selectedRequest.availability_status,
+                                    ],
+                                ].map(
+                                    ([label, value]) =>
+                                        value != null &&
+                                        value !== '' && (
+                                            <div
+                                                key={String(label)}
+                                                className="flex items-center justify-between gap-3 border-b pb-1.5"
+                                            >
+                                                <span className="text-sm text-muted-foreground">
+                                                    {label}
+                                                </span>
+                                                <span className="text-sm font-medium">
+                                                    {String(value)}
+                                                </span>
+                                            </div>
+                                        ),
+                                )}
+                            </div>
+
+                            {selectedRequest.description && (
+                                <p className="text-sm text-muted-foreground">
+                                    {selectedRequest.description}
+                                </p>
+                            )}
+
+                            {selectedRequest.note && (
+                                <div className="rounded-lg bg-muted/50 p-3 text-sm">
+                                    <span className="font-medium">
+                                        Owner&apos;s note:{' '}
+                                    </span>
+                                    <span className="text-muted-foreground">
+                                        {selectedRequest.note}
+                                    </span>
+                                </div>
+                            )}
+
+                            {selectedRequest.photos.length > 0 && (
+                                <div>
+                                    <p className="mb-2 text-sm font-medium">
+                                        Photos
+                                    </p>
+                                    <div className="grid gap-2 sm:grid-cols-4">
+                                        {selectedRequest.photos.map(
+                                            (path, index) => (
+                                                <a
+                                                    key={path}
+                                                    href={`/storage/${path}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                >
+                                                    <img
+                                                        src={`/storage/${path}`}
+                                                        alt={`Photo ${index + 1}`}
+                                                        className="h-24 w-full rounded-md object-cover"
+                                                    />
+                                                </a>
+                                            ),
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            {selectedRequest.document_path && (
+                                <div>
+                                    <p className="mb-2 text-sm font-medium">
+                                        Ownership Document
+                                    </p>
+                                    <a
+                                        href={`/storage/${selectedRequest.document_path}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-flex items-center gap-2 rounded-md border px-3 py-2 text-sm font-medium hover:bg-muted"
+                                    >
+                                        <FileText className="h-4 w-4" />
+                                        View document
+                                    </a>
+                                </div>
+                            )}
+
+                            <DialogFooter className="gap-2 sm:justify-between">
+                                <div className="flex gap-2">
+                                    <Button
+                                        variant="destructive"
+                                        onClick={openRejectDialog}
+                                    >
+                                        <XCircle className="mr-1 h-4 w-4" />
+                                        Reject
+                                    </Button>
+                                    <Button
+                                        variant="outline"
+                                        onClick={() => setSelectedRequest(null)}
+                                    >
+                                        Close
+                                    </Button>
+                                </div>
+                                <Button
+                                    onClick={() =>
+                                        handleApprove(selectedRequest.id)
+                                    }
+                                    disabled={approving}
+                                >
+                                    <CheckCircle2 className="mr-1 h-4 w-4" />
+                                    {approving
+                                        ? 'Creating...'
+                                        : 'Create Configuration & Approve'}
+                                </Button>
+                            </DialogFooter>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Reject Configuration Request</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-3">
+                        <p className="text-sm text-muted-foreground">
+                            Provide a reason for rejecting this request. The
+                            owner will see it.
+                        </p>
+                        <div className="space-y-1.5">
+                            <Label htmlFor="reject_reason">
+                                Reason (required)
+                            </Label>
+                            <Textarea
+                                id="reject_reason"
+                                value={rejectReason}
+                                onChange={(e) =>
+                                    setRejectReason(e.target.value)
+                                }
+                                placeholder="e.g. The year range is already covered by an existing configuration."
+                            />
+                        </div>
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setRejectDialogOpen(false)}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            type="button"
+                            variant="destructive"
+                            disabled={rejectReason.trim() === ''}
+                            onClick={handleReject}
+                        >
+                            Reject Request
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 }

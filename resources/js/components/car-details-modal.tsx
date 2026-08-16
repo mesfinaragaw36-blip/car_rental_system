@@ -45,7 +45,6 @@ export interface CarDetails {
     plate_number?: string;
     images: CarDetailsImage[];
     owner?: { id: number; name: string; phone: string } | null;
-    car_type_name?: { id: number; name: string } | null;
 }
 
 interface CarDetailsModalProps {
@@ -173,7 +172,7 @@ export function CarDetailsModal({
         {
             icon: CarIcon,
             label: 'Category',
-            value: car.car_type_name?.name ?? car.category,
+            value: car.category,
         },
     ];
 
@@ -228,7 +227,7 @@ export function CarDetailsModal({
                         {car.brand} {car.model}
                     </h2>
                     <p className="mt-0.5 text-sm text-slate-500">
-                        {car.year} · {car.car_type_name?.name ?? car.category}
+                        {car.year} · {car.category}
                     </p>
 
                     <div className="mt-3 flex items-baseline gap-1">

@@ -5,7 +5,6 @@ namespace Tests\Feature\Admin;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarType;
-use App\Models\CarTypeName;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -24,19 +23,22 @@ class AdminVehicleManageTest extends TestCase
 
     private function carData(array $overrides = []): array
     {
-        $carTypeName = CarTypeName::factory()->create();
-        CarType::factory()->for($carTypeName)->create();
+        CarType::factory()->create([
+            'brand' => 'Toyota',
+            'model' => 'Camry',
+            'year' => 2020,
+            'categories' => ['Sedan'],
+        ]);
 
         return array_merge([
             'brand' => 'Toyota',
             'model' => 'Camry',
             'year' => 2020,
             'plate_number' => 'ABC-123',
-            'category' => $carTypeName->name,
+            'category' => 'Sedan',
             'color' => 'Black',
             'fuel_type' => 'Petrol',
             'transmission' => 'Automatic',
-            'car_type_name_id' => $carTypeName->id,
             'daily_price' => 1500.00,
             'availability_status' => 'available',
             'engine_size' => '2.5L',
@@ -62,7 +64,6 @@ class AdminVehicleManageTest extends TestCase
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/vehicle-create')
-                ->has('carTypeNames')
                 ->has('carTypes'));
     }
 

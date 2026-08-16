@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use App\Models\CarType;
-use App\Models\CarTypeName;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -21,11 +20,13 @@ class CarTypeFactory extends Factory
         return [
             'brand' => fake()->randomElement(['Toyota', 'Hyundai', 'Kia', 'Honda', 'Mitsubishi']),
             'model' => fake()->word(),
-            'car_type_name_id' => CarTypeName::factory(),
-            'fuel_type' => fake()->randomElement(['Petrol', 'Diesel', 'Hybrid', 'Electric']),
-            'transmission' => fake()->randomElement(['Manual', 'Automatic', 'Semi']),
-            'engine_size' => fake()->optional()->randomElement(['1.5L', '1.8L', '2.0L', '2.4L', '2.8L', '3.0L']),
-            'seats' => fake()->optional()->numberBetween(2, 9),
+            'year' => fake()->numberBetween(2005, 2026),
+            'categories' => fake()->randomElements(['Sedan', 'SUV', 'Hatchback', 'Pickup', 'Minivan'], fake()->numberBetween(1, 2)),
+            'fuel_types' => fake()->randomElements(['Petrol', 'Diesel', 'Hybrid', 'Electric'], fake()->numberBetween(1, 2)),
+            'transmissions' => fake()->randomElements(['Manual', 'Automatic', 'Semi'], fake()->numberBetween(1, 2)),
+            'engine_sizes' => fake()->randomElements(['1.5L', '1.8L', '2.0L', '2.4L', '2.8L', '3.0L'], fake()->numberBetween(1, 2)),
+            'seats' => fake()->randomElements([4, 5, 7, 9, 12], fake()->numberBetween(1, 2)),
+            'colors' => fake()->randomElements(['White', 'Black', 'Silver', 'Grey', 'Red', 'Blue'], fake()->numberBetween(1, 3)),
             'is_active' => true,
         ];
     }

@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use App\Models\Booking;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
-use App\Models\CarTypeName;
 use App\Models\Location;
 use App\Services\DriverMatchingService;
 use Carbon\Carbon;
@@ -24,7 +23,7 @@ class BrowseCarController extends Controller
         $user = auth()->user();
         $pickupDate = $request->pickup_date;
         $returnDate = $request->return_date;
-        $cars = Car::with(['images', 'owner', 'carTypeName'])
+        $cars = Car::with(['images', 'owner'])
             ->where('approval_status', 'approved')
             ->where('availability_status', 'available')
             ->when($pickupDate && $returnDate, function ($q) use ($pickupDate, $returnDate) {
@@ -56,7 +55,6 @@ class BrowseCarController extends Controller
 
         return Inertia::render('browse-cars', [
             'cars' => $cars,
-            'carTypeNames' => CarTypeName::orderBy('name')->get(['id', 'name']),
             'role' => $user->role,
             'verification_status' => $user->role === 'customer' ? $user->customerIdentity?->verification_status : null,
             'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price']),
@@ -72,7 +70,7 @@ class BrowseCarController extends Controller
                 abort(404);
             }
         }
-        $car->load(['images', 'owner', 'carTypeName']);
+        $car->load(['images', 'owner']);
 
         $recent = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($r) {
             return [

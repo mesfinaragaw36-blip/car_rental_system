@@ -3,9 +3,8 @@
 namespace Tests\Feature\Owner;
 
 use App\Models\CarType;
-use App\Models\CarTypeName;
+use App\Models\OwnerProfile;
 use App\Models\User;
-use Database\Seeders\CarTypeNameSeeder;
 use Database\Seeders\CarTypeSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -19,16 +18,23 @@ class VehicleTemplateTest extends TestCase
     {
         $owner = User::factory()->create(['role' => 'owner']);
 
-        $sedan = CarTypeName::create(['name' => 'Sedan', 'slug' => 'sedan', 'sort_order' => 1]);
+        OwnerProfile::create([
+            'user_id' => $owner->id,
+            'business_name' => 'Test',
+            'national_id' => '123',
+            'verification_status' => 'approved',
+        ]);
 
         CarType::create([
             'brand' => 'Toyota',
             'model' => 'Corolla',
-            'car_type_name_id' => $sedan->id,
-            'fuel_type' => 'Petrol',
-            'transmission' => 'Manual',
-            'engine_size' => '1.8L',
-            'seats' => 5,
+            'year' => 2022,
+            'categories' => ['Sedan'],
+            'fuel_types' => ['Petrol'],
+            'transmissions' => ['Manual'],
+            'engine_sizes' => ['1.8L'],
+            'seats' => [5],
+            'colors' => ['White', 'Black'],
         ]);
 
         $this->actingAs($owner)
@@ -39,44 +45,24 @@ class VehicleTemplateTest extends TestCase
                 ->has('carTypes', 1)
                 ->where('carTypes.0.brand', 'Toyota')
                 ->where('carTypes.0.model', 'Corolla')
-                ->where('carTypes.0.car_type_name.name', 'Sedan')
+                ->where('carTypes.0.year', '2022')
+                ->where('carTypes.0.categories.0', 'Sedan')
+                ->where('carTypes.0.fuel_types.0', 'Petrol')
+                ->where('carTypes.0.transmissions.0', 'Manual')
+                ->where('carTypes.0.colors.0', 'White')
                 ->has('locations'));
     }
 
     public function test_vehicle_template_seeder_seeds_known_models(): void
     {
-        $this->seed(CarTypeNameSeeder::class);
         $this->seed(CarTypeSeeder::class);
 
         $this->assertDatabaseHas('car_types', [
             'brand' => 'Toyota',
             'model' => 'Corolla',
-            'fuel_type' => 'Petrol',
-            'transmission' => 'Manual',
-        ]);
-
-        $this->assertDatabaseHas('car_types', [
-            'brand' => 'Toyota',
-            'model' => 'Land Cruiser',
-            'car_type_name_id' => CarTypeName::where('name', 'SUV')->value('id'),
-        ]);
-
-        $this->assertDatabaseHas('car_types', [
-            'brand' => 'Toyota',
-            'model' => 'Vitz',
-            'car_type_name_id' => CarTypeName::where('name', 'Hatchback')->value('id'),
-        ]);
-
-        $this->assertDatabaseHas('car_types', [
-            'brand' => 'Toyota',
-            'model' => 'Probox',
-            'car_type_name_id' => CarTypeName::where('name', 'Van')->value('id'),
-        ]);
-
-        $this->assertDatabaseHas('car_types', [
-            'brand' => 'Haval',
-            'model' => 'Jolion',
-            'car_type_name_id' => CarTypeName::where('name', 'SUV')->value('id'),
+            'year' => 2022,
+            'fuel_types' => json_encode(['Petrol']),
+            'transmissions' => json_encode(['Manual', 'Automatic']),
         ]);
 
         $this->assertGreaterThan(30, CarType::count());

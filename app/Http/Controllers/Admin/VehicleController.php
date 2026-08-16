@@ -8,7 +8,7 @@ use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
 use App\Models\CarType;
-use App\Models\CarTypeName;
+use App\Models\CarTypeRequest;
 use App\Models\VehicleDocument;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,17 +35,44 @@ class VehicleController extends Controller
 
         $vehicles = $query->paginate(15)->withQueryString();
 
+        $requests = CarTypeRequest::with('requester')
+            ->where('status', 'pending')
+            ->latest()
+            ->get()
+            ->map(fn (CarTypeRequest $request) => [
+                'id' => $request->id,
+                'brand' => $request->brand,
+                'model' => $request->model,
+                'year' => $request->year,
+                'category' => $request->category,
+                'color' => $request->color,
+                'fuel_type' => $request->fuel_type,
+                'transmission' => $request->transmission,
+                'engine_size' => $request->engine_size,
+                'seats' => $request->seats,
+                'plate_number' => $request->plate_number,
+                'daily_price' => $request->daily_price,
+                'mileage' => $request->mileage,
+                'description' => $request->description,
+                'availability_status' => $request->availability_status,
+                'note' => $request->note,
+                'photos' => $request->photos ?? [],
+                'document_path' => $request->document_path,
+                'requester' => $request->requester?->name ?? 'Unknown',
+                'created_at' => $request->created_at?->toDateTimeString(),
+            ]);
+
         return Inertia::render('admin/vehicles', [
             'vehicles' => $vehicles,
             'filters' => $request->only(['status', 'search']),
+            'requests' => $requests,
         ]);
     }
 
     public function create(): Response
     {
         return Inertia::render('admin/vehicle-create', [
-            'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'carTypes' => CarType::where('is_active', true)->with('carTypeName:id,name')->orderBy('brand')->orderBy('model')->get(),
+            'carTypes' => CarType::where('is_active', true)->orderBy('brand')->orderBy('model')->get(),
         ]);
     }
 
@@ -58,9 +85,8 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|max:50|unique:cars',
             'category' => 'required|string|max:100',
             'color' => 'required|string|max:50',
-            'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
-            'transmission' => 'required|in:Manual,Automatic,Semi',
-            'car_type_name_id' => 'nullable|exists:car_type_names,id',
+            'fuel_type' => 'required|string|max:50',
+            'transmission' => 'required|string|max:50',
             'daily_price' => 'required|numeric|min:0',
             'availability_status' => 'nullable|in:available,maintenance',
             'engine_size' => 'nullable|string|max:50',
@@ -88,7 +114,6 @@ class VehicleController extends Controller
             'year' => $validated['year'],
             'plate_number' => $validated['plate_number'],
             'category' => $validated['category'],
-            'car_type_name_id' => $validated['car_type_name_id'] ?? null,
             'color' => $validated['color'],
             'fuel_type' => $validated['fuel_type'],
             'transmission' => $validated['transmission'],

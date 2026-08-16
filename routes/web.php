@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\CarImageController;
-use App\Http\Controllers\Admin\CarTypeNameController;
+use App\Http\Controllers\Admin\CarTypeController;
 use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\LocationController;
 use App\Http\Controllers\Admin\RoleController;
@@ -14,6 +14,7 @@ use App\Http\Controllers\AssignmentController;
 use App\Http\Controllers\BookingController;
 use App\Http\Controllers\BookingDisputeController;
 use App\Http\Controllers\BrowseCarController;
+use App\Http\Controllers\CarTypeRequestController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
@@ -173,6 +174,16 @@ Route::middleware(['auth'])->group(function () {
 
     Route::delete('/vehicles/{car}/available-periods/{availablePeriod}', [VehicleController::class, 'destroyAvailablePeriod'])
         ->name('vehicles.available-periods.destroy');
+
+    // =========================================================
+    // Car Type Requests (owners request unregistered configs)
+    // =========================================================
+
+    Route::post('/car-type-requests', [CarTypeRequestController::class, 'store'])
+        ->name('car-type-requests.store');
+
+    Route::get('/car-type-requests/{carTypeRequest}', [CarTypeRequestController::class, 'show'])
+        ->name('car-type-requests.show');
 
     // =========================================================
     // Browse Cars
@@ -467,17 +478,26 @@ Route::middleware(['auth'])->group(function () {
             // Car Types
             // -------------------------------------------------
 
-            Route::get('/car-types/type-names', [CarTypeNameController::class, 'index'])
-                ->name('car-types.type-names');
+            Route::get('/car-types/configurations', [CarTypeController::class, 'index'])
+                ->name('car-types.configurations');
 
-            Route::post('/car-types/type-names', [CarTypeNameController::class, 'store'])
-                ->name('car-types.type-names.store');
+            Route::post('/car-types/configurations', [CarTypeController::class, 'store'])
+                ->name('car-types.configurations.store');
 
-            Route::put('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'update'])
-                ->name('car-types.type-names.update');
+            Route::put('/car-types/configurations/{carType}', [CarTypeController::class, 'update'])
+                ->name('car-types.configurations.update');
 
-            Route::delete('/car-types/type-names/{carTypeName}', [CarTypeNameController::class, 'destroy'])
-                ->name('car-types.type-names.destroy');
+            Route::delete('/car-types/configurations/{carType}', [CarTypeController::class, 'destroy'])
+                ->name('car-types.configurations.destroy');
+
+            Route::patch('/car-types/configurations/{carType}/toggle', [CarTypeController::class, 'toggleActive'])
+                ->name('car-types.configurations.toggle');
+
+            Route::post('/car-types/configurations/requests/{carTypeRequest}/approve', [CarTypeController::class, 'approveRequest'])
+                ->name('car-types.configurations.requests.approve');
+
+            Route::post('/car-types/configurations/requests/{carTypeRequest}/reject', [CarTypeController::class, 'rejectRequest'])
+                ->name('car-types.configurations.requests.reject');
 
             // -------------------------------------------------
             // Locations

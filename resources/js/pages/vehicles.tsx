@@ -26,11 +26,6 @@ interface CarImage {
     is_primary: boolean;
 }
 
-interface CarTypeName {
-    id: number;
-    name: string;
-}
-
 interface AvailablePeriod {
     id: number;
     start_date: string;
@@ -62,7 +57,6 @@ interface Vehicle {
     approval_status: string;
     availability_status: string;
     images: CarImage[];
-    car_type_name: CarTypeName | null;
     available_periods?: AvailablePeriod[];
     average_rating?: number;
     review_count?: number;

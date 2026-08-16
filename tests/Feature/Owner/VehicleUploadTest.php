@@ -3,7 +3,9 @@
 namespace Tests\Feature\Owner;
 
 use App\Models\Car;
+use App\Models\CarType;
 use App\Models\Location;
+use App\Models\OwnerProfile;
 use App\Models\User;
 use App\Models\VehicleDocument;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -20,6 +22,24 @@ class VehicleUploadTest extends TestCase
         Storage::fake('public');
 
         $owner = User::factory()->create(['role' => 'owner']);
+
+        OwnerProfile::create([
+            'user_id' => $owner->id,
+            'business_name' => 'Test Rentals',
+            'national_id' => 'OWNER-ID-001',
+            'verification_status' => 'approved',
+        ]);
+
+        CarType::create([
+            'brand' => 'Toyota',
+            'model' => 'Corolla',
+            'year' => 2024,
+            'categories' => ['Sedan'],
+            'fuel_types' => ['Petrol'],
+            'transmissions' => ['Automatic'],
+            'engine_sizes' => ['1.8L'],
+            'seats' => [4],
+        ]);
 
         $location = Location::create([
             'name' => 'Main Branch',

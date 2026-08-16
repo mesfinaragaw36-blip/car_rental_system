@@ -38,19 +38,12 @@ interface Car {
     availability_status: string;
     images: CarImage[];
     owner: { id: number; name: string; phone: string };
-    car_type_name?: { id: number; name: string };
     average_rating?: number;
     review_count?: number;
 }
 
-interface CarTypeName {
-    id: number;
-    name: string;
-}
-
 interface Props {
     cars: Car[];
-    carTypeNames: CarTypeName[];
     role: string;
     verification_status?: string | null;
     filters: {
@@ -65,7 +58,6 @@ interface Props {
 
 export default function BrowseCars({
     cars = [],
-    carTypeNames = [],
     role,
     verification_status = null,
     filters,
@@ -85,6 +77,10 @@ export default function BrowseCars({
 
     const needsApproval =
         role === 'customer' && verification_status !== 'approved';
+
+    const categoryOptions = Array.from(
+        new Set(cars.map((car) => car.category).filter(Boolean)),
+    ).sort();
 
     const activeFilterCount = [
         search,
@@ -208,12 +204,12 @@ export default function BrowseCars({
                                     <SelectValue placeholder="All Types" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    {carTypeNames.map((type) => (
+                                    {categoryOptions.map((option) => (
                                         <SelectItem
-                                            key={type.id}
-                                            value={type.name}
+                                            key={option}
+                                            value={option}
                                         >
-                                            {type.name}
+                                            {option}
                                         </SelectItem>
                                     ))}
                                 </SelectContent>

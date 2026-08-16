@@ -56,6 +56,7 @@ class Notification extends Model
                 Booking::class => route('bookings.show', $this->related_id),
                 OwnerPayout::class => route('admin.transactions.index'),
                 BookingDriver::class => route('assignments.index'),
+                CarTypeRequest::class => route('car-type-requests.show', $this->related_id),
                 default => null,
             };
         });

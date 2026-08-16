@@ -18,7 +18,6 @@ class DatabaseSeeder extends Seeder
             AdminSeeder::class,
             DriverRoleSeeder::class,
             LocationSeeder::class,
-            CarTypeNameSeeder::class,
             CarTypeSeeder::class,
             DemoLateReturnSeeder::class,
         ]);

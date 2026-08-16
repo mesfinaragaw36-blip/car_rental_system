@@ -751,7 +751,7 @@ class TransactionController extends Controller
         }
 
         return trim(
-            $booking->car->brand . ' ' . $booking->car->model
+            $booking->car->brand.' '.$booking->car->model
         );
     }
 }

@@ -1,45 +1,43 @@
-import { Head, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
+import { SearchableCombobox } from '@/components/searchable-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-
-interface Option {
-    id: number;
-    name: string;
-}
 
 interface CarTypeTemplate {
     id: number;
     brand: string;
     model: string;
-    car_type_name_id: number | null;
-    fuel_type: string;
-    transmission: string;
-    engine_size: string | null;
-    seats: number | null;
-    car_type_name?: { id: number; name: string } | null;
+    year: string | null;
+    categories: string[];
+    fuel_types: string[];
+    transmissions: string[];
+    engine_sizes: string[] | null;
+    seats: number[] | null;
+    colors: string[] | null;
 }
 
 interface Props {
-    carTypeNames: Option[];
     carTypes: CarTypeTemplate[];
 }
 
-export default function AdminCreateVehicle({
-    carTypeNames,
-    carTypes,
-}: Props) {
+function unionOptions(...lists: (string | null | undefined)[][]): string[] {
+    return Array.from(
+        new Set(
+            lists.flatMap((list) =>
+                (list ?? []).filter(
+                    (value): value is string => value != null && value !== '',
+                ),
+            ),
+        ),
+    ).sort();
+}
+
+export default function AdminCreateVehicle({ carTypes }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         brand: '',
         model: '',
@@ -49,7 +47,6 @@ export default function AdminCreateVehicle({
         color: '',
         fuel_type: '',
         transmission: '',
-        car_type_name_id: '',
         engine_size: '',
         mileage: '',
         seats: '',
@@ -67,7 +64,9 @@ export default function AdminCreateVehicle({
     const [ownershipDocument, setOwnershipDocument] = useState<File | null>(
         null,
     );
-    const [serverErrors, setServerErrors] = useState<Record<string, string>>({});
+    const [serverErrors, setServerErrors] = useState<Record<string, string>>(
+        {},
+    );
     const [templateQuery, setTemplateQuery] = useState('');
     const [templateOpen, setTemplateOpen] = useState(false);
     const [selectedTemplateLabel, setSelectedTemplateLabel] = useState('');
@@ -89,22 +88,32 @@ export default function AdminCreateVehicle({
         'daily_price',
     ];
 
+    const fuelOptions = useMemo(
+        () => unionOptions(carTypes.flatMap((t) => t.fuel_types)),
+        [carTypes],
+    );
+
+    const transmissionOptions = useMemo(
+        () => unionOptions(carTypes.flatMap((t) => t.transmissions)),
+        [carTypes],
+    );
+
     function templateLabel(template: CarTypeTemplate): string {
-        return `${template.brand} ${template.model} (${template.car_type_name?.name ?? 'Other'})`;
+        return `${template.brand} ${template.model} ${template.year}`;
     }
 
     const visibleTemplates = carTypes.filter((template) => {
+        if (!template.year) {
+            return false;
+        }
+
         const query = templateQuery.trim().toLowerCase();
 
         if (!query) {
             return true;
         }
 
-        return [
-            template.brand,
-            template.model,
-            template.car_type_name?.name ?? '',
-        ]
+        return [template.brand, template.model, String(template.year)]
             .join(' ')
             .toLowerCase()
             .includes(query);
@@ -115,16 +124,16 @@ export default function AdminCreateVehicle({
 
         setData('brand', template.brand);
         setData('model', template.model);
-
-        if (template.car_type_name) {
-            setData('car_type_name_id', String(template.car_type_name.id));
-            setData('category', template.car_type_name.name);
-        }
-
-        setData('fuel_type', template.fuel_type);
-        setData('transmission', template.transmission);
-        setData('engine_size', template.engine_size ?? '');
-        setData('seats', template.seats !== null ? String(template.seats) : '');
+        setData('year', String(template.year));
+        setData('category', template.categories?.[0] ?? '');
+        setData('color', template.colors?.[0] ?? '');
+        setData('fuel_type', template.fuel_types?.[0] ?? '');
+        setData('transmission', template.transmissions?.[0] ?? '');
+        setData('engine_size', template.engine_sizes?.[0] ?? '');
+        setData(
+            'seats',
+            template.seats?.[0] != null ? String(template.seats[0]) : '',
+        );
 
         setTemplateQuery(label);
         setSelectedTemplateLabel(label);
@@ -223,10 +232,6 @@ export default function AdminCreateVehicle({
         formData.append('daily_price', data.daily_price);
         formData.append('availability_status', data.availability_status);
 
-        if (data.car_type_name_id) {
-            formData.append('car_type_name_id', data.car_type_name_id);
-        }
-
         if (data.engine_size) {
             formData.append('engine_size', data.engine_size);
         }
@@ -249,6 +254,7 @@ export default function AdminCreateVehicle({
         if (ownershipDocument) {
             formData.append('ownership_document', ownershipDocument);
         }
+
         if (data.ownership_expiry) {
             formData.append('ownership_expiry', data.ownership_expiry);
         }
@@ -406,17 +412,14 @@ export default function AdminCreateVehicle({
                                                                             )}
                                                                         </span>
                                                                         <span className="text-xs text-muted-foreground">
-                                                                            {template
-                                                                                .car_type_name
-                                                                                ?.name ??
-                                                                                'Other'}
-                                                                            {' '}·{' '}
                                                                             {
-                                                                                template.fuel_type
-                                                                            }
-                                                                            {' '}·{' '}
+                                                                                template
+                                                                                    .fuel_types?.[0]
+                                                                            }{' '}
+                                                                            ·{' '}
                                                                             {
-                                                                                template.transmission
+                                                                                template
+                                                                                    .transmissions?.[0]
                                                                             }
                                                                         </span>
                                                                     </button>
@@ -513,47 +516,24 @@ export default function AdminCreateVehicle({
                                         />
                                     </div>
                                     <div>
-                                        <Label>Car Type</Label>
-                                        <Select
-                                            value={data.car_type_name_id}
-                                            onValueChange={(value) => {
-                                                const option =
-                                                    carTypeNames.find(
-                                                        (t) =>
-                                                            String(t.id) ===
-                                                            value,
-                                                    );
+                                        <Label htmlFor="category">
+                                            Category
+                                        </Label>
+                                        <Input
+                                            id="category"
+                                            placeholder="e.g. Sedan"
+                                            value={data.category}
+                                            onChange={(e) =>
                                                 setData(
-                                                    'car_type_name_id',
-                                                    value,
-                                                );
-
-                                                if (option) {
-                                                    setData(
-                                                        'category',
-                                                        option.name,
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select car type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {carTypeNames.map((type) => (
-                                                    <SelectItem
-                                                        key={type.id}
-                                                        value={String(type.id)}
-                                                    >
-                                                        {type.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                                    'category',
+                                                    e.target.value,
+                                                )
+                                            }
+                                        />
                                         <InputError
                                             message={
-                                                serverErrors.car_type_name_id ??
-                                                errors.car_type_name_id
+                                                serverErrors.category ??
+                                                errors.category
                                             }
                                         />
                                     </div>
@@ -576,30 +556,16 @@ export default function AdminCreateVehicle({
                                     </div>
                                     <div>
                                         <Label>Fuel Type</Label>
-                                        <Select
+                                        <SearchableCombobox
                                             value={data.fuel_type}
                                             onValueChange={(value) =>
                                                 setData('fuel_type', value)
                                             }
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select fuel type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Petrol">
-                                                    Petrol
-                                                </SelectItem>
-                                                <SelectItem value="Diesel">
-                                                    Diesel
-                                                </SelectItem>
-                                                <SelectItem value="Hybrid">
-                                                    Hybrid
-                                                </SelectItem>
-                                                <SelectItem value="Electric">
-                                                    Electric
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                            options={fuelOptions}
+                                            placeholder="Select or type fuel type"
+                                            emptyText="No fuel types found"
+                                            allowCustom
+                                        />
                                         <InputError
                                             message={
                                                 serverErrors.fuel_type ??
@@ -609,27 +575,16 @@ export default function AdminCreateVehicle({
                                     </div>
                                     <div>
                                         <Label>Transmission</Label>
-                                        <Select
+                                        <SearchableCombobox
                                             value={data.transmission}
                                             onValueChange={(value) =>
                                                 setData('transmission', value)
                                             }
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select transmission" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Manual">
-                                                    Manual
-                                                </SelectItem>
-                                                <SelectItem value="Automatic">
-                                                    Automatic
-                                                </SelectItem>
-                                                <SelectItem value="Semi">
-                                                    Semi
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                            options={transmissionOptions}
+                                            placeholder="Select or type transmission"
+                                            emptyText="No transmissions found"
+                                            allowCustom
+                                        />
                                         <InputError
                                             message={
                                                 serverErrors.transmission ??
@@ -753,78 +708,117 @@ export default function AdminCreateVehicle({
                                             Available Date Ranges
                                         </h3>
                                         <p className="text-sm text-muted-foreground">
-                                            Customers can only book the car during these date
-                                            ranges. You can add or edit these later too.
+                                            Customers can only book the car
+                                            during these date ranges. You can
+                                            add or edit these later too.
                                         </p>
                                     </div>
-                                    {data.available_periods.map((period, index) => (
-                                        <div
-                                            key={index}
-                                            className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
-                                        >
-                                            <div>
-                                                <Label>Start Date</Label>
-                                                <Input
-                                                    type="date"
-                                                    value={period.start_date}
-                                                    onChange={(e) => {
-                                                        const periods = [...data.available_periods];
-                                                        periods[index] = {
-                                                            ...periods[index],
-                                                            start_date: e.target.value,
-                                                        };
-                                                        setData('available_periods', periods);
-                                                    }}
-                                                />
-                                            </div>
-                                            <div>
-                                                <Label>End Date</Label>
-                                                <div className="flex gap-2">
+                                    {data.available_periods.map(
+                                        (period, index) => (
+                                            <div
+                                                key={index}
+                                                className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
+                                            >
+                                                <div>
+                                                    <Label>Start Date</Label>
                                                     <Input
                                                         type="date"
-                                                        value={period.end_date}
+                                                        value={
+                                                            period.start_date
+                                                        }
                                                         onChange={(e) => {
-                                                            const periods = [...data.available_periods];
+                                                            const periods = [
+                                                                ...data.available_periods,
+                                                            ];
                                                             periods[index] = {
-                                                                ...periods[index],
-                                                                end_date: e.target.value,
+                                                                ...periods[
+                                                                    index
+                                                                ],
+                                                                start_date:
+                                                                    e.target
+                                                                        .value,
                                                             };
-                                                            setData('available_periods', periods);
-                                                        }}
-                                                    />
-                                                    <Button
-                                                        type="button"
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => {
                                                             setData(
                                                                 'available_periods',
-                                                                data.available_periods.filter(
-                                                                    (_, i) => i !== index,
-                                                                ),
+                                                                periods,
                                                             );
                                                         }}
-                                                    >
-                                                        Remove
-                                                    </Button>
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>End Date</Label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            type="date"
+                                                            value={
+                                                                period.end_date
+                                                            }
+                                                            onChange={(e) => {
+                                                                const periods =
+                                                                    [
+                                                                        ...data.available_periods,
+                                                                    ];
+                                                                periods[index] =
+                                                                    {
+                                                                        ...periods[
+                                                                            index
+                                                                        ],
+                                                                        end_date:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    };
+                                                                setData(
+                                                                    'available_periods',
+                                                                    periods,
+                                                                );
+                                                            }}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setData(
+                                                                    'available_periods',
+                                                                    data.available_periods.filter(
+                                                                        (
+                                                                            _,
+                                                                            i,
+                                                                        ) =>
+                                                                            i !==
+                                                                            index,
+                                                                    ),
+                                                                );
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ),
+                                    )}
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={() =>
                                             setData('available_periods', [
                                                 ...data.available_periods,
-                                                { start_date: '', end_date: '' },
+                                                {
+                                                    start_date: '',
+                                                    end_date: '',
+                                                },
                                             ])
                                         }
                                     >
                                         + Add Available Range
                                     </Button>
                                     <InputError
-                                        message={serverErrors.available_periods ?? errors.available_periods}
+                                        message={
+                                            serverErrors.available_periods ??
+                                            errors.available_periods
+                                        }
                                     />
                                 </div>
                             </CardContent>

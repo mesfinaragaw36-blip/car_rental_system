@@ -1,47 +1,50 @@
 import { Head, router, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import InputError from '@/components/input-error';
+import { SearchableCombobox } from '@/components/searchable-combobox';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { store } from '@/routes/vehicles';
-
-interface Option {
-    id: number;
-    name: string;
-    city?: string;
-}
 
 interface CarTypeTemplate {
     id: number;
     brand: string;
     model: string;
-    car_type_name_id: number | null;
-    fuel_type: string;
-    transmission: string;
-    engine_size: string | null;
-    seats: number | null;
-    car_type_name?: { id: number; name: string } | null;
+    year: string | null;
+    categories: string[];
+    fuel_types: string[];
+    transmissions: string[];
+    engine_sizes: string[] | null;
+    seats: number[] | null;
+    colors: string[] | null;
 }
 
 interface Props {
-    carTypeNames: Option[];
     carTypes: CarTypeTemplate[];
+    rejectedRequest?: {
+        brand: string;
+        model: string;
+        year: string;
+        admin_note: string;
+    } | null;
 }
 
-export default function CreateVehicle({
-    carTypeNames,
-    carTypes,
-}: Props) {
+function unionOptions(...lists: (string | null | undefined)[][]): string[] {
+    return Array.from(
+        new Set(
+            lists.flatMap((list) =>
+                (list ?? []).filter(
+                    (value): value is string => value != null && value !== '',
+                ),
+            ),
+        ),
+    ).sort();
+}
+
+export default function CreateVehicle({ carTypes, rejectedRequest }: Props) {
     const { data, setData, processing, errors } = useForm({
         brand: '',
         model: '',
@@ -51,7 +54,6 @@ export default function CreateVehicle({
         color: '',
         fuel_type: '',
         transmission: '',
-        car_type_name_id: '',
         engine_size: '',
         mileage: '',
         seats: '',
@@ -89,70 +91,164 @@ export default function CreateVehicle({
         'daily_price',
     ];
 
-    const [templateQuery, setTemplateQuery] = useState('');
-    const [templateOpen, setTemplateOpen] = useState(false);
-    const [selectedTemplateLabel, setSelectedTemplateLabel] = useState('');
+    function yearInRange(configYear: string | null, year: string): boolean {
+        const target = Number(year);
 
-    function templateLabel(template: CarTypeTemplate): string {
-        return `${template.brand} ${template.model}`;
+        if (!target || !configYear) {
+            return false;
+        }
+
+        if (configYear.includes('-')) {
+            const [start, end] = configYear.split('-').map(Number);
+
+            return target >= start && target <= end;
+        }
+
+        return Number(configYear) === target;
     }
 
-    const visibleTemplates = carTypes.filter((template) => {
-        const query = templateQuery.trim().toLowerCase();
+    // Cascading options derived from carTypes
+    const availableBrands = useMemo(
+        () => Array.from(new Set(carTypes.map((t) => t.brand))).sort(),
+        [carTypes],
+    );
 
-        if (!query) {
-            return true;
+    const availableModels = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    carTypes
+                        .filter((t) => !data.brand || t.brand === data.brand)
+                        .map((t) => t.model),
+                ),
+            ).sort(),
+        [carTypes, data.brand],
+    );
+
+    const matchedConfig = useMemo(
+        () =>
+            carTypes.find(
+                (t) =>
+                    t.brand === data.brand &&
+                    t.model === data.model &&
+                    yearInRange(t.year, data.year),
+            ),
+        [carTypes, data.brand, data.model, data.year],
+    );
+
+    // Narrow option lists to the admin-created configurations that match the
+    // selected brand/model (and the exact configuration when a year is set).
+    const scopedTemplates = useMemo(() => {
+        let templates = carTypes;
+
+        if (data.brand) {
+            templates = templates.filter((t) => t.brand === data.brand);
         }
 
-        return [
-            template.brand,
-            template.model,
-            template.car_type_name?.name ?? '',
-        ]
-            .join(' ')
-            .toLowerCase()
-            .includes(query);
-    });
-
-    function handleTemplatePick(template: CarTypeTemplate) {
-        const label = templateLabel(template);
-
-        setData('brand', template.brand);
-        setData('model', template.model);
-
-        if (template.car_type_name) {
-            setData('car_type_name_id', String(template.car_type_name.id));
-            setData('category', template.car_type_name.name);
+        if (data.model) {
+            templates = templates.filter((t) => t.model === data.model);
         }
 
-        setData('fuel_type', template.fuel_type);
-        setData('transmission', template.transmission);
-        setData('engine_size', template.engine_size ?? '');
-        setData('seats', template.seats !== null ? String(template.seats) : '');
+        if (data.year && matchedConfig) {
+            return [matchedConfig];
+        }
 
-        setTemplateQuery(label);
-        setSelectedTemplateLabel(label);
-        setTemplateOpen(false);
+        return templates;
+    }, [carTypes, data.brand, data.model, data.year, matchedConfig]);
+
+    const fuelOptions = useMemo(
+        () => unionOptions(scopedTemplates.flatMap((t) => t.fuel_types)),
+        [scopedTemplates],
+    );
+
+    const transmissionOptions = useMemo(
+        () => unionOptions(scopedTemplates.flatMap((t) => t.transmissions)),
+        [scopedTemplates],
+    );
+
+    const categoryOptions = useMemo(
+        () => unionOptions(scopedTemplates.flatMap((t) => t.categories)),
+        [scopedTemplates],
+    );
+
+    const engineOptions = useMemo(
+        () =>
+            unionOptions(scopedTemplates.flatMap((t) => t.engine_sizes ?? [])),
+        [scopedTemplates],
+    );
+
+    const seatOptions = useMemo(
+        () =>
+            unionOptions(
+                scopedTemplates.flatMap((t) => (t.seats ?? []).map(String)),
+            ),
+        [scopedTemplates],
+    );
+
+    const colorOptions = useMemo(
+        () => unionOptions(scopedTemplates.flatMap((t) => t.colors ?? [])),
+        [scopedTemplates],
+    );
+
+    const yearOptions = useMemo(
+        () =>
+            Array.from(
+                new Set(
+                    carTypes
+                        .filter(
+                            (t) =>
+                                (!data.brand || t.brand === data.brand) &&
+                                (!data.model || t.model === data.model),
+                        )
+                        .map((t) => t.year)
+                        .filter((y): y is string => y != null && y !== ''),
+                ),
+            ).sort(),
+        [carTypes, data.brand, data.model],
+    );
+
+    function handleBrandChange(brand: string) {
+        setData('brand', brand);
+        setData('model', '');
+        setData('year', '');
+        setData('category', '');
+        setData('color', '');
+        setData('fuel_type', '');
+        setData('transmission', '');
+        setData('engine_size', '');
+        setData('seats', '');
     }
 
-    function handleTemplateQueryChange(value: string) {
-        setTemplateQuery(value);
-
-        if (value !== selectedTemplateLabel) {
-            setSelectedTemplateLabel('');
-        }
-
-        setTemplateOpen(true);
+    function handleModelChange(model: string) {
+        setData('model', model);
+        setData('year', '');
+        setData('category', '');
+        setData('color', '');
+        setData('fuel_type', '');
+        setData('transmission', '');
+        setData('engine_size', '');
+        setData('seats', '');
     }
 
-    function handleTemplateKeyDown(e: React.KeyboardEvent) {
-        if (e.key === 'Escape') {
-            setTemplateOpen(false);
-        }
+    function handleYearChange(year: string) {
+        setData('year', year);
+        const config = carTypes.find(
+            (t) =>
+                t.brand === data.brand &&
+                t.model === data.model &&
+                yearInRange(t.year, year),
+        );
 
-        if (e.key === 'Enter' && templateOpen && visibleTemplates.length > 0) {
-            e.preventDefault();
-            handleTemplatePick(visibleTemplates[0]);
+        if (config) {
+            setData('category', config.categories?.[0] ?? '');
+            setData('color', config.colors?.[0] ?? '');
+            setData('fuel_type', config.fuel_types?.[0] ?? '');
+            setData('transmission', config.transmissions?.[0] ?? '');
+            setData('engine_size', config.engine_sizes?.[0] ?? '');
+            setData(
+                'seats',
+                config.seats?.[0] != null ? String(config.seats[0]) : '',
+            );
         }
     }
 
@@ -227,10 +323,6 @@ export default function CreateVehicle({
         formData.append('daily_price', data.daily_price);
         formData.append('availability_status', data.availability_status);
 
-        if (data.car_type_name_id) {
-            formData.append('car_type_name_id', data.car_type_name_id);
-        }
-
         if (data.engine_size) {
             formData.append('engine_size', data.engine_size);
         }
@@ -254,26 +346,18 @@ export default function CreateVehicle({
             formData.append('ownership_document', ownershipDocument);
         }
 
-            data.available_periods
-                .filter((period) => period.start_date && period.end_date)
-                .forEach((period, index) => {
-                    formData.append(
-                        `available_periods[${index}][start_date]`,
-                        period.start_date,
-                    );
-                    formData.append(
-                        `available_periods[${index}][end_date]`,
-                        period.end_date,
-                    );
-                });
-
-            if (data.car_type_name_id) {
-                formData.append('car_type_name_id', data.car_type_name_id);
-            }
-
-            if (data.engine_size) {
-                formData.append('engine_size', data.engine_size);
-            }
+        data.available_periods
+            .filter((period) => period.start_date && period.end_date)
+            .forEach((period, index) => {
+                formData.append(
+                    `available_periods[${index}][start_date]`,
+                    period.start_date,
+                );
+                formData.append(
+                    `available_periods[${index}][end_date]`,
+                    period.end_date,
+                );
+            });
 
         router.post(store.url(), formData, {
             forceFormData: true,
@@ -343,6 +427,28 @@ export default function CreateVehicle({
                     </div>
                 )}
 
+                {rejectedRequest && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800 dark:border-red-800 dark:bg-red-950 dark:text-red-200">
+                        <p className="font-medium">
+                            Your previous request for &quot;
+                            {rejectedRequest.brand} {rejectedRequest.model} (
+                            {rejectedRequest.year})&quot; was rejected.
+                        </p>
+                        <p className="mt-1">{rejectedRequest.admin_note}</p>
+                    </div>
+                )}
+
+                {!matchedConfig && (
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+                        <p className="font-medium">Configuration not found</p>
+                        <p className="mt-1">
+                            This exact configuration isn&apos;t in the catalog
+                            yet. Your submission will be sent to the admin as a
+                            configuration request.
+                        </p>
+                    </div>
+                )}
+
                 <form onSubmit={submit} className="space-y-6">
                     {step === 1 && (
                         <Card>
@@ -350,113 +456,16 @@ export default function CreateVehicle({
                                 <CardTitle>Vehicle Information</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
-                                <div className="rounded-lg border border-dashed p-4">
-                                    <Label htmlFor="vehicle-template-search">
-                                        Pick a vehicle model{' '}
-                                        <span className="font-normal text-muted-foreground">
-                                            (optional — type to filter, then
-                                            select)
-                                        </span>
-                                    </Label>
-                                    <div
-                                        className="relative mt-1"
-                                        onBlur={(e) => {
-                                            if (
-                                                !e.currentTarget.contains(
-                                                    e.relatedTarget,
-                                                )
-                                            ) {
-                                                setTemplateOpen(false);
-                                            }
-                                        }}
-                                    >
-                                        <Input
-                                            id="vehicle-template-search"
-                                            placeholder="Type to search, e.g. Toyota"
-                                            value={templateQuery}
-                                            onChange={(e) =>
-                                                handleTemplateQueryChange(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            onFocus={() =>
-                                                setTemplateOpen(true)
-                                            }
-                                            onKeyDown={handleTemplateKeyDown}
-                                        />
-                                        {templateOpen && (
-                                            <div className="absolute z-50 mt-1 max-h-60 w-full overflow-y-auto rounded-md border bg-popover text-popover-foreground shadow-md">
-                                                {visibleTemplates.length > 0 ? (
-                                                    <ul>
-                                                        {visibleTemplates.map(
-                                                            (template) => (
-                                                                <li
-                                                                    key={
-                                                                        template.id
-                                                                    }
-                                                                >
-                                                                    <button
-                                                                        type="button"
-                                                                        className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-accent hover:text-accent-foreground"
-                                                                        onMouseDown={(
-                                                                            e,
-                                                                        ) =>
-                                                                            e.preventDefault()
-                                                                        }
-                                                                        onClick={() =>
-                                                                            handleTemplatePick(
-                                                                                template,
-                                                                            )
-                                                                        }
-                                                                    >
-                                                                        <span>
-                                                                            {templateLabel(
-                                                                                template,
-                                                                            )}
-                                                                        </span>
-                                                                        <span className="text-xs text-muted-foreground">
-                                                                            {template
-                                                                                .car_type_name
-                                                                                ?.name ??
-                                                                                'Other'}
-                                                                            ·{' '}
-                                                                            {
-                                                                                template.fuel_type
-                                                                            }
-                                                                            ·{' '}
-                                                                            {
-                                                                                template.transmission
-                                                                            }
-                                                                        </span>
-                                                                    </button>
-                                                                </li>
-                                                            ),
-                                                        )}
-                                                    </ul>
-                                                ) : (
-                                                    <p className="px-3 py-2 text-sm text-muted-foreground">
-                                                        No matching vehicles.
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
-                                    </div>
-                                    <p className="mt-2 text-xs text-muted-foreground">
-                                        Fields below are filled automatically
-                                        and can still be edited.
-                                    </p>
-                                </div>
-
                                 <div className="grid gap-4 md:grid-cols-2">
                                     <div>
-                                        <Label htmlFor="brand">Brand</Label>
-                                        <Input
-                                            id="brand"
-                                            placeholder="e.g. Toyota"
+                                        <Label>Brand</Label>
+                                        <SearchableCombobox
                                             value={data.brand}
-                                            onChange={(e) =>
-                                                setData('brand', e.target.value)
-                                            }
+                                            onValueChange={handleBrandChange}
+                                            options={availableBrands}
+                                            placeholder="Search or type brand"
+                                            emptyText="No brands found"
+                                            allowCustom
                                         />
                                         <InputError
                                             message={
@@ -466,14 +475,15 @@ export default function CreateVehicle({
                                         />
                                     </div>
                                     <div>
-                                        <Label htmlFor="model">Model</Label>
-                                        <Input
-                                            id="model"
-                                            placeholder="e.g. Corolla"
+                                        <Label>Model</Label>
+                                        <SearchableCombobox
                                             value={data.model}
-                                            onChange={(e) =>
-                                                setData('model', e.target.value)
-                                            }
+                                            onValueChange={handleModelChange}
+                                            options={availableModels}
+                                            placeholder="Search or type model"
+                                            emptyText="No models for this brand"
+                                            allowCustom
+                                            disabled={!data.brand}
                                         />
                                         <InputError
                                             message={
@@ -484,14 +494,13 @@ export default function CreateVehicle({
                                     </div>
                                     <div>
                                         <Label htmlFor="year">Year</Label>
-                                        <Input
-                                            id="year"
-                                            type="number"
-                                            placeholder="e.g. 2023"
+                                        <SearchableCombobox
                                             value={data.year}
-                                            onChange={(e) =>
-                                                setData('year', e.target.value)
-                                            }
+                                            onValueChange={handleYearChange}
+                                            options={yearOptions}
+                                            placeholder="Search or type year"
+                                            emptyText="No years found"
+                                            allowCustom
                                         />
                                         <InputError
                                             message={
@@ -522,59 +531,37 @@ export default function CreateVehicle({
                                         />
                                     </div>
                                     <div>
-                                        <Label>Car Type</Label>
-                                        <Select
-                                            value={data.car_type_name_id}
-                                            onValueChange={(value) => {
-                                                const option =
-                                                    carTypeNames.find(
-                                                        (t) =>
-                                                            String(t.id) ===
-                                                            value,
-                                                    );
-                                                setData(
-                                                    'car_type_name_id',
-                                                    value,
-                                                );
-
-                                                if (option) {
-                                                    setData(
-                                                        'category',
-                                                        option.name,
-                                                    );
-                                                }
-                                            }}
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select car type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                {carTypeNames.map((type) => (
-                                                    <SelectItem
-                                                        key={type.id}
-                                                        value={String(type.id)}
-                                                    >
-                                                        {type.name}
-                                                    </SelectItem>
-                                                ))}
-                                            </SelectContent>
-                                        </Select>
+                                        <Label htmlFor="category">
+                                            Category (Car Type)
+                                        </Label>
+                                        <SearchableCombobox
+                                            value={data.category}
+                                            onValueChange={(value) =>
+                                                setData('category', value)
+                                            }
+                                            options={categoryOptions}
+                                            placeholder="Select or type a category"
+                                            emptyText="No categories found"
+                                            allowCustom
+                                        />
                                         <InputError
                                             message={
-                                                serverErrors.car_type_name_id ??
-                                                errors.car_type_name_id
+                                                serverErrors.category ??
+                                                errors.category
                                             }
                                         />
                                     </div>
                                     <div>
                                         <Label htmlFor="color">Color</Label>
-                                        <Input
-                                            id="color"
-                                            placeholder="e.g. White"
+                                        <SearchableCombobox
                                             value={data.color}
-                                            onChange={(e) =>
-                                                setData('color', e.target.value)
+                                            onValueChange={(value) =>
+                                                setData('color', value)
                                             }
+                                            options={colorOptions}
+                                            placeholder="Select or type a color"
+                                            emptyText="No colors found"
+                                            allowCustom
                                         />
                                         <InputError
                                             message={
@@ -585,30 +572,16 @@ export default function CreateVehicle({
                                     </div>
                                     <div>
                                         <Label>Fuel Type</Label>
-                                        <Select
+                                        <SearchableCombobox
                                             value={data.fuel_type}
                                             onValueChange={(value) =>
                                                 setData('fuel_type', value)
                                             }
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select fuel type" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Petrol">
-                                                    Petrol
-                                                </SelectItem>
-                                                <SelectItem value="Diesel">
-                                                    Diesel
-                                                </SelectItem>
-                                                <SelectItem value="Hybrid">
-                                                    Hybrid
-                                                </SelectItem>
-                                                <SelectItem value="Electric">
-                                                    Electric
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                            options={fuelOptions}
+                                            placeholder="Select or type fuel type"
+                                            emptyText="No fuel types found"
+                                            allowCustom
+                                        />
                                         <InputError
                                             message={
                                                 serverErrors.fuel_type ??
@@ -618,27 +591,16 @@ export default function CreateVehicle({
                                     </div>
                                     <div>
                                         <Label>Transmission</Label>
-                                        <Select
+                                        <SearchableCombobox
                                             value={data.transmission}
                                             onValueChange={(value) =>
                                                 setData('transmission', value)
                                             }
-                                        >
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Select transmission" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="Manual">
-                                                    Manual
-                                                </SelectItem>
-                                                <SelectItem value="Automatic">
-                                                    Automatic
-                                                </SelectItem>
-                                                <SelectItem value="Semi">
-                                                    Semi
-                                                </SelectItem>
-                                            </SelectContent>
-                                        </Select>
+                                            options={transmissionOptions}
+                                            placeholder="Select or type transmission"
+                                            emptyText="No transmissions found"
+                                            allowCustom
+                                        />
                                         <InputError
                                             message={
                                                 serverErrors.transmission ??
@@ -650,16 +612,15 @@ export default function CreateVehicle({
                                         <Label htmlFor="engine_size">
                                             Engine Size
                                         </Label>
-                                        <Input
-                                            id="engine_size"
-                                            placeholder="e.g. 1.8L"
+                                        <SearchableCombobox
                                             value={data.engine_size}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'engine_size',
-                                                    e.target.value,
-                                                )
+                                            onValueChange={(value) =>
+                                                setData('engine_size', value)
                                             }
+                                            options={engineOptions}
+                                            placeholder="Select or type an engine size"
+                                            emptyText="No engine sizes found"
+                                            allowCustom
                                         />
                                         <InputError
                                             message={
@@ -693,14 +654,15 @@ export default function CreateVehicle({
                                     </div>
                                     <div>
                                         <Label htmlFor="seats">Seats</Label>
-                                        <Input
-                                            id="seats"
-                                            type="number"
-                                            placeholder="e.g. 5"
+                                        <SearchableCombobox
                                             value={data.seats}
-                                            onChange={(e) =>
-                                                setData('seats', e.target.value)
+                                            onValueChange={(value) =>
+                                                setData('seats', value)
                                             }
+                                            options={seatOptions}
+                                            placeholder="Select or type seat count"
+                                            emptyText="No seat counts found"
+                                            allowCustom
                                         />
                                         <InputError
                                             message={
@@ -748,94 +710,133 @@ export default function CreateVehicle({
                                             )
                                         }
                                     />
-                                         <InputError
-                                             message={
-                                                 serverErrors.description ??
-                                                 errors.description
-                                             }
-                                         />
-                                     </div>
+                                    <InputError
+                                        message={
+                                            serverErrors.description ??
+                                            errors.description
+                                        }
+                                    />
+                                </div>
 
-                                     <div className="space-y-4 border-t pt-6">
-    <div>
-        <h3 className="text-lg font-semibold">
-            Available Date Ranges
-        </h3>
-        <p className="text-sm text-muted-foreground">
-            Customers can only book the car during these date
-            ranges. You can add or edit these later too.
-        </p>
-    </div>
-    {data.available_periods.map((period, index) => (
-        <div
-            key={index}
-            className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
-        >
-            <div>
-                <Label>Start Date</Label>
-                <Input
-                    type="date"
-                    value={period.start_date}
-                    onChange={(e) => {
-                        const periods = [...data.available_periods];
-                        periods[index] = {
-                            ...periods[index],
-                            start_date: e.target.value,
-                        };
-                        setData('available_periods', periods);
-                    }}
-                />
-            </div>
-            <div>
-                <Label>End Date</Label>
-                <div className="flex gap-2">
-                    <Input
-                        type="date"
-                        value={period.end_date}
-                        onChange={(e) => {
-                            const periods = [...data.available_periods];
-                            periods[index] = {
-                                ...periods[index],
-                                end_date: e.target.value,
-                            };
-                            setData('available_periods', periods);
-                        }}
-                    />
-                    <Button
-                        type="button"
-                        variant="destructive"
-                        size="sm"
-                        onClick={() => {
-                            setData(
-                                'available_periods',
-                                data.available_periods.filter(
-                                    (_, i) => i !== index,
-                                ),
-                            );
-                        }}
-                    >
-                        Remove
-                    </Button>
-                </div>
-            </div>
-        </div>
-    ))}
-    <Button
-        type="button"
-        variant="outline"
-        onClick={() =>
-            setData('available_periods', [
-                ...data.available_periods,
-                { start_date: '', end_date: '' },
-            ])
-        }
-    >
-        + Add Available Range
-    </Button>
-    <InputError
-        message={serverErrors.available_periods ?? errors.available_periods}
-    />
-</div>
+                                <div className="space-y-4 border-t pt-6">
+                                    <div>
+                                        <h3 className="text-lg font-semibold">
+                                            Available Date Ranges
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground">
+                                            Customers can only book the car
+                                            during these date ranges. You can
+                                            add or edit these later too.
+                                        </p>
+                                    </div>
+                                    {data.available_periods.map(
+                                        (period, index) => (
+                                            <div
+                                                key={index}
+                                                className="grid gap-2 rounded-lg border p-4 md:grid-cols-2"
+                                            >
+                                                <div>
+                                                    <Label>Start Date</Label>
+                                                    <Input
+                                                        type="date"
+                                                        value={
+                                                            period.start_date
+                                                        }
+                                                        onChange={(e) => {
+                                                            const periods = [
+                                                                ...data.available_periods,
+                                                            ];
+                                                            periods[index] = {
+                                                                ...periods[
+                                                                    index
+                                                                ],
+                                                                start_date:
+                                                                    e.target
+                                                                        .value,
+                                                            };
+                                                            setData(
+                                                                'available_periods',
+                                                                periods,
+                                                            );
+                                                        }}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <Label>End Date</Label>
+                                                    <div className="flex gap-2">
+                                                        <Input
+                                                            type="date"
+                                                            value={
+                                                                period.end_date
+                                                            }
+                                                            onChange={(e) => {
+                                                                const periods =
+                                                                    [
+                                                                        ...data.available_periods,
+                                                                    ];
+                                                                periods[index] =
+                                                                    {
+                                                                        ...periods[
+                                                                            index
+                                                                        ],
+                                                                        end_date:
+                                                                            e
+                                                                                .target
+                                                                                .value,
+                                                                    };
+                                                                setData(
+                                                                    'available_periods',
+                                                                    periods,
+                                                                );
+                                                            }}
+                                                        />
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="sm"
+                                                            onClick={() => {
+                                                                setData(
+                                                                    'available_periods',
+                                                                    data.available_periods.filter(
+                                                                        (
+                                                                            _,
+                                                                            i,
+                                                                        ) =>
+                                                                            i !==
+                                                                            index,
+                                                                    ),
+                                                                );
+                                                            }}
+                                                        >
+                                                            Remove
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ),
+                                    )}
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        onClick={() =>
+                                            setData('available_periods', [
+                                                ...data.available_periods,
+                                                {
+                                                    start_date: '',
+                                                    end_date: '',
+                                                },
+                                            ])
+                                        }
+                                    >
+                                        + Add Available Range
+                                    </Button>
+                                    <InputError
+                                        message={
+                                            serverErrors.available_periods ??
+                                            errors.available_periods
+                                        }
+                                    />
+                                </div>
                             </CardContent>
                         </Card>
                     )}
@@ -1007,7 +1008,11 @@ export default function CreateVehicle({
                                         processing || photoErrors.length > 0
                                     }
                                 >
-                                    {processing ? 'Saving...' : 'Save Vehicle'}
+                                    {processing
+                                        ? 'Saving...'
+                                        : matchedConfig
+                                          ? 'Save Vehicle'
+                                          : 'Submit for Review'}
                                 </Button>
                             )}
                         </div>

@@ -7,7 +7,7 @@ use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
 use App\Models\CarType;
-use App\Models\CarTypeName;
+use App\Models\CarTypeRequest;
 use App\Models\Location;
 use App\Models\VehicleDocument;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +21,7 @@ class VehicleController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $query = Car::with(['images', 'carTypeName', 'availablePeriods']);
+        $query = Car::with(['images', 'availablePeriods']);
 
         if ($user->role !== 'admin') {
             $query->where('owner_id', $user->id);
@@ -77,17 +77,23 @@ class VehicleController extends Controller
                 ]);
         }
 
+        $rejectedRequest = CarTypeRequest::where('requested_by', $user->id)
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
         return Inertia::render('create-vehicle', [
-            'carTypeNames' => CarTypeName::where('is_active', true)
-                ->where('is_active', true)
-                ->orderBy('name')
-                ->get(['id', 'name']),
             'carTypes' => CarType::where('is_active', true)
-                ->with('carTypeName:id,name')
                 ->orderBy('brand')
                 ->orderBy('model')
                 ->get(),
             'locations' => Location::orderBy('name')->get(['id', 'name']),
+            'rejectedRequest' => $rejectedRequest ? [
+                'brand' => $rejectedRequest->brand,
+                'model' => $rejectedRequest->model,
+                'year' => $rejectedRequest->year,
+                'admin_note' => $rejectedRequest->admin_note,
+            ] : null,
         ]);
     }
 
@@ -114,14 +120,13 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|max:50|unique:cars',
             'category' => 'required|string|max:100',
             'color' => 'required|string|max:50',
-            'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
-            'transmission' => 'required|in:Manual,Automatic,Semi',
-            'car_type_name_id' => 'nullable|exists:car_type_names,id',
+            'fuel_type' => 'required|string|max:50',
+            'transmission' => 'required|string|max:50',
             'daily_price' => 'required|numeric|min:0',
             'availability_status' => 'nullable|in:available,maintenance',
-            'engine_size' => 'nullable|string|max:50',
-            'mileage' => 'nullable|integer|min:0',
-            'seats' => 'nullable|integer|min:1|max:10',
+            'engine_size' => 'required|string|max:50',
+            'mileage' => 'required|integer|min:0',
+            'seats' => 'required|integer|min:1|max:10',
             'description' => 'nullable|string',
             'available_periods' => 'nullable|array',
             'available_periods.*.start_date' => ['required_with:available_periods', 'date'],
@@ -138,13 +143,78 @@ class VehicleController extends Controller
             'ownership_document.mimes' => 'The ownership document must be a JPEG, PNG, GIF, WebP, or PDF file.',
         ]);
 
+        $template = CarType::where('is_active', true)
+            ->where('brand', $validated['brand'])
+            ->where('model', $validated['model'])
+            ->get()
+            ->first(fn (CarType $carType) => $carType->matchesYear($validated['year']));
+
+        if ($template === null) {
+            $exists = CarTypeRequest::where('requested_by', auth()->id())
+                ->where('brand', $validated['brand'])
+                ->where('model', $validated['model'])
+                ->where('year', $validated['year'])
+                ->where('status', 'pending')
+                ->exists();
+
+            if ($exists) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'You already have a pending request for this configuration.',
+                ]);
+            }
+
+            $photos = [];
+
+            if ($request->hasFile('photos')) {
+                foreach ($request->file('photos') as $photo) {
+                    $photos[] = $photo->store('car-photos', 'public');
+                }
+            }
+
+            $documentPath = null;
+
+            if ($request->hasFile('ownership_document')) {
+                $documentPath = $request->file('ownership_document')
+                    ->store('vehicle_documents', 'public');
+            }
+
+            CarTypeRequest::create([
+                'requested_by' => auth()->id(),
+                'brand' => $validated['brand'],
+                'model' => $validated['model'],
+                'year' => $validated['year'],
+                'category' => $validated['category'],
+                'color' => $validated['color'],
+                'fuel_type' => $validated['fuel_type'],
+                'transmission' => $validated['transmission'],
+                'engine_size' => $validated['engine_size'] ?? null,
+                'seats' => $validated['seats'] ?? null,
+                'plate_number' => $validated['plate_number'],
+                'daily_price' => $validated['daily_price'],
+                'mileage' => $validated['mileage'] ?? null,
+                'description' => $validated['description'] ?? null,
+                'availability_status' => $validated['availability_status'] ?? 'available',
+                'photos' => $photos,
+                'document_path' => $documentPath,
+                'primary_photo_index' => $validated['primary_photo_index'] ?? 0,
+                'ownership_expiry' => $validated['ownership_expiry'] ?? null,
+                'available_periods' => $validated['available_periods'] ?? [],
+                'status' => 'pending',
+            ]);
+
+            return redirect()->route('vehicles.index')->with('toast', [
+                'type' => 'success',
+                'message' => 'Your vehicle was submitted as a configuration request. An admin will review it and create the configuration.',
+            ]);
+        }
+
         $car = Car::create([
             'brand' => $validated['brand'],
             'model' => $validated['model'],
             'year' => $validated['year'],
             'plate_number' => $validated['plate_number'],
             'category' => $validated['category'],
-            'car_type_name_id' => $validated['car_type_name_id'] ?? null,
             'color' => $validated['color'],
             'fuel_type' => $validated['fuel_type'],
             'transmission' => $validated['transmission'],
@@ -202,7 +272,7 @@ class VehicleController extends Controller
             abort(403);
         }
 
-        $car->load(['images', 'documents', 'carTypeName', 'reviews.reviewer', 'availablePeriods']);
+        $car->load(['images', 'documents', 'reviews.reviewer', 'availablePeriods']);
 
         $recentReviews = $car->reviews()->with('reviewer')->latest()->take(5)->get()->map(function ($review) {
             return [
@@ -228,7 +298,6 @@ class VehicleController extends Controller
                         'end_date' => $period->end_date->toDateString(),
                     ]),
             ]),
-            'carTypeNames' => CarTypeName::where('is_active', true)->orderBy('name')->get(['id', 'name']),
         ]);
     }
 
@@ -246,9 +315,8 @@ class VehicleController extends Controller
             'plate_number' => 'required|string|max:50|unique:cars,plate_number,'.$car->id,
             'category' => 'required|string|max:100',
             'color' => 'required|string|max:50',
-            'fuel_type' => 'required|in:Petrol,Diesel,Hybrid,Electric',
-            'transmission' => 'required|in:Manual,Automatic,Semi',
-            'car_type_name_id' => 'nullable|exists:car_type_names,id',
+            'fuel_type' => 'required|string|max:50',
+            'transmission' => 'required|string|max:50',
             'daily_price' => 'required|numeric|min:0',
             'availability_status' => 'nullable|in:available,maintenance',
             'engine_size' => 'nullable|string|max:50',
@@ -340,7 +408,6 @@ class VehicleController extends Controller
             'color',
             'fuel_type',
             'transmission',
-            'car_type_name_id',
             'daily_price',
             'engine_size',
             'mileage',

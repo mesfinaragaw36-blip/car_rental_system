@@ -8,9 +8,9 @@ use App\Models\CarAvailablePeriod;
 use App\Models\CarImage;
 use App\Models\OwnerProfile;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
@@ -49,25 +49,25 @@ class DemoLateReturnSeeder extends Seeder
         $this->makeAvailable($onTimeCar);
         $this->makeAvailable($pickupCar);
 
-            $demoBookingIds = Booking::whereIn('car_id', [$overdueCar->id, $onTimeCar->id,$pickupCar->id,])->pluck('id');
+        $demoBookingIds = Booking::whereIn('car_id', [$overdueCar->id, $onTimeCar->id, $pickupCar->id])->pluck('id');
 
-            DB::table('booking_drivers')
-                ->whereIn('booking_id', $demoBookingIds)
-                ->delete();
+        DB::table('booking_drivers')
+            ->whereIn('booking_id', $demoBookingIds)
+            ->delete();
 
-            DB::table('payments')
-                ->whereIn('booking_id', $demoBookingIds)
-                ->delete();
+        DB::table('payments')
+            ->whereIn('booking_id', $demoBookingIds)
+            ->delete();
 
-            DB::table('refunds')
-                ->whereIn('booking_id', $demoBookingIds)
-                ->delete();
+        DB::table('refunds')
+            ->whereIn('booking_id', $demoBookingIds)
+            ->delete();
 
-                DB::table('owner_payouts')
-                ->whereIn('booking_id', $demoBookingIds)
-                ->delete();
+        DB::table('owner_payouts')
+            ->whereIn('booking_id', $demoBookingIds)
+            ->delete();
 
-            Booking::whereIn('id', $demoBookingIds)->delete();
+        Booking::whereIn('id', $demoBookingIds)->delete();
 
         $this->overdueBooking($customer, $owner, $overdueCar);
         $this->onTimeBooking($customer, $owner, $onTimeCar);

@@ -43,7 +43,7 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'disputes.view': ['/disputes'],
     'roles.view': ['/admin/roles'],
     'locations.view': ['/admin/locations'],
-    'car-types.view': ['/admin/car-types/type-names'],
+    'car-types.view': ['/admin/car-types/configurations'],
     'driver.access': ['/assignments', '/driver/trip-history'],
 };
 
@@ -131,10 +131,10 @@ function getNavItems(
             });
         }
 
-        if (allowedRoutes.has('/admin/car-types/type-names')) {
+        if (allowedRoutes.has('/admin/car-types/configurations')) {
             items.push({
                 title: 'Car Types',
-                href: '/admin/car-types/type-names',
+                href: '/admin/car-types/configurations',
                 icon: Settings,
             });
         }
@@ -164,7 +164,7 @@ function getNavItems(
                 { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
                 {
                     title: 'Car Types',
-                    href: '/admin/car-types/type-names',
+                    href: '/admin/car-types/configurations',
                     icon: Settings,
                 },
                 { title: 'Cars', href: '/admin/vehicles', icon: Car },

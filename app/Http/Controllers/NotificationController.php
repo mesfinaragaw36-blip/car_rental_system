@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Booking;
 use App\Models\BookingDriver;
+use App\Models\CarTypeRequest;
 use App\Models\Notification;
 use App\Models\OwnerPayout;
 use Illuminate\Http\RedirectResponse;
@@ -49,6 +50,8 @@ class NotificationController extends Controller
             OwnerPayout::class => route('admin.transactions.index'),
 
             BookingDriver::class => route('assignments.index'),
+
+            CarTypeRequest::class => route('car-type-requests.show', $notification->related_id),
 
             default => null,
         };

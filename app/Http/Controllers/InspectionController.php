@@ -22,7 +22,7 @@ class InspectionController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['customer.ownerProfile', 'owner', 'car.images', 'car.carTypeName', 'inspections.idVerifiedBy'])
+        $bookings = Booking::with(['customer.ownerProfile', 'owner', 'car.images', 'inspections.idVerifiedBy'])
             ->whereIn('status', ['deposit_paid', 'paid', 'picked_up', 'returned'])
             ->latest('return_date')
             ->get();
@@ -664,7 +664,6 @@ class InspectionController extends Controller
             'engine_size' => $car->engine_size,
             'mileage' => $car->mileage,
             'description' => $car->description,
-            'car_type_name' => $car->carTypeName ? ['id' => $car->carTypeName->id, 'name' => $car->carTypeName->name] : null,
             'images' => $car->images
                 ->map(fn ($image) => [
                     'id' => $image->id,
