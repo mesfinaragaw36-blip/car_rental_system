@@ -36,6 +36,7 @@ interface Car {
     seats: number | null;
     description: string | null;
     availability_status: string;
+    is_currently_booked: boolean;
     images: CarImage[];
     owner: { id: number; name: string; phone: string };
     average_rating?: number;
@@ -44,7 +45,7 @@ interface Car {
 
 interface Props {
     cars: Car[];
-    role: string;
+    role: string | null;
     verification_status?: string | null;
     filters: {
         search?: string;
@@ -294,6 +295,7 @@ export default function BrowseCars({
                     <div className="grid items-start gap-6 sm:grid-cols-2 xl:grid-cols-3">
                         {cars.map((car) => {
                             const image = getPrimaryImage(car);
+                            const isBooked = car.is_currently_booked;
 
                             return (
                                 <GlareCard
@@ -305,7 +307,7 @@ export default function BrowseCars({
                                     }}
                                 >
                                     <div className="w-full p-2.5">
-                                        <div className="aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
+                                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
                                             {image ? (
                                                 <img
                                                     src={`/storage/${image.image_path}`}
@@ -315,6 +317,11 @@ export default function BrowseCars({
                                             ) : (
                                                 <div className="flex h-full items-center justify-center">
                                                     <Car className="h-12 w-12 text-slate-300" />
+                                                </div>
+                                            )}
+                                            {isBooked && (
+                                                <div className="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
+                                                    Currently Booked
                                                 </div>
                                             )}
                                         </div>
@@ -389,6 +396,13 @@ export default function BrowseCars({
                                 >
                                     Book Now
                                 </Button>
+                            ) : selectedCar?.is_currently_booked ? (
+                                <Button
+                                    disabled
+                                    className="flex-1 bg-slate-400 text-white cursor-not-allowed"
+                                >
+                                    Currently Booked
+                                </Button>
                             ) : (
                                 <Button
                                     asChild
@@ -401,7 +415,9 @@ export default function BrowseCars({
                                                 : '#'
                                         }
                                     >
-                                        Book Now
+                                        {role === 'customer'
+                                            ? 'Book Now'
+                                            : 'View Details'}
                                     </Link>
                                 </Button>
                             )}

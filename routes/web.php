@@ -35,6 +35,16 @@ Route::get('/', function () {
     return Inertia::render('Welcome');
 })->name('home');
 
+// =========================================================
+// Browse Cars - Public Access
+// =========================================================
+
+Route::get('/browse-cars', [BrowseCarController::class, 'index'])
+    ->name('cars.index');
+
+Route::get('/cars/{car}', [BrowseCarController::class, 'show'])
+    ->name('cars.show');
+
 Route::middleware(['auth'])->group(function () {
 
     // =========================================================
@@ -186,14 +196,8 @@ Route::middleware(['auth'])->group(function () {
         ->name('car-type-requests.show');
 
     // =========================================================
-    // Browse Cars
+    // Car Booking - Requires Authentication
     // =========================================================
-
-    Route::get('/browse-cars', [BrowseCarController::class, 'index'])
-        ->name('cars.index');
-
-    Route::get('/cars/{car}', [BrowseCarController::class, 'show'])
-        ->name('cars.show');
 
     Route::post('/cars/{car}/book', [BrowseCarController::class, 'book'])
         ->name('cars.book');
@@ -378,7 +382,6 @@ Route::middleware(['auth'])->group(function () {
 
             Route::get('/reports', [ReportController::class, 'index'])
                 ->name('reports.index');
-
             // -------------------------------------------------
             // Users
             // -------------------------------------------------

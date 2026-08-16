@@ -31,6 +31,7 @@ const HERO_CAR_IMAGE = '/images/hero-car.png';
 const NAV_ITEMS = [
     { name: 'Features', link: '#features' },
     { name: 'Our Fleet', link: '#fleet' },
+    { name: 'Browse Cars', link: '/browse-cars' },
     { name: 'How it works', link: '#how-it-works' },
     { name: 'Contact', link: '#contact' },
 ];
