@@ -1,6 +1,7 @@
 import { Head, Link, usePage } from '@inertiajs/react';
 import {
     ArrowRight,
+    Car as CarIcon,
     CheckCircle,
     Gauge,
     MapPin,
@@ -9,8 +10,9 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { LayoutGrid } from '@/components/ui/layout-grid';
-import type { LayoutGridCard } from '@/components/ui/layout-grid';
+import { AccountMenu } from '@/components/account-menu';
+import BrandLogo from '@/components/brand-logo';
+import { NotificationBell } from '@/components/notification-bell';
 import {
     MobileNav,
     MobileNavHeader,
@@ -28,10 +30,9 @@ import type { Auth } from '@/types';
 
 const HERO_CAR_IMAGE = '/images/hero-car.png';
 
-const NAV_ITEMS = [
+const GUEST_NAV_ITEMS = [
     { name: 'Features', link: '#features' },
     { name: 'Our Fleet', link: '#fleet' },
-    { name: 'Browse Cars', link: '/browse-cars' },
     { name: 'How it works', link: '#how-it-works' },
     { name: 'Contact', link: '#contact' },
 ];
@@ -86,69 +87,6 @@ const STATS = [
 
 const TRUST_POINTS = ['No hidden fees', 'Verified vehicles', 'Instant booking'];
 
-const FLEET_CARDS: LayoutGridCard[] = [
-    {
-        id: 1,
-        className: 'md:col-span-2',
-        thumbnail: '/images/fleet-sedan.png',
-        content: (
-            <div>
-                <p className="text-xl font-bold text-foreground md:text-2xl">
-                    Sedans
-                </p>
-                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                    Smooth city cruisers — economical, agile, everyday ready.
-                </p>
-            </div>
-        ),
-    },
-    {
-        id: 2,
-        className: 'md:col-span-1',
-        thumbnail: '/images/fleet-suv.png',
-        content: (
-            <div>
-                <p className="text-xl font-bold text-foreground md:text-2xl">
-                    SUVs
-                </p>
-                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                    Space for the whole crew, built for the long haul.
-                </p>
-            </div>
-        ),
-    },
-    {
-        id: 3,
-        className: 'md:col-span-1',
-        thumbnail: '/images/fleet-luxury.png',
-        content: (
-            <div>
-                <p className="text-xl font-bold text-foreground md:text-2xl">
-                    Luxury
-                </p>
-                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                    Arrive the way you want to be remembered.
-                </p>
-            </div>
-        ),
-    },
-    {
-        id: 4,
-        className: 'md:col-span-2',
-        thumbnail: '/images/fleet-pickup.png',
-        content: (
-            <div>
-                <p className="text-xl font-bold text-foreground md:text-2xl">
-                    Pickups & Vans
-                </p>
-                <p className="mt-2 max-w-lg text-sm text-muted-foreground">
-                    Haul more, do more — tough and dependable.
-                </p>
-            </div>
-        ),
-    },
-];
-
 function Reveal({
     children,
     className,
@@ -199,32 +137,66 @@ function Reveal({
     );
 }
 
-function BrandLogo() {
-    return (
-        <>
-            <img
-                src="/images/logo.png"
-                alt="Ethio Car Rental"
-                className="h-10 w-10 rounded-full object-cover"
-            />
-            <span className="text-base">Ethio Car Rental</span>
-        </>
-    );
-}
-
 function getDashboardUrl(): string {
     return '/dashboard';
 }
 
-export default function Welcome() {
+interface CarImage {
+    id: number;
+    image_path: string;
+    is_primary: boolean;
+}
+
+interface Car {
+    id: number;
+    brand: string;
+    model: string;
+    year: number;
+    daily_price: string;
+    fuel_type: string;
+    transmission: string;
+    category: string;
+    color: string;
+    average_rating?: number;
+    review_count?: number;
+    is_currently_booked?: boolean;
+    images: CarImage[];
+}
+
+interface Props {
+    cars: Car[];
+}
+
+export default function Welcome({ cars = [] }: Props) {
     const { auth } = usePage<{ auth: Auth }>().props;
-    const dashboardUrl = auth.user ? getDashboardUrl() : null;
+    const user = auth.user;
+    const role = user?.role;
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-    const authButton = dashboardUrl ? (
-        <NavbarButton href={dashboardUrl}>
-            Dashboard <ArrowRight className="ml-1 inline h-4 w-4" />
-        </NavbarButton>
+    const isGuest = !role;
+    const isConsumer = role === 'customer' || role === 'driver';
+    const dashboardUrl = !isGuest && !isConsumer ? getDashboardUrl() : null;
+
+    const navItems = isConsumer
+        ? [
+              { name: 'Browse Cars', link: '/browse-cars' },
+              ...(role === 'customer'
+                  ? [
+                        { name: 'My Bookings', link: '/bookings' },
+                        { name: 'Payment History', link: '/payments' },
+                    ]
+                  : []),
+              ...(role === 'driver'
+                  ? [{ name: 'My Assignments', link: '/driver/assignments' }]
+                  : []),
+          ]
+        : GUEST_NAV_ITEMS;
+
+    const authButton = user ? (
+        <div className="flex items-center gap-2">
+            <NotificationBell />
+            <AccountMenu user={user} />
+        </div>
     ) : (
         <>
             <NavbarButton variant="secondary" href={login()}>
@@ -245,7 +217,7 @@ export default function Welcome() {
                         <NavbarLogo>
                             <BrandLogo />
                         </NavbarLogo>
-                        <NavItems items={NAV_ITEMS} />
+                        <NavItems items={navItems} />
                         <div className="flex items-center gap-3">
                             {authButton}
                         </div>
@@ -256,19 +228,23 @@ export default function Welcome() {
                             <NavbarLogo>
                                 <BrandLogo />
                             </NavbarLogo>
-                            <MobileNavToggle
-                                isOpen={isMobileMenuOpen}
-                                onClick={() =>
-                                    setIsMobileMenuOpen((open) => !open)
-                                }
-                            />
+                            <div className="flex items-center gap-2">
+                                {user && <NotificationBell />}
+                                {user && <AccountMenu user={user} />}
+                                <MobileNavToggle
+                                    isOpen={isMobileMenuOpen}
+                                    onClick={() =>
+                                        setIsMobileMenuOpen((open) => !open)
+                                    }
+                                />
+                            </div>
                         </MobileNavHeader>
 
                         <MobileNavMenu
                             isOpen={isMobileMenuOpen}
                             onClose={() => setIsMobileMenuOpen(false)}
                         >
-                            {NAV_ITEMS.map((item) => (
+                            {navItems.map((item) => (
                                 <a
                                     key={item.name}
                                     href={item.link}
@@ -278,36 +254,26 @@ export default function Welcome() {
                                     {item.name}
                                 </a>
                             ))}
-                            <div
-                                onClick={() => setIsMobileMenuOpen(false)}
-                                className="mt-3 flex flex-col gap-3 border-t border-black/5 pt-4"
-                            >
-                                {dashboardUrl ? (
+                            {!user && (
+                                <div
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                    className="mt-3 flex flex-col gap-3 border-t border-black/5 pt-4"
+                                >
                                     <NavbarButton
-                                        href={dashboardUrl}
+                                        href={register()}
                                         className="w-full"
                                     >
-                                        Dashboard{' '}
-                                        <ArrowRight className="ml-1 inline h-4 w-4" />
+                                        Get started
                                     </NavbarButton>
-                                ) : (
-                                    <>
-                                        <NavbarButton
-                                            href={register()}
-                                            className="w-full"
-                                        >
-                                            Get started
-                                        </NavbarButton>
-                                        <NavbarButton
-                                            href={login()}
-                                            variant="secondary"
-                                            className="w-full"
-                                        >
-                                            Log in
-                                        </NavbarButton>
-                                    </>
-                                )}
-                            </div>
+                                    <NavbarButton
+                                        href={login()}
+                                        variant="secondary"
+                                        className="w-full"
+                                    >
+                                        Log in
+                                    </NavbarButton>
+                                </div>
+                            )}
                         </MobileNavMenu>
                     </MobileNav>
                 </Navbar>
@@ -345,7 +311,29 @@ export default function Welcome() {
                             </p>
 
                             <div className="mt-8 flex animate-in flex-col items-center gap-3 delay-300 duration-700 fade-in slide-in-from-bottom-4 sm:flex-row lg:justify-start">
-                                {dashboardUrl ? (
+                                {isConsumer ? (
+                                    <>
+                                        <Link
+                                            href="/browse-cars"
+                                            className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
+                                        >
+                                            Browse Cars{' '}
+                                            <ArrowRight className="ml-1.5 inline h-4 w-4" />
+                                        </Link>
+                                        <Link
+                                            href={
+                                                role === 'driver'
+                                                    ? '/driver/assignments'
+                                                    : '/bookings'
+                                            }
+                                            className="rounded-full border border-border bg-white/60 px-7 py-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-white"
+                                        >
+                                            {role === 'driver'
+                                                ? 'My Assignments'
+                                                : 'My Bookings'}
+                                        </Link>
+                                    </>
+                                ) : dashboardUrl ? (
                                     <Link
                                         href={dashboardUrl}
                                         className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
@@ -479,17 +467,103 @@ export default function Welcome() {
                                 Our fleet
                             </p>
                             <h2 className="mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl">
-                                Built to move.
+                                Ready to drive today.
                             </h2>
                             <p className="mt-3 text-base text-muted-foreground sm:text-lg">
-                                Hover a card to take a closer look at
-                                what&apos;s waiting for you.
+                                Tap a car to see its details and book it in a
+                                few clicks.
                             </p>
                         </Reveal>
 
-                        <Reveal delay={120} className="mt-14">
-                            <LayoutGrid cards={FLEET_CARDS} />
-                        </Reveal>
+                        {cars.length > 0 ? (
+                            <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                                {cars.map((car, index) => {
+                                    const image =
+                                        car.images?.find(
+                                            (img) => img.is_primary,
+                                        ) ?? car.images?.[0];
+
+                                    return (
+                                        <Reveal
+                                            key={car.id}
+                                            delay={index * 80}
+                                            className="h-full"
+                                        >
+                                            <Link
+                                                href={`/cars/${car.id}`}
+                                                prefetch
+                                                className="group block h-full overflow-hidden rounded-3xl border border-black/5 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                                            >
+                                                <div className="relative aspect-[4/3] overflow-hidden bg-neutral-100">
+                                                    {image ? (
+                                                        <img
+                                                            src={`/storage/${image.image_path}`}
+                                                            alt={`${car.brand} ${car.model}`}
+                                                            className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                        />
+                                                    ) : (
+                                                        <div className="flex h-full items-center justify-center text-neutral-300">
+                                                            <CarIcon className="h-12 w-12" />
+                                                        </div>
+                                                    )}
+                                                    {car.is_currently_booked && (
+                                                        <span className="absolute top-3 right-3 rounded-full bg-red-500 px-3 py-1 text-xs font-semibold text-white shadow-lg">
+                                                            Booked
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="flex items-center justify-between gap-3 p-5">
+                                                    <div className="min-w-0">
+                                                        <h3 className="truncate text-base font-bold tracking-tight text-foreground">
+                                                            {car.brand}{' '}
+                                                            {car.model}
+                                                        </h3>
+                                                        <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
+                                                            {car.transmission} ·{' '}
+                                                            {car.fuel_type}
+                                                            {typeof car.average_rating ===
+                                                                'number' && (
+                                                                <span className="inline-flex items-center gap-1">
+                                                                    ·{' '}
+                                                                    {
+                                                                        car.average_rating
+                                                                    }{' '}
+                                                                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
+                                                                </span>
+                                                            )}
+                                                        </p>
+                                                    </div>
+                                                    <div className="shrink-0 text-right">
+                                                        <p className="text-lg font-bold text-foreground">
+                                                            ETB{' '}
+                                                            {Number(
+                                                                car.daily_price,
+                                                            ).toLocaleString()}
+                                                        </p>
+                                                        <p className="text-xs text-muted-foreground">
+                                                            per day
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            </Link>
+                                        </Reveal>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            <Reveal delay={120}>
+                                <div className="mt-14 flex flex-col items-center gap-2 rounded-3xl border border-black/5 bg-white py-16 text-center">
+                                    <CarIcon className="h-10 w-10 text-neutral-300" />
+                                    <p className="text-lg font-semibold text-foreground">
+                                        No cars available right now.
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        Check back soon — new vehicles are added
+                                        regularly.
+                                    </p>
+                                </div>
+                            </Reveal>
+                        )}
                     </div>
                 </section>
 
@@ -532,7 +606,7 @@ export default function Welcome() {
                 </section>
 
                 {/* CTA */}
-                {!dashboardUrl && (
+                {isGuest && (
                     <section className="mx-6 mb-6 overflow-hidden rounded-3xl bg-primary px-6 py-16 text-center sm:px-16">
                         <Reveal>
                             <h2 className="mx-auto max-w-2xl text-3xl font-extrabold tracking-tight text-white sm:text-4xl">

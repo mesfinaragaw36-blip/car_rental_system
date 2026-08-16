@@ -130,12 +130,6 @@ class User extends Authenticatable
         return $this->hasOne(CustomerIdentity::class);
     }
 
-    // NEW: Inspections performed by this inspector
-    public function inspections(): HasMany
-    {
-        return $this->hasMany(BookingInspection::class, 'inspector_id');
-    }
-
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');

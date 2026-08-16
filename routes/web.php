@@ -23,15 +23,53 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\VehicleController;
+use App\Models\Booking;
+use App\Models\Car;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    if (auth()->check()) {
+    $user = auth()->user();
+
+    if ($user && in_array($user->role, ['owner', 'admin'], true)) {
         return redirect()->route('dashboard');
     }
 
-    return Inertia::render('Welcome');
+    $cars = Car::with(['images'])
+        ->where('approval_status', 'approved')
+        ->where('availability_status', 'available')
+        ->whereHas('availablePeriods', fn ($q) => $q->whereDate('end_date', '>=', now()->toDateString()))
+        ->latest()
+        ->take(6)
+        ->get()
+        ->map(function (Car $car) {
+            $hasActiveBooking = $car->bookings()
+                ->whereNotIn('status', Booking::INACTIVE_STATUSES)
+                ->whereDate('return_date', '>=', now()->toDateString())
+                ->exists();
+
+            return [
+                'id' => $car->id,
+                'brand' => $car->brand,
+                'model' => $car->model,
+                'year' => $car->year,
+                'daily_price' => $car->daily_price,
+                'fuel_type' => $car->fuel_type,
+                'transmission' => $car->transmission,
+                'category' => $car->category,
+                'color' => $car->color,
+                'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
+                'review_count' => $car->reviews()->count(),
+                'is_currently_booked' => $hasActiveBooking,
+                'images' => $car->images->map(fn ($image) => [
+                    'id' => $image->id,
+                    'image_path' => $image->image_path,
+                    'is_primary' => $image->is_primary,
+                ]),
+            ];
+        });
+
+    return Inertia::render('Welcome', ['cars' => $cars]);
 })->name('home');
 
 // =========================================================

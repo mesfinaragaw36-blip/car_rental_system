@@ -12,6 +12,7 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
+import { login, register } from '@/routes';
 import { book } from '@/routes/cars';
 import { edit as editProfile } from '@/routes/profile';
 
@@ -281,7 +282,7 @@ export default function CarDetails({
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                Sign in or create an account to book this
+                                Create an account or sign in to book this
                                 vehicle.
                             </p>
                             <div className="flex gap-3">
@@ -290,13 +291,29 @@ export default function CarDetails({
                                     variant="outline"
                                     className="flex-1"
                                 >
-                                    <a href="/login">Log in</a>
+                                    <Link
+                                        href={login.url({
+                                            query: {
+                                                redirect: `/cars/${car.id}`,
+                                            },
+                                        })}
+                                    >
+                                        Log in
+                                    </Link>
                                 </Button>
                                 <Button
                                     asChild
                                     className="flex-1 bg-primary text-white hover:bg-primary/90"
                                 >
-                                    <a href="/register">Sign up</a>
+                                    <Link
+                                        href={register.url({
+                                            query: {
+                                                redirect: `/cars/${car.id}`,
+                                            },
+                                        })}
+                                    >
+                                        Sign up
+                                    </Link>
                                 </Button>
                             </div>
                         </CardContent>

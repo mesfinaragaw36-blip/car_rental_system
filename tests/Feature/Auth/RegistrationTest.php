@@ -36,6 +36,36 @@ class RegistrationTest extends TestCase
         ]);
 
         $this->assertAuthenticated();
-        $response->assertRedirect(route('dashboard', absolute: false));
+        $response->assertRedirect('/');
+    }
+
+    public function test_registration_honors_a_safe_internal_redirect()
+    {
+        $response = $this->post(route('register.store', ['redirect' => '/cars/1']), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'phone' => '0911223344',
+            'role' => 'customer',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/cars/1');
+    }
+
+    public function test_registration_rejects_an_external_redirect()
+    {
+        $response = $this->post(route('register.store', ['redirect' => 'https://evil.example.com']), [
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'phone' => '0911223344',
+            'role' => 'customer',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/');
     }
 }

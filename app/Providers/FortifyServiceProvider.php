@@ -15,6 +15,7 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Laravel\Fortify\Contracts\LoginResponse;
+use Laravel\Fortify\Contracts\RegisterResponse;
 use Laravel\Fortify\Features;
 use Laravel\Fortify\Fortify;
 
@@ -29,6 +30,12 @@ class FortifyServiceProvider extends ServiceProvider
         $this->app->singleton(
             LoginResponse::class,
             \App\Http\Responses\LoginResponse::class,
+        );
+
+        // Override Fortify's register response to support internal redirects
+        $this->app->singleton(
+            RegisterResponse::class,
+            \App\Http\Responses\RegisterResponse::class,
         );
     }
 

@@ -240,12 +240,6 @@ class Booking extends Model
         ] : null;
     }
 
-    // Pre-pickup inspection
-    public function inspection(): HasOne
-    {
-        return $this->hasOne(BookingInspection::class);
-    }
-
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);

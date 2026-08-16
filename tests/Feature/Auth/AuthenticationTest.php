@@ -32,6 +32,32 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect(route('cars.index', absolute: false));
     }
 
+    public function test_login_honors_a_safe_internal_redirect()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post(route('login.store', ['redirect' => '/cars/1']), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect('/cars/1');
+    }
+
+    public function test_login_rejects_an_external_redirect()
+    {
+        $user = User::factory()->create();
+
+        $response = $this->post(route('login.store', ['redirect' => 'https://evil.example.com']), [
+            'email' => $user->email,
+            'password' => 'password',
+        ]);
+
+        $this->assertAuthenticated();
+        $response->assertRedirect(route('cars.index', absolute: false));
+    }
+
     public function test_users_with_two_factor_enabled_are_redirected_to_two_factor_challenge()
     {
         $this->skipUnlessFortifyHas(Features::twoFactorAuthentication());
