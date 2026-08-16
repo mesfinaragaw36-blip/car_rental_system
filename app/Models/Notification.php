@@ -55,7 +55,7 @@ class Notification extends Model
             return match ($this->related_type) {
                 Booking::class => route('bookings.show', $this->related_id),
                 OwnerPayout::class => route('admin.transactions.index'),
-                BookingDriver::class => route('assignments.index'),
+                BookingDriver::class => route('driver.assignments.index'),
                 CarTypeRequest::class => route('car-type-requests.show', $this->related_id),
                 default => null,
             };

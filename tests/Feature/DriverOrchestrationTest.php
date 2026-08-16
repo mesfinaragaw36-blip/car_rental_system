@@ -196,7 +196,7 @@ class DriverOrchestrationTest extends TestCase
         ]);
 
         $this->actingAs($firstDriver)
-            ->post(route('assignments.reject', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]))
+            ->post(route('driver.assignments.reject', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]), ['rejection_reason' => 'Not available'])
             ->assertRedirect()
             ->assertSessionHas('toast.type', 'success');
 
@@ -233,7 +233,7 @@ class DriverOrchestrationTest extends TestCase
         $booking = Booking::where('customer_id', $customer->id)->first();
 
         $this->actingAs($driver)
-            ->post(route('assignments.reject', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]))
+            ->post(route('driver.assignments.reject', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]), ['rejection_reason' => 'Not available'])
             ->assertRedirect();
 
         $this->assertDatabaseHas('notifications', [
@@ -258,7 +258,7 @@ class DriverOrchestrationTest extends TestCase
         $booking = Booking::where('customer_id', $customer->id)->first();
 
         $this->actingAs($driver)
-            ->post(route('assignments.accept', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]))
+            ->post(route('driver.assignments.accept', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]))
             ->assertRedirect();
 
         $this->assertDatabaseHas('booking_drivers', [

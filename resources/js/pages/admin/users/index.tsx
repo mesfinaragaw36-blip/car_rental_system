@@ -96,13 +96,14 @@ interface Props {
     filters: Filters;
     stats: Stats;
 }
+
 function getVerificationStatus(user: UserData): string | null {
     if (user.role === 'owner') {
         return user.owner_profile?.verification_status ?? null;
     }
 
     if (user.role === 'driver') {
-        return user.driver_profile?.verification_status ?? null;
+        return user.driver_profile?.verification_status ?? 'incomplete';
     }
 
     return null;
@@ -111,19 +112,25 @@ function getVerificationStatus(user: UserData): string | null {
 function getVerificationLabel(user: UserData): string {
     const status = getVerificationStatus(user);
 
-    if (!status) {
+    if (user.role !== 'owner' && user.role !== 'driver') {
         return 'Not required';
     }
 
     switch (status) {
         case 'approved':
             return 'Approved';
+
         case 'pending':
             return 'Pending';
+
         case 'rejected':
             return 'Rejected';
+
+        case 'incomplete':
+            return 'Profile incomplete';
+
         default:
-            return status.charAt(0).toUpperCase() + status.slice(1);
+            return 'Not submitted';
     }
 }
 
@@ -133,10 +140,16 @@ function getVerificationClasses(user: UserData): string {
     switch (status) {
         case 'approved':
             return 'border-emerald-200 bg-emerald-50 text-emerald-700';
+
         case 'pending':
             return 'border-amber-200 bg-amber-50 text-amber-700';
+
         case 'rejected':
             return 'border-red-200 bg-red-50 text-red-700';
+
+        case 'incomplete':
+            return 'border-slate-200 bg-slate-50 text-slate-600';
+
         default:
             return 'border-slate-200 bg-slate-50 text-slate-500';
     }
@@ -148,8 +161,13 @@ function getVerificationIcon(user: UserData) {
     switch (status) {
         case 'approved':
             return <ShieldCheck className="h-3.5 w-3.5" />;
+
         case 'pending':
             return <Clock3 className="h-3.5 w-3.5" />;
+
+        case 'rejected':
+            return <X className="h-3.5 w-3.5" />;
+
         default:
             return null;
     }
@@ -159,10 +177,13 @@ function getRoleClasses(role: string): string {
     switch (role) {
         case 'owner':
             return 'border-accent bg-accent text-primary';
+
         case 'driver':
             return 'border-orange-200 bg-orange-50 text-orange-700';
+
         case 'admin':
             return 'border-accent bg-accent text-primary';
+
         default:
             return 'border-slate-200 bg-slate-50 text-slate-600';
     }
@@ -176,10 +197,13 @@ function getAccountClasses(status: string): string {
     switch (status) {
         case 'active':
             return 'bg-emerald-500';
+
         case 'suspended':
             return 'bg-red-500';
+
         case 'inactive':
             return 'bg-slate-400';
+
         default:
             return 'bg-slate-400';
     }
@@ -193,8 +217,10 @@ function identityBadgeClass(status: string): string {
     switch (status) {
         case 'approved':
             return 'bg-green-100 text-green-800';
+
         case 'rejected':
             return 'bg-red-100 text-red-800';
+
         default:
             return 'bg-brand-soft text-brand';
     }
@@ -259,54 +285,54 @@ export default function UsersIndex({ users, filters, stats }: Props) {
     const hasFilters =
         search.trim() !== '' || role !== 'all' || status !== 'all';
 
-   return (
-    <>
-        <Head title="Users" />
+    return (
+        <>
+            <Head title="Users" />
 
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="rounded-3xl bg-gradient-to-r from-primary via-[#1d4370] to-[#14294a] p-8 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <p className="text-sm font-medium text-white/80">
-                            Administration
-                        </p>
+            <div className="space-y-6">
+                {/* Header */}
+                <div className="rounded-3xl bg-gradient-to-r from-primary via-[#1d4370] to-[#14294a] p-8 text-white shadow-lg">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-white/80">
+                                Administration
+                            </p>
 
-                        <h1 className="mt-1 text-3xl font-bold">
-                            Users
-                        </h1>
+                            <h1 className="mt-1 text-3xl font-bold">
+                                Users
+                            </h1>
 
-                        <p className="mt-2 max-w-xl text-sm text-white/80">
-                            Manage user accounts, verification status, and
-                            access.
-                        </p>
-                    </div>
+                            <p className="mt-2 max-w-xl text-sm text-white/80">
+                                Manage user accounts, verification status, and
+                                access.
+                            </p>
+                        </div>
 
-                    <div className="hidden rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:block">
-                        <Users className="h-8 w-8 text-white" />
+                        <div className="hidden rounded-2xl bg-white/10 p-4 backdrop-blur-sm sm:block">
+                            <Users className="h-8 w-8 text-white" />
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Summary cards */}
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-                <Card className="border-0 shadow-sm">
-                    <CardContent className="flex items-center justify-between p-5">
-                        <div>
-                            <p className="text-sm font-medium text-muted-foreground">
-                                Total Users
-                            </p>
+                {/* Summary cards */}
+                <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <Card className="border-0 shadow-sm">
+                        <CardContent className="flex items-center justify-between p-5">
+                            <div>
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    Total Users
+                                </p>
 
-                            <p className="mt-2 text-2xl font-semibold">
-                                {stats.total}
-                            </p>
-                        </div>
+                                <p className="mt-2 text-2xl font-semibold">
+                                    {stats.total}
+                                </p>
+                            </div>
 
-                        <div className="rounded-xl bg-gradient-to-br from-primary to-[#1d4370] p-3 text-white shadow-sm">
-                            <Users className="h-5 w-5" />
-                        </div>
-                    </CardContent>
-                </Card>
+                            <div className="rounded-xl bg-gradient-to-br from-primary to-[#1d4370] p-3 text-white shadow-sm">
+                                <Users className="h-5 w-5" />
+                            </div>
+                        </CardContent>
+                    </Card>
 
                     <Card className="border-0 shadow-sm">
                         <CardContent className="flex items-center justify-between p-5">
@@ -314,6 +340,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 <p className="text-sm font-medium text-muted-foreground">
                                     Owners
                                 </p>
+
                                 <p className="mt-2 text-2xl font-semibold">
                                     {stats.owners}
                                 </p>
@@ -331,6 +358,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 <p className="text-sm font-medium text-muted-foreground">
                                     Pending Verification
                                 </p>
+
                                 <p className="mt-2 text-2xl font-semibold">
                                     {stats.pending}
                                 </p>
@@ -348,6 +376,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 <p className="text-sm font-medium text-muted-foreground">
                                     Approved
                                 </p>
+
                                 <p className="mt-2 text-2xl font-semibold">
                                     {stats.approved}
                                 </p>
@@ -368,6 +397,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 <CardTitle className="text-lg">
                                     All Users
                                 </CardTitle>
+
                                 <p className="mt-1 text-sm text-muted-foreground">
                                     Review user accounts and verification
                                     status.
@@ -408,12 +438,15 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                         <SelectItem value="all">
                                             All roles
                                         </SelectItem>
+
                                         <SelectItem value="customer">
                                             Customer
                                         </SelectItem>
+
                                         <SelectItem value="owner">
                                             Owner
                                         </SelectItem>
+
                                         <SelectItem value="driver">
                                             Driver
                                         </SelectItem>
@@ -435,12 +468,15 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                         <SelectItem value="all">
                                             All accounts
                                         </SelectItem>
+
                                         <SelectItem value="active">
                                             Active
                                         </SelectItem>
+
                                         <SelectItem value="inactive">
                                             Inactive
                                         </SelectItem>
+
                                         <SelectItem value="suspended">
                                             Suspended
                                         </SelectItem>
@@ -598,17 +634,24 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                                 <td className="px-4 py-4">
                                                     {user.has_customer_identity ? (
                                                         <span
-                                                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${identityBadgeClass(user.customer_identity_status ?? 'pending')}`}
+                                                            className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium ${identityBadgeClass(
+                                                                user.customer_identity_status ??
+                                                                    'pending',
+                                                            )}`}
                                                         >
-                                                            {(user.customer_identity_status ??
-                                                                'pending') ===
-                                                            'pending' && (
+                                                            {(
+                                                                user.customer_identity_status ??
+                                                                'pending'
+                                                            ) ===
+                                                                'pending' && (
                                                                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
                                                             )}
+
                                                             {user.role ===
                                                             'customer'
                                                                 ? 'ID '
                                                                 : 'Verif. '}
+
                                                             {(
                                                                 user.customer_identity_status ??
                                                                 'pending'

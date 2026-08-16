@@ -82,10 +82,10 @@ class AssignmentVisibilityTest extends TestCase
     {
         $driver = $this->createDriver();
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertOk();
-        $response->assertInertia(fn ($page) => $page->component('assignments'));
+        $response->assertInertia(fn ($page) => $page->component('driver/assignments'));
     }
 
     public function test_assignment_appears_after_owner_assigns_driver(): void
@@ -98,7 +98,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertOk();
         $response->assertInertia(function ($page) use ($booking) {
@@ -118,7 +118,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignment = $page->toArray()['props']['assignments'][0];
@@ -143,7 +143,7 @@ class AssignmentVisibilityTest extends TestCase
         $this->assignDriver($bookingB, $driver, $owner, 'accepted');
         $this->assignDriver($bookingC, $driver, $owner, 'completed');
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
@@ -162,7 +162,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $otherDriver, $owner);
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
@@ -180,7 +180,7 @@ class AssignmentVisibilityTest extends TestCase
 
         $this->assignDriver($booking, $driver, $owner, 'rejected');
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
         $response->assertInertia(function ($page) {
             $assignments = $page->toArray()['props']['assignments'];
@@ -189,48 +189,42 @@ class AssignmentVisibilityTest extends TestCase
         });
     }
 
-    public function test_pending_driver_gets_pending_verification_status(): void
+    public function test_pending_driver_is_redirected_to_profile(): void
     {
         $driver = $this->createDriver('pending');
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
-        $response->assertOk();
-        $response->assertInertia(fn ($page) => $page
-            ->component('assignments')
-            ->where('driverVerificationStatus', 'pending'));
+        $response->assertRedirect(route('driver.profile'));
+        $response->assertSessionHas('toast.type', 'warning');
     }
 
-    public function test_approved_driver_gets_approved_verification_status(): void
+    public function test_approved_driver_can_view_assignments(): void
     {
         $driver = $this->createDriver('approved');
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
-        $response->assertInertia(fn ($page) => $page
-            ->component('assignments')
-            ->where('driverVerificationStatus', 'approved'));
+        $response->assertOk();
+        $response->assertInertia(fn ($page) => $page->component('driver/assignments'));
     }
 
-    public function test_driver_without_profile_gets_none_verification_status(): void
+    public function test_driver_without_profile_is_redirected_to_profile(): void
     {
         $driver = User::factory()->driver()->create();
 
-        $response = $this->actingAs($driver)->get(route('assignments.index'));
+        $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 
-        $response->assertInertia(fn ($page) => $page
-            ->component('assignments')
-            ->where('driverVerificationStatus', 'none'));
+        $response->assertRedirect(route('driver.profile'));
+        $response->assertSessionHas('toast.type', 'warning');
     }
 
-    public function test_non_drivers_get_null_verification_status(): void
+    public function test_non_drivers_cannot_view_assignments(): void
     {
         $customer = User::factory()->create(['role' => 'customer']);
 
-        $response = $this->actingAs($customer)->get(route('assignments.index'));
+        $response = $this->actingAs($customer)->get(route('driver.assignments.index'));
 
-        $response->assertInertia(fn ($page) => $page
-            ->component('assignments')
-            ->where('driverVerificationStatus', null));
+        $response->assertForbidden();
     }
 }

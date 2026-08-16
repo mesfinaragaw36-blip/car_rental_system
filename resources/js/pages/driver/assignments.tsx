@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import {
     Car,
     User,
@@ -10,39 +10,38 @@ import {
     ShieldCheck,
     Truck,
 } from 'lucide-react';
+
 import { Card, CardContent } from '@/components/ui/card';
 
 interface DriverAssignment {
     id: number;
     status: string;
-    assigned_at: string;
+    assigned_at: string | null;
+    response_deadline?: string | null;
+    responded_at?: string | null;
+    rejection_reason?: string | null;
+
     booking: {
         id: number;
-        pickup_date: string;
-        return_date: string;
-        pickup_location: string;
-        return_location: string;
-        status: string;
+        pickup_date: string | null;
+        return_date: string | null;
+        pickup_location: string | null;
+        return_location: string | null;
     };
+
     customer: {
-        name: string;
-        phone: string;
+        name: string | null;
     };
+
     car: {
-        brand: string;
-        model: string;
-        year: number;
-        plate_number: string;
+        brand: string | null;
+        model: string | null;
+        year: number | null;
+        plate_number: string | null;
     };
-    driver?: {
-        id: number;
-        name: string;
-        phone: string;
-    } | null;
 }
 
 interface Props {
-    role: string;
     assignments: DriverAssignment[];
 }
 
@@ -54,7 +53,7 @@ const STATUS_STYLES: Record<string, string> = {
 };
 
 const STATUS_DESCRIPTIONS: Record<string, string> = {
-    assigned: 'Trip assigned to you by the company.',
+    assigned: 'Trip assigned to you. Please accept or reject the assignment.',
     accepted: 'Assignment confirmed and ready for the trip.',
     completed: 'Trip completed successfully.',
     rejected: 'This assignment was declined.',
@@ -68,33 +67,41 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 };
 
 export default function Assignments({
-    role,
     assignments = [],
 }: Props) {
-    const { props: p } = usePage<{
-        toast?: {
-            type: string;
-            message: string;
-        };
-    }>();
-
-    const toast = p.toast;
-
     const pendingCount = assignments.filter(
-        (a) => a.status === 'assigned',
+        (assignment) => assignment.status === 'assigned',
     ).length;
 
     const activeCount = assignments.filter(
-        (a) => a.status === 'accepted',
+        (assignment) => assignment.status === 'accepted',
     ).length;
 
     const completedCount = assignments.filter(
-        (a) => a.status === 'completed',
+        (assignment) => assignment.status === 'completed',
     ).length;
+
+    const handleAccept = (assignmentId: number) => {
+        router.post(`/driver/assignments/${assignmentId}/accept`);
+    };
+
+    const handleReject = (assignmentId: number) => {
+        const reason = window.prompt(
+            'Please enter a reason for rejecting this assignment:',
+        );
+
+        if (!reason?.trim()) {
+            return;
+        }
+
+        router.post(`/driver/assignments/${assignmentId}/reject`, {
+            rejection_reason: reason.trim(),
+        });
+    };
 
     return (
         <>
-            <Head title="Assignments" />
+            <Head title="My Assignments" />
 
             <div className="space-y-8 p-6">
                 {/* Header */}
@@ -107,19 +114,6 @@ export default function Assignments({
                         View your assigned trips and rental details.
                     </p>
                 </div>
-
-                {/* Toast */}
-                {toast && (
-                    <div
-                        className={`rounded-lg px-4 py-3 text-sm font-medium ${
-                            toast.type === 'success'
-                                ? 'border border-green-200 bg-green-50 text-green-800'
-                                : 'border border-red-200 bg-red-50 text-red-800'
-                        }`}
-                    >
-                        {toast.message}
-                    </div>
-                )}
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-3">
@@ -195,19 +189,19 @@ export default function Assignments({
                         </CardContent>
                     </Card>
                 ) : (
-                    /* Assignment List */
                     <div className="space-y-5">
-                        {assignments.map((a) => (
+                        {assignments.map((assignment) => (
                             <Card
-                                key={a.id}
+                                key={assignment.id}
                                 className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-lg"
                             >
                                 {/* Status Bar */}
                                 <div
                                     className={`h-1.5 w-full ${
-                                        STATUS_STYLES[a.status]?.split(
-                                            ' ',
-                                        )[0] ?? 'bg-slate-200'
+                                        STATUS_STYLES[
+                                            assignment.status
+                                        ]?.split(' ')[0] ??
+                                        'bg-slate-200'
                                     }`}
                                 />
 
@@ -222,13 +216,26 @@ export default function Assignments({
 
                                                 <div>
                                                     <p className="text-lg font-bold">
-                                                        {a.car.brand}{' '}
-                                                        {a.car.model}
+                                                        {
+                                                            assignment.car
+                                                                .brand
+                                                        }{' '}
+                                                        {
+                                                            assignment.car
+                                                                .model
+                                                        }
                                                     </p>
 
                                                     <p className="text-sm text-muted-foreground">
-                                                        {a.car.year} &bull;{' '}
-                                                        {a.car.plate_number}
+                                                        {
+                                                            assignment.car
+                                                                .year
+                                                        }{' '}
+                                                        &bull;{' '}
+                                                        {
+                                                            assignment.car
+                                                                .plate_number
+                                                        }
                                                     </p>
                                                 </div>
                                             </div>
@@ -237,87 +244,40 @@ export default function Assignments({
                                             <span
                                                 className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
                                                     STATUS_STYLES[
-                                                        a.status
+                                                        assignment.status
                                                     ] ??
                                                     'border-slate-200 bg-slate-50 text-slate-700'
                                                 }`}
                                             >
-                                                {STATUS_ICONS[a.status]}
+                                                {STATUS_ICONS[
+                                                    assignment.status
+                                                ]}
 
-                                                {a.status}
+                                                {assignment.status}
                                             </span>
                                         </div>
 
                                         {/* Status Description */}
                                         <p className="text-sm text-muted-foreground">
                                             {STATUS_DESCRIPTIONS[
-                                                a.status
-                                            ] ?? a.status}
+                                                assignment.status
+                                            ] ?? assignment.status}
                                         </p>
 
-                                        {/* Customer / Driver */}
-                                        <div className="grid gap-4 sm:grid-cols-2">
-                                            {/* Customer */}
-                                            <div className="space-y-2">
-                                                <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                                                    Customer
-                                                </p>
+                                        {/* Customer */}
+                                        <div className="space-y-2">
+                                            <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                                                Customer
+                                            </p>
 
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <User className="h-4 w-4 shrink-0 text-muted-foreground" />
+                                            <div className="flex items-center gap-2 text-sm">
+                                                <User className="h-4 w-4 shrink-0 text-muted-foreground" />
 
-                                                    <span>
-                                                        {
-                                                            a.customer
-                                                                .name
-                                                        }
-                                                    </span>
-                                                </div>
-
-                                                <div className="flex items-center gap-2 text-sm">
-                                                    <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                                                    <span>
-                                                        {
-                                                            a.customer
-                                                                .phone
-                                                        }
-                                                    </span>
-                                                </div>
+                                                <span>
+                                                    {assignment.customer
+                                                        ?.name ?? 'N/A'}
+                                                </span>
                                             </div>
-
-                                            {/* Driver */}
-                                            {a.driver &&
-                                                (role === 'owner' ||
-                                                    role === 'admin') && (
-                                                    <div className="space-y-2">
-                                                        <p className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
-                                                            Driver
-                                                        </p>
-
-                                                        <div className="flex items-center gap-2 text-sm">
-                                                            <User className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                                                            <span>
-                                                                {
-                                                                    a.driver
-                                                                        .name
-                                                                }
-                                                            </span>
-                                                        </div>
-
-                                                        <div className="flex items-center gap-2 text-sm">
-                                                            <Phone className="h-4 w-4 shrink-0 text-muted-foreground" />
-
-                                                            <span>
-                                                                {
-                                                                    a.driver
-                                                                        .phone
-                                                                }
-                                                            </span>
-                                                        </div>
-                                                    </div>
-                                                )}
                                         </div>
 
                                         {/* Trip Details */}
@@ -330,12 +290,13 @@ export default function Assignments({
                                                 </span>
 
                                                 <span className="text-muted-foreground">
-                                                    {a.booking.pickup_date}{' '}
+                                                    {assignment.booking
+                                                        ?.pickup_date ??
+                                                        'N/A'}{' '}
                                                     &mdash;{' '}
-                                                    {
-                                                        a.booking
-                                                            .pickup_location
-                                                    }
+                                                    {assignment.booking
+                                                        ?.pickup_location ??
+                                                        'N/A'}
                                                 </span>
                                             </div>
 
@@ -347,21 +308,52 @@ export default function Assignments({
                                                 </span>
 
                                                 <span className="text-muted-foreground">
-                                                    {a.booking.return_date}{' '}
+                                                    {assignment.booking
+                                                        ?.return_date ??
+                                                        'N/A'}{' '}
                                                     &mdash;{' '}
-                                                    {
-                                                        a.booking
-                                                            .return_location
-                                                    }
+                                                    {assignment.booking
+                                                        ?.return_location ??
+                                                        'N/A'}
                                                 </span>
                                             </div>
                                         </div>
+
+                                        {/* Accept / Reject */}
+                                        {assignment.status === 'assigned' && (
+                                            <div className="flex flex-col gap-3 border-t pt-4 sm:flex-row sm:justify-end">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleReject(
+                                                            assignment.id,
+                                                        )
+                                                    }
+                                                    className="rounded-xl border border-red-200 px-5 py-2.5 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                                                >
+                                                    Reject Assignment
+                                                </button>
+
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        handleAccept(
+                                                            assignment.id,
+                                                        )
+                                                    }
+                                                    className="rounded-xl bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground transition hover:opacity-90"
+                                                >
+                                                    Accept Assignment
+                                                </button>
+                                            </div>
+                                        )}
 
                                         {/* Assignment Information */}
                                         <div className="flex items-center justify-end border-t pt-4">
                                             <p className="text-xs text-muted-foreground">
                                                 Assigned at{' '}
-                                                {a.assigned_at}
+                                                {assignment.assigned_at ??
+                                                    'N/A'}
                                             </p>
                                         </div>
                                     </div>
@@ -382,8 +374,8 @@ Assignments.layout = {
             href: '/dashboard',
         },
         {
-            title: 'Assignments',
-            href: '/assignments',
+            title: 'My Assignments',
+            href: '/driver/assignments',
         },
     ],
 };

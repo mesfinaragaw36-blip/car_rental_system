@@ -44,7 +44,12 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'roles.view': ['/admin/roles'],
     'locations.view': ['/admin/locations'],
     'car-types.view': ['/admin/car-types/configurations'],
-    'driver.access': ['/assignments', '/driver/trip-history'],
+
+    // Driver permissions
+    'driver.access': [
+        '/driver/assignments',
+        '/driver/trip-history',
+    ],
 };
 
 function getNavItems(
@@ -52,23 +57,36 @@ function getNavItems(
     staffRoleId: number | null,
     permissions: string[] | null,
 ): NavItem[] {
+    /*
+     * Staff accounts with assigned permissions
+     */
     if (role === 'admin' && staffRoleId !== null && permissions) {
         const allowedRoutes = new Set<string>();
 
-        for (const perm of permissions) {
-            const routes = PERMISSION_ROUTE_MAP[perm];
+        for (const permission of permissions) {
+            const routes = PERMISSION_ROUTE_MAP[permission];
 
             if (routes) {
-                routes.forEach((r) => allowedRoutes.add(r));
+                routes.forEach((route) => {
+                    allowedRoutes.add(route);
+                });
             }
         }
 
         const items: NavItem[] = [
-            { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
+            {
+                title: 'Dashboard',
+                href: '/dashboard',
+                icon: LayoutGrid,
+            },
         ];
 
         if (allowedRoutes.has('/admin/users')) {
-            items.push({ title: 'Users', href: '/admin/users', icon: Users });
+            items.push({
+                title: 'Users',
+                href: '/admin/users',
+                icon: Users,
+            });
         }
 
         if (allowedRoutes.has('/admin/vehicles')) {
@@ -80,7 +98,11 @@ function getNavItems(
         }
 
         if (allowedRoutes.has('/bookings')) {
-            items.push({ title: 'Bookings', href: '/bookings', icon: BookOpen });
+            items.push({
+                title: 'Bookings',
+                href: '/bookings',
+                icon: BookOpen,
+            });
         }
 
         if (allowedRoutes.has('/inspections')) {
@@ -99,16 +121,20 @@ function getNavItems(
             });
         }
 
-            if (allowedRoutes.has('/admin/reports')) {
-        items.push({
-            title: 'Reports',
-            href: '/admin/reports',
-            icon: BarChart3,
-        });
-    }
+        if (allowedRoutes.has('/admin/reports')) {
+            items.push({
+                title: 'Reports',
+                href: '/admin/reports',
+                icon: BarChart3,
+            });
+        }
 
         if (allowedRoutes.has('/disputes')) {
-            items.push({ title: 'Disputes', href: '/disputes', icon: Wrench });
+            items.push({
+                title: 'Disputes',
+                href: '/disputes',
+                icon: Wrench,
+            });
         }
 
         if (allowedRoutes.has('/admin/roles')) {
@@ -120,7 +146,11 @@ function getNavItems(
         }
 
         if (allowedRoutes.has('/admin/staff')) {
-            items.push({ title: 'Staff', href: '/admin/staff', icon: UserCog });
+            items.push({
+                title: 'Staff',
+                href: '/admin/staff',
+                icon: UserCog,
+            });
         }
 
         if (allowedRoutes.has('/admin/locations')) {
@@ -139,10 +169,10 @@ function getNavItems(
             });
         }
 
-        if (allowedRoutes.has('/assignments')) {
+        if (allowedRoutes.has('/driver/assignments')) {
             items.push({
                 title: 'My Assignments',
-                href: '/assignments',
+                href: '/driver/assignments',
                 icon: Wrench,
             });
         }
@@ -158,18 +188,32 @@ function getNavItems(
         return items;
     }
 
+    /*
+     * Regular roles
+     */
     switch (role) {
         case 'admin':
             return [
-                { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
+                {
+                    title: 'Dashboard',
+                    href: '/dashboard',
+                    icon: LayoutGrid,
+                },
                 {
                     title: 'Car Types',
                     href: '/admin/car-types/configurations',
                     icon: Settings,
                 },
-                { title: 'Cars', href: '/admin/vehicles', icon: Car },
-                { title: 'Browse Cars', href: '/browse-cars', icon: Search },
-                { title: 'Bookings', href: '/bookings', icon: BookOpen },
+                {
+                    title: 'Cars',
+                    href: '/admin/vehicles',
+                    icon: Car,
+                },
+                {
+                    title: 'Bookings',
+                    href: '/bookings',
+                    icon: BookOpen,
+                },
                 {
                     title: 'Inspections',
                     href: '/inspections',
@@ -185,34 +229,74 @@ function getNavItems(
                     href: '/admin/reports',
                     icon: BarChart3,
                 },
-                { title: 'My Assignments', href: '/assignments', icon: Wrench },
-                { title: 'Disputes', href: '/disputes', icon: Wrench },
+                {
+                    title: 'Disputes',
+                    href: '/disputes',
+                    icon: Wrench,
+                },
                 {
                     title: 'Roles & Permissions',
                     href: '/admin/roles',
                     icon: Shield,
                 },
-                { title: 'Staff', href: '/admin/staff', icon: UserCog },
-                { title: 'Users', href: '/admin/users', icon: Users },
-                { title: 'Locations', href: '/admin/locations', icon: MapPin },
+                {
+                    title: 'Staff',
+                    href: '/admin/staff',
+                    icon: UserCog,
+                },
+                {
+                    title: 'Users',
+                    href: '/admin/users',
+                    icon: Users,
+                },
+                {
+                    title: 'Locations',
+                    href: '/admin/locations',
+                    icon: MapPin,
+                },
+                {
+                    title: 'Driver Assignments',
+                    href: '/admin/driver/assignments',
+                    icon: Wrench,
+                },
             ];
 
         case 'owner':
             return [
-                { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-                { title: 'My Cars', href: '/vehicles', icon: Car },
-                { title: 'Bookings', href: '/bookings', icon: BookOpen },
-                { title: 'My Assignments', href: '/assignments', icon: Wrench },
+                {
+                    title: 'Dashboard',
+                    href: '/dashboard',
+                    icon: LayoutGrid,
+                },
+                {
+                    title: 'My Cars',
+                    href: '/vehicles',
+                    icon: Car,
+                },
+                {
+                    title: 'Bookings',
+                    href: '/bookings',
+                    icon: BookOpen,
+                },
                 {
                     title: 'Received Payments',
                     href: '/payments',
                     icon: CreditCard,
                 },
             ];
+
         case 'driver':
             return [
-                { title: 'Dashboard', href: '/dashboard', icon: LayoutGrid },
-                { title: 'My Assignments', href: '/assignments', icon: Wrench },
+                {
+                    title: 'Dashboard',
+                    href: '/dashboard',
+                    icon: LayoutGrid,
+                },
+                {
+                    title: 'My Assignments',
+                    href: '/driver/assignments',
+                    icon: Wrench,
+                },
                 {
                     title: 'Trip History',
                     href: '/driver/trip-history',
@@ -220,10 +304,18 @@ function getNavItems(
                 },
             ];
 
-        default: // customer
+        default:
             return [
-                { title: 'Browse Cars', href: '/browse-cars', icon: Search },
-                { title: 'My Bookings', href: '/bookings', icon: BookOpen },
+                {
+                    title: 'Browse Cars',
+                    href: '/browse-cars',
+                    icon: Search,
+                },
+                {
+                    title: 'My Bookings',
+                    href: '/bookings',
+                    icon: BookOpen,
+                },
                 {
                     title: 'Payment History',
                     href: '/payments',
@@ -233,20 +325,19 @@ function getNavItems(
     }
 }
 
-function getDashboardUrl(): string {
-    return '/dashboard';
-}
-
 export function AppSidebar() {
     const { auth, notifications } = usePage<{
         auth: Auth;
-        notifications: { unread_count: number };
+        notifications: {
+            unread_count: number;
+        };
     }>().props;
+
     const role = auth.user?.role ?? 'customer';
     const staffRoleId = auth.user?.staff_role_id ?? null;
     const permissions = auth.user?.permissions ?? null;
-    const dashboardUrl = getDashboardUrl();
-    const navItems = [
+
+    const navItems: NavItem[] = [
         ...getNavItems(role, staffRoleId, permissions),
         {
             title: 'Notifications',
@@ -255,6 +346,13 @@ export function AppSidebar() {
             badge: notifications.unread_count,
         },
     ];
+
+    /*
+     * Drivers use /driver/assignments.
+     * Admins use /admin/driver/assignments.
+     * The old /assignments route is no longer used here.
+     */
+    const dashboardUrl = '/dashboard';
 
     return (
         <Sidebar collapsible="icon" variant="inset">

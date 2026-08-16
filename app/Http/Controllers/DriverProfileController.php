@@ -33,6 +33,7 @@ class DriverProfileController extends Controller
                 'experience_years' => $profile->experience_years,
                 'location' => $profile->location,
                 'license_file_path' => $profile->license_file_path,
+                'verification_status' => $profile->verification_status,
                 'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $driver->reviews()->count(),
                 'recent_reviews' => $recent,
@@ -57,8 +58,8 @@ class DriverProfileController extends Controller
         );
 
         return redirect()->route('driver.profile')->with('toast', [
-            'type' => 'success',
-            'message' => 'Profile updated successfully.',
-        ]);
+    'type' => 'success',
+    'message' => 'Profile updated. Your details are now under review — an admin will approve them shortly.',
+]);
     }
 }

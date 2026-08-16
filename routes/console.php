@@ -3,6 +3,12 @@
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
+use App\Services\DriverMatchingService;
+
+
+Schedule::call(function () {
+    app(DriverMatchingService::class)->processExpiredAssignments();
+})->everyFiveMinutes();
 
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
@@ -13,3 +19,4 @@ Schedule::command('bookings:release-expired-holds')->everyFiveMinutes();
 Schedule::command('bookings:escalate-missing-deliveries')->everyThirtyMinutes();
 
 Schedule::command('bookings:escalate-late-returns')->everyThirtyMinutes();
+

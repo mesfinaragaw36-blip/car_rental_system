@@ -49,7 +49,7 @@ class NotificationController extends Controller
 
             OwnerPayout::class => route('admin.transactions.index'),
 
-            BookingDriver::class => route('assignments.index'),
+            BookingDriver::class => route('driver.assignments.index'),
 
             CarTypeRequest::class => route('car-type-requests.show', $notification->related_id),
 
