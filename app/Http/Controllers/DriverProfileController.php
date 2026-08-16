@@ -58,8 +58,8 @@ class DriverProfileController extends Controller
         );
 
         return redirect()->route('driver.profile')->with('toast', [
-    'type' => 'success',
-    'message' => 'Profile updated. Your details are now under review — an admin will approve them shortly.',
-]);
+            'type' => 'success',
+            'message' => 'Profile updated. Your details are now under review — an admin will approve them shortly.',
+        ]);
     }
 }

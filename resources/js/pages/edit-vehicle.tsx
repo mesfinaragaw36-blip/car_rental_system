@@ -243,10 +243,7 @@ export default function EditVehicle({ vehicle }: Props) {
                                         placeholder="e.g. Sedan"
                                         value={data.category}
                                         onChange={(e) =>
-                                            setData(
-                                                'category',
-                                                e.target.value,
-                                            )
+                                            setData('category', e.target.value)
                                         }
                                     />
                                     <InputError message={errors.category} />

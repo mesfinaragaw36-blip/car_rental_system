@@ -8,8 +8,6 @@ import {
     Fuel,
     Gauge,
     Palette,
-    Power,
-    PowerOff,
     Settings2,
     Users,
     XCircle,
@@ -237,9 +235,7 @@ export default function VehicleDetails({ vehicle }: Props) {
     }
 
     function handleReject() {
-        const reason = prompt(
-            'Please enter the reason for vehicle rejection:',
-        );
+        const reason = prompt('Please enter the reason for vehicle rejection:');
 
         if (reason && reason.trim() !== '') {
             router.post(`/admin/vehicles/${vehicle.id}/reject`, {
@@ -253,8 +249,13 @@ export default function VehicleDetails({ vehicle }: Props) {
         const msg = isActive
             ? 'Deactivate this vehicle? It will be hidden from bookings.'
             : 'Reactivate this vehicle?';
+
         if (confirm(msg)) {
-            router.post(`/admin/vehicles/${vehicle.id}/toggle-status`, {}, { preserveScroll: true });
+            router.post(
+                `/admin/vehicles/${vehicle.id}/toggle-status`,
+                {},
+                { preserveScroll: true },
+            );
         }
     }
 
@@ -303,24 +304,41 @@ export default function VehicleDetails({ vehicle }: Props) {
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="flex items-center gap-2">
-                                    <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                                        {vehicle.availability_status === 'inactive' ? 'Inactive' : 'Active'}
+                                    <span className="text-xs font-semibold tracking-wider text-slate-500 uppercase">
+                                        {vehicle.availability_status ===
+                                        'inactive'
+                                            ? 'Inactive'
+                                            : 'Active'}
                                     </span>
                                     <button
                                         role="switch"
-                                        aria-checked={vehicle.availability_status !== 'inactive'}
-                                        title={vehicle.availability_status === 'inactive' ? 'Reactivate vehicle' : 'Deactivate vehicle'}
+                                        aria-checked={
+                                            vehicle.availability_status !==
+                                            'inactive'
+                                        }
+                                        title={
+                                            vehicle.availability_status ===
+                                            'inactive'
+                                                ? 'Reactivate vehicle'
+                                                : 'Deactivate vehicle'
+                                        }
                                         className={cn(
-                                            "relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                                            vehicle.availability_status !== 'inactive' ? "border-green-500 bg-green-50" : "border-slate-300 bg-slate-100"
+                                            'relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full border-2 transition-colors duration-200 ease-in-out focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:outline-none',
+                                            vehicle.availability_status !==
+                                                'inactive'
+                                                ? 'border-green-500 bg-green-50'
+                                                : 'border-slate-300 bg-slate-100',
                                         )}
                                         onClick={handleToggleStatus}
                                     >
                                         <span
                                             aria-hidden="true"
                                             className={cn(
-                                                "pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out",
-                                                vehicle.availability_status !== 'inactive' ? "translate-x-5 bg-green-600" : "translate-x-0.5 bg-slate-400"
+                                                'pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out',
+                                                vehicle.availability_status !==
+                                                    'inactive'
+                                                    ? 'translate-x-5 bg-green-600'
+                                                    : 'translate-x-0.5 bg-slate-400',
                                             )}
                                         />
                                     </button>
@@ -344,9 +362,8 @@ export default function VehicleDetails({ vehicle }: Props) {
                                 <div className="flex flex-wrap items-baseline justify-between gap-2">
                                     <div>
                                         <p className="text-sm text-muted-foreground">
-                                            {vehicle.year} ·{' '}
-                                            {vehicle.category} ·{' '}
-                                            {vehicle.owner.name}
+                                            {vehicle.year} · {vehicle.category}{' '}
+                                            · {vehicle.owner.name}
                                         </p>
                                         <p className="mt-1 text-2xl font-bold">
                                             ETB{' '}
@@ -436,7 +453,9 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                     {doc.rejection_reason && (
                                                         <p className="mt-1 text-xs text-red-600">
                                                             Reason:{' '}
-                                                            {doc.rejection_reason}
+                                                            {
+                                                                doc.rejection_reason
+                                                            }
                                                         </p>
                                                     )}
                                                 </div>
@@ -469,83 +488,84 @@ export default function VehicleDetails({ vehicle }: Props) {
 
                             {vehicle.approval_status === 'pending' &&
                                 can('vehicles.approve') && (
-                                <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-slate-50 p-4">
-                                    <div>
-                                        <p className="font-semibold">
-                                            Approve or reject this vehicle
-                                        </p>
-                                        <p className="text-sm text-muted-foreground">
-                                            Approving makes it visible to
-                                            customers for rental bookings.
-                                        </p>
-                                    </div>
-                                    <div className="flex shrink-0 gap-2">
-                                        <Button onClick={handleApprove}>
-                                            <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                                            Approve
-                                        </Button>
-                                        <Button
-                                            variant="destructive"
-                                            onClick={handleReject}
-                                        >
-                                            <XCircle className="mr-1.5 h-4 w-4" />
-                                            Reject
-                                        </Button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {vehicle.reviews &&
-                                vehicle.reviews.length > 0 && (
-                                    <div>
-                                        <h3 className="text-sm font-semibold">
-                                            Reviews
-                                        </h3>
-                                        <div className="mt-2 space-y-3">
-                                            {vehicle.reviews.map((r) => (
-                                                <div
-                                                    key={r.id}
-                                                    className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-3"
-                                                >
-                                                    <div>
-                                                        <p className="font-medium">
-                                                            {r.reviewer.name}
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {r.rating} ★ ·{' '}
-                                                            {new Date(
-                                                                r.created_at,
-                                                            ).toLocaleDateString()}
-                                                        </p>
-                                                        {r.review_text && (
-                                                            <p className="mt-2 text-sm text-muted-foreground">
-                                                                {r.review_text}
-                                                            </p>
-                                                        )}
-                                                    </div>
-                                                    <Button
-                                                        variant="destructive"
-                                                        size="sm"
-                                                        onClick={() => {
-                                                            if (
-                                                                confirm(
-                                                                    'Delete this review?',
-                                                                )
-                                                            ) {
-                                                                router.delete(
-                                                                    `/admin/reviews/${r.id}`,
-                                                                );
-                                                            }
-                                                        }}
-                                                        disabled={!can('reviews.manage')}
-                                                    >
-                                                        Delete
-                                                    </Button>
-                                                </div>
-                                            ))}
+                                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-slate-50 p-4">
+                                        <div>
+                                            <p className="font-semibold">
+                                                Approve or reject this vehicle
+                                            </p>
+                                            <p className="text-sm text-muted-foreground">
+                                                Approving makes it visible to
+                                                customers for rental bookings.
+                                            </p>
+                                        </div>
+                                        <div className="flex shrink-0 gap-2">
+                                            <Button onClick={handleApprove}>
+                                                <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                                                Approve
+                                            </Button>
+                                            <Button
+                                                variant="destructive"
+                                                onClick={handleReject}
+                                            >
+                                                <XCircle className="mr-1.5 h-4 w-4" />
+                                                Reject
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
+
+                            {vehicle.reviews && vehicle.reviews.length > 0 && (
+                                <div>
+                                    <h3 className="text-sm font-semibold">
+                                        Reviews
+                                    </h3>
+                                    <div className="mt-2 space-y-3">
+                                        {vehicle.reviews.map((r) => (
+                                            <div
+                                                key={r.id}
+                                                className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-3"
+                                            >
+                                                <div>
+                                                    <p className="font-medium">
+                                                        {r.reviewer.name}
+                                                    </p>
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {r.rating} ★ ·{' '}
+                                                        {new Date(
+                                                            r.created_at,
+                                                        ).toLocaleDateString()}
+                                                    </p>
+                                                    {r.review_text && (
+                                                        <p className="mt-2 text-sm text-muted-foreground">
+                                                            {r.review_text}
+                                                        </p>
+                                                    )}
+                                                </div>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={() => {
+                                                        if (
+                                                            confirm(
+                                                                'Delete this review?',
+                                                            )
+                                                        ) {
+                                                            router.delete(
+                                                                `/admin/reviews/${r.id}`,
+                                                            );
+                                                        }
+                                                    }}
+                                                    disabled={
+                                                        !can('reviews.manage')
+                                                    }
+                                                >
+                                                    Delete
+                                                </Button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </CardContent>
                 </Card>

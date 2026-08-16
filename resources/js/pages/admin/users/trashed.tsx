@@ -125,9 +125,7 @@ export default function TrashedUsers({ users }: Props) {
                                                             )
                                                         }
                                                         disabled={
-                                                            !can(
-                                                                'users.delete',
-                                                            )
+                                                            !can('users.delete')
                                                         }
                                                     >
                                                         <RotateCcw className="mr-1.5 h-4 w-4" />

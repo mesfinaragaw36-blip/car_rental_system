@@ -2,7 +2,6 @@ import { Head, router } from '@inertiajs/react';
 import {
     Car,
     User,
-    Phone,
     Calendar,
     Clock,
     CheckCircle,
@@ -66,9 +65,7 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
     rejected: <XCircle className="h-4 w-4" />,
 };
 
-export default function Assignments({
-    assignments = [],
-}: Props) {
+export default function Assignments({ assignments = [] }: Props) {
     const pendingCount = assignments.filter(
         (assignment) => assignment.status === 'assigned',
     ).length;
@@ -106,9 +103,7 @@ export default function Assignments({
             <div className="space-y-8 p-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold">
-                        My Assignments
-                    </h1>
+                    <h1 className="text-3xl font-bold">My Assignments</h1>
 
                     <p className="mt-2 text-muted-foreground">
                         View your assigned trips and rental details.
@@ -183,8 +178,8 @@ export default function Assignments({
                             </h2>
 
                             <p className="mt-2 text-center text-muted-foreground">
-                                Your assigned trips will appear here when
-                                the company assigns you to a booking.
+                                Your assigned trips will appear here when the
+                                company assigns you to a booking.
                             </p>
                         </CardContent>
                     </Card>
@@ -198,10 +193,9 @@ export default function Assignments({
                                 {/* Status Bar */}
                                 <div
                                     className={`h-1.5 w-full ${
-                                        STATUS_STYLES[
-                                            assignment.status
-                                        ]?.split(' ')[0] ??
-                                        'bg-slate-200'
+                                        STATUS_STYLES[assignment.status]?.split(
+                                            ' ',
+                                        )[0] ?? 'bg-slate-200'
                                     }`}
                                 />
 
@@ -216,21 +210,12 @@ export default function Assignments({
 
                                                 <div>
                                                     <p className="text-lg font-bold">
-                                                        {
-                                                            assignment.car
-                                                                .brand
-                                                        }{' '}
-                                                        {
-                                                            assignment.car
-                                                                .model
-                                                        }
+                                                        {assignment.car.brand}{' '}
+                                                        {assignment.car.model}
                                                     </p>
 
                                                     <p className="text-sm text-muted-foreground">
-                                                        {
-                                                            assignment.car
-                                                                .year
-                                                        }{' '}
+                                                        {assignment.car.year}{' '}
                                                         &bull;{' '}
                                                         {
                                                             assignment.car
@@ -249,9 +234,11 @@ export default function Assignments({
                                                     'border-slate-200 bg-slate-50 text-slate-700'
                                                 }`}
                                             >
-                                                {STATUS_ICONS[
-                                                    assignment.status
-                                                ]}
+                                                {
+                                                    STATUS_ICONS[
+                                                        assignment.status
+                                                    ]
+                                                }
 
                                                 {assignment.status}
                                             </span>

@@ -206,10 +206,7 @@ export default function BrowseCars({
                                 </SelectTrigger>
                                 <SelectContent>
                                     {categoryOptions.map((option) => (
-                                        <SelectItem
-                                            key={option}
-                                            value={option}
-                                        >
+                                        <SelectItem key={option} value={option}>
                                             {option}
                                         </SelectItem>
                                     ))}
@@ -399,7 +396,7 @@ export default function BrowseCars({
                             ) : selectedCar?.is_currently_booked ? (
                                 <Button
                                     disabled
-                                    className="flex-1 bg-slate-400 text-white cursor-not-allowed"
+                                    className="flex-1 cursor-not-allowed bg-slate-400 text-white"
                                 >
                                     Currently Booked
                                 </Button>

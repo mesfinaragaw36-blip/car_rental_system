@@ -9,7 +9,8 @@ import {
     RefreshCcw,
     TrendingUp,
 } from 'lucide-react';
-import { FormEvent, useState } from 'react';
+import type { FormEvent } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -354,29 +355,27 @@ export default function Reports({
                                     No booking data available.
                                 </p>
                             ) : (
-                                bookingStatusEntries.map(
-                                    ([status, count]) => (
-                                        <div key={status}>
-                                            <div className="mb-2 flex items-center justify-between">
-                                                <span className="text-sm">
-                                                    {formatLabel(status)}
-                                                </span>
-                                                <span className="font-semibold">
-                                                    {count}
-                                                </span>
-                                            </div>
-
-                                            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                                <div
-                                                    className="h-full rounded-full bg-blue-700"
-                                                    style={{
-                                                        width: `${(count / maxBookingStatus) * 100}%`,
-                                                    }}
-                                                />
-                                            </div>
+                                bookingStatusEntries.map(([status, count]) => (
+                                    <div key={status}>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <span className="text-sm">
+                                                {formatLabel(status)}
+                                            </span>
+                                            <span className="font-semibold">
+                                                {count}
+                                            </span>
                                         </div>
-                                    ),
-                                )
+
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                className="h-full rounded-full bg-blue-700"
+                                                style={{
+                                                    width: `${(count / maxBookingStatus) * 100}%`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))
                             )}
                         </CardContent>
                     </Card>
@@ -474,29 +473,27 @@ export default function Reports({
                                     No payment data available.
                                 </p>
                             ) : (
-                                paymentMethodEntries.map(
-                                    ([method, amount]) => (
-                                        <div key={method}>
-                                            <div className="mb-2 flex items-center justify-between">
-                                                <span className="text-sm">
-                                                    {formatLabel(method)}
-                                                </span>
-                                                <span className="font-semibold">
-                                                    ETB {formatMoney(amount)}
-                                                </span>
-                                            </div>
-
-                                            <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                                                <div
-                                                    className="h-full rounded-full bg-orange-500"
-                                                    style={{
-                                                        width: `${(Number(amount) / maxPaymentMethod) * 100}%`,
-                                                    }}
-                                                />
-                                            </div>
+                                paymentMethodEntries.map(([method, amount]) => (
+                                    <div key={method}>
+                                        <div className="mb-2 flex items-center justify-between">
+                                            <span className="text-sm">
+                                                {formatLabel(method)}
+                                            </span>
+                                            <span className="font-semibold">
+                                                ETB {formatMoney(amount)}
+                                            </span>
                                         </div>
-                                    ),
-                                )
+
+                                        <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                                            <div
+                                                className="h-full rounded-full bg-orange-500"
+                                                style={{
+                                                    width: `${(Number(amount) / maxPaymentMethod) * 100}%`,
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                ))
                             )}
                         </CardContent>
                     </Card>
@@ -570,27 +567,24 @@ export default function Reports({
                             </p>
                         ) : (
                             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                                {refundStatusEntries.map(
-                                    ([status, data]) => (
-                                        <div
-                                            key={status}
-                                            className="rounded-xl border p-4"
-                                        >
-                                            <p className="text-sm text-muted-foreground">
-                                                {formatLabel(status)}
-                                            </p>
+                                {refundStatusEntries.map(([status, data]) => (
+                                    <div
+                                        key={status}
+                                        className="rounded-xl border p-4"
+                                    >
+                                        <p className="text-sm text-muted-foreground">
+                                            {formatLabel(status)}
+                                        </p>
 
-                                            <p className="mt-1 text-2xl font-bold">
-                                                {data.count}
-                                            </p>
+                                        <p className="mt-1 text-2xl font-bold">
+                                            {data.count}
+                                        </p>
 
-                                            <p className="mt-1 text-sm text-muted-foreground">
-                                                ETB{' '}
-                                                {formatMoney(data.amount)}
-                                            </p>
-                                        </div>
-                                    ),
-                                )}
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            ETB {formatMoney(data.amount)}
+                                        </p>
+                                    </div>
+                                ))}
                             </div>
                         )}
                     </CardContent>

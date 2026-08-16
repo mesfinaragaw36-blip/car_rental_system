@@ -12,11 +12,7 @@ import {
 } from '@/components/ui/dialog';
 import { useCan } from '@/hooks/use-can';
 
-type TransactionType =
-    | 'payment'
-    | 'refund'
-    | 'owner_payout'
-    | 'driver_payout';
+type TransactionType = 'payment' | 'refund' | 'owner_payout' | 'driver_payout';
 
 type Transaction = {
     type: TransactionType;
@@ -180,12 +176,16 @@ export default function AdminTransactions({
          * Do NOT use:
          * /admin/transactions/payments/{id}/confirm-cash
          */
-        router.post(`/payments/${transaction.id}/confirm`, {}, {
-            preserveScroll: true,
-            onSuccess: () => {
-                setSelected(null);
+        router.post(
+            `/payments/${transaction.id}/confirm`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    setSelected(null);
+                },
             },
-        });
+        );
     }
 
     function handleAction(transaction: Transaction) {
@@ -234,10 +234,7 @@ export default function AdminTransactions({
     }
 
     function partyLabel(transaction: Transaction): string {
-        if (
-            transaction.type === 'payment' ||
-            transaction.type === 'refund'
-        ) {
+        if (transaction.type === 'payment' || transaction.type === 'refund') {
             return transaction.customer ?? '—';
         }
 
@@ -426,13 +423,13 @@ export default function AdminTransactions({
 
                                                     <td className="py-3 font-medium">
                                                         #
-                                                        {
-                                                            transaction.booking_id
-                                                        }
+                                                        {transaction.booking_id}
                                                     </td>
 
                                                     <td className="py-3 text-muted-foreground">
-                                                        {partyLabel(transaction)}
+                                                        {partyLabel(
+                                                            transaction,
+                                                        )}
                                                     </td>
 
                                                     <td className="py-3 text-muted-foreground">
@@ -468,9 +465,7 @@ export default function AdminTransactions({
                                                                 'bg-gray-100 text-gray-800'
                                                             }`}
                                                         >
-                                                            {
-                                                                transaction.status
-                                                            }
+                                                            {transaction.status}
                                                         </span>
 
                                                         {isPendingCashPayment(
@@ -833,9 +828,7 @@ export default function AdminTransactions({
                                             <Button
                                                 className="w-full"
                                                 onClick={() =>
-                                                    confirmCashPayment(
-                                                        selected,
-                                                    )
+                                                    confirmCashPayment(selected)
                                                 }
                                             >
                                                 <CircleCheck className="mr-2 h-4 w-4" />

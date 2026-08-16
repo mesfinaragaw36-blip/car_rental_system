@@ -1,11 +1,6 @@
 import { Head, router } from '@inertiajs/react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface Booking {
     id: number;
@@ -29,14 +24,15 @@ export default function PrePickupInspections({ bookings }: Props) {
         <>
             <Head title="Pre-Pickup Inspections" />
 
-            <div className="p-6 space-y-6">
+            <div className="space-y-6 p-6">
                 <div>
                     <h1 className="text-3xl font-bold">
                         Pre-Pickup Inspections
                     </h1>
 
                     <p className="text-muted-foreground">
-                        Inspect every vehicle before it is handed to the customer.
+                        Inspect every vehicle before it is handed to the
+                        customer.
                     </p>
                 </div>
 
@@ -51,45 +47,45 @@ export default function PrePickupInspections({ bookings }: Props) {
                         {bookings.map((booking) => (
                             <Card key={booking.id}>
                                 <CardHeader>
-                                    <CardTitle>
-                                        Booking #{booking.id}
-                                    </CardTitle>
+                                    <CardTitle>Booking #{booking.id}</CardTitle>
                                 </CardHeader>
 
                                 <CardContent className="space-y-3">
                                     <div>
-                                        <strong>Vehicle:</strong>{" "}
-                                        {booking.car.brand}{" "}
-                                        {booking.car.model}
+                                        <strong>Vehicle:</strong>{' '}
+                                        {booking.car.brand} {booking.car.model}
                                     </div>
 
                                     <div>
-                                        <strong>Plate:</strong>{" "}
+                                        <strong>Plate:</strong>{' '}
                                         {booking.car.plate_number}
                                     </div>
 
                                     <div>
-                                        <strong>Pickup:</strong>{" "}
+                                        <strong>Pickup:</strong>{' '}
                                         {booking.pickup_date}
                                     </div>
 
                                     <div>
-                                        <strong>Return:</strong>{" "}
+                                        <strong>Return:</strong>{' '}
                                         {booking.return_date}
                                     </div>
 
                                     <div>
-                                        <strong>Status:</strong>{" "}
-                                        {booking.inspection_status ?? "Not inspected"}
+                                        <strong>Status:</strong>{' '}
+                                        {booking.inspection_status ??
+                                            'Not inspected'}
                                     </div>
 
                                     <Button
-    onClick={() =>
-        router.visit(`/inspections/pre-pickup/${booking.id}`)
-    }
->
-    Start Inspection
-</Button>
+                                        onClick={() =>
+                                            router.visit(
+                                                `/inspections/pre-pickup/${booking.id}`,
+                                            )
+                                        }
+                                    >
+                                        Start Inspection
+                                    </Button>
                                 </CardContent>
                             </Card>
                         ))}

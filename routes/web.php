@@ -203,332 +203,332 @@ Route::middleware(['auth'])->group(function () {
 
         // Driver assignments
         // =========================================================
-// Driver Routes
-// =========================================================
+        // Driver Routes
+        // =========================================================
 
-Route::middleware(['role:driver'])->group(function () {
+        Route::middleware(['role:driver'])->group(function () {
 
-    // Driver profile must always be accessible.
-    // Incomplete drivers are redirected here by
-    // EnsureDriverProfileComplete.
-    Route::get('/driver/profile', [DriverProfileController::class, 'show'])
-        ->name('driver.profile');
+            // Driver profile must always be accessible.
+            // Incomplete drivers are redirected here by
+            // EnsureDriverProfileComplete.
+            Route::get('/driver/profile', [DriverProfileController::class, 'show'])
+                ->name('driver.profile');
 
-    Route::post('/driver/profile', [DriverProfileController::class, 'update'])
-        ->name('driver.profile.update');
+            Route::post('/driver/profile', [DriverProfileController::class, 'update'])
+                ->name('driver.profile.update');
 
-    // Driver dashboard / working features
-    Route::middleware('driver.profile.complete')->group(function () {
+            // Driver dashboard / working features
+            Route::middleware('driver.profile.complete')->group(function () {
 
-        Route::get('/driver/assignments', [DriverBookingController::class, 'index'])
-            ->name('driver.assignments.index');
+                Route::get('/driver/assignments', [DriverBookingController::class, 'index'])
+                    ->name('driver.assignments.index');
 
-        Route::post('/driver/assignments/{assignment}/accept', [DriverBookingController::class, 'accept'])
-            ->name('driver.assignments.accept');
+                Route::post('/driver/assignments/{assignment}/accept', [DriverBookingController::class, 'accept'])
+                    ->name('driver.assignments.accept');
 
-        Route::post('/driver/assignments/{assignment}/reject', [DriverBookingController::class, 'reject'])
-            ->name('driver.assignments.reject');
+                Route::post('/driver/assignments/{assignment}/reject', [DriverBookingController::class, 'reject'])
+                    ->name('driver.assignments.reject');
 
-        Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])
-            ->name('driver.trip-history');
-    });
-});
-
-    // =========================================================
-    // Inspection Staff Routes
-    // =========================================================
-
-    Route::middleware(['role:admin', 'staff_permission'])->group(function () {
-
-        Route::get('/inspections', [InspectionController::class, 'index'])
-            ->name('inspections.index');
-
-        Route::post('/inspections/{booking}/delivery', [InspectionController::class, 'confirmDelivery'])
-            ->name('inspections.delivery');
-
-        Route::post('/inspections/{booking}/conduct', [InspectionController::class, 'conduct'])
-            ->name('inspections.conduct');
-
-        Route::post('/inspections/{booking}/handover', [InspectionController::class, 'handover'])
-            ->name('inspections.handover');
-
-        Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])
-            ->name('inspections.returned');
-
-        Route::post('/inspections/{booking}/return-arrival', [InspectionController::class, 'confirmReturnArrival'])
-            ->name('inspections.return-arrival');
-
-        Route::post('/inspections/{booking}/return-not-arrived', [InspectionController::class, 'markReturnNotArrived'])
-            ->name('inspections.return-not-arrived');
-
-        Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])
-            ->name('inspections.complete');
-    });
-
-    // =========================================================
-    // Booking Disputes - Admin
-    // =========================================================
-
-    Route::middleware(['role:admin', 'staff_permission'])->group(function () {
-
-        Route::get('/disputes', [BookingDisputeController::class, 'index'])
-            ->name('disputes.index');
-
-        Route::post('/disputes/{dispute}/approve', [BookingDisputeController::class, 'approve'])
-            ->name('disputes.approve');
-
-        Route::post('/disputes/{dispute}/reject', [BookingDisputeController::class, 'reject'])
-            ->name('disputes.reject');
-    });
-
-    // =========================================================
-    // Admin Routes
-    // =========================================================
-
-    Route::middleware(['role:admin', 'staff_permission'])
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-
-            // -------------------------------------------------
-            // Users
-            // -------------------------------------------------
-
-            Route::get('/users', [UserController::class, 'index'])
-                ->name('users.index');
-
-            Route::get('/users/create', [UserController::class, 'create'])
-                ->name('users.create');
-
-            Route::post('/users', [UserController::class, 'store'])
-                ->name('users.store');
-
-            Route::get('/users/trashed', [UserController::class, 'trashed'])
-                ->name('users.trashed');
-
-            Route::get('/users/{user}', [UserController::class, 'show'])
-                ->name('users.show');
-
-            Route::get('/users/{user}/edit', [UserController::class, 'edit'])
-                ->name('users.edit');
-
-            Route::put('/users/{user}', [UserController::class, 'update'])
-                ->name('users.update');
-
-            Route::delete('/users/{user}', [UserController::class, 'destroy'])
-                ->name('users.destroy');
-
-            Route::post('/users/{id}/restore', [UserController::class, 'restore'])
-                ->name('users.restore');
-
-            Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])
-                ->name('users.suspend');
-
-            Route::post('/users/{user}/activate', [UserController::class, 'activate'])
-                ->name('users.activate');
-
-            Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])
-                ->name('users.verify-owner');
-
-            Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])
-                ->name('users.reject-owner');
-
-            Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])
-                ->name('users.verify-driver');
-
-            Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])
-                ->name('users.reject-driver');
-
-            Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])
-                ->name('users.verify-customer-identity');
-
-            Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])
-                ->name('users.reject-customer-identity');
-
-            Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])
-                ->name('users.verify-customer');
-
-            Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])
-                ->name('users.reject-customer');
-
-            // -------------------------------------------------
-            // Vehicles
-            // -------------------------------------------------
-
-            Route::get('/vehicles', [AdminVehicleController::class, 'index'])
-                ->name('vehicles');
-
-            Route::get('/vehicles/create', [AdminVehicleController::class, 'create'])
-                ->name('vehicles.create');
-
-            Route::post('/vehicles', [AdminVehicleController::class, 'store'])
-                ->name('vehicles.store');
-
-            Route::get('/vehicles/{car}', [AdminVehicleController::class, 'show'])
-                ->name('vehicles.show');
-
-            Route::post('/vehicles/{car}/approve', [AdminVehicleController::class, 'approve'])
-                ->name('vehicles.approve');
-
-            Route::post('/vehicles/{car}/reject', [AdminVehicleController::class, 'reject'])
-                ->name('vehicles.reject');
-
-            Route::post('/vehicles/{car}/toggle-status', [AdminVehicleController::class, 'toggleStatus'])
-                ->name('vehicles.toggle-status');
-
-            Route::post('/vehicles/{car}/documents/approve', [AdminVehicleController::class, 'approveDocument'])
-                ->name('vehicles.documents.approve');
-
-            Route::post('/vehicles/{car}/documents/reject', [AdminVehicleController::class, 'rejectDocument'])
-                ->name('vehicles.documents.reject');
-
-            Route::delete('/vehicles/{car}', [AdminVehicleController::class, 'destroy'])
-                ->name('vehicles.destroy');
-
-            Route::get('/vehicle-images', [CarImageController::class, 'index'])
-                ->name('vehicle-images');
-
-            Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])
-                ->name('vehicle-documents');
-
-            Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])
-                ->name('vehicle-documents.store');
-
-            // -------------------------------------------------
-            // Drivers
-            // -------------------------------------------------
-
-            Route::get('/drivers', [DriverController::class, 'index'])
-                ->name('drivers.index');
-
-            Route::post('/drivers/{driver}/suspend', [DriverController::class, 'suspend'])
-                ->name('drivers.suspend');
-
-            Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])
-                ->name('drivers.activate');
-
-            // -------------------------------------------------
-            // Driver Assignments - Admin
-            // -------------------------------------------------
-
-            Route::get('/driver/assignments', [DriverBookingController::class, 'adminIndex'])
-                ->name('driver.assignments.index');
-
-            // -------------------------------------------------
-            // Transactions
-            // -------------------------------------------------
-
-            Route::get('/transactions', [TransactionController::class, 'index'])
-                ->name('transactions.index');
-
-            Route::post('/transactions/refunds/{refund}/process', [TransactionController::class, 'processRefund'])
-                ->name('transactions.refunds.process');
-
-            Route::post('/transactions/owner-payouts/{payout}/mark-paid', [TransactionController::class, 'markOwnerPaid'])
-                ->name('transactions.owner-payouts.mark-paid');
-
-            Route::post('/transactions/driver-payouts/{assignment}/mark-paid', [TransactionController::class, 'markDriverPaid'])
-                ->name('transactions.driver-payouts.mark-paid');
-
-            Route::post('/transactions/payments/{payment}/mark-cash-paid', [TransactionController::class, 'markCashPaid'])
-                ->name('transactions.payments.mark-cash-paid');
-
-            // -------------------------------------------------
-            // Reports
-            // -------------------------------------------------
-
-            Route::get('/reports', [ReportController::class, 'index'])
-                ->name('reports.index');
-            // -------------------------------------------------
-            // Staff
-            // -------------------------------------------------
-
-            Route::get('/staff', [StaffController::class, 'index'])
-                ->name('staff.index');
-
-            Route::get('/staff/create', [StaffController::class, 'create'])
-                ->name('staff.create');
-
-            Route::post('/staff', [StaffController::class, 'store'])
-                ->name('staff.store');
-
-            Route::get('/staff/{staff}', [StaffController::class, 'show'])
-                ->name('staff.show');
-
-            Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])
-                ->name('staff.destroy');
-
-            Route::post('/staff/{staff}/suspend', [StaffController::class, 'suspend'])
-                ->name('staff.suspend');
-
-            Route::post('/staff/{staff}/activate', [StaffController::class, 'activate'])
-                ->name('staff.activate');
-
-            // -------------------------------------------------
-            // Roles
-            // -------------------------------------------------
-
-            Route::get('/roles', [RoleController::class, 'index'])
-                ->name('roles.index');
-
-            Route::get('/roles/create', [RoleController::class, 'create'])
-                ->name('roles.create');
-
-            Route::post('/roles', [RoleController::class, 'store'])
-                ->name('roles.store');
-
-            Route::get('/roles/{role}', [RoleController::class, 'show'])
-                ->name('roles.show');
-
-            Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])
-                ->name('roles.edit');
-
-            Route::put('/roles/{role}', [RoleController::class, 'update'])
-                ->name('roles.update');
-
-            Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
-                ->name('roles.destroy');
-
-            // -------------------------------------------------
-            // Car Types
-            // -------------------------------------------------
-
-            Route::get('/car-types/configurations', [CarTypeController::class, 'index'])
-                ->name('car-types.configurations');
-
-            Route::post('/car-types/configurations', [CarTypeController::class, 'store'])
-                ->name('car-types.configurations.store');
-
-            Route::put('/car-types/configurations/{carType}', [CarTypeController::class, 'update'])
-                ->name('car-types.configurations.update');
-
-            Route::delete('/car-types/configurations/{carType}', [CarTypeController::class, 'destroy'])
-                ->name('car-types.configurations.destroy');
-
-            Route::patch('/car-types/configurations/{carType}/toggle', [CarTypeController::class, 'toggleActive'])
-                ->name('car-types.configurations.toggle');
-
-            Route::post('/car-types/configurations/requests/{carTypeRequest}/approve', [CarTypeController::class, 'approveRequest'])
-                ->name('car-types.configurations.requests.approve');
-
-            Route::post('/car-types/configurations/requests/{carTypeRequest}/reject', [CarTypeController::class, 'rejectRequest'])
-                ->name('car-types.configurations.requests.reject');
-
-            // -------------------------------------------------
-            // Locations
-            // -------------------------------------------------
-
-            Route::resource('locations', LocationController::class)
-                ->except(['show']);
-
-            // -------------------------------------------------
-            // Reviews
-            // -------------------------------------------------
-
-            Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])
-                ->name('reviews.destroy');
+                Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])
+                    ->name('driver.trip-history');
+            });
         });
-});
 
-require __DIR__.'/settings.php';
+        // =========================================================
+        // Inspection Staff Routes
+        // =========================================================
+
+        Route::middleware(['role:admin', 'staff_permission'])->group(function () {
+
+            Route::get('/inspections', [InspectionController::class, 'index'])
+                ->name('inspections.index');
+
+            Route::post('/inspections/{booking}/delivery', [InspectionController::class, 'confirmDelivery'])
+                ->name('inspections.delivery');
+
+            Route::post('/inspections/{booking}/conduct', [InspectionController::class, 'conduct'])
+                ->name('inspections.conduct');
+
+            Route::post('/inspections/{booking}/handover', [InspectionController::class, 'handover'])
+                ->name('inspections.handover');
+
+            Route::post('/inspections/{booking}/returned', [InspectionController::class, 'markReturned'])
+                ->name('inspections.returned');
+
+            Route::post('/inspections/{booking}/return-arrival', [InspectionController::class, 'confirmReturnArrival'])
+                ->name('inspections.return-arrival');
+
+            Route::post('/inspections/{booking}/return-not-arrived', [InspectionController::class, 'markReturnNotArrived'])
+                ->name('inspections.return-not-arrived');
+
+            Route::post('/inspections/{booking}/complete', [InspectionController::class, 'complete'])
+                ->name('inspections.complete');
+        });
+
+        // =========================================================
+        // Booking Disputes - Admin
+        // =========================================================
+
+        Route::middleware(['role:admin', 'staff_permission'])->group(function () {
+
+            Route::get('/disputes', [BookingDisputeController::class, 'index'])
+                ->name('disputes.index');
+
+            Route::post('/disputes/{dispute}/approve', [BookingDisputeController::class, 'approve'])
+                ->name('disputes.approve');
+
+            Route::post('/disputes/{dispute}/reject', [BookingDisputeController::class, 'reject'])
+                ->name('disputes.reject');
+        });
+
+        // =========================================================
+        // Admin Routes
+        // =========================================================
+
+        Route::middleware(['role:admin', 'staff_permission'])
+            ->prefix('admin')
+            ->name('admin.')
+            ->group(function () {
+
+                // -------------------------------------------------
+                // Users
+                // -------------------------------------------------
+
+                Route::get('/users', [UserController::class, 'index'])
+                    ->name('users.index');
+
+                Route::get('/users/create', [UserController::class, 'create'])
+                    ->name('users.create');
+
+                Route::post('/users', [UserController::class, 'store'])
+                    ->name('users.store');
+
+                Route::get('/users/trashed', [UserController::class, 'trashed'])
+                    ->name('users.trashed');
+
+                Route::get('/users/{user}', [UserController::class, 'show'])
+                    ->name('users.show');
+
+                Route::get('/users/{user}/edit', [UserController::class, 'edit'])
+                    ->name('users.edit');
+
+                Route::put('/users/{user}', [UserController::class, 'update'])
+                    ->name('users.update');
+
+                Route::delete('/users/{user}', [UserController::class, 'destroy'])
+                    ->name('users.destroy');
+
+                Route::post('/users/{id}/restore', [UserController::class, 'restore'])
+                    ->name('users.restore');
+
+                Route::post('/users/{user}/suspend', [UserController::class, 'suspend'])
+                    ->name('users.suspend');
+
+                Route::post('/users/{user}/activate', [UserController::class, 'activate'])
+                    ->name('users.activate');
+
+                Route::post('/users/{user}/verify-owner', [UserController::class, 'verifyOwner'])
+                    ->name('users.verify-owner');
+
+                Route::post('/users/{user}/reject-owner', [UserController::class, 'rejectOwner'])
+                    ->name('users.reject-owner');
+
+                Route::post('/users/{user}/verify-driver', [UserController::class, 'verifyDriver'])
+                    ->name('users.verify-driver');
+
+                Route::post('/users/{user}/reject-driver', [UserController::class, 'rejectDriver'])
+                    ->name('users.reject-driver');
+
+                Route::post('/users/{user}/verify-customer-identity', [UserController::class, 'verifyCustomerIdentity'])
+                    ->name('users.verify-customer-identity');
+
+                Route::post('/users/{user}/reject-customer-identity', [UserController::class, 'rejectCustomerIdentity'])
+                    ->name('users.reject-customer-identity');
+
+                Route::post('/users/{user}/verify-customer', [UserController::class, 'verifyCustomer'])
+                    ->name('users.verify-customer');
+
+                Route::post('/users/{user}/reject-customer', [UserController::class, 'rejectCustomer'])
+                    ->name('users.reject-customer');
+
+                // -------------------------------------------------
+                // Vehicles
+                // -------------------------------------------------
+
+                Route::get('/vehicles', [AdminVehicleController::class, 'index'])
+                    ->name('vehicles');
+
+                Route::get('/vehicles/create', [AdminVehicleController::class, 'create'])
+                    ->name('vehicles.create');
+
+                Route::post('/vehicles', [AdminVehicleController::class, 'store'])
+                    ->name('vehicles.store');
+
+                Route::get('/vehicles/{car}', [AdminVehicleController::class, 'show'])
+                    ->name('vehicles.show');
+
+                Route::post('/vehicles/{car}/approve', [AdminVehicleController::class, 'approve'])
+                    ->name('vehicles.approve');
+
+                Route::post('/vehicles/{car}/reject', [AdminVehicleController::class, 'reject'])
+                    ->name('vehicles.reject');
+
+                Route::post('/vehicles/{car}/toggle-status', [AdminVehicleController::class, 'toggleStatus'])
+                    ->name('vehicles.toggle-status');
+
+                Route::post('/vehicles/{car}/documents/approve', [AdminVehicleController::class, 'approveDocument'])
+                    ->name('vehicles.documents.approve');
+
+                Route::post('/vehicles/{car}/documents/reject', [AdminVehicleController::class, 'rejectDocument'])
+                    ->name('vehicles.documents.reject');
+
+                Route::delete('/vehicles/{car}', [AdminVehicleController::class, 'destroy'])
+                    ->name('vehicles.destroy');
+
+                Route::get('/vehicle-images', [CarImageController::class, 'index'])
+                    ->name('vehicle-images');
+
+                Route::get('/vehicle-documents', [VehicleDocumentController::class, 'index'])
+                    ->name('vehicle-documents');
+
+                Route::post('/vehicle-documents', [VehicleDocumentController::class, 'store'])
+                    ->name('vehicle-documents.store');
+
+                // -------------------------------------------------
+                // Drivers
+                // -------------------------------------------------
+
+                Route::get('/drivers', [DriverController::class, 'index'])
+                    ->name('drivers.index');
+
+                Route::post('/drivers/{driver}/suspend', [DriverController::class, 'suspend'])
+                    ->name('drivers.suspend');
+
+                Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])
+                    ->name('drivers.activate');
+
+                // -------------------------------------------------
+                // Driver Assignments - Admin
+                // -------------------------------------------------
+
+                Route::get('/driver/assignments', [DriverBookingController::class, 'adminIndex'])
+                    ->name('driver.assignments.index');
+
+                // -------------------------------------------------
+                // Transactions
+                // -------------------------------------------------
+
+                Route::get('/transactions', [TransactionController::class, 'index'])
+                    ->name('transactions.index');
+
+                Route::post('/transactions/refunds/{refund}/process', [TransactionController::class, 'processRefund'])
+                    ->name('transactions.refunds.process');
+
+                Route::post('/transactions/owner-payouts/{payout}/mark-paid', [TransactionController::class, 'markOwnerPaid'])
+                    ->name('transactions.owner-payouts.mark-paid');
+
+                Route::post('/transactions/driver-payouts/{assignment}/mark-paid', [TransactionController::class, 'markDriverPaid'])
+                    ->name('transactions.driver-payouts.mark-paid');
+
+                Route::post('/transactions/payments/{payment}/mark-cash-paid', [TransactionController::class, 'markCashPaid'])
+                    ->name('transactions.payments.mark-cash-paid');
+
+                // -------------------------------------------------
+                // Reports
+                // -------------------------------------------------
+
+                Route::get('/reports', [ReportController::class, 'index'])
+                    ->name('reports.index');
+                // -------------------------------------------------
+                // Staff
+                // -------------------------------------------------
+
+                Route::get('/staff', [StaffController::class, 'index'])
+                    ->name('staff.index');
+
+                Route::get('/staff/create', [StaffController::class, 'create'])
+                    ->name('staff.create');
+
+                Route::post('/staff', [StaffController::class, 'store'])
+                    ->name('staff.store');
+
+                Route::get('/staff/{staff}', [StaffController::class, 'show'])
+                    ->name('staff.show');
+
+                Route::delete('/staff/{staff}', [StaffController::class, 'destroy'])
+                    ->name('staff.destroy');
+
+                Route::post('/staff/{staff}/suspend', [StaffController::class, 'suspend'])
+                    ->name('staff.suspend');
+
+                Route::post('/staff/{staff}/activate', [StaffController::class, 'activate'])
+                    ->name('staff.activate');
+
+                // -------------------------------------------------
+                // Roles
+                // -------------------------------------------------
+
+                Route::get('/roles', [RoleController::class, 'index'])
+                    ->name('roles.index');
+
+                Route::get('/roles/create', [RoleController::class, 'create'])
+                    ->name('roles.create');
+
+                Route::post('/roles', [RoleController::class, 'store'])
+                    ->name('roles.store');
+
+                Route::get('/roles/{role}', [RoleController::class, 'show'])
+                    ->name('roles.show');
+
+                Route::get('/roles/{role}/edit', [RoleController::class, 'edit'])
+                    ->name('roles.edit');
+
+                Route::put('/roles/{role}', [RoleController::class, 'update'])
+                    ->name('roles.update');
+
+                Route::delete('/roles/{role}', [RoleController::class, 'destroy'])
+                    ->name('roles.destroy');
+
+                // -------------------------------------------------
+                // Car Types
+                // -------------------------------------------------
+
+                Route::get('/car-types/configurations', [CarTypeController::class, 'index'])
+                    ->name('car-types.configurations');
+
+                Route::post('/car-types/configurations', [CarTypeController::class, 'store'])
+                    ->name('car-types.configurations.store');
+
+                Route::put('/car-types/configurations/{carType}', [CarTypeController::class, 'update'])
+                    ->name('car-types.configurations.update');
+
+                Route::delete('/car-types/configurations/{carType}', [CarTypeController::class, 'destroy'])
+                    ->name('car-types.configurations.destroy');
+
+                Route::patch('/car-types/configurations/{carType}/toggle', [CarTypeController::class, 'toggleActive'])
+                    ->name('car-types.configurations.toggle');
+
+                Route::post('/car-types/configurations/requests/{carTypeRequest}/approve', [CarTypeController::class, 'approveRequest'])
+                    ->name('car-types.configurations.requests.approve');
+
+                Route::post('/car-types/configurations/requests/{carTypeRequest}/reject', [CarTypeController::class, 'rejectRequest'])
+                    ->name('car-types.configurations.requests.reject');
+
+                // -------------------------------------------------
+                // Locations
+                // -------------------------------------------------
+
+                Route::resource('locations', LocationController::class)
+                    ->except(['show']);
+
+                // -------------------------------------------------
+                // Reviews
+                // -------------------------------------------------
+
+                Route::delete('/reviews/{review}', [ReviewController::class, 'destroy'])
+                    ->name('reviews.destroy');
+            });
+    });
+
+    require __DIR__.'/settings.php';
 });

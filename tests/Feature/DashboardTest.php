@@ -16,9 +16,18 @@ class DashboardTest extends TestCase
         $response->assertRedirect(route('login'));
     }
 
-    public function test_authenticated_users_can_visit_the_dashboard()
+    public function test_customers_are_redirected_to_the_car_browse_page()
     {
-        $user = User::factory()->create();
+        $user = User::factory()->create(['role' => 'customer']);
+        $this->actingAs($user);
+
+        $response = $this->get(route('dashboard'));
+        $response->assertRedirect(route('cars.index'));
+    }
+
+    public function test_authenticated_non_customer_users_can_visit_the_dashboard()
+    {
+        $user = User::factory()->create(['role' => 'owner']);
         $this->actingAs($user);
 
         $response = $this->get(route('dashboard'));

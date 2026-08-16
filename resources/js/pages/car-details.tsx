@@ -265,7 +265,10 @@ export default function CarDetails({
                         </CardHeader>
                         <CardContent>
                             <p className="text-sm text-red-700">
-                                This vehicle is currently booked and not available for new reservations at this time. Please check back later or browse other available vehicles.
+                                This vehicle is currently booked and not
+                                available for new reservations at this time.
+                                Please check back later or browse other
+                                available vehicles.
                             </p>
                         </CardContent>
                     </Card>
@@ -278,7 +281,8 @@ export default function CarDetails({
                         </CardHeader>
                         <CardContent className="space-y-3">
                             <p className="text-sm text-muted-foreground">
-                                Sign in or create an account to book this vehicle.
+                                Sign in or create an account to book this
+                                vehicle.
                             </p>
                             <div className="flex gap-3">
                                 <Button

@@ -24,7 +24,11 @@ interface Dispute {
     };
 }
 
-export default function Disputes({ disputes }: { disputes: { data: Dispute[] } }) {
+export default function Disputes({
+    disputes,
+}: {
+    disputes: { data: Dispute[] };
+}) {
     const can = useCan();
 
     return (
@@ -57,32 +61,37 @@ export default function Disputes({ disputes }: { disputes: { data: Dispute[] } }
                                 <b>Status:</b> {dispute.status}
                             </p>
 
-                            {dispute.status === 'pending' && can('disputes.manage') && (
-                                <div className="flex gap-2">
-                                    <Button
-                                        size="sm"
-                                        onClick={() => {
-                                            router.post(
-                                                approve.url({ dispute: dispute.id }),
-                                            );
-                                        }}
-                                    >
-                                        Approve
-                                    </Button>
+                            {dispute.status === 'pending' &&
+                                can('disputes.manage') && (
+                                    <div className="flex gap-2">
+                                        <Button
+                                            size="sm"
+                                            onClick={() => {
+                                                router.post(
+                                                    approve.url({
+                                                        dispute: dispute.id,
+                                                    }),
+                                                );
+                                            }}
+                                        >
+                                            Approve
+                                        </Button>
 
-                                    <Button
-                                        size="sm"
-                                        variant="destructive"
-                                        onClick={() => {
-                                            router.post(
-                                                reject.url({ dispute: dispute.id }),
-                                            );
-                                        }}
-                                    >
-                                        Reject
-                                    </Button>
-                                </div>
-                            )}
+                                        <Button
+                                            size="sm"
+                                            variant="destructive"
+                                            onClick={() => {
+                                                router.post(
+                                                    reject.url({
+                                                        dispute: dispute.id,
+                                                    }),
+                                                );
+                                            }}
+                                        >
+                                            Reject
+                                        </Button>
+                                    </div>
+                                )}
                         </CardContent>
                     </Card>
                 ))}

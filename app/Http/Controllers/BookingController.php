@@ -184,7 +184,7 @@ class BookingController extends Controller
                     'label' => 'Vehicle',
                     'type' => 'car',
                     'id' => $booking->car->id,
-                    'name' => $booking->car->brand . ' ' . $booking->car->model,
+                    'name' => $booking->car->brand.' '.$booking->car->model,
                     'alreadyReviewed' => $reviewed['car'],
                 ];
 
@@ -221,13 +221,12 @@ class BookingController extends Controller
                 $targetName = $review->reviewable_type === Car::class
                     ? (
                         $booking->car
-                            ? $booking->car->brand . ' ' . $booking->car->model
+                            ? $booking->car->brand.' '.$booking->car->model
                             : 'Unknown Vehicle'
                     )
                     : match ($review->reviewable_id) {
                         $booking->owner_id => $booking->owner->name,
-                        $booking->driverAssignment?->driver_id =>
-                            $booking->driverAssignment->driver->name,
+                        $booking->driverAssignment?->driver_id => $booking->driverAssignment->driver->name,
                         $booking->customer_id => $booking->customer->name,
                         default => 'Unknown',
                     };
@@ -238,8 +237,7 @@ class BookingController extends Controller
                         'id' => $review->reviewer->id,
                         'name' => $review->reviewer->name,
                     ],
-                    'target' =>
-                        $review->reviewable_type === Car::class
+                    'target' => $review->reviewable_type === Car::class
                             ? 'Vehicle'
                             : $targetName,
                     'rating' => $review->rating,
@@ -306,32 +304,27 @@ class BookingController extends Controller
                     ])
                     ->values(),
 
-                'security_deposit_amount' =>
-                    number_format(
-                        $booking->securityDepositAmount(),
-                        2,
-                        '.',
-                        ''
-                    ),
+                'security_deposit_amount' => number_format(
+                    $booking->securityDepositAmount(),
+                    2,
+                    '.',
+                    ''
+                ),
 
-                'balance_amount' =>
-                    number_format(
-                        $booking->balanceAmount(),
-                        2,
-                        '.',
-                        ''
-                    ),
+                'balance_amount' => number_format(
+                    $booking->balanceAmount(),
+                    2,
+                    '.',
+                    ''
+                ),
 
                 'has_balance_paid' => $booking->hasPaidBalance(),
 
-                'has_security_deposit_paid' =>
-                    $booking->hasPaidSecurityDeposit(),
+                'has_security_deposit_paid' => $booking->hasPaidSecurityDeposit(),
 
-                'balance_paid_at' =>
-                    $booking->balance_paid_at?->toDateTimeString(),
+                'balance_paid_at' => $booking->balance_paid_at?->toDateTimeString(),
 
-                'security_deposit_paid_at' =>
-                    $booking->security_deposit_paid_at?->toDateTimeString(),
+                'security_deposit_paid_at' => $booking->security_deposit_paid_at?->toDateTimeString(),
 
                 'late_days' => $booking->late_days,
                 'late_fee' => $booking->late_fee,
@@ -344,51 +337,39 @@ class BookingController extends Controller
                     ]
                     : null,
 
-                'driver_status' =>
-                    $booking->driverAssignment?->status,
+                'driver_status' => $booking->driverAssignment?->status,
 
-                'driver_response_deadline' =>
-                    $booking->driverAssignment?->response_deadline
-                        ?->toDateTimeString(),
+                'driver_response_deadline' => $booking->driverAssignment?->response_deadline
+                    ?->toDateTimeString(),
 
-                'driver_responded_at' =>
-                    $booking->driverAssignment?->responded_at
-                        ?->toDateTimeString(),
+                'driver_responded_at' => $booking->driverAssignment?->responded_at
+                    ?->toDateTimeString(),
 
-                'driver_rejection_reason' =>
-                    $booking->driverAssignment?->rejection_reason,
+                'driver_rejection_reason' => $booking->driverAssignment?->rejection_reason,
 
-                'pickup_inspection_approved' =>
-                    $booking->hasApprovedInspection(
-                        Inspection::TYPE_PICKUP
-                    ),
+                'pickup_inspection_approved' => $booking->hasApprovedInspection(
+                    Inspection::TYPE_PICKUP
+                ),
 
-                'picked_up_at' =>
-                    $booking->picked_up_at?->toDateTimeString(),
+                'picked_up_at' => $booking->picked_up_at?->toDateTimeString(),
 
-                'returned_at' =>
-                    $booking->returned_at?->toDateTimeString(),
+                'returned_at' => $booking->returned_at?->toDateTimeString(),
 
                 'inspections' => $booking->inspections
                     ->map(fn ($inspection) => [
                         'id' => $inspection->id,
                         'type' => $inspection->type,
                         'status' => $inspection->status,
-                        'conducted_at' =>
-                            $inspection->conducted_at?->toDateTimeString(),
-                        'conducted_by_name' =>
-                            $inspection->conductedBy?->name,
-                        'mileage_reading' =>
-                            $inspection->mileage_reading,
+                        'conducted_at' => $inspection->conducted_at?->toDateTimeString(),
+                        'conducted_by_name' => $inspection->conductedBy?->name,
+                        'mileage_reading' => $inspection->mileage_reading,
                         'fuel_level' => $inspection->fuel_level,
                         'damages' => $inspection->damages,
                         'notes' => $inspection->notes,
                         'photos' => $inspection->photos ?? [],
                         'id_verified' => $inspection->id_verified,
-                        'id_verified_by_name' =>
-                            $inspection->idVerifiedBy?->name,
-                        'id_verified_at' =>
-                            $inspection->id_verified_at?->toDateTimeString(),
+                        'id_verified_by_name' => $inspection->idVerifiedBy?->name,
+                        'id_verified_at' => $inspection->id_verified_at?->toDateTimeString(),
                     ])
                     ->values(),
 
@@ -397,18 +378,15 @@ class BookingController extends Controller
                 'can_review' => count($reviewTargets) > 0,
                 'reviews' => $reviewList,
 
-                'identity_approved' =>
-                    $user->role !== 'customer'
+                'identity_approved' => $user->role !== 'customer'
                     || $user->customerIdentity === null
                     || $user->customerIdentity->isApproved(),
 
-                'identity_status' =>
-                    $user->role === 'customer'
+                'identity_status' => $user->role === 'customer'
                         ? $user->customerIdentity?->verification_status
                         : null,
 
-                'security_deposit' =>
-                    $booking->securityDepositAmount(),
+                'security_deposit' => $booking->securityDepositAmount(),
 
                 'late_fee_deduction' => min(
                     (float) $booking->late_fee,

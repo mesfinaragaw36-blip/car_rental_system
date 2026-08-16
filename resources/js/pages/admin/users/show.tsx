@@ -1,4 +1,3 @@
-import React from 'react'
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import {
     User,
@@ -11,13 +10,9 @@ import {
     Edit,
     IdCard,
 } from 'lucide-react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useCan } from '@/hooks/use-can';
 import type { Auth } from '@/types';
 
@@ -95,7 +90,7 @@ function roleBadgeClass(role: string): string {
         case 'owner':
             return 'bg-accent text-primary';
         case 'driver':
-        return 'bg-orange-100 text-orange-800';
+            return 'bg-orange-100 text-orange-800';
         default:
             return 'bg-gray-100 text-gray-800';
     }
@@ -175,9 +170,7 @@ export default function ShowUser({ user }: Props) {
 
     function handleRejectCustomerIdentity(): void {
         if (
-            confirm(
-                'Are you sure you want to reject this customer identity?',
-            )
+            confirm('Are you sure you want to reject this customer identity?')
         ) {
             router.post(`/admin/users/${user.id}/reject-customer-identity`);
         }
@@ -220,9 +213,7 @@ export default function ShowUser({ user }: Props) {
                 {/* User Info Card */}
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between">
-                        <CardTitle className="text-2xl">
-                            User Details
-                        </CardTitle>
+                        <CardTitle className="text-2xl">User Details</CardTitle>
 
                         <div className="flex items-center gap-2">
                             <span
@@ -380,13 +371,11 @@ export default function ShowUser({ user }: Props) {
                                     </p>
                                 </div>
 
-                                {(
+                                {(user.owner_profile
+                                    .national_id_front_file_path ||
                                     user.owner_profile
-                                        .national_id_front_file_path ||
-                                    user.owner_profile
-                                        .national_id_back_file_path
-                                ) && (
-                                    <div className="md:col-span-2 flex gap-4">
+                                        .national_id_back_file_path) && (
+                                    <div className="flex gap-4 md:col-span-2">
                                         {user.owner_profile
                                             .national_id_front_file_path && (
                                             <a
@@ -444,9 +433,7 @@ export default function ShowUser({ user }: Props) {
                                     <Button
                                         size="sm"
                                         onClick={handleVerifyOwner}
-                                        disabled={
-                                            !can('owner_profiles.verify')
-                                        }
+                                        disabled={!can('owner_profiles.verify')}
                                     >
                                         <CheckCircle className="mr-1.5 h-4 w-4" />
                                         Approve
@@ -456,9 +443,7 @@ export default function ShowUser({ user }: Props) {
                                         variant="destructive"
                                         size="sm"
                                         onClick={handleRejectOwner}
-                                        disabled={
-                                            !can('owner_profiles.verify')
-                                        }
+                                        disabled={!can('owner_profiles.verify')}
                                     >
                                         <XCircle className="mr-1.5 h-4 w-4" />
                                         Reject
@@ -496,7 +481,10 @@ export default function ShowUser({ user }: Props) {
                                         National ID Number
                                     </p>
                                     <p className="font-medium">
-                                        {user.customer_identity.national_id_number}
+                                        {
+                                            user.customer_identity
+                                                .national_id_number
+                                        }
                                     </p>
                                 </div>
                                 <div>
@@ -504,7 +492,8 @@ export default function ShowUser({ user }: Props) {
                                         Verified By
                                     </p>
                                     <p className="font-medium">
-                                        {user.customer_identity.verified_by_name ??
+                                        {user.customer_identity
+                                            .verified_by_name ??
                                             'Not yet verified'}
                                     </p>
                                 </div>
@@ -515,7 +504,8 @@ export default function ShowUser({ user }: Props) {
                                         </p>
                                         <p className="font-medium">
                                             {new Date(
-                                                user.customer_identity.verified_at,
+                                                user.customer_identity
+                                                    .verified_at,
                                             ).toLocaleDateString()}
                                         </p>
                                     </div>
@@ -527,9 +517,13 @@ export default function ShowUser({ user }: Props) {
                                     <p className="text-sm text-muted-foreground">
                                         ID front
                                     </p>
-                                    {user.customer_identity.national_id_front_path ? (
+                                    {user.customer_identity
+                                        .national_id_front_path ? (
                                         <DocumentLink
-                                            path={user.customer_identity.national_id_front_path}
+                                            path={
+                                                user.customer_identity
+                                                    .national_id_front_path
+                                            }
                                             label="View front photo"
                                         />
                                     ) : (
@@ -542,9 +536,13 @@ export default function ShowUser({ user }: Props) {
                                     <p className="text-sm text-muted-foreground">
                                         ID back
                                     </p>
-                                    {user.customer_identity.national_id_back_path ? (
+                                    {user.customer_identity
+                                        .national_id_back_path ? (
                                         <DocumentLink
-                                            path={user.customer_identity.national_id_back_path}
+                                            path={
+                                                user.customer_identity
+                                                    .national_id_back_path
+                                            }
                                             label="View back photo"
                                         />
                                     ) : (
@@ -560,10 +558,10 @@ export default function ShowUser({ user }: Props) {
                                 <div className="flex gap-3 border-t pt-4">
                                     <Button
                                         size="sm"
-                                        onClick={
-                                            handleVerifyCustomerIdentity
+                                        onClick={handleVerifyCustomerIdentity}
+                                        disabled={
+                                            !can('customer_identities.verify')
                                         }
-                                        disabled={!can('customer_identities.verify')}
                                     >
                                         <CheckCircle className="mr-1.5 h-4 w-4" />
                                         Approve
@@ -571,10 +569,10 @@ export default function ShowUser({ user }: Props) {
                                     <Button
                                         variant="destructive"
                                         size="sm"
-                                        onClick={
-                                            handleRejectCustomerIdentity
+                                        onClick={handleRejectCustomerIdentity}
+                                        disabled={
+                                            !can('customer_identities.verify')
                                         }
-                                        disabled={!can('customer_identities.verify')}
                                     >
                                         <XCircle className="mr-1.5 h-4 w-4" />
                                         Reject
@@ -587,19 +585,17 @@ export default function ShowUser({ user }: Props) {
 
                 {/* Driver Profile */}
                 {user.driver_profile &&
-                    (user.role === 'driver' ||
-                        user.staff_role_id !== null) && (
+                    (user.role === 'driver' || user.staff_role_id !== null) && (
                         <Card>
                             <CardHeader className="flex flex-row items-center justify-between">
-                            <CardTitle className="flex items-center gap-2">
-                                <Car className="h-5 w-5" />
-                                Driver Profile
-                            </CardTitle>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Car className="h-5 w-5" />
+                                    Driver Profile
+                                </CardTitle>
 
                                 <span
                                     className={`rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(
-                                        user.driver_profile
-                                            .verification_status,
+                                        user.driver_profile.verification_status,
                                     )}`}
                                 >
                                     {user.driver_profile.verification_status
@@ -618,10 +614,7 @@ export default function ShowUser({ user }: Props) {
                                             License Number
                                         </p>
                                         <p className="font-medium">
-                                            {
-                                                user.driver_profile
-                                                    .license_number
-                                            }
+                                            {user.driver_profile.license_number}
                                         </p>
                                     </div>
 
@@ -671,15 +664,18 @@ export default function ShowUser({ user }: Props) {
                                         License document
                                     </p>
                                     {user.driver_profile.license_file_path ? (
-    <DocumentLink
-        path={user.driver_profile.license_file_path}
-        label="View uploaded document"
-    />
-) : (
-    <p className="text-sm text-muted-foreground">
-        No license document uploaded yet.
-    </p>
-)}
+                                        <DocumentLink
+                                            path={
+                                                user.driver_profile
+                                                    .license_file_path
+                                            }
+                                            label="View uploaded document"
+                                        />
+                                    ) : (
+                                        <p className="text-sm text-muted-foreground">
+                                            No license document uploaded yet.
+                                        </p>
+                                    )}
                                 </div>
 
                                 {user.driver_profile.verification_status ===

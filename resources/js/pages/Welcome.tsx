@@ -108,7 +108,9 @@ const FLEET_CARDS: LayoutGridCard[] = [
         thumbnail: '/images/fleet-suv.png',
         content: (
             <div>
-                <p className="text-xl font-bold text-foreground md:text-2xl">SUVs</p>
+                <p className="text-xl font-bold text-foreground md:text-2xl">
+                    SUVs
+                </p>
                 <p className="mt-2 max-w-lg text-sm text-muted-foreground">
                     Space for the whole crew, built for the long haul.
                 </p>
@@ -322,88 +324,90 @@ export default function Welcome() {
                     />
 
                     <div className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 items-center lg:grid-cols-2 lg:gap-12">
-                    <div className="py-12 text-center lg:py-0 lg:text-left">
-                        <div className="inline-flex animate-in items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-primary uppercase duration-700 fade-in slide-in-from-bottom-4">
-                            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
-                            Available across Ethiopia
-                        </div>
+                        <div className="py-12 text-center lg:py-0 lg:text-left">
+                            <div className="inline-flex animate-in items-center gap-2 rounded-full border border-primary/25 bg-primary/5 px-3.5 py-1.5 text-[11px] font-semibold tracking-widest text-primary uppercase duration-700 fade-in slide-in-from-bottom-4">
+                                <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-primary" />
+                                Available across Ethiopia
+                            </div>
 
-                        <h1 className="mt-6 animate-in text-4xl leading-[1.05] font-extrabold tracking-tight delay-100 duration-700 fade-in slide-in-from-bottom-4 sm:text-5xl lg:text-6xl xl:text-7xl">
-                            Rent a car,
-                            <br />
-                            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                                your way.
-                            </span>
-                        </h1>
+                            <h1 className="mt-6 animate-in text-4xl leading-[1.05] font-extrabold tracking-tight delay-100 duration-700 fade-in slide-in-from-bottom-4 sm:text-5xl lg:text-6xl xl:text-7xl">
+                                Rent a car,
+                                <br />
+                                <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                                    your way.
+                                </span>
+                            </h1>
 
-                        <p className="mx-auto mt-5 max-w-md animate-in text-base leading-relaxed text-muted-foreground delay-200 duration-700 fade-in slide-in-from-bottom-4 sm:text-lg lg:mx-0">
-                            The simplest way to rent a vehicle or earn by
-                            listing yours. Verified owners, flexible bookings,
-                            zero hassle.
-                        </p>
+                            <p className="mx-auto mt-5 max-w-md animate-in text-base leading-relaxed text-muted-foreground delay-200 duration-700 fade-in slide-in-from-bottom-4 sm:text-lg lg:mx-0">
+                                The simplest way to rent a vehicle or earn by
+                                listing yours. Verified owners, flexible
+                                bookings, zero hassle.
+                            </p>
 
-                        <div className="mt-8 flex animate-in flex-col items-center gap-3 delay-300 duration-700 fade-in slide-in-from-bottom-4 sm:flex-row lg:justify-start">
-                            {dashboardUrl ? (
-                                <Link
-                                    href={dashboardUrl}
-                                    className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
-                                >
-                                    Go to Dashboard{' '}
-                                    <ArrowRight className="ml-1.5 inline h-4 w-4" />
-                                </Link>
-                            ) : (
-                                <>
+                            <div className="mt-8 flex animate-in flex-col items-center gap-3 delay-300 duration-700 fade-in slide-in-from-bottom-4 sm:flex-row lg:justify-start">
+                                {dashboardUrl ? (
                                     <Link
-                                        href={register()}
+                                        href={dashboardUrl}
                                         className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
                                     >
-                                        Start for free{' '}
+                                        Go to Dashboard{' '}
                                         <ArrowRight className="ml-1.5 inline h-4 w-4" />
                                     </Link>
-                                    <Link
-                                        href={login()}
-                                        className="rounded-full border border-border bg-white/60 px-7 py-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-white"
+                                ) : (
+                                    <>
+                                        <Link
+                                            href={register()}
+                                            className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
+                                        >
+                                            Start for free{' '}
+                                            <ArrowRight className="ml-1.5 inline h-4 w-4" />
+                                        </Link>
+                                        <Link
+                                            href={login()}
+                                            className="rounded-full border border-border bg-white/60 px-7 py-3 text-sm font-semibold text-foreground transition-all hover:-translate-y-0.5 hover:bg-white"
+                                        >
+                                            Log in
+                                        </Link>
+                                    </>
+                                )}
+                            </div>
+
+                            <div className="mt-8 flex animate-in flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground delay-500 duration-700 fade-in slide-in-from-bottom-4 lg:justify-start">
+                                {TRUST_POINTS.map((point) => (
+                                    <span
+                                        key={point}
+                                        className="flex items-center gap-1.5"
                                     >
-                                        Log in
-                                    </Link>
-                                </>
-                            )}
+                                        <CheckCircle className="h-4 w-4 text-primary" />
+                                        {point}
+                                    </span>
+                                ))}
+                            </div>
                         </div>
 
-                        <div className="mt-8 flex animate-in flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-muted-foreground delay-500 duration-700 fade-in slide-in-from-bottom-4 lg:justify-start">
-                            {TRUST_POINTS.map((point) => (
-                                <span
-                                    key={point}
-                                    className="flex items-center gap-1.5"
-                                >
-                                    <CheckCircle className="h-4 w-4 text-primary" />
-                                    {point}
-                                </span>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Hero car */}
-                    <div className="relative z-10 mx-auto mt-6 w-full max-w-xl lg:mt-0">
-                        <div
-                            className="pointer-events-none absolute top-1/2 left-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[110px]"
-                            style={{
-                                backgroundColor: 'rgba(255, 107, 0, 0.14)',
-                            }}
-                        />
-                        <div
-                            className="pointer-events-none absolute top-1/2 left-1/2 h-[300px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
-                            style={{ backgroundColor: 'rgba(26, 54, 93, 0.1)' }}
-                        />
-
-                        <div className="relative animate-in delay-200 duration-1000 zoom-in-95 fade-in">
-                            <img
-                                src={HERO_CAR_IMAGE}
-                                alt="Featured car"
-                                className="relative z-10 w-full animate-float drop-shadow-2xl"
+                        {/* Hero car */}
+                        <div className="relative z-10 mx-auto mt-6 w-full max-w-xl lg:mt-0">
+                            <div
+                                className="pointer-events-none absolute top-1/2 left-1/2 h-[420px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[110px]"
+                                style={{
+                                    backgroundColor: 'rgba(255, 107, 0, 0.14)',
+                                }}
                             />
+                            <div
+                                className="pointer-events-none absolute top-1/2 left-1/2 h-[300px] w-[560px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-[120px]"
+                                style={{
+                                    backgroundColor: 'rgba(26, 54, 93, 0.1)',
+                                }}
+                            />
+
+                            <div className="relative animate-in delay-200 duration-1000 zoom-in-95 fade-in">
+                                <img
+                                    src={HERO_CAR_IMAGE}
+                                    alt="Featured car"
+                                    className="relative z-10 w-full animate-float drop-shadow-2xl"
+                                />
+                            </div>
                         </div>
-                    </div>
                     </div>
                 </section>
 

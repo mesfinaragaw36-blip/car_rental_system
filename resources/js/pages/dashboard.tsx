@@ -216,51 +216,6 @@ function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
         </>
     );
 }
-function PieChart({
-    active,
-    completed,
-}: {
-    active: number;
-    completed: number;
-}) {
-    const total = active + completed;
-
-    if (total === 0) {
-        return (
-            <div className="flex h-52 items-center justify-center text-sm text-muted-foreground">
-                No booking data available
-            </div>
-        );
-    }
-
-    const activePercent = (active / total) * 100;
-
-    return (
-        <div className="flex flex-col items-center">
-            <div
-                className="h-52 w-52 rounded-full"
-                style={{
-                    background: `conic-gradient(
-                        #1a365d 0% ${activePercent}%,
-                        #ff6b00 ${activePercent}% 100%
-                    )`,
-                }}
-            />
-
-            <div className="mt-6 flex gap-6">
-                <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-primary"></span>
-                    <span className="text-sm">Active ({active})</span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-brand"></span>
-                    <span className="text-sm">Completed ({completed})</span>
-                </div>
-            </div>
-        </div>
-    );
-}
 export default function Dashboard({
     role,
     stats,
@@ -331,7 +286,9 @@ export default function Dashboard({
                                     <StatCard
                                         title="Booking Disputes"
                                         value="View"
-                                        icon={<AlertTriangle className="h-4 w-4" />}
+                                        icon={
+                                            <AlertTriangle className="h-4 w-4" />
+                                        }
                                         href={disputesIndex.url()}
                                     />
                                 </div>

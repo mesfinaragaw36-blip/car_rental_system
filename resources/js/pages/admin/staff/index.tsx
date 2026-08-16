@@ -182,13 +182,13 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                             </th>
                                             <th className="pb-3 font-medium">
                                                 Status
-                                             </th>
-                                             <th className="pb-3 font-medium">
-                                                 Branch
-                                             </th>
-                                             <th className="pb-3 text-right font-medium">
-                                                 Actions
-                                             </th>
+                                            </th>
+                                            <th className="pb-3 font-medium">
+                                                Branch
+                                            </th>
+                                            <th className="pb-3 text-right font-medium">
+                                                Actions
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -206,15 +206,17 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                                 <td className="py-3 text-muted-foreground">
                                                     {member.phone}
                                                 </td>
-                                                 <td className="py-3">
-                                                     <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-primary">
-                                                         {member.staff_role?.name ??
-                                                             'Unassigned'}
-                                                     </span>
-                                                 </td>
-                                                 <td className="py-3 text-muted-foreground">
-                                                     {member.branch?.name ?? 'N/A'}
-                                                 </td>
+                                                <td className="py-3">
+                                                    <span className="rounded-full bg-accent px-2.5 py-0.5 text-xs font-medium text-primary">
+                                                        {member.staff_role
+                                                            ?.name ??
+                                                            'Unassigned'}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3 text-muted-foreground">
+                                                    {member.branch?.name ??
+                                                        'N/A'}
+                                                </td>
                                                 <td className="py-3">
                                                     <span
                                                         className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadgeClass(member.status)}`}
@@ -239,7 +241,9 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        {can('staff.manage') && (
+                                                        {can(
+                                                            'staff.manage',
+                                                        ) && (
                                                             <>
                                                                 {member.status ===
                                                                 'active' ? (
@@ -438,12 +442,8 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                                         </option>
                                         <option value="አውቶ">አውቶ</option>
                                         <option value="ህዝብ">ህዝብ</option>
-                                        <option value="ደረቅ ጭነት">
-                                            ደረቅ ጭነት
-                                        </option>
-                                        <option value="ፈሳሽ ጭነት">
-                                            ፈሳሽ ጭነት
-                                        </option>
+                                        <option value="ደረቅ ጭነት">ደረቅ ጭነት</option>
+                                        <option value="ፈሳሽ ጭነት">ፈሳሽ ጭነት</option>
                                         <option value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
                                             ግንባታ መሣሪያዎች / ኮንስትራክሽን
                                         </option>
@@ -488,7 +488,10 @@ export default function StaffIndex({ staff, roles, locations }: Props) {
                             >
                                 <option value="">Select a branch</option>
                                 {locations.map((location) => (
-                                    <option key={location.id} value={location.id}>
+                                    <option
+                                        key={location.id}
+                                        value={location.id}
+                                    >
                                         {location.name}, {location.city}
                                     </option>
                                 ))}

@@ -152,6 +152,19 @@ class VehicleUploadTest extends TestCase
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
 
+        CarType::create([
+            'brand' => 'Toyota',
+            'model' => 'Camry Updated',
+            'year' => 2023,
+            'categories' => ['Sedan'],
+            'fuel_types' => ['Petrol'],
+            'transmissions' => ['Automatic'],
+            'engine_sizes' => ['2.0L'],
+            'seats' => [5],
+            'colors' => ['Black', 'Red'],
+            'is_active' => true,
+        ]);
+
         $car = Car::create([
             'owner_id' => $owner->id,
             'brand' => 'Toyota',

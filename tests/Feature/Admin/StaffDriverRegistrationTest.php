@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Admin;
 
+use App\Models\DriverProfile;
 use App\Models\Location;
 use App\Models\Role;
 use App\Models\User;
@@ -13,10 +14,10 @@ class StaffDriverRegistrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_create_page_exposes_driver_role_permissions(): void
+    public function test_create_page_excludes_driver_role(): void
     {
         $admin = User::factory()->admin()->create();
-        $role = Role::create([
+        $driverRole = Role::create([
             'name' => 'Driver',
             'permissions' => ['driver.access'],
         ]);
@@ -25,15 +26,14 @@ class StaffDriverRegistrationTest extends TestCase
             ->get(route('admin.staff.create'))
             ->assertInertia(fn (Assert $page) => $page
                 ->component('admin/staff/create')
-                ->has('roles', 1)
-                ->where('roles.0.id', $role->id)
-                ->where('roles.0.permissions', ['driver.access']));
+                ->has('roles', 0)
+                ->where('roles', []));
     }
 
-    public function test_admin_can_register_a_driver_as_staff(): void
+    public function test_admin_cannot_register_a_driver_as_staff(): void
     {
         $admin = User::factory()->admin()->create();
-        $role = Role::create([
+        $driverRole = Role::create([
             'name' => 'Driver',
             'permissions' => ['driver.access'],
         ]);
@@ -43,58 +43,32 @@ class StaffDriverRegistrationTest extends TestCase
             'city' => 'Addis Ababa',
         ]);
 
-        $response = $this
-            ->actingAs($admin)
+        $this->actingAs($admin)
             ->post(route('admin.staff.store'), [
                 'name' => 'Alem Driver',
                 'email' => 'alem.driver@example.com',
                 'phone' => '0911111111',
-                'staff_role_id' => $role->id,
+                'staff_role_id' => $driverRole->id,
                 'branch_id' => $location->id,
-                'license_number' => 'DL-123456',
-                'license_type' => 'Light Vehicle',
-                'experience_years' => 3,
-            ]);
+            ])
+            ->assertForbidden();
 
-        $response->assertRedirect(route('admin.staff.index'));
-        $this->assertDatabaseHas('users', [
+        $this->assertDatabaseMissing('users', [
             'email' => 'alem.driver@example.com',
-            'staff_role_id' => $role->id,
-        ]);
-        $this->assertDatabaseHas('driver_profiles', [
-            'license_number' => 'DL-123456',
-            'license_type' => 'Light Vehicle',
-            'experience_years' => 3,
-            'availability' => 'available',
-            'verification_status' => 'approved',
         ]);
     }
 
     public function test_driver_profile_page_fetches_experience_years(): void
     {
-        $admin = User::factory()->admin()->create();
-        $role = Role::create([
-            'name' => 'Driver',
-            'permissions' => ['driver.access'],
-        ]);
-        $location = Location::create([
-            'name' => 'Main Branch',
-            'address' => 'Bole Road',
-            'city' => 'Addis Ababa',
-        ]);
-
-        $this->actingAs($admin)->post(route('admin.staff.store'), [
-            'name' => 'Alem Driver',
-            'email' => 'alem.driver@example.com',
-            'phone' => '0911111111',
-            'staff_role_id' => $role->id,
-            'branch_id' => $location->id,
+        $driver = User::factory()->create(['role' => 'driver']);
+        DriverProfile::create([
+            'user_id' => $driver->id,
             'license_number' => 'DL-123456',
             'license_type' => 'Light Vehicle',
             'experience_years' => 7,
+            'location' => 'Addis Ababa',
+            'verification_status' => 'approved',
         ]);
-
-        $driver = User::where('email', 'alem.driver@example.com')->first();
 
         $this->actingAs($driver)
             ->get(route('driver.profile'))
@@ -107,29 +81,15 @@ class StaffDriverRegistrationTest extends TestCase
 
     public function test_settings_profile_page_fetches_experience_years(): void
     {
-        $admin = User::factory()->admin()->create();
-        $role = Role::create([
-            'name' => 'Driver',
-            'permissions' => ['driver.access'],
-        ]);
-        $location = Location::create([
-            'name' => 'Main Branch',
-            'address' => 'Bole Road',
-            'city' => 'Addis Ababa',
-        ]);
-
-        $this->actingAs($admin)->post(route('admin.staff.store'), [
-            'name' => 'Alem Driver',
-            'email' => 'alem.driver@example.com',
-            'phone' => '0911111111',
-            'staff_role_id' => $role->id,
-            'branch_id' => $location->id,
+        $driver = User::factory()->create(['role' => 'driver']);
+        DriverProfile::create([
+            'user_id' => $driver->id,
             'license_number' => 'DL-123456',
             'license_type' => 'Light Vehicle',
             'experience_years' => 7,
+            'location' => 'Addis Ababa',
+            'verification_status' => 'approved',
         ]);
-
-        $driver = User::where('email', 'alem.driver@example.com')->first();
 
         $this->actingAs($driver)
             ->get(route('profile.edit'))
@@ -141,25 +101,14 @@ class StaffDriverRegistrationTest extends TestCase
     public function test_admin_drivers_index_fetches_experience_years(): void
     {
         $admin = User::factory()->admin()->create();
-        $role = Role::create([
-            'name' => 'Driver',
-            'permissions' => ['driver.access'],
-        ]);
-        $location = Location::create([
-            'name' => 'Main Branch',
-            'address' => 'Bole Road',
-            'city' => 'Addis Ababa',
-        ]);
-
-        $this->actingAs($admin)->post(route('admin.staff.store'), [
-            'name' => 'Alem Driver',
-            'email' => 'alem.driver@example.com',
-            'phone' => '0911111111',
-            'staff_role_id' => $role->id,
-            'branch_id' => $location->id,
+        $driver = User::factory()->create(['role' => 'driver']);
+        DriverProfile::create([
+            'user_id' => $driver->id,
             'license_number' => 'DL-123456',
             'license_type' => 'Light Vehicle',
             'experience_years' => 7,
+            'location' => 'Addis Ababa',
+            'verification_status' => 'approved',
         ]);
 
         $this->actingAs($admin)
@@ -172,29 +121,15 @@ class StaffDriverRegistrationTest extends TestCase
 
     public function test_driver_can_update_and_refetch_experience_years(): void
     {
-        $admin = User::factory()->admin()->create();
-        $role = Role::create([
-            'name' => 'Driver',
-            'permissions' => ['driver.access'],
-        ]);
-        $location = Location::create([
-            'name' => 'Main Branch',
-            'address' => 'Bole Road',
-            'city' => 'Addis Ababa',
-        ]);
-
-        $this->actingAs($admin)->post(route('admin.staff.store'), [
-            'name' => 'Alem Driver',
-            'email' => 'alem.driver@example.com',
-            'phone' => '0911111111',
-            'staff_role_id' => $role->id,
-            'branch_id' => $location->id,
+        $driver = User::factory()->create(['role' => 'driver']);
+        DriverProfile::create([
+            'user_id' => $driver->id,
             'license_number' => 'DL-123456',
             'license_type' => 'Light Vehicle',
             'experience_years' => 7,
+            'location' => 'Addis Ababa',
+            'verification_status' => 'approved',
         ]);
-
-        $driver = User::where('email', 'alem.driver@example.com')->first();
 
         $this->actingAs($driver)->post(route('driver.profile.update'), [
             'license_number' => 'DL-123456',

@@ -99,7 +99,12 @@ interface Booking {
         description: string | null;
         images: CarImage[];
     };
-    customer: { id: number; name: string; phone: string; national_id?: string | null } | null;
+    customer: {
+        id: number;
+        name: string;
+        phone: string;
+        national_id?: string | null;
+    } | null;
     owner: { id: number; name: string; phone: string } | null;
     inspections: InspectionRecord[];
 }
@@ -301,11 +306,12 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                 )}
 
                 {status === 'failed' && (
-                <p className="w-full text-sm text-red-600">
-                    The owner and admins have been notified. The booking has been
-                    cancelled and the customer's payment has been queued for refund.
-                </p>
-            )}
+                    <p className="w-full text-sm text-red-600">
+                        The owner and admins have been notified. The booking has
+                        been cancelled and the customer's payment has been
+                        queued for refund.
+                    </p>
+                )}
             </div>
         </div>
     );
@@ -327,25 +333,25 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
     };
 
     const markNotArrived = () => {
-    if (
-        !window.confirm(
-            'Mark this car as not returned? Platform admins will be notified.',
-        )
-    ) {
-        return;
-    }
+        if (
+            !window.confirm(
+                'Mark this car as not returned? Platform admins will be notified.',
+            )
+        ) {
+            return;
+        }
 
-    setProcessing(true);
+        setProcessing(true);
 
-    router.post(
-        inspections.returnNotArrived.url({ booking: booking.id }),
-        {},
-        {
-            preserveScroll: true,
-            onFinish: () => setProcessing(false),
-        },
-    );
-};
+        router.post(
+            inspections.returnNotArrived.url({ booking: booking.id }),
+            {},
+            {
+                preserveScroll: true,
+                onFinish: () => setProcessing(false),
+            },
+        );
+    };
 
     return (
         <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
@@ -361,13 +367,9 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                             Customer car return
                             <StatusBadge
                                 label={
-                                    status === 'arrived'
-                                        ? 'arrived'
-                                        : 'pending'
+                                    status === 'arrived' ? 'arrived' : 'pending'
                                 }
-                                tone={
-                                    status === 'arrived' ? 'green' : 'yellow'
-                                }
+                                tone={status === 'arrived' ? 'green' : 'yellow'}
                             />
                             {lateDays > 0 && status === 'pending' && (
                                 <StatusBadge
@@ -393,30 +395,30 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                     </div>
                 </div>
 
-            {status === 'pending' && (
-    <div className="flex shrink-0 gap-2">
-        <Button
-            type="button"
-            size="sm"
-            disabled={processing}
-            onClick={confirmArrival}
-        >
-            <CheckCircle2 className="mr-1.5 h-4 w-4" />
-            {processing ? 'Confirming...' : 'Car Arrived'}
-        </Button>
+                {status === 'pending' && (
+                    <div className="flex shrink-0 gap-2">
+                        <Button
+                            type="button"
+                            size="sm"
+                            disabled={processing}
+                            onClick={confirmArrival}
+                        >
+                            <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                            {processing ? 'Confirming...' : 'Car Arrived'}
+                        </Button>
 
-        <Button
-            type="button"
-            size="sm"
-            variant="destructive"
-            disabled={processing}
-            onClick={markNotArrived}
-        >
-            <XCircle className="mr-1.5 h-4 w-4" />
-            {processing ? 'Marking...' : 'Car Not Returned'}
-        </Button>
-    </div>
-)}
+                        <Button
+                            type="button"
+                            size="sm"
+                            variant="destructive"
+                            disabled={processing}
+                            onClick={markNotArrived}
+                        >
+                            <XCircle className="mr-1.5 h-4 w-4" />
+                            {processing ? 'Marking...' : 'Car Not Returned'}
+                        </Button>
+                    </div>
+                )}
             </div>
         </div>
     );
@@ -512,18 +514,17 @@ function InspectionForm({
     type: 'pickup' | 'return';
     onClose?: () => void;
 }) {
-    const { data, setData, processing, errors, reset } =
-        useForm({
-            type,
-            status: 'approved',
-            mileage_reading: '',
-            fuel_level: '',
-            estimated_value: booking.car.estimated_value?.toString() ?? '',
-            damages: [{ area: '', description: '' }] as Damage[],
-            notes: '',
-            photos: [] as File[],
-            id_verified: false,
-        });
+    const { data, setData, processing, errors, reset } = useForm({
+        type,
+        status: 'approved',
+        mileage_reading: '',
+        fuel_level: '',
+        estimated_value: booking.car.estimated_value?.toString() ?? '',
+        damages: [{ area: '', description: '' }] as Damage[],
+        notes: '',
+        photos: [] as File[],
+        id_verified: false,
+    });
 
     const pickup = booking.inspections.find(
         (inspection) => inspection.type === 'pickup',
@@ -566,11 +567,11 @@ function InspectionForm({
         formData.append('fuel_level', data.fuel_level);
         formData.append('estimated_value', data.estimated_value);
         formData.append('notes', data.notes);
-        
+
         if (type === 'pickup' && data.id_verified) {
             formData.append('id_verified', '1');
         }
-        
+
         damagesToSubmit.forEach((d, i) => {
             formData.append(`damages[${i}][area]`, d.area);
             formData.append(`damages[${i}][description]`, d.description);
@@ -579,16 +580,20 @@ function InspectionForm({
             formData.append('photos[]', photo);
         });
 
-        router.post(inspections.conduct.url({ booking: booking.id }), formData, {
-            preserveScroll: true,
-            onSuccess: () => {
-                reset();
+        router.post(
+            inspections.conduct.url({ booking: booking.id }),
+            formData,
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    reset();
 
-                if (onClose) {
-onClose();
-}
+                    if (onClose) {
+                        onClose();
+                    }
+                },
             },
-        });
+        );
     };
 
     return (
@@ -789,12 +794,18 @@ onClose();
                                 <p className="mt-1 text-sm text-muted-foreground">
                                     {booking.customer ? (
                                         <>
-                                            <span className="font-medium text-slate-900">{booking.customer.name}</span>
+                                            <span className="font-medium text-slate-900">
+                                                {booking.customer.name}
+                                            </span>
                                             {booking.customer.national_id ? (
                                                 <>
                                                     {' · '}
                                                     <span className="font-mono">
-                                                        National ID: {booking.customer.national_id}
+                                                        National ID:{' '}
+                                                        {
+                                                            booking.customer
+                                                                .national_id
+                                                        }
                                                     </span>
                                                 </>
                                             ) : (
@@ -814,13 +825,24 @@ onClose();
                                 type="checkbox"
                                 id="id_verified"
                                 checked={data.id_verified}
-                                onChange={(e) => setData('id_verified', e.target.checked)}
+                                onChange={(e) =>
+                                    setData('id_verified', e.target.checked)
+                                }
                                 className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
                             />
-                            <label htmlFor="id_verified" className="flex-1 cursor-pointer text-sm text-slate-700">
-                                <span className="font-semibold">I confirm that the customer's National ID has been physically checked and matches the customer.</span>
+                            <label
+                                htmlFor="id_verified"
+                                className="flex-1 cursor-pointer text-sm text-slate-700"
+                            >
+                                <span className="font-semibold">
+                                    I confirm that the customer's National ID
+                                    has been physically checked and matches the
+                                    customer.
+                                </span>
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                    This verification is mandatory for pickup inspections and will be recorded with your staff ID and timestamp.
+                                    This verification is mandatory for pickup
+                                    inspections and will be recorded with your
+                                    staff ID and timestamp.
                                 </p>
                             </label>
                         </div>
@@ -923,22 +945,30 @@ function InspectionBadges({
                             {inspection.id_verified ? (
                                 <div className="flex items-center gap-1.5 text-sm">
                                     <Check className="h-3.5 w-3.5 text-green-600" />
-                                    <span className="font-medium text-green-700">ID Verified</span>
+                                    <span className="font-medium text-green-700">
+                                        ID Verified
+                                    </span>
                                     {inspection.id_verified_by_name && (
                                         <span className="text-muted-foreground">
-                                            · by {inspection.id_verified_by_name}
+                                            · by{' '}
+                                            {inspection.id_verified_by_name}
                                         </span>
                                     )}
                                     {inspection.id_verified_at && (
                                         <span className="text-muted-foreground">
-                                            · {new Date(inspection.id_verified_at).toLocaleString()}
+                                            ·{' '}
+                                            {new Date(
+                                                inspection.id_verified_at,
+                                            ).toLocaleString()}
                                         </span>
                                     )}
                                 </div>
                             ) : (
                                 <div className="flex items-center gap-1.5 text-sm">
                                     <X className="h-3.5 w-3.5 text-amber-600" />
-                                    <span className="font-medium text-amber-700">ID Verification Pending</span>
+                                    <span className="font-medium text-amber-700">
+                                        ID Verification Pending
+                                    </span>
                                 </div>
                             )}
                         </div>
@@ -984,7 +1014,6 @@ function InspectionBadges({
         </div>
     );
 }
-
 
 function CompletionCard({ booking }: { booking: Booking }) {
     const [repairCost, setRepairCost] = useState('');
@@ -1145,10 +1174,12 @@ function BookingDetail({
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    {car.year} · {car.category} · {car.plate_number}
+                                    {car.year} · {car.category} ·{' '}
+                                    {car.plate_number}
                                 </p>
                                 <p className="mt-1 text-2xl font-bold">
-                                    ETB {Number(car.daily_price).toLocaleString()}
+                                    ETB{' '}
+                                    {Number(car.daily_price).toLocaleString()}
                                     <span className="text-sm font-normal text-muted-foreground">
                                         {' '}
                                         / day
@@ -1160,7 +1191,10 @@ function BookingDetail({
                                     Booking total
                                 </p>
                                 <p className="text-lg font-bold">
-                                    ETB {Number(booking.total_price).toLocaleString()}
+                                    ETB{' '}
+                                    {Number(
+                                        booking.total_price,
+                                    ).toLocaleString()}
                                 </p>
                             </div>
                         </div>
@@ -1471,9 +1505,7 @@ export default function Inspections({
                                 <Button
                                     key={item.key}
                                     variant={
-                                        tab === item.key
-                                            ? 'default'
-                                            : 'outline'
+                                        tab === item.key ? 'default' : 'outline'
                                     }
                                     onClick={() => {
                                         setTab(item.key);

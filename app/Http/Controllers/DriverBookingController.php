@@ -3,9 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\BookingDriver;
+use App\Services\DriverMatchingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use App\Services\DriverMatchingService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,41 +31,33 @@ class DriverBookingController extends Controller
 
                     'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
 
-                    'response_deadline' =>
-                        $assignment->response_deadline?->toDateTimeString(),
+                    'response_deadline' => $assignment->response_deadline?->toDateTimeString(),
 
-                    'responded_at' =>
-                        $assignment->responded_at?->toDateTimeString(),
+                    'responded_at' => $assignment->responded_at?->toDateTimeString(),
 
                     'rejection_reason' => $assignment->rejection_reason,
 
                     'booking' => [
                         'id' => $assignment->booking?->id,
 
-                        'pickup_date' =>
-                            $assignment->booking?->pickup_date?->toDateString(),
+                        'pickup_date' => $assignment->booking?->pickup_date?->toDateString(),
 
-                        'return_date' =>
-                            $assignment->booking?->return_date?->toDateString(),
+                        'return_date' => $assignment->booking?->return_date?->toDateString(),
 
-                        'pickup_location' =>
-                            $assignment->booking?->pickup_location,
+                        'pickup_location' => $assignment->booking?->pickup_location,
 
-                        'return_location' =>
-                            $assignment->booking?->return_location,
+                        'return_location' => $assignment->booking?->return_location,
                     ],
 
                     'car' => [
                         'brand' => $assignment->booking?->car?->brand,
                         'model' => $assignment->booking?->car?->model,
                         'year' => $assignment->booking?->car?->year,
-                        'plate_number' =>
-                            $assignment->booking?->car?->plate_number,
+                        'plate_number' => $assignment->booking?->car?->plate_number,
                     ],
 
                     'customer' => [
-                        'name' =>
-                            $assignment->booking?->customer?->name,
+                        'name' => $assignment->booking?->customer?->name,
                     ],
                 ];
             });
@@ -119,58 +111,56 @@ class DriverBookingController extends Controller
     /**
      * Reject a driver assignment.
      */
+    public function reject(
+        Request $request,
+        BookingDriver $assignment,
+        DriverMatchingService $matchingService
+    ): RedirectResponse {
+        abort_unless(
+            $assignment->driver_id === auth()->id(),
+            403
+        );
 
+        if (
+            $assignment->status !== BookingDriver::STATUS_ASSIGNED
+        ) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'This assignment is no longer available.',
+            ]);
+        }
 
-public function reject(
-    Request $request,
-    BookingDriver $assignment,
-    DriverMatchingService $matchingService
-): RedirectResponse {
-    abort_unless(
-        $assignment->driver_id === auth()->id(),
-        403
-    );
+        if (
+            $assignment->response_deadline
+            && now()->greaterThan($assignment->response_deadline)
+        ) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'The response deadline for this assignment has passed.',
+            ]);
+        }
 
-    if (
-        $assignment->status !== BookingDriver::STATUS_ASSIGNED
-    ) {
+        $validated = $request->validate([
+            'rejection_reason' => [
+                'required',
+                'string',
+                'max:1000',
+            ],
+        ]);
+
+        $assignment->update([
+            'status' => BookingDriver::STATUS_REJECTED,
+            'responded_at' => now(),
+            'rejection_reason' => $validated['rejection_reason'],
+        ]);
+
+        $matchingService->reassign($assignment->booking);
+
         return back()->with('toast', [
-            'type' => 'error',
-            'message' => 'This assignment is no longer available.',
+            'type' => 'success',
+            'message' => 'Assignment rejected. The admin will be notified.',
         ]);
     }
-
-    if (
-        $assignment->response_deadline
-        && now()->greaterThan($assignment->response_deadline)
-    ) {
-        return back()->with('toast', [
-            'type' => 'error',
-            'message' => 'The response deadline for this assignment has passed.',
-        ]);
-    }
-
-    $validated = $request->validate([
-        'rejection_reason' => [
-            'required',
-            'string',
-            'max:1000',
-        ],
-    ]);
-
-    $assignment->update([
-        'status' => BookingDriver::STATUS_REJECTED,
-        'responded_at' => now(),
-        'rejection_reason' => $validated['rejection_reason'],
-    ]);
-
-    $matchingService->reassign($assignment->booking);
-
-    return back()->with('toast', [
-        'type' => 'success',
-        'message' => 'Assignment rejected. The admin will be notified.',
-    ]);
-}
 
     /**
      * Show completed and rejected assignment history
@@ -195,48 +185,36 @@ public function reject(
                     'id' => $assignment->id,
                     'status' => $assignment->status,
 
-                    'assigned_at' =>
-                        $assignment->assigned_at?->toDateTimeString(),
+                    'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
 
-                    'responded_at' =>
-                        $assignment->responded_at?->toDateTimeString(),
+                    'responded_at' => $assignment->responded_at?->toDateTimeString(),
 
-                    'rejection_reason' =>
-                        $assignment->rejection_reason,
+                    'rejection_reason' => $assignment->rejection_reason,
 
                     'booking' => [
                         'id' => $assignment->booking?->id,
 
-                        'pickup_date' =>
-                            $assignment->booking?->pickup_date?->toDateString(),
+                        'pickup_date' => $assignment->booking?->pickup_date?->toDateString(),
 
-                        'return_date' =>
-                            $assignment->booking?->return_date?->toDateString(),
+                        'return_date' => $assignment->booking?->return_date?->toDateString(),
 
-                        'pickup_location' =>
-                            $assignment->booking?->pickup_location,
+                        'pickup_location' => $assignment->booking?->pickup_location,
 
-                        'return_location' =>
-                            $assignment->booking?->return_location,
+                        'return_location' => $assignment->booking?->return_location,
                     ],
 
                     'car' => [
-                        'brand' =>
-                            $assignment->booking?->car?->brand,
+                        'brand' => $assignment->booking?->car?->brand,
 
-                        'model' =>
-                            $assignment->booking?->car?->model,
+                        'model' => $assignment->booking?->car?->model,
 
-                        'year' =>
-                            $assignment->booking?->car?->year,
+                        'year' => $assignment->booking?->car?->year,
 
-                        'plate_number' =>
-                            $assignment->booking?->car?->plate_number,
+                        'plate_number' => $assignment->booking?->car?->plate_number,
                     ],
 
                     'customer' => [
-                        'name' =>
-                            $assignment->booking?->customer?->name,
+                        'name' => $assignment->booking?->customer?->name,
                     ],
                 ];
             });
@@ -265,17 +243,13 @@ public function reject(
                     'id' => $assignment->id,
                     'status' => $assignment->status,
 
-                    'assigned_at' =>
-                        $assignment->assigned_at?->toDateTimeString(),
+                    'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
 
-                    'response_deadline' =>
-                        $assignment->response_deadline?->toDateTimeString(),
+                    'response_deadline' => $assignment->response_deadline?->toDateTimeString(),
 
-                    'responded_at' =>
-                        $assignment->responded_at?->toDateTimeString(),
+                    'responded_at' => $assignment->responded_at?->toDateTimeString(),
 
-                    'rejection_reason' =>
-                        $assignment->rejection_reason,
+                    'rejection_reason' => $assignment->rejection_reason,
 
                     'driver' => $assignment->driver
                         ? [
@@ -295,33 +269,25 @@ public function reject(
                     'booking' => [
                         'id' => $assignment->booking?->id,
 
-                        'pickup_date' =>
-                            $assignment->booking?->pickup_date?->toDateString(),
+                        'pickup_date' => $assignment->booking?->pickup_date?->toDateString(),
 
-                        'return_date' =>
-                            $assignment->booking?->return_date?->toDateString(),
+                        'return_date' => $assignment->booking?->return_date?->toDateString(),
 
-                        'pickup_location' =>
-                            $assignment->booking?->pickup_location,
+                        'pickup_location' => $assignment->booking?->pickup_location,
 
-                        'return_location' =>
-                            $assignment->booking?->return_location,
+                        'return_location' => $assignment->booking?->return_location,
                     ],
 
                     'car' => [
-                        'brand' =>
-                            $assignment->booking?->car?->brand,
+                        'brand' => $assignment->booking?->car?->brand,
 
-                        'model' =>
-                            $assignment->booking?->car?->model,
+                        'model' => $assignment->booking?->car?->model,
 
-                        'plate_number' =>
-                            $assignment->booking?->car?->plate_number,
+                        'plate_number' => $assignment->booking?->car?->plate_number,
                     ],
 
                     'customer' => [
-                        'name' =>
-                            $assignment->booking?->customer?->name,
+                        'name' => $assignment->booking?->customer?->name,
                     ],
                 ];
             });

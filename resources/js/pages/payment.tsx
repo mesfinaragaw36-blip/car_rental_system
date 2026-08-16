@@ -11,12 +11,7 @@ import { useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -75,10 +70,7 @@ const METHODS = [
     },
 ] as const;
 
-const COMPANY_ACCOUNTS: Record<
-    string,
-    { label: string; value: string }[]
-> = {
+const COMPANY_ACCOUNTS: Record<string, { label: string; value: string }[]> = {
     'Bank Transfer': [
         {
             label: 'Bank',
@@ -130,10 +122,7 @@ const formatETB = (value: number) =>
         maximumFractionDigits: 2,
     }).format(value);
 
-export default function PaymentForm({
-    booking,
-    mode = 'deposit',
-}: Props) {
+export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
     const { props: p } = usePage<{
         toast?: {
             type: string;
@@ -151,9 +140,7 @@ export default function PaymentForm({
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
 
-    const selectedMethod = METHODS.find(
-        (item) => item.value === method,
-    );
+    const selectedMethod = METHODS.find((item) => item.value === method);
 
     const showRefInput = selectedMethod?.needsRef ?? false;
 
@@ -178,6 +165,7 @@ export default function PaymentForm({
 
         if (!method) {
             setError('Please choose a payment method.');
+
             return;
         }
 
@@ -185,6 +173,7 @@ export default function PaymentForm({
             setError(
                 'Transaction reference is required for this payment method.',
             );
+
             return;
         }
 
@@ -216,8 +205,7 @@ export default function PaymentForm({
                         .join(' ');
 
                     setError(
-                        messages ||
-                            'Something went wrong. Please try again.',
+                        messages || 'Something went wrong. Please try again.',
                     );
                 },
 
@@ -234,7 +222,7 @@ export default function PaymentForm({
         ? totalDueNow
         : isPickup
           ? totalDueNow
-          : booking.deposit_amount ?? 0;
+          : (booking.deposit_amount ?? 0);
 
     const paymentDescription = isExtraCharge
         ? 'Outstanding balance'
@@ -317,8 +305,7 @@ export default function PaymentForm({
                             </span>
 
                             <span className="text-right">
-                                {booking.pickup_date} →{' '}
-                                {booking.return_date}
+                                {booking.pickup_date} → {booking.return_date}
                             </span>
                         </div>
 
@@ -456,10 +443,7 @@ export default function PaymentForm({
                     </CardHeader>
 
                     <CardContent>
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-6"
-                        >
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Methods */}
                             <div>
                                 <Label className="mb-3 block">
@@ -472,9 +456,7 @@ export default function PaymentForm({
                                             type="button"
                                             key={item.value}
                                             onClick={() =>
-                                                handleMethodChange(
-                                                    item.value,
-                                                )
+                                                handleMethodChange(item.value)
                                             }
                                             disabled={processing}
                                             className={`rounded-xl border p-5 text-left transition-all duration-200 ${
@@ -560,30 +542,30 @@ export default function PaymentForm({
                                             </p>
 
                                             <div className="mt-2 space-y-2">
-                                                {COMPANY_ACCOUNTS[
-                                                    method
-                                                ].map((row) => (
-                                                    <div
-                                                        key={row.label}
-                                                        className="flex justify-between gap-4 text-sm"
-                                                    >
-                                                        <span className="text-muted-foreground">
-                                                            {row.label}
-                                                        </span>
+                                                {COMPANY_ACCOUNTS[method].map(
+                                                    (row) => (
+                                                        <div
+                                                            key={row.label}
+                                                            className="flex justify-between gap-4 text-sm"
+                                                        >
+                                                            <span className="text-muted-foreground">
+                                                                {row.label}
+                                                            </span>
 
-                                                        <span className="text-right font-semibold">
-                                                            {row.value}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                            <span className="text-right font-semibold">
+                                                                {row.value}
+                                                            </span>
+                                                        </div>
+                                                    ),
+                                                )}
                                             </div>
 
                                             <p className="mt-3 text-xs text-primary">
-                                                Complete the payment first,
-                                                then enter the transaction
-                                                reference below. The payment
-                                                will remain pending until an
-                                                administrator verifies it.
+                                                Complete the payment first, then
+                                                enter the transaction reference
+                                                below. The payment will remain
+                                                pending until an administrator
+                                                verifies it.
                                             </p>
                                         </div>
                                     )}
@@ -592,10 +574,8 @@ export default function PaymentForm({
                                     <div className="space-y-2">
                                         <Label className="flex items-center gap-2 text-sm font-bold">
                                             <Hash className="h-4 w-4 text-primary" />
-
                                             Transaction Reference
-
-                                            <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold uppercase text-white">
+                                            <span className="rounded bg-primary px-1.5 py-0.5 text-[10px] font-semibold text-white uppercase">
                                                 Required
                                             </span>
                                         </Label>
@@ -654,9 +634,8 @@ export default function PaymentForm({
                             <p className="text-center text-xs text-muted-foreground">
                                 Your payment will be marked as{' '}
                                 <strong>Pending</strong> after submission and
-                                will only become{' '}
-                                <strong>Paid</strong> after administrator
-                                confirmation.
+                                will only become <strong>Paid</strong> after
+                                administrator confirmation.
                             </p>
                         </form>
                     </CardContent>

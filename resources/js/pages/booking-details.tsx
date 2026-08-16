@@ -82,11 +82,11 @@ interface BookingDetails {
         plate_number: string;
         estimated_value?: string | number | null;
     } | null;
-    
-        security_deposit: number;
-        late_fee_deduction: number;
-        extra_charge: number;
-        additional_charge: number;
+
+    security_deposit: number;
+    late_fee_deduction: number;
+    extra_charge: number;
+    additional_charge: number;
     car_delivery_status?: 'pending' | 'arrived' | 'failed';
     car_delivery_confirmed_at?: string | null;
     car_delivery_due_date?: string;
@@ -172,9 +172,9 @@ export default function BookingDetails({ booking, role }: Props) {
     const [selectedReviewTarget, setSelectedReviewTarget] =
         useState<ReviewTarget | null>(null);
 
-    const [expandedInspection, setExpandedInspection] = useState<
-        number | null
-    >(null);
+    const [expandedInspection, setExpandedInspection] = useState<number | null>(
+        null,
+    );
 
     const handleAction = (action: string) => {
         const routeMap: Record<string, any> = {
@@ -189,7 +189,6 @@ export default function BookingDetails({ booking, role }: Props) {
             { preserveScroll: true },
         );
     };
-
 
     const handleCancelClick = () => {
         const depositPaid = booking.status !== 'confirmed';
@@ -209,12 +208,14 @@ export default function BookingDetails({ booking, role }: Props) {
             );
 
             if (!confirmed) {
-return;
-}
+                return;
+            }
         } else {
-            if (!window.confirm('Are you sure you want to cancel this booking?')) {
-return;
-}
+            if (
+                !window.confirm('Are you sure you want to cancel this booking?')
+            ) {
+                return;
+            }
         }
 
         handleAction('cancel');
@@ -285,7 +286,8 @@ return;
                             {booking.car !== null ? (
                                 <>
                                     <p className="text-lg font-semibold">
-                                        {booking.car.brand} {booking.car.model} ({booking.car.year})
+                                        {booking.car.brand} {booking.car.model}{' '}
+                                        ({booking.car.year})
                                     </p>
                                     <p className="text-muted-foreground">
                                         Plate: {booking.car.plate_number}
@@ -293,12 +295,16 @@ return;
                                     {booking.car.estimated_value ? (
                                         <p className="text-muted-foreground">
                                             Estimated value: ETB{' '}
-                                            {Number(booking.car.estimated_value).toLocaleString()}
+                                            {Number(
+                                                booking.car.estimated_value,
+                                            ).toLocaleString()}
                                         </p>
                                     ) : null}
                                 </>
                             ) : (
-                                <p className="text-muted-foreground">Vehicle details unavailable</p>
+                                <p className="text-muted-foreground">
+                                    Vehicle details unavailable
+                                </p>
                             )}
                             {booking.car_delivery_status && (
                                 <div className="mt-2 space-y-1 border-t pt-2">
@@ -408,7 +414,7 @@ return;
                         </CardContent>
                     </Card>
 
-                                        {booking.late_days != null && booking.late_days > 0 && (
+                    {booking.late_days != null && booking.late_days > 0 && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -433,13 +439,12 @@ return;
                                     </span>
                                     <span className="font-semibold">
                                         ETB{' '}
-                                        {Number(booking.late_fee).toLocaleString(
-                                            'en-US',
-                                            {
-                                                minimumFractionDigits: 2,
-                                                maximumFractionDigits: 2,
-                                            },
-                                        )}
+                                        {Number(
+                                            booking.late_fee,
+                                        ).toLocaleString('en-US', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })}
                                     </span>
                                 </div>
 
@@ -473,36 +478,39 @@ return;
                                     </span>
                                 </div>
 
-                               {booking.extra_charge > 0 && (
-                                            <>
-                                                <div className="flex justify-between">
-                                                    <span className="text-muted-foreground">
-                                                        Additional charge
-                                                    </span>
-                                                    <span className="font-semibold text-destructive">
-                                                        ETB{' '}
-                                                        {Number(booking.extra_charge).toLocaleString('en-US', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </span>
-                                                </div>
+                                {booking.extra_charge > 0 && (
+                                    <>
+                                        <div className="flex justify-between">
+                                            <span className="text-muted-foreground">
+                                                Additional charge
+                                            </span>
+                                            <span className="font-semibold text-destructive">
+                                                ETB{' '}
+                                                {Number(
+                                                    booking.extra_charge,
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
 
-                                                <div className="flex justify-between border-t pt-2">
-                                                    <span className="font-semibold">
-                                                        Remaining Amount Due
-                                                    </span>
-                                                    <span className="font-bold text-destructive">
-                                                        ETB{' '}
-                                                        {Number(booking.extra_charge).toLocaleString('en-US', {
-                                                            minimumFractionDigits: 2,
-                                                            maximumFractionDigits: 2,
-                                                        })}
-                                                    </span>
-                                                </div>
-                                            </>
-                                        )}
-                                
+                                        <div className="flex justify-between border-t pt-2">
+                                            <span className="font-semibold">
+                                                Remaining Amount Due
+                                            </span>
+                                            <span className="font-bold text-destructive">
+                                                ETB{' '}
+                                                {Number(
+                                                    booking.extra_charge,
+                                                ).toLocaleString('en-US', {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
+                                            </span>
+                                        </div>
+                                    </>
+                                )}
 
                                 {booking.extra_charge === 0 &&
                                     booking.late_fee_deduction <
@@ -719,32 +727,38 @@ return;
                             )}
 
                             {(booking.late_days ?? 0) > 0 && (
-                                    <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <h3 className="text-sm font-semibold text-amber-900">
-                                                    Late Return Fee
-                                                </h3>
-                                                <p className="mt-1 text-sm text-amber-700">
-                                                    The vehicle was returned {booking.late_days} day
-                                                    {booking.late_days === 1 ? '' : 's'} late.
-                                                </p>
-                                            </div>
+                                <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-5">
+                                    <div className="flex items-center justify-between">
+                                        <div>
+                                            <h3 className="text-sm font-semibold text-amber-900">
+                                                Late Return Fee
+                                            </h3>
+                                            <p className="mt-1 text-sm text-amber-700">
+                                                The vehicle was returned{' '}
+                                                {booking.late_days} day
+                                                {booking.late_days === 1
+                                                    ? ''
+                                                    : 's'}{' '}
+                                                late.
+                                            </p>
+                                        </div>
 
-                                            <div className="text-right">
-                                                <p className="text-xs font-medium uppercase tracking-wide text-amber-600">
-                                                    Fee Charged
-                                                </p>
-                                                <p className="mt-1 text-xl font-bold text-amber-900">
-                                                    ETB {Number(booking.late_fee ?? 0).toLocaleString()}
-                                                </p>
-                                            </div>
+                                        <div className="text-right">
+                                            <p className="text-xs font-medium tracking-wide text-amber-600 uppercase">
+                                                Fee Charged
+                                            </p>
+                                            <p className="mt-1 text-xl font-bold text-amber-900">
+                                                ETB{' '}
+                                                {Number(
+                                                    booking.late_fee ?? 0,
+                                                ).toLocaleString()}
+                                            </p>
                                         </div>
                                     </div>
-                                )}
+                                </div>
+                            )}
 
                             {booking.refunds && booking.refunds.length > 0 && (
-                        
                                 <div className="border-t pt-2">
                                     <p className="font-semibold text-green-700">
                                         Refunds
@@ -933,15 +947,13 @@ return;
                                                 inspection.damages.length >
                                                     0 && (
                                                     <div>
-                                                        <p className="text-xs font-semibold uppercase tracking-wide text-red-600">
+                                                        <p className="text-xs font-semibold tracking-wide text-red-600 uppercase">
                                                             Damages
                                                         </p>
                                                         <ul className="mt-1 list-inside list-disc text-sm text-red-600">
                                                             {inspection.damages.map(
                                                                 (damage, i) => (
-                                                                    <li
-                                                                        key={i}
-                                                                    >
+                                                                    <li key={i}>
                                                                         <span className="font-medium">
                                                                             {
                                                                                 damage.area
@@ -959,7 +971,7 @@ return;
                                                 )}
                                             {inspection.notes && (
                                                 <div>
-                                                    <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                    <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                                         Notes
                                                     </p>
                                                     <p className="mt-1 text-sm text-muted-foreground">
@@ -971,7 +983,7 @@ return;
                                                 inspection.photos.length >
                                                     0 && (
                                                     <div>
-                                                        <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                                                        <p className="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
                                                             Evidence Photos
                                                         </p>
                                                         <div className="mt-2 flex flex-wrap gap-2">
@@ -1221,7 +1233,9 @@ return;
                                 </Button>
                             </div>
                         )}
-                    {['confirmed', 'deposit_paid', 'paid'].includes(booking.status) &&
+                    {['confirmed', 'deposit_paid', 'paid'].includes(
+                        booking.status,
+                    ) &&
                         role === 'customer' && (
                             <Button
                                 variant="destructive"

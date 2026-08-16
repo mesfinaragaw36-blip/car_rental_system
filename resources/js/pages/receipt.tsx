@@ -91,12 +91,20 @@ function Line({ label, value }: { label: string; value: string }) {
     return (
         <div className="flex items-baseline justify-between gap-4">
             <dt className="text-sm text-muted-foreground">{label}</dt>
-            <dd className="text-sm font-semibold tabular-nums text-foreground">{value}</dd>
+            <dd className="text-sm font-semibold text-foreground tabular-nums">
+                {value}
+            </dd>
         </div>
     );
 }
 
-export default function Receipt({ payment, booking, customer, car, refunds }: Props) {
+export default function Receipt({
+    payment,
+    booking,
+    customer,
+    car,
+    refunds,
+}: Props) {
     const { name } = usePage().props as { name: string };
 
     return (
@@ -107,14 +115,16 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                 <div className="w-full max-w-2xl print:max-w-none">
                     <div className="overflow-hidden rounded-2xl border bg-card shadow-sm print:rounded-none print:border-0 print:shadow-none">
                         {/* Header */}
-                        <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/80 px-6 pb-7 pt-9 text-center text-primary-foreground print:bg-white print:text-foreground">
+                        <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/80 px-6 pt-9 pb-7 text-center text-primary-foreground print:bg-white print:text-foreground">
                             <img
                                 src="/images/logo.png"
                                 alt={name}
                                 className="mx-auto mb-3 h-16 w-16 rounded-full border-4 border-white/40 bg-white object-cover print:border-slate-200"
                             />
-                            <h1 className="text-2xl font-bold tracking-tight">{name}</h1>
-                            <p className="mt-1 text-xs font-semibold uppercase tracking-[0.25em] text-primary-foreground/80 print:text-slate-500">
+                            <h1 className="text-2xl font-bold tracking-tight">
+                                {name}
+                            </h1>
+                            <p className="mt-1 text-xs font-semibold tracking-[0.25em] text-primary-foreground/80 uppercase print:text-slate-500">
                                 Official Payment Receipt
                             </p>
 
@@ -130,32 +140,38 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                         {/* Meta row */}
                         <div className="grid grid-cols-2 gap-x-4 gap-y-6 border-b border-dashed px-6 py-6 text-center sm:grid-cols-4">
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     Booking Ref
                                 </p>
-                                <p className="mt-1 text-sm font-semibold">#{booking.id}</p>
+                                <p className="mt-1 text-sm font-semibold">
+                                    #{booking.id}
+                                </p>
                             </div>
 
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     Payment Type
                                 </p>
-                                <p className="mt-1 text-sm font-semibold">{payment.type_label}</p>
+                                <p className="mt-1 text-sm font-semibold">
+                                    {payment.type_label}
+                                </p>
                             </div>
 
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     Date Issued
                                 </p>
                                 <p className="mt-1 text-sm font-semibold">
                                     {payment.paid_at
-                                        ? new Date(payment.paid_at).toLocaleDateString()
+                                        ? new Date(
+                                              payment.paid_at,
+                                          ).toLocaleDateString()
                                         : 'N/A'}
                                 </p>
                             </div>
 
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                                <p className="text-xs font-medium tracking-wide text-muted-foreground uppercase">
                                     Status
                                 </p>
                                 <span
@@ -171,7 +187,7 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                             <div>
                                 <div className="mb-2 flex items-center justify-center gap-2 text-muted-foreground">
                                     <Car className="h-4 w-4" />
-                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                    <h2 className="text-sm font-semibold tracking-wide uppercase">
                                         Vehicle
                                     </h2>
                                 </div>
@@ -191,44 +207,56 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                             <div>
                                 <div className="mb-2 flex items-center justify-center gap-2 text-muted-foreground">
                                     <CalendarDays className="h-4 w-4" />
-                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                    <h2 className="text-sm font-semibold tracking-wide uppercase">
                                         Rental Period
                                     </h2>
                                 </div>
 
                                 <p className="text-sm font-semibold text-foreground">
-                                    {booking.pickup_date} → {booking.return_date}
+                                    {booking.pickup_date} →{' '}
+                                    {booking.return_date}
                                 </p>
 
                                 <p className="mt-1 text-sm text-muted-foreground">
-                                    {booking.pickup_location} → {booking.return_location}
+                                    {booking.pickup_location} →{' '}
+                                    {booking.return_location}
                                 </p>
                             </div>
                         </div>
 
                         {/* Customer */}
                         <div className="border-b border-dashed px-6 py-6 text-center">
-                            <h2 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                            <h2 className="mb-3 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                                 Billed To
                             </h2>
 
                             {customer ? (
                                 <div className="grid gap-2 text-sm sm:grid-cols-3">
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Name</p>
-                                        <p className="font-semibold">{customer.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Name
+                                        </p>
+                                        <p className="font-semibold">
+                                            {customer.name}
+                                        </p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Email</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Email
+                                        </p>
                                         <p>{customer.email}</p>
                                     </div>
                                     <div>
-                                        <p className="text-xs text-muted-foreground">Phone</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            Phone
+                                        </p>
                                         <p>{customer.phone}</p>
                                     </div>
                                 </div>
                             ) : (
-                                <p className="text-sm text-muted-foreground">N/A</p>
+                                <p className="text-sm text-muted-foreground">
+                                    N/A
+                                </p>
                             )}
                         </div>
 
@@ -236,7 +264,7 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                         <div className="border-b border-dashed px-6 py-6">
                             <div className="mb-5 flex items-center justify-center gap-2 text-muted-foreground">
                                 <Banknote className="h-4 w-4" />
-                                <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                <h2 className="text-sm font-semibold tracking-wide uppercase">
                                     Cost Breakdown
                                 </h2>
                             </div>
@@ -246,11 +274,18 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                                     label={`Daily Price (× ${booking.days} day${booking.days === 1 ? '' : 's'})`}
                                     value={`ETB ${booking.daily_rate}`}
                                 />
-                                <Line label="Rental Subtotal" value={`ETB ${booking.subtotal}`} />
+                                <Line
+                                    label="Rental Subtotal"
+                                    value={`ETB ${booking.subtotal}`}
+                                />
 
-                                {booking.need_driver && Number(booking.driver_fee) > 0 && (
-                                    <Line label="Driver Fee" value={`ETB ${booking.driver_fee}`} />
-                                )}
+                                {booking.need_driver &&
+                                    Number(booking.driver_fee) > 0 && (
+                                        <Line
+                                            label="Driver Fee"
+                                            value={`ETB ${booking.driver_fee}`}
+                                        />
+                                    )}
 
                                 <div className="flex items-baseline justify-between gap-4 rounded-lg bg-muted/60 px-4 py-2.5">
                                     <dt className="font-semibold text-foreground">
@@ -295,20 +330,22 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
 
                         {/* Payment details */}
                         <div className="px-6 py-6 text-center">
-                            <h2 className="mb-4 text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                            <h2 className="mb-4 text-sm font-semibold tracking-wide text-muted-foreground uppercase">
                                 Payment Details
                             </h2>
 
                             <div className="mx-auto grid w-full max-w-md gap-4 text-sm sm:grid-cols-2">
                                 <div>
-                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                    <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                         Method
                                     </p>
-                                    <p className="mt-0.5 font-medium">{payment.payment_method}</p>
+                                    <p className="mt-0.5 font-medium">
+                                        {payment.payment_method}
+                                    </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                    <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                         Reference
                                     </p>
                                     <p className="mt-0.5 font-medium">
@@ -317,18 +354,20 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                                 </div>
 
                                 <div>
-                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                    <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                         Paid At
                                     </p>
                                     <p className="mt-0.5 font-medium">
                                         {payment.paid_at
-                                            ? new Date(payment.paid_at).toLocaleString()
+                                            ? new Date(
+                                                  payment.paid_at,
+                                              ).toLocaleString()
                                             : 'N/A'}
                                     </p>
                                 </div>
 
                                 <div>
-                                    <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                                    <p className="text-xs tracking-wide text-muted-foreground uppercase">
                                         Amount Paid
                                     </p>
                                     <p className="mt-0.5 text-base font-bold tabular-nums">
@@ -343,7 +382,7 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                             <div className="border-t border-dashed px-6 py-6 text-center">
                                 <div className="mb-4 flex items-center justify-center gap-2 text-muted-foreground">
                                     <RefreshCcw className="h-4 w-4" />
-                                    <h2 className="text-sm font-semibold uppercase tracking-wide">
+                                    <h2 className="text-sm font-semibold tracking-wide uppercase">
                                         Refunds
                                     </h2>
                                 </div>
@@ -370,7 +409,8 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                                                 <span
                                                     className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${REFUND_STYLES[refund.status] ?? 'border-slate-200 bg-slate-50 text-slate-600'}`}
                                                 >
-                                                    {refund.status === 'processed'
+                                                    {refund.status ===
+                                                    'processed'
                                                         ? 'Refunded'
                                                         : 'Pending'}
                                                 </span>
@@ -383,7 +423,10 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
 
                         {/* Footer */}
                         <div className="border-t border-dashed px-6 py-6 text-center">
-                            <Button onClick={() => window.print()} className="print:hidden">
+                            <Button
+                                onClick={() => window.print()}
+                                className="print:hidden"
+                            >
                                 <Printer className="mr-2 h-4 w-4" />
                                 Print Receipt
                             </Button>
@@ -393,8 +436,8 @@ export default function Receipt({ payment, booking, customer, car, refunds }: Pr
                             </p>
 
                             <p className="mt-1 text-xs text-muted-foreground/70">
-                                This receipt was issued for booking #{booking.id}. Keep it for
-                                your records.
+                                This receipt was issued for booking #
+                                {booking.id}. Keep it for your records.
                             </p>
                         </div>
                     </div>

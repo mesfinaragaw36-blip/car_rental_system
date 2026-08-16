@@ -15,7 +15,7 @@ return new class extends Migration
                 ->constrained('users')
                 ->cascadeOnUpdate()
                 ->restrictOnDelete();
-           $table->string('license_number', 100)->nullable();
+            $table->string('license_number', 100)->nullable();
             $table->integer('experience_years')->default(0);
             $table->enum('availability', ['available', 'unavailable'])->default('available');
             $table->enum('verification_status', ['pending', 'approved', 'rejected'])->default('pending');

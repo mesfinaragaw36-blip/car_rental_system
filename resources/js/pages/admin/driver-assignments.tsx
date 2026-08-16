@@ -1,18 +1,7 @@
 import { Head } from '@inertiajs/react';
-import {
-    Car,
-    CheckCircle2,
-    Clock3,
-    ListChecks,
-    XCircle,
-} from 'lucide-react';
+import { Car, CheckCircle2, Clock3, ListChecks, XCircle } from 'lucide-react';
 
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AssignmentDriver {
     id: number;
@@ -119,12 +108,8 @@ function formatDateTime(value: string | null): string {
 export default function AdminDriverAssignments({ assignments }: Props) {
     const total = assignments.length;
     const pending = assignments.filter((a) => a.status === 'assigned').length;
-    const accepted = assignments.filter(
-        (a) => a.status === 'accepted',
-    ).length;
-    const rejected = assignments.filter(
-        (a) => a.status === 'rejected',
-    ).length;
+    const accepted = assignments.filter((a) => a.status === 'accepted').length;
+    const rejected = assignments.filter((a) => a.status === 'rejected').length;
 
     return (
         <>
@@ -144,8 +129,8 @@ export default function AdminDriverAssignments({ assignments }: Props) {
                             </h1>
 
                             <p className="mt-2 max-w-xl text-sm text-white/80">
-                                Track every chauffeur assignment, its
-                                response window, and outcome.
+                                Track every chauffeur assignment, its response
+                                window, and outcome.
                             </p>
                         </div>
 
@@ -238,8 +223,8 @@ export default function AdminDriverAssignments({ assignments }: Props) {
                         </CardTitle>
 
                         <p className="mt-1 text-sm text-muted-foreground">
-                            Every driver assignment across all bookings,
-                            most recent first.
+                            Every driver assignment across all bookings, most
+                            recent first.
                         </p>
                     </CardHeader>
 
@@ -248,35 +233,35 @@ export default function AdminDriverAssignments({ assignments }: Props) {
                             <table className="w-full min-w-[1000px]">
                                 <thead>
                                     <tr className="border-b bg-muted/10">
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Booking
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Driver
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Customer
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Status
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Assigned
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Deadline
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Responded
                                         </th>
 
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Notes
                                         </th>
                                     </tr>
@@ -299,9 +284,9 @@ export default function AdminDriverAssignments({ assignments }: Props) {
                                                     </h3>
 
                                                     <p className="mt-1 text-sm text-muted-foreground">
-                                                        Driver assignments
-                                                        will appear here once
-                                                        a booking requests a
+                                                        Driver assignments will
+                                                        appear here once a
+                                                        booking requests a
                                                         chauffeur.
                                                     </p>
                                                 </div>
@@ -386,8 +371,8 @@ export default function AdminDriverAssignments({ assignments }: Props) {
 
                                                 {/* Customer */}
                                                 <td className="px-4 py-4 text-sm">
-                                                    {assignment.customer
-                                                        .name ?? '—'}
+                                                    {assignment.customer.name ??
+                                                        '—'}
                                                 </td>
 
                                                 {/* Status */}

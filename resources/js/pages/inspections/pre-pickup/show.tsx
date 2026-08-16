@@ -18,7 +18,6 @@ interface Props {
 }
 
 export default function Show({ booking }: Props) {
-
     const { data, setData, post, processing } = useForm({
         outside_ok: false,
         inside_ok: false,
@@ -33,7 +32,6 @@ export default function Show({ booking }: Props) {
         comments: '',
     });
 
-
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
 
@@ -42,124 +40,104 @@ export default function Show({ booking }: Props) {
         });
     };
 
-
     return (
         <>
             <Head title="Pre Pickup Inspection" />
 
             <div className="p-6">
-
                 <Card>
                     <CardHeader>
-                        <CardTitle>
-                            Pre-Pickup Inspection
-                        </CardTitle>
+                        <CardTitle>Pre-Pickup Inspection</CardTitle>
 
                         <p>
                             {booking.car.brand} {booking.car.model}
                             <br />
                             Plate: {booking.car.plate_number}
                         </p>
-
                     </CardHeader>
 
-
                     <CardContent>
-
                         <form onSubmit={submit} className="space-y-6">
-
-
                             {[
                                 {
-                                    key:'outside_ok',
-                                    photo:'outside_ok_photo',
-                                    label:'Outside condition'
+                                    key: 'outside_ok',
+                                    photo: 'outside_ok_photo',
+                                    label: 'Outside condition',
                                 },
                                 {
-                                    key:'inside_ok',
-                                    photo:'inside_ok_photo',
-                                    label:'Inside condition'
+                                    key: 'inside_ok',
+                                    photo: 'inside_ok_photo',
+                                    label: 'Inside condition',
                                 },
                                 {
-                                    key:'mileage_ok',
-                                    photo:'mileage_ok_photo',
-                                    label:'Mileage'
+                                    key: 'mileage_ok',
+                                    photo: 'mileage_ok_photo',
+                                    label: 'Mileage',
                                 },
                                 {
-                                    key:'fuel_ok',
-                                    photo:'fuel_ok_photo',
-                                    label:'Fuel level'
+                                    key: 'fuel_ok',
+                                    photo: 'fuel_ok_photo',
+                                    label: 'Fuel level',
                                 },
-
-                            ].map((item:any)=>(
-
-                                <div key={item.key}
-                                    className="border rounded-lg p-4 space-y-3">
-
+                            ].map((item: any) => (
+                                <div
+                                    key={item.key}
+                                    className="space-y-3 rounded-lg border p-4"
+                                >
                                     <label className="font-semibold">
                                         {item.label}
                                     </label>
 
+                                    <div>
+                                        <label>
+                                            <input
+                                                type="checkbox"
+                                                checked={
+                                                    (
+                                                        data as Record<
+                                                            string,
+                                                            any
+                                                        >
+                                                    )[item.key]
+                                                }
+                                                onChange={(e) =>
+                                                    setData(
+                                                        item.key as any,
+                                                        e.target.checked,
+                                                    )
+                                                }
+                                            />{' '}
+                                            Passed
+                                        </label>
+                                    </div>
 
-                                     <div>
-                                         <label>
-                                             <input
-                                                 type="checkbox"
-                                                 checked={(data as Record<string, any>)[item.key]}
-                                                 onChange={(e)=>
-                                                     setData(
-                                                         item.key as any,
-                                                         e.target.checked
-                                                     )
-                                                 }
-                                             />
-
-                                             {' '}Passed
-                                         </label>
-                                     </div>
-
-
-                                     <input
-                                         type="file"
-                                         onChange={(e)=>
-                                             setData(
-                                                 item.photo as any,
-                                                 e.target.files?.[0] ?? null
-                                             )
-                                         }
-                                     />
-
+                                    <input
+                                        type="file"
+                                        onChange={(e) =>
+                                            setData(
+                                                item.photo as any,
+                                                e.target.files?.[0] ?? null,
+                                            )
+                                        }
+                                    />
                                 </div>
-
                             ))}
 
-
-
                             <textarea
-                                className="border rounded-lg w-full p-3"
+                                className="w-full rounded-lg border p-3"
                                 placeholder="Comments"
                                 value={data.comments}
-                                onChange={(e)=>
-                                    setData(
-                                        'comments',
-                                        e.target.value
-                                    )
+                                onChange={(e) =>
+                                    setData('comments', e.target.value)
                                 }
                             />
-
-
 
                             <Button disabled={processing}>
                                 Submit Inspection
                             </Button>
-
-
                         </form>
-
                     </CardContent>
-
                 </Card>
-
             </div>
         </>
     );

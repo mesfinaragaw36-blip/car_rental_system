@@ -12,15 +12,10 @@ import {
     ChevronRight,
     X,
 } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -239,12 +234,14 @@ export default function UsersIndex({ users, filters, stats }: Props) {
     const [search, setSearch] = useState(filters.search ?? '');
     const [role, setRole] = useState(filters.role ?? 'all');
     const [status, setStatus] = useState(filters.status ?? 'all');
+    const [prevFilters, setPrevFilters] = useState(filters);
 
-    useEffect(() => {
+    if (filters !== prevFilters) {
+        setPrevFilters(filters);
         setSearch(filters.search ?? '');
         setRole(filters.role ?? 'all');
         setStatus(filters.status ?? 'all');
-    }, [filters.search, filters.role, filters.status]);
+    }
 
     function applyFilters(
         nextSearch = search,
@@ -298,9 +295,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                 Administration
                             </p>
 
-                            <h1 className="mt-1 text-3xl font-bold">
-                                Users
-                            </h1>
+                            <h1 className="mt-1 text-3xl font-bold">Users</h1>
 
                             <p className="mt-2 max-w-xl text-sm text-white/80">
                                 Manage user accounts, verification status, and
@@ -406,7 +401,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
 
                             <div className="flex flex-col gap-2 sm:flex-row">
                                 <div className="relative min-w-[240px]">
-                                    <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                    <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
 
                                     <Input
                                         value={search}
@@ -502,31 +497,31 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                             <table className="w-full min-w-[900px]">
                                 <thead>
                                     <tr className="border-b bg-muted/10">
-                                        <th className="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-6 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             User
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Phone
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Role
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Verification
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             ID Verification
                                         </th>
 
-                                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-4 py-3 text-left text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Account
                                         </th>
 
-                                        <th className="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                                        <th className="px-6 py-3 text-right text-xs font-semibold tracking-wider text-muted-foreground uppercase">
                                             Actions
                                         </th>
                                     </tr>
@@ -639,10 +634,8 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                                                     'pending',
                                                             )}`}
                                                         >
-                                                            {(
-                                                                user.customer_identity_status ??
-                                                                'pending'
-                                                            ) ===
+                                                            {(user.customer_identity_status ??
+                                                                'pending') ===
                                                                 'pending' && (
                                                                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-500" />
                                                             )}
@@ -756,9 +749,7 @@ export default function UsersIndex({ users, filters, stats }: Props) {
 
                                 <div className="flex items-center gap-1">
                                     {users.links.map((link, index) => {
-                                        if (
-                                            link.label.includes('Previous')
-                                        ) {
+                                        if (link.label.includes('Previous')) {
                                             return (
                                                 <Button
                                                     key={`prev-${index}`}
@@ -772,10 +763,8 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                                                 link.url,
                                                                 {},
                                                                 {
-                                                                    preserveState:
-                                                                        true,
-                                                                    preserveScroll:
-                                                                        true,
+                                                                    preserveState: true,
+                                                                    preserveScroll: true,
                                                                 },
                                                             );
                                                         }
@@ -800,10 +789,8 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                                                 link.url,
                                                                 {},
                                                                 {
-                                                                    preserveState:
-                                                                        true,
-                                                                    preserveScroll:
-                                                                        true,
+                                                                    preserveState: true,
+                                                                    preserveScroll: true,
                                                                 },
                                                             );
                                                         }
@@ -831,10 +818,8 @@ export default function UsersIndex({ users, filters, stats }: Props) {
                                                             link.url,
                                                             {},
                                                             {
-                                                                preserveState:
-                                                                    true,
-                                                                preserveScroll:
-                                                                    true,
+                                                                preserveState: true,
+                                                                preserveScroll: true,
                                                             },
                                                         );
                                                     }

@@ -8,17 +8,13 @@ import {
     Plus,
     Settings2,
     Trash2,
-    X,
 } from 'lucide-react';
 import { useState } from 'react';
 import { CarDetailsModal } from '@/components/car-details-modal';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { GlareCard } from '@/components/ui/glare-card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { destroy, toggleAvailability } from '@/routes/vehicles';
-import availablePeriods from '@/routes/vehicles/available-periods';
 
 interface CarImage {
     id: number;
@@ -68,7 +64,11 @@ interface Props {
     vehicles: Vehicle[];
     ownerVerificationStatus: string | null;
 }
-export default function Vehicles({ role, vehicles = [], ownerVerificationStatus }: Props) {
+export default function Vehicles({
+    role,
+    vehicles = [],
+    ownerVerificationStatus,
+}: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -92,42 +92,6 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
         );
     };
 
-    const handleAddAvailablePeriod = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        if (!selectedVehicle) {
-            return;
-        }
-
-        router.post(
-            availablePeriods.store.url({ car: selectedVehicle.id }),
-            periodData,
-            {
-                preserveScroll: true,
-                onSuccess: () =>
-                    setPeriodData({ start_date: '', end_date: '' }),
-            },
-        );
-    };
-
-    const handleRemoveAvailablePeriod = (
-        vehicleId: number,
-        periodId: number,
-    ) => {
-        router.delete(
-            availablePeriods.destroy.url({
-                car: vehicleId,
-                availablePeriod: periodId,
-            }),
-            { preserveScroll: true },
-        );
-    };
-
-    const [periodData, setPeriodData] = useState({
-        start_date: '',
-        end_date: '',
-    });
-
     return (
         <>
             <Head title="My Cars" />
@@ -139,18 +103,17 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                             Manage all your listed cars in one place.
                         </p>
                     </div>
-                   {(role === 'admin' ||
-                    (role === 'owner' && ownerVerificationStatus === 'approved')) && (
-                    <Link href="/vehicles/create">
-                        <Button className="bg-primary hover:bg-primary/90">
-                            <Plus className="mr-2 h-4 w-4" /> Add Cars
-                        </Button>
-                    </Link>
-                )}
+                    {(role === 'admin' ||
+                        (role === 'owner' &&
+                            ownerVerificationStatus === 'approved')) && (
+                        <Link href="/vehicles/create">
+                            <Button className="bg-primary hover:bg-primary/90">
+                                <Plus className="mr-2 h-4 w-4" /> Add Cars
+                            </Button>
+                        </Link>
+                    )}
                 </div>
-            
 
-                
                 {toast && (
                     <div
                         className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
@@ -196,13 +159,16 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                                 car.
                             </p>
                             {(role === 'admin' ||
-                            (role === 'owner' && ownerVerificationStatus === 'approved')) && (
-                            <Link href="/vehicles/create">
-                                <Button className="bg-primary hover:bg-primary/90">
-                                    <Plus className="mr-2 h-4 w-4" /> Add Car
-                                </Button>
-                            </Link>
-                        )}
+                                (role === 'owner' &&
+                                    ownerVerificationStatus ===
+                                        'approved')) && (
+                                <Link href="/vehicles/create">
+                                    <Button className="bg-primary hover:bg-primary/90">
+                                        <Plus className="mr-2 h-4 w-4" /> Add
+                                        Car
+                                    </Button>
+                                </Link>
+                            )}
                         </CardContent>
                     </Card>
                 ) : (
@@ -315,36 +281,39 @@ export default function Vehicles({ role, vehicles = [], ownerVerificationStatus 
                     car={selectedVehicle}
                     actions={
                         <div className="w-full space-y-4">
-                        <div className="rounded-xl border border-slate-200 p-4 text-left">
-                            <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                                <CalendarRange className="h-4 w-4 text-primary" />{' '}
-                                Available Dates
-                            </h3>
-                            <p className="mt-1 text-xs text-slate-500">
-                                Customers can only book this car during these date
-                                ranges.
-                            </p>
-
-                            {selectedVehicle?.available_periods &&
-                            selectedVehicle.available_periods.length > 0 ? (
-                                <ul className="mt-3 space-y-2">
-                                    {selectedVehicle.available_periods.map((period) => (
-                                        <li
-                                            key={period.id}
-                                            className="rounded-lg bg-slate-50 px-3 py-2 text-sm"
-                                        >
-                                            <p className="font-medium text-slate-800">
-                                                {period.start_date} → {period.end_date}
-                                            </p>
-                                        </li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p className="mt-3 text-sm text-slate-500">
-                                    No available date ranges set.
+                            <div className="rounded-xl border border-slate-200 p-4 text-left">
+                                <h3 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                                    <CalendarRange className="h-4 w-4 text-primary" />{' '}
+                                    Available Dates
+                                </h3>
+                                <p className="mt-1 text-xs text-slate-500">
+                                    Customers can only book this car during
+                                    these date ranges.
                                 </p>
-                            )}
-                        </div>
+
+                                {selectedVehicle?.available_periods &&
+                                selectedVehicle.available_periods.length > 0 ? (
+                                    <ul className="mt-3 space-y-2">
+                                        {selectedVehicle.available_periods.map(
+                                            (period) => (
+                                                <li
+                                                    key={period.id}
+                                                    className="rounded-lg bg-slate-50 px-3 py-2 text-sm"
+                                                >
+                                                    <p className="font-medium text-slate-800">
+                                                        {period.start_date} →{' '}
+                                                        {period.end_date}
+                                                    </p>
+                                                </li>
+                                            ),
+                                        )}
+                                    </ul>
+                                ) : (
+                                    <p className="mt-3 text-sm text-slate-500">
+                                        No available date ranges set.
+                                    </p>
+                                )}
+                            </div>
 
                             <div className="flex flex-wrap gap-2">
                                 <Button

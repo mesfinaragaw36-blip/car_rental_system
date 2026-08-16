@@ -206,7 +206,9 @@ export default function AdminDrivers({ drivers, filters }: Props) {
                                                                 <Eye className="h-4 w-4" />
                                                             </Button>
                                                         </Link>
-                                                        {can('drivers.manage') &&
+                                                        {can(
+                                                            'drivers.manage',
+                                                        ) &&
                                                             (d.status ===
                                                             'active' ? (
                                                                 <Button

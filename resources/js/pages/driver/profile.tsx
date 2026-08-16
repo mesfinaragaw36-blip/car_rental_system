@@ -79,10 +79,10 @@ export default function DriverProfilePage({ profile }: Props) {
         : null;
 
     const [licenseNumber, setLicenseNumber] = useState(
-    profile?.license_number && profile.license_number !== 'PENDING'
-        ? profile.license_number
-        : '',
-);
+        profile?.license_number && profile.license_number !== 'PENDING'
+            ? profile.license_number
+            : '',
+    );
     const [licenseType, setLicenseType] = useState(profile?.license_type ?? '');
     const [experienceYears, setExperienceYears] = useState(
         String(profile?.experience_years ?? ''),
@@ -222,12 +222,8 @@ export default function DriverProfilePage({ profile }: Props) {
                                         <SelectValue placeholder="Select license type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="አውቶ">
-                                            አውቶ
-                                        </SelectItem>
-                                        <SelectItem value="ህዝብ">
-                                            ህዝብ
-                                        </SelectItem>
+                                        <SelectItem value="አውቶ">አውቶ</SelectItem>
+                                        <SelectItem value="ህዝብ">ህዝብ</SelectItem>
                                         <SelectItem value="ደረቅ ጭነት">
                                             ደረቅ ጭነት
                                         </SelectItem>

@@ -291,9 +291,7 @@ export default function RolesIndex({ roles, availablePermissions }: Props) {
                                                         size="sm"
                                                         variant="ghost"
                                                         disabled={
-                                                            !can(
-                                                                'roles.manage',
-                                                            )
+                                                            !can('roles.manage')
                                                         }
                                                     >
                                                         <Edit className="h-4 w-4" />

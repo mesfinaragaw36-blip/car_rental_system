@@ -54,7 +54,7 @@ class AssignmentVisibilityTest extends TestCase
 
     private function createDriver(string $verificationStatus = 'approved'): User
     {
-        $driver = User::factory()->driver()->create();
+        $driver = User::factory()->create(['role' => 'driver']);
 
         DriverProfile::create([
             'user_id' => $driver->id,
@@ -211,7 +211,7 @@ class AssignmentVisibilityTest extends TestCase
 
     public function test_driver_without_profile_is_redirected_to_profile(): void
     {
-        $driver = User::factory()->driver()->create();
+        $driver = User::factory()->create(['role' => 'driver']);
 
         $response = $this->actingAs($driver)->get(route('driver.assignments.index'));
 

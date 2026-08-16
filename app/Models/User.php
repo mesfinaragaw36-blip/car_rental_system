@@ -83,6 +83,23 @@ class User extends Authenticatable
         return in_array($permission, $this->staffRole?->permissions ?? [], true);
     }
 
+    /**
+     * Whether the user can act as a driver (real driver role or staff
+     * granted the driver access permission).
+     */
+    public function hasDriverPermission(): bool
+    {
+        if ($this->role === 'driver') {
+            return true;
+        }
+
+        if ($this->role !== 'admin') {
+            return false;
+        }
+
+        return in_array('driver.access', $this->staffRole?->permissions ?? [], true);
+    }
+
     public function branch(): BelongsTo
     {
         return $this->belongsTo(Location::class, 'branch_id');

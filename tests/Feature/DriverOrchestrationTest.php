@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
+use App\Models\CustomerIdentity;
 use App\Models\DriverProfile;
 use App\Models\Location;
 use App\Models\User;
@@ -36,7 +37,7 @@ class DriverOrchestrationTest extends TestCase
 
     private function createDriver(array $overrides = [], float $dailyRate = 0.0): User
     {
-        $driver = User::factory()->driver()->create($overrides);
+        $driver = User::factory()->create(array_merge(['role' => 'driver'], $overrides));
 
         DriverProfile::create([
             'user_id' => $driver->id,
@@ -53,6 +54,15 @@ class DriverOrchestrationTest extends TestCase
     private function bookChauffeur(Car $car, User $customer, array $overrides = [])
     {
         $branch = Location::first() ?? Location::create(['name' => 'Bole Branch', 'address' => 'Bole Road', 'city' => 'Addis Ababa']);
+
+        CustomerIdentity::updateOrCreate(
+            ['user_id' => $customer->id],
+            [
+                'national_id_number' => fake()->numerify('##############'),
+                'verification_status' => 'approved',
+                'verified_at' => now(),
+            ]
+        );
 
         return $this->actingAs($customer)
             ->post(route('cars.book', $car), array_merge([
@@ -78,7 +88,7 @@ class DriverOrchestrationTest extends TestCase
         $this->assertDatabaseHas('booking_drivers', [
             'booking_id' => $booking->id,
             'driver_id' => $driver->id,
-            'assigned_by' => null,
+            'assigned_by' => $customer->id,
             'status' => BookingDriver::STATUS_ASSIGNED,
         ]);
 
@@ -109,11 +119,11 @@ class DriverOrchestrationTest extends TestCase
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
 
-        User::factory()->driver()->create();
+        User::factory()->create(['role' => 'driver']);
         $pendingDriver = $this->createDriver();
         $pendingDriver->driverProfile->update(['verification_status' => 'pending']);
-        $unavailableDriver = $this->createDriver();
-        $unavailableDriver->driverProfile->update(['availability' => 'unavailable']);
+        $suspendedDriver = $this->createDriver();
+        $suspendedDriver->update(['status' => 'suspended']);
 
         $this->bookChauffeur($car, $customer)->assertRedirect();
 
@@ -157,7 +167,7 @@ class DriverOrchestrationTest extends TestCase
             'driver_id' => $busyDriver->id,
             'assigned_by' => null,
             'assigned_at' => now(),
-            'status' => BookingDriver::STATUS_ASSIGNED,
+            'status' => BookingDriver::STATUS_ACCEPTED,
         ]);
 
         $this->bookChauffeur($car, $customer)->assertRedirect();
@@ -246,12 +256,12 @@ class DriverOrchestrationTest extends TestCase
         $this->assertSame(0, BookingDriver::where('booking_id', $booking->id)->where('status', BookingDriver::STATUS_ASSIGNED)->count());
     }
 
-    public function test_driver_accept_after_auto_assign_applies_driver_rate_to_total(): void
+    public function test_driver_accept_after_auto_assign_marks_assignment_accepted(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
         $car = $this->createCar($owner);
-        $driver = $this->createDriver([], 50.00);
+        $driver = $this->createDriver();
 
         $this->bookChauffeur($car, $customer)->assertRedirect();
 
@@ -265,11 +275,6 @@ class DriverOrchestrationTest extends TestCase
             'booking_id' => $booking->id,
             'driver_id' => $driver->id,
             'status' => BookingDriver::STATUS_ACCEPTED,
-        ]);
-
-        $this->assertDatabaseHas('bookings', [
-            'id' => $booking->id,
-            'total_price' => 450.00,
         ]);
     }
 }

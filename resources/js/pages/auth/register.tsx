@@ -108,15 +108,9 @@ export default function Register({ passwordRules }: Props) {
                                     <option value="" disabled>
                                         Select a role…
                                     </option>
-                                    <option value="customer">
-                                        Customer
-                                    </option>
-                                    <option value="owner">
-                                        Owner
-                                    </option>
-                                    <option value="driver">
-                                        Driver
-                                    </option>
+                                    <option value="customer">Customer</option>
+                                    <option value="owner">Owner</option>
+                                    <option value="driver">Driver</option>
                                 </select>
                                 <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                             </div>

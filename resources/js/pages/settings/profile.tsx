@@ -181,9 +181,8 @@ export default function Profile() {
                                     {isApproved ? (
                                         <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
                                             <p className="text-sm text-green-800">
-                                                Your identity has been
-                                                verified. You can book
-                                                vehicles.
+                                                Your identity has been verified.
+                                                You can book vehicles.
                                             </p>
                                         </div>
                                     ) : (
@@ -191,11 +190,10 @@ export default function Profile() {
                                             {isRejected && (
                                                 <div className="rounded-2xl border border-red-200 bg-red-50 p-4">
                                                     <p className="text-sm text-red-800">
-                                                        Your previous
-                                                        submission was
-                                                        rejected. Please
-                                                        review and resubmit
-                                                        your details below.
+                                                        Your previous submission
+                                                        was rejected. Please
+                                                        review and resubmit your
+                                                        details below.
                                                     </p>
                                                 </div>
                                             )}
@@ -273,140 +271,137 @@ export default function Profile() {
                                 </div>
                             )}
 
-                           {role === 'owner' && (
-                        <div className="space-y-6">
-                            <div className="grid gap-2">
-                                <Label htmlFor="phone">
-                                    Phone number
-                                </Label>
+                            {role === 'owner' && (
+                                <div className="space-y-6">
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="phone">
+                                            Phone number
+                                        </Label>
 
-                                <Input
-                                    id="phone"
-                                    className="mt-1 block w-full"
-                                    defaultValue={auth.user.phone ?? ''}
-                                    name="phone"
-                                    required
-                                    autoComplete="tel"
-                                    placeholder="Phone number"
-                                />
+                                        <Input
+                                            id="phone"
+                                            className="mt-1 block w-full"
+                                            defaultValue={auth.user.phone ?? ''}
+                                            name="phone"
+                                            required
+                                            autoComplete="tel"
+                                            placeholder="Phone number"
+                                        />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.phone}
-                                />
-                            </div>
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.phone}
+                                        />
+                                    </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="national_id">
-                                    National ID
-                                </Label>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id">
+                                            National ID
+                                        </Label>
 
-                                <Input
-                                    id="national_id"
-                                    className="mt-1 block w-full"
-                                    defaultValue={
-                                        profile?.national_id ?? ''
-                                    }
-                                    name="national_id"
-                                    required
-                                    maxLength={12}
-                                    placeholder="12-digit National ID number(FIN)"
-                                />
+                                        <Input
+                                            id="national_id"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.national_id ?? ''
+                                            }
+                                            name="national_id"
+                                            required
+                                            maxLength={12}
+                                            placeholder="12-digit National ID number(FIN)"
+                                        />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.national_id}
-                                />
-                            </div>
-                                    
-                    
-                                     <div className="grid gap-2">
-                                <Label htmlFor="national_id_front_file">
-                                    National ID photo (front)
-                                </Label>
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.national_id}
+                                        />
+                                    </div>
 
-                                <p className="text-sm text-muted-foreground">
-                                    Upload a clear photo of the front of your National ID card.
-                                </p>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id_front_file">
+                                            National ID photo (front)
+                                        </Label>
 
-                                <Input
-                                    id="national_id_front_file"
-                                    type="file"
-                                    className="mt-1 block w-full"
-                                    name="national_id_front_file"
-                                    accept="image/*"
-                                />
+                                        <p className="text-sm text-muted-foreground">
+                                            Upload a clear photo of the front of
+                                            your National ID card.
+                                        </p>
 
-                                {profile?.national_id_front_file_path && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Existing file:{' '}
-                                        
-                                            className="text-primary underline"
-                                            href={`/storage/${profile.national_id_front_file_path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        <a>
-                                            View upload
-                                        </a>
-                                    </p>
-                                )}
+                                        <Input
+                                            id="national_id_front_file"
+                                            type="file"
+                                            className="mt-1 block w-full"
+                                            name="national_id_front_file"
+                                            accept="image/*"
+                                        />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.national_id_front_file}
-                                />
-                            </div>
+                                        {profile?.national_id_front_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Existing file:{' '}
+                                                className="text-primary
+                                                underline" href=
+                                                {`/storage/${profile.national_id_front_file_path}`}
+                                                target="_blank" rel="noreferrer"
+                                                <a>View upload</a>
+                                            </p>
+                                        )}
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="national_id_back_file">
-                                    National ID photo (back)
-                                </Label>
+                                        <InputError
+                                            className="mt-2"
+                                            message={
+                                                errors.national_id_front_file
+                                            }
+                                        />
+                                    </div>
 
-                                <p className="text-sm text-muted-foreground">
-                                    Upload a clear photo of the back of your National ID card.
-                                </p>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id_back_file">
+                                            National ID photo (back)
+                                        </Label>
 
-                                <Input
-                                    id="national_id_back_file"
-                                    type="file"
-                                    className="mt-1 block w-full"
-                                    name="national_id_back_file"
-                                    accept="image/*"
-                                />
+                                        <p className="text-sm text-muted-foreground">
+                                            Upload a clear photo of the back of
+                                            your National ID card.
+                                        </p>
 
-                                {profile?.national_id_back_file_path && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Existing file:{' '}
-                                        
-                                            className="text-primary underline"
-                                            href={`/storage/${profile.national_id_back_file_path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                        
-                                        <a>
-                                            View upload
-                                        </a>
-                                    </p>
-                                )}
+                                        <Input
+                                            id="national_id_back_file"
+                                            type="file"
+                                            className="mt-1 block w-full"
+                                            name="national_id_back_file"
+                                            accept="image/*"
+                                        />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.national_id_back_file}
-                                />
-                            </div>
+                                        {profile?.national_id_back_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Existing file:{' '}
+                                                className="text-primary
+                                                underline" href=
+                                                {`/storage/${profile.national_id_back_file_path}`}
+                                                target="_blank" rel="noreferrer"
+                                                <a>View upload</a>
+                                            </p>
+                                        )}
 
+                                        <InputError
+                                            className="mt-2"
+                                            message={
+                                                errors.national_id_back_file
+                                            }
+                                        />
+                                    </div>
 
-                            <div className="rounded-2xl border border-muted p-4">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Verification status
-                                </p>
-                                <p className="mt-2 text-base font-semibold">
-                                    {profile?.verification_status ??
-                                        'pending'}
-                                </p>
-                            </div>
-                        </div>
-                    )}
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Verification status
+                                        </p>
+                                        <p className="mt-2 text-base font-semibold">
+                                            {profile?.verification_status ??
+                                                'pending'}
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
 
                             {isDriver && (
                                 <div className="space-y-6">

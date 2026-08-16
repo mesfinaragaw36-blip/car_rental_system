@@ -128,19 +128,11 @@ const STATUS_STYLES: Record<string, string> = {
 
 const STAT_ICONS: Record<string, React.ReactNode> = {
     Total: <Activity className="h-5 w-5" />,
-    'Awaiting Deposit': (
-        <Clock className="h-5 w-5 text-amber-600" />
-    ),
-    'Deposit Paid': (
-        <CheckCircle className="h-5 w-5 text-primary" />
-    ),
+    'Awaiting Deposit': <Clock className="h-5 w-5 text-amber-600" />,
+    'Deposit Paid': <CheckCircle className="h-5 w-5 text-primary" />,
     Active: <Car className="h-5 w-5 text-primary" />,
-    Completed: (
-        <CheckCheck className="h-5 w-5 text-emerald-600" />
-    ),
-    Cancelled: (
-        <XCircle className="h-5 w-5 text-slate-600" />
-    ),
+    Completed: <CheckCheck className="h-5 w-5 text-emerald-600" />,
+    Cancelled: <XCircle className="h-5 w-5 text-slate-600" />,
 };
 
 const hasAssignedDriver = (booking: Booking): boolean => {
@@ -153,12 +145,7 @@ const hasAssignedDriver = (booking: Booking): boolean => {
     return status === 'assigned' || status === 'accepted';
 };
 
-export default function Bookings({
-    role,
-    bookings,
-    filters,
-    stats,
-}: Props) {
+export default function Bookings({ role, bookings, filters, stats }: Props) {
     const { props: p } = usePage<{
         toast?: {
             type: string;
@@ -169,18 +156,11 @@ export default function Bookings({
     const toast = p.toast;
     const can = useCan();
 
-    const [searchTerm, setSearchTerm] = useState(
-        filters?.search ?? '',
-    );
+    const [searchTerm, setSearchTerm] = useState(filters?.search ?? '');
 
-    const [statusFilter, setStatusFilter] = useState(
-        filters?.status ?? '',
-    );
+    const [statusFilter, setStatusFilter] = useState(filters?.status ?? '');
 
-    const handleAction = (
-        bookingId: number,
-        action: string,
-    ) => {
+    const handleAction = (bookingId: number, action: string) => {
         const routeMap: Record<string, () => string> = {
             approve: () =>
                 approve.url({
@@ -240,9 +220,7 @@ export default function Bookings({
             <div className="space-y-8 p-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold">
-                        Bookings
-                    </h1>
+                    <h1 className="text-3xl font-bold">Bookings</h1>
 
                     <p className="mt-2 text-muted-foreground">
                         Track and manage all rental bookings in one place.
@@ -301,54 +279,41 @@ export default function Bookings({
                 </div>
 
                 {/* Admin / Owner Stats */}
-                {(role === 'admin' || role === 'owner') &&
-                    stats && (
-                        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                            {(
-                                [
-                                    ['Total', stats.total],
-                                    [
-                                        'Awaiting Deposit',
-                                        stats.awaiting_deposit,
-                                    ],
-                                    [
-                                        'Deposit Paid',
-                                        stats.deposit_paid,
-                                    ],
-                                    ['Active', stats.active],
-                                    [
-                                        'Completed',
-                                        stats.completed,
-                                    ],
-                                    [
-                                        'Cancelled',
-                                        stats.cancelled,
-                                    ],
-                                ] as const
-                            ).map(([label, value]) => (
-                                <Card
-                                    key={label}
-                                    className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md"
-                                >
-                                    <CardContent className="flex items-center gap-4 p-5">
-                                        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50">
-                                            {STAT_ICONS[label]}
-                                        </div>
+                {(role === 'admin' || role === 'owner') && stats && (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                        {(
+                            [
+                                ['Total', stats.total],
+                                ['Awaiting Deposit', stats.awaiting_deposit],
+                                ['Deposit Paid', stats.deposit_paid],
+                                ['Active', stats.active],
+                                ['Completed', stats.completed],
+                                ['Cancelled', stats.cancelled],
+                            ] as const
+                        ).map(([label, value]) => (
+                            <Card
+                                key={label}
+                                className="overflow-hidden rounded-2xl shadow-sm transition hover:shadow-md"
+                            >
+                                <CardContent className="flex items-center gap-4 p-5">
+                                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-slate-50">
+                                        {STAT_ICONS[label]}
+                                    </div>
 
-                                        <div>
-                                            <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
-                                                {label}
-                                            </p>
+                                    <div>
+                                        <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase">
+                                            {label}
+                                        </p>
 
-                                            <p className="mt-0.5 text-2xl font-bold">
-                                                {value}
-                                            </p>
-                                        </div>
-                                    </CardContent>
-                                </Card>
-                            ))}
-                        </div>
-                    )}
+                                        <p className="mt-0.5 text-2xl font-bold">
+                                            {value}
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        ))}
+                    </div>
+                )}
 
                 {/* Toast */}
                 {toast && (
@@ -387,26 +352,17 @@ export default function Bookings({
                         </SelectTrigger>
 
                         <SelectContent>
-                            <SelectItem value="all">
-                                All
-                            </SelectItem>
+                            <SelectItem value="all">All</SelectItem>
 
-                            {Object.keys(STATUS_STYLES).map(
-                                (status) => (
-                                    <SelectItem
-                                        key={status}
-                                        value={status}
-                                    >
-                                        {status
-                                            .replace('_', ' ')
-                                            .replace(
-                                                /^\w/,
-                                                (letter) =>
-                                                    letter.toUpperCase(),
-                                            )}
-                                    </SelectItem>
-                                ),
-                            )}
+                            {Object.keys(STATUS_STYLES).map((status) => (
+                                <SelectItem key={status} value={status}>
+                                    {status
+                                        .replace('_', ' ')
+                                        .replace(/^\w/, (letter) =>
+                                            letter.toUpperCase(),
+                                        )}
+                                </SelectItem>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -440,9 +396,8 @@ export default function Bookings({
                             const car = booking.car;
 
                             const carImage =
-                                car?.images?.find(
-                                    (image) => image.is_primary,
-                                )?.image_path ??
+                                car?.images?.find((image) => image.is_primary)
+                                    ?.image_path ??
                                 car?.images?.[0]?.image_path;
 
                             return (
@@ -454,8 +409,7 @@ export default function Bookings({
                                         className={`h-1.5 w-full ${
                                             STATUS_STYLES[
                                                 booking.status
-                                            ]?.split(' ')[0] ??
-                                            'bg-slate-200'
+                                            ]?.split(' ')[0] ?? 'bg-slate-200'
                                         }`}
                                     />
 
@@ -525,10 +479,8 @@ export default function Bookings({
                                                         <User className="h-4 w-4 shrink-0" />
 
                                                         <span>
-                                                            {booking
-                                                                .customer
-                                                                ?.name ??
-                                                                'N/A'}
+                                                            {booking.customer
+                                                                ?.name ?? 'N/A'}
                                                         </span>
                                                     </div>
 
@@ -603,46 +555,38 @@ export default function Bookings({
                                                         'deposit_paid',
                                                         'picked_up',
                                                         'returned',
-                                                    ].map(
-                                                        (
-                                                            step,
-                                                            index,
-                                                        ) => {
-                                                            const statuses = [
-                                                                'confirmed',
-                                                                'deposit_paid',
-                                                                'picked_up',
-                                                                'returned',
-                                                            ];
+                                                    ].map((step, index) => {
+                                                        const statuses = [
+                                                            'confirmed',
+                                                            'deposit_paid',
+                                                            'picked_up',
+                                                            'returned',
+                                                        ];
 
-                                                            const active =
-                                                                statuses.indexOf(
-                                                                    booking.status,
-                                                                ) >= index;
+                                                        const active =
+                                                            statuses.indexOf(
+                                                                booking.status,
+                                                            ) >= index;
 
-                                                            return (
+                                                        return (
+                                                            <div
+                                                                key={step}
+                                                                className="flex items-center gap-2"
+                                                            >
                                                                 <div
-                                                                    key={
-                                                                        step
-                                                                    }
-                                                                    className="flex items-center gap-2"
-                                                                >
-                                                                    <div
-                                                                        className={`h-3 w-3 rounded-full ${
-                                                                            active
-                                                                                ? 'bg-primary'
-                                                                                : 'bg-gray-300'
-                                                                        }`}
-                                                                    />
+                                                                    className={`h-3 w-3 rounded-full ${
+                                                                        active
+                                                                            ? 'bg-primary'
+                                                                            : 'bg-gray-300'
+                                                                    }`}
+                                                                />
 
-                                                                    {index <
-                                                                        3 && (
-                                                                        <div className="h-1 w-8 bg-gray-200" />
-                                                                    )}
-                                                                </div>
-                                                            );
-                                                        },
-                                                    )}
+                                                                {index < 3 && (
+                                                                    <div className="h-1 w-8 bg-gray-200" />
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
 
@@ -663,8 +607,7 @@ export default function Bookings({
                                                 </Button>
 
                                                 {/* Approve / Reject */}
-                                                {booking.status ===
-                                                    'pending' &&
+                                                {booking.status === 'pending' &&
                                                     (role === 'admin' ||
                                                         role === 'owner') && (
                                                         <div className="flex gap-1.5">
@@ -700,11 +643,8 @@ export default function Bookings({
                                                     'confirmed',
                                                     'deposit_paid',
                                                     'paid',
-                                                ].includes(
-                                                    booking.status,
-                                                ) &&
-                                                    role ===
-                                                        'customer' && (
+                                                ].includes(booking.status) &&
+                                                    role === 'customer' && (
                                                         <Button
                                                             size="sm"
                                                             variant="destructive"
@@ -724,12 +664,10 @@ export default function Bookings({
                                                 {booking.status ===
                                                     'picked_up' &&
                                                     (role === 'admin' ||
-                                                        role ===
-                                                            'owner') && (
+                                                        role === 'owner') && (
                                                         <span className="text-xs text-muted-foreground">
-                                                            Handover handled
-                                                            by the inspection
-                                                            team
+                                                            Handover handled by
+                                                            the inspection team
                                                         </span>
                                                     )}
 
@@ -737,8 +675,7 @@ export default function Bookings({
                                                 {booking.status ===
                                                     'returned' &&
                                                     (role === 'owner' ||
-                                                        (role ===
-                                                            'admin' &&
+                                                        (role === 'admin' &&
                                                             can(
                                                                 'bookings.manage',
                                                             ))) && (

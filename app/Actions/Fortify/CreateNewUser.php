@@ -35,12 +35,12 @@ class CreateNewUser implements CreatesNewUsers
         ]);
 
         if ($user->role === 'driver') {
-         DriverProfile::create([
-        'user_id' => $user->id,
-        'license_number' => 'PENDING',
-        'verification_status' => 'pending',
-    ]);
-}
+            DriverProfile::create([
+                'user_id' => $user->id,
+                'license_number' => 'PENDING',
+                'verification_status' => 'pending',
+            ]);
+        }
 
         return $user;
     }
