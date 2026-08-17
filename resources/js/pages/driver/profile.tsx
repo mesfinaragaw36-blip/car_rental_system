@@ -19,7 +19,10 @@ interface DriverProfile {
     license_type: string;
     experience_years: number;
     location: string;
+    gender?: string | null;
+    daily_rate?: number | null;
     license_file_path?: string | null;
+    national_id_file_path?: string | null;
     verification_status?: string;
     average_rating?: number;
     review_count?: number;
@@ -88,6 +91,12 @@ export default function DriverProfilePage({ profile }: Props) {
         String(profile?.experience_years ?? ''),
     );
     const [location, setLocation] = useState(profile?.location ?? '');
+    const [gender, setGender] = useState(profile?.gender ?? '');
+    const [dailyRate, setDailyRate] = useState(
+        String(profile?.daily_rate ?? ''),
+    );
+    const [licenseFile, setLicenseFile] = useState<File | null>(null);
+    const [nationalIdFile, setNationalIdFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -95,21 +104,23 @@ export default function DriverProfilePage({ profile }: Props) {
         e.preventDefault();
         setProcessing(true);
 
-        router.post(
-            '/driver/profile',
-            {
-                license_number: licenseNumber,
-                license_type: licenseType,
-                experience_years: experienceYears,
-                location,
-            },
-            {
-                forceFormData: true,
-                onFinish: () => setProcessing(false),
-                onError: (errs) => setErrors(errs),
-                onSuccess: () => setErrors({}),
-            },
-        );
+        const formData = {
+            license_number: licenseNumber,
+            license_type: licenseType,
+            experience_years: experienceYears,
+            location,
+            gender,
+            daily_rate: dailyRate,
+            ...(licenseFile && { license_file: licenseFile }),
+            ...(nationalIdFile && { national_id_file: nationalIdFile }),
+        };
+
+        router.post('/driver/profile', formData, {
+            forceFormData: true,
+            onFinish: () => setProcessing(false),
+            onError: (errs) => setErrors(errs),
+            onSuccess: () => setErrors({}),
+        });
     }
 
     return (
@@ -218,7 +229,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                     value={licenseType}
                                     onValueChange={setLicenseType}
                                 >
-                                    <SelectTrigger>
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select license type" />
                                     </SelectTrigger>
                                     <SelectContent>
@@ -271,6 +282,113 @@ export default function DriverProfilePage({ profile }: Props) {
                                     required
                                 />
                                 <InputError message={errors.location} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label>Gender</Label>
+                                <Select value={gender} onValueChange={setGender}>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Select gender" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="Male">Male</SelectItem>
+                                        <SelectItem value="Female">
+                                            Female
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                                <InputError message={errors.gender} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="daily_rate">
+                                    Daily Rate (ETB)
+                                </Label>
+                                <Input
+                                    id="daily_rate"
+                                    type="number"
+                                    min="0"
+                                    step="0.01"
+                                    placeholder="e.g. 500"
+                                    value={dailyRate}
+                                    onChange={(e) =>
+                                        setDailyRate(e.target.value)
+                                    }
+                                    required
+                                />
+                                <InputError message={errors.daily_rate} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="license_file">
+                                    License Document{' '}
+                                    <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="license_file"
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={(e) =>
+                                        setLicenseFile(
+                                            e.target.files?.[0] || null,
+                                        )
+                                    }
+                                    required={!profile?.license_file_path}
+                                />
+                                {profile?.license_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Current:{' '}
+                                        <a
+                                            href={profile.license_file_path}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            View Document
+                                        </a>
+                                    </p>
+                                )}
+                                <p className="text-sm text-muted-foreground">
+                                    Upload a clear photo or scan of your driving
+                                    license (Required for verification)
+                                </p>
+                                <InputError message={errors.license_file} />
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <Label htmlFor="national_id_file">
+                                    National ID Document{' '}
+                                    <span className="text-red-500">*</span>
+                                </Label>
+                                <Input
+                                    id="national_id_file"
+                                    type="file"
+                                    accept="image/*,.pdf"
+                                    onChange={(e) =>
+                                        setNationalIdFile(
+                                            e.target.files?.[0] || null,
+                                        )
+                                    }
+                                    required={!profile?.national_id_file_path}
+                                />
+                                {profile?.national_id_file_path && (
+                                    <p className="text-sm text-muted-foreground">
+                                        Current:{' '}
+                                        <a
+                                            href={profile.national_id_file_path}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="text-blue-600 hover:underline"
+                                        >
+                                            View Document
+                                        </a>
+                                    </p>
+                                )}
+                                <p className="text-sm text-muted-foreground">
+                                    Upload a clear photo or scan of your
+                                    national ID (Required for verification)
+                                </p>
+                                <InputError message={errors.national_id_file} />
                             </div>
 
                             <Button

@@ -79,6 +79,9 @@ Route::get('/', function () {
 Route::get('/browse-cars', [BrowseCarController::class, 'index'])
     ->name('cars.index');
 
+Route::get('/api/available-drivers', [BrowseCarController::class, 'availableDrivers'])
+    ->name('drivers.available');
+
 Route::get('/cars/{car}', [BrowseCarController::class, 'show'])
     ->name('cars.show');
 
@@ -478,7 +481,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/reports', [ReportController::class, 'index'])
                     ->name('reports.index');
                 Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])
-                     ->name('admin.reports.pdf');
+                    ->name('admin.reports.pdf');
                 // -------------------------------------------------
                 // Staff
                 // -------------------------------------------------

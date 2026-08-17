@@ -32,8 +32,29 @@ class EnsureDriverProfileComplete
                 ]);
         }
 
+        $profile = $user->driverProfile;
+
+        // Profile exists but is incomplete (missing required fields).
+        if (
+            empty($profile->license_number) ||
+            empty($profile->license_type) ||
+            empty($profile->experience_years) ||
+            empty($profile->location) ||
+            empty($profile->gender) ||
+            empty($profile->daily_rate) ||
+            empty($profile->license_file_path) ||
+            empty($profile->national_id_file_path)
+        ) {
+            return redirect()
+                ->route('driver.profile')
+                ->with('toast', [
+                    'type' => 'warning',
+                    'message' => 'Please complete all required profile fields including license and ID documents.',
+                ]);
+        }
+
         // Profile exists but has not been approved by admin yet.
-        if ($user->driverProfile->verification_status !== 'approved') {
+        if ($profile->verification_status !== 'approved') {
             return redirect()
                 ->route('driver.profile')
                 ->with('toast', [

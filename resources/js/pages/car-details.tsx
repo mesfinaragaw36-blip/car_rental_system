@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { login, register } from '@/routes';
 import { book } from '@/routes/cars';
 import { edit as editProfile } from '@/routes/profile';
+import DriverSelection from '@/components/driver-selection';
 
 interface Car {
     id: number;
@@ -77,6 +78,7 @@ export default function CarDetails({
         pickup_branch_id: '',
         return_branch_id: '',
         need_driver: false,
+        driver_id: null as number | null,
         notes: '',
     });
 
@@ -487,6 +489,21 @@ export default function CarDetails({
                                             I need a driver
                                         </Label>
                                     </div>
+
+                                    {/* Driver Selection */}
+                                    {data.need_driver &&
+                                        data.pickup_date &&
+                                        data.return_date && (
+                                            <DriverSelection
+                                                pickupDate={data.pickup_date}
+                                                returnDate={data.return_date}
+                                                selectedDriverId={data.driver_id}
+                                                onDriverSelect={(driverId) =>
+                                                    setData('driver_id', driverId)
+                                                }
+                                            />
+                                        )}
+
                                     <div>
                                         <Label htmlFor="notes">Notes</Label>
                                         <Textarea

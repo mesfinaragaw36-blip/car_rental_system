@@ -20,6 +20,7 @@ class StoreBookingRequest extends FormRequest
             'pickup_location' => ['required', 'string', 'max:255'],
             'return_location' => ['required', 'string', 'max:255'],
             'need_driver' => ['required', Rule::in([true, false, '0', '1', 0, 1])],
+            'driver_id' => ['nullable', 'exists:users,id'],
         ];
     }
 

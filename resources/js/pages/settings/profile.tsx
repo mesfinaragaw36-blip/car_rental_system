@@ -529,6 +529,172 @@ export default function Profile() {
                                             message={errors.location}
                                         />
                                     </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="gender">
+                                            Gender{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+
+                                        <select
+                                            id="gender"
+                                            name="gender"
+                                            defaultValue={profile?.gender ?? ''}
+                                            required
+                                            className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                                        >
+                                            <option value="" disabled>
+                                                Select gender
+                                            </option>
+                                            <option value="Male">Male</option>
+                                            <option value="Female">
+                                                Female
+                                            </option>
+                                        </select>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.gender}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="daily_rate">
+                                            Daily Rate (ETB){' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+
+                                        <Input
+                                            id="daily_rate"
+                                            type="number"
+                                            min={0}
+                                            step="0.01"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.daily_rate ?? ''
+                                            }
+                                            name="daily_rate"
+                                            required
+                                            placeholder="e.g. 500"
+                                        />
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.daily_rate}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="license_file">
+                                            License Document{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+
+                                        <Input
+                                            id="license_file"
+                                            type="file"
+                                            accept="image/*,.pdf"
+                                            className="mt-1 block w-full"
+                                            name="license_file"
+                                            required={
+                                                !profile?.license_file_path
+                                            }
+                                        />
+
+                                        {profile?.license_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Current:{' '}
+                                                <a
+                                                    href={
+                                                        profile.license_file_path
+                                                    }
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </p>
+                                        )}
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Upload a clear photo or scan of your
+                                            driving license (Required for
+                                            verification)
+                                        </p>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.license_file}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="national_id_file">
+                                            National ID Document{' '}
+                                            <span className="text-red-500">
+                                                *
+                                            </span>
+                                        </Label>
+
+                                        <Input
+                                            id="national_id_file"
+                                            type="file"
+                                            accept="image/*,.pdf"
+                                            className="mt-1 block w-full"
+                                            name="national_id_file"
+                                            required={
+                                                !profile?.national_id_file_path
+                                            }
+                                        />
+
+                                        {profile?.national_id_file_path && (
+                                            <p className="text-sm text-muted-foreground">
+                                                Current:{' '}
+                                                <a
+                                                    href={
+                                                        profile.national_id_file_path
+                                                    }
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-600 hover:underline"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </p>
+                                        )}
+
+                                        <p className="text-sm text-muted-foreground">
+                                            Upload a clear photo or scan of your
+                                            national ID (Required for
+                                            verification)
+                                        </p>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.national_id_file}
+                                        />
+                                    </div>
+
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Verification status
+                                        </p>
+                                        <span
+                                            className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${verificationBadgeClass(verificationStatus)}`}
+                                        >
+                                            {verificationStatus
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                                verificationStatus.slice(1)}
+                                        </span>
+                                    </div>
                                 </div>
                             )}
 

@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\Location;
+use App\Models\User;
 use App\Services\DriverMatchingService;
 use Carbon\Carbon;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +70,68 @@ class BrowseCarController extends Controller
             'verification_status' => $user?->role === 'customer' ? $user?->customerIdentity?->verification_status : null,
             'filters' => $request->only(['search', 'category', 'fuel_type', 'transmission', 'min_price', 'max_price', 'pickup_date', 'return_date']),
         ]);
+    }
+
+    /**
+     * Get available drivers for a booking period.
+     */
+    public function availableDrivers(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pickup_date' => ['required', 'date'],
+            'return_date' => ['required', 'date', 'after:pickup_date'],
+        ]);
+
+        $pickupDate = Carbon::parse($validated['pickup_date']);
+        $returnDate = Carbon::parse($validated['return_date']);
+
+        // Get all approved and available drivers
+        $drivers = User::drivers()
+            ->where('status', 'active')
+            ->whereHas('driverProfile', function ($query) {
+                $query->where('verification_status', 'approved')
+                    ->where('availability', 'available');
+            })
+            ->with(['driverProfile'])
+            ->get()
+            ->reject(function ($driver) use ($pickupDate, $returnDate) {
+                // Reject drivers with overlapping assignments
+                return BookingDriver::query()
+                    ->where('driver_id', $driver->id)
+                    ->whereIn('status', [BookingDriver::STATUS_ACCEPTED])
+                    ->whereHas('booking', function ($query) use ($pickupDate, $returnDate) {
+                        $query->whereNotIn('status', ['rejected', 'cancelled'])
+                            ->where(function ($overlap) use ($pickupDate, $returnDate) {
+                                $overlap->whereBetween('pickup_date', [$pickupDate, $returnDate])
+                                    ->orWhereBetween('return_date', [$pickupDate, $returnDate])
+                                    ->orWhere(function ($contains) use ($pickupDate, $returnDate) {
+                                        $contains->where('pickup_date', '<=', $pickupDate)
+                                            ->where('return_date', '>=', $returnDate);
+                                    });
+                            });
+                    })
+                    ->exists();
+            })
+            ->map(function ($driver) {
+                return [
+                    'id' => $driver->id,
+                    'name' => $driver->name,
+                    'phone' => $driver->phone,
+                    'profile' => [
+                        'gender' => $driver->driverProfile->gender,
+                        'experience_years' => $driver->driverProfile->experience_years,
+                        'daily_rate' => (float) $driver->driverProfile->daily_rate,
+                        'license_number' => $driver->driverProfile->license_number,
+                        'license_type' => $driver->driverProfile->license_type,
+                        'location' => $driver->driverProfile->location,
+                        'has_license_document' => ! empty($driver->driverProfile->license_file_path),
+                        'has_national_id_document' => ! empty($driver->driverProfile->national_id_file_path),
+                    ],
+                ];
+            })
+            ->values();
+
+        return response()->json(['drivers' => $drivers]);
     }
 
     public function show(Car $car): Response
@@ -142,6 +207,7 @@ class BrowseCarController extends Controller
             'pickup_branch_id' => ['required', 'exists:locations,id'],
             'return_branch_id' => ['required', 'exists:locations,id'],
             'need_driver' => ['nullable', 'boolean'],
+            'driver_id' => ['nullable', 'exists:users,id'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -215,7 +281,14 @@ class BrowseCarController extends Controller
         }
 
         if ($booking->need_driver) {
-            $this->driverMatching->assignDriver($booking, $this->driverMatching->bestMatchFor($booking));
+            // If customer selected a specific driver, assign that driver
+            if (! empty($validated['driver_id'])) {
+                $selectedDriver = User::find($validated['driver_id']);
+                if ($selectedDriver && $selectedDriver->role === 'driver') {
+                    $this->driverMatching->assignDriver($booking, $selectedDriver);
+                }
+            }
+            // Note: Driver will be auto-assigned later after deposit payment + inspection approval
         }
 
         $booking->owner?->notifyNow(
