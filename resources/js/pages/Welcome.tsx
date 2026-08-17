@@ -177,9 +177,9 @@ export default function Welcome({ cars = [] }: Props) {
     const isConsumer = role === 'customer' || role === 'driver';
     const dashboardUrl = !isGuest && !isConsumer ? getDashboardUrl() : null;
 
-    const navItems = isConsumer
+const navItems = isConsumer
         ? [
-              { name: 'Browse Cars', link: '/browse-cars' },
+              { name: 'Our Fleet', link: '#fleet' },
               ...(role === 'customer'
                   ? [
                         { name: 'My Bookings', link: '/bookings' },
@@ -313,13 +313,13 @@ export default function Welcome({ cars = [] }: Props) {
                             <div className="mt-8 flex animate-in flex-col items-center gap-3 delay-300 duration-700 fade-in slide-in-from-bottom-4 sm:flex-row lg:justify-start">
                                 {isConsumer ? (
                                     <>
-                                        <Link
-                                            href="/browse-cars"
+                                        
+                                            <a href="#fleet"
                                             className="rounded-full bg-primary px-7 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition-all hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-xl"
                                         >
                                             Browse Cars{' '}
                                             <ArrowRight className="ml-1.5 inline h-4 w-4" />
-                                        </Link>
+                                        </a>
                                         <Link
                                             href={
                                                 role === 'driver'

@@ -11,7 +11,12 @@ import { useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -45,18 +50,6 @@ interface Props {
 
 const METHODS = [
     {
-        value: 'Cash',
-        label: 'Cash',
-        icon: '💵',
-        needsRef: false,
-    },
-    {
-        value: 'Bank Transfer',
-        label: 'Bank Transfer',
-        icon: '🏦',
-        needsRef: true,
-    },
-    {
         value: 'Telebirr',
         label: 'Telebirr',
         icon: '📱',
@@ -70,22 +63,10 @@ const METHODS = [
     },
 ] as const;
 
-const COMPANY_ACCOUNTS: Record<string, { label: string; value: string }[]> = {
-    'Bank Transfer': [
-        {
-            label: 'Bank',
-            value: 'Commercial Bank of Ethiopia',
-        },
-        {
-            label: 'Account Name',
-            value: 'Ethio Car Rental PLC',
-        },
-        {
-            label: 'Account Number',
-            value: '1000123456789',
-        },
-    ],
-
+const COMPANY_ACCOUNTS: Record<
+    string,
+    { label: string; value: string }[]
+> = {
     Telebirr: [
         {
             label: 'Account Name',
@@ -110,8 +91,6 @@ const COMPANY_ACCOUNTS: Record<string, { label: string; value: string }[]> = {
 };
 
 const METHOD_LABELS: Record<string, string> = {
-    Cash: 'Cash',
-    'Bank Transfer': 'Bank Transfer',
     Telebirr: 'Telebirr',
     'CBE Birr': 'CBE Birr',
 };
@@ -122,7 +101,10 @@ const formatETB = (value: number) =>
         maximumFractionDigits: 2,
     }).format(value);
 
-export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
+export default function PaymentForm({
+    booking,
+    mode = 'deposit',
+}: Props) {
     const { props: p } = usePage<{
         toast?: {
             type: string;
@@ -140,7 +122,9 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
 
-    const selectedMethod = METHODS.find((item) => item.value === method);
+    const selectedMethod = METHODS.find(
+        (item) => item.value === method,
+    );
 
     const showRefInput = selectedMethod?.needsRef ?? false;
 
@@ -165,7 +149,16 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
 
         if (!method) {
             setError('Please choose a payment method.');
+            return;
+        }
 
+        if (
+            method !== 'Telebirr' &&
+            method !== 'CBE Birr'
+        ) {
+            setError(
+                'Please choose a valid payment method: Telebirr or CBE Birr.',
+            );
             return;
         }
 
@@ -173,7 +166,6 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
             setError(
                 'Transaction reference is required for this payment method.',
             );
-
             return;
         }
 
@@ -205,7 +197,8 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                         .join(' ');
 
                     setError(
-                        messages || 'Something went wrong. Please try again.',
+                        messages ||
+                            'Something went wrong. Please try again.',
                     );
                 },
 
@@ -337,7 +330,8 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                 </span>
 
                                 <span className="text-xl font-bold">
-                                    ETB {formatETB(booking.total_price)}
+                                    ETB{' '}
+                                    {formatETB(booking.total_price)}
                                 </span>
                             </div>
 
@@ -399,7 +393,8 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </span>
 
                                         <span className="text-3xl font-bold text-green-600">
-                                            ETB {formatETB(totalDueNow)}
+                                            ETB{' '}
+                                            {formatETB(totalDueNow)}
                                         </span>
                                     </div>
                                 </>
@@ -411,7 +406,8 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </span>
 
                                         <span className="font-medium">
-                                            ETB {formatETB(balanceDue)}
+                                            ETB{' '}
+                                            {formatETB(balanceDue)}
                                         </span>
                                     </div>
 
@@ -443,20 +439,25 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                     </CardHeader>
 
                     <CardContent>
-                        <form onSubmit={handleSubmit} className="space-y-6">
+                        <form
+                            onSubmit={handleSubmit}
+                            className="space-y-6"
+                        >
                             {/* Methods */}
                             <div>
                                 <Label className="mb-3 block">
                                     Choose how you want to pay
                                 </Label>
 
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                                     {METHODS.map((item) => (
                                         <button
                                             type="button"
                                             key={item.value}
                                             onClick={() =>
-                                                handleMethodChange(item.value)
+                                                handleMethodChange(
+                                                    item.value,
+                                                )
                                             }
                                             disabled={processing}
                                             className={`rounded-xl border p-5 text-left transition-all duration-200 ${
@@ -478,9 +479,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                             </div>
 
                                             <div className="mt-1 text-xs text-muted-foreground">
-                                                {item.needsRef
-                                                    ? 'Transaction reference required'
-                                                    : 'No transaction reference required'}
+                                                Transaction reference required
                                             </div>
                                         </button>
                                     ))}
@@ -496,7 +495,8 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                         </p>
 
                                         <p className="text-2xl font-bold text-primary">
-                                            ETB {formatETB(paymentAmount)}
+                                            ETB{' '}
+                                            {formatETB(paymentAmount)}
                                         </p>
                                     </div>
 
@@ -504,34 +504,7 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                 </div>
                             )}
 
-                            {/* Cash */}
-                            {method === 'Cash' && (
-                                <div className="rounded-xl border-2 border-green-200 bg-green-50 p-4">
-                                    <div className="flex items-start gap-3">
-                                        <span className="text-2xl">💵</span>
-
-                                        <div>
-                                            <p className="font-semibold text-green-900">
-                                                Cash Payment
-                                            </p>
-
-                                            <p className="mt-1 text-sm text-green-800">
-                                                Pay the amount in cash at the
-                                                rental branch.
-                                            </p>
-
-                                            <p className="mt-2 text-xs font-medium text-green-700">
-                                                Your payment will remain{' '}
-                                                <strong>Pending</strong> until
-                                                an administrator receives and
-                                                confirms the cash payment.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Bank Transfer / Telebirr / CBE Birr */}
+                            {/* Company account and transaction reference */}
                             {showRefInput && (
                                 <div className="space-y-4 rounded-xl border-2 border-accent bg-accent p-4">
                                     {/* Company account */}
@@ -542,30 +515,30 @@ export default function PaymentForm({ booking, mode = 'deposit' }: Props) {
                                             </p>
 
                                             <div className="mt-2 space-y-2">
-                                                {COMPANY_ACCOUNTS[method].map(
-                                                    (row) => (
-                                                        <div
-                                                            key={row.label}
-                                                            className="flex justify-between gap-4 text-sm"
-                                                        >
-                                                            <span className="text-muted-foreground">
-                                                                {row.label}
-                                                            </span>
+                                                {COMPANY_ACCOUNTS[
+                                                    method
+                                                ].map((row) => (
+                                                    <div
+                                                        key={row.label}
+                                                        className="flex justify-between gap-4 text-sm"
+                                                    >
+                                                        <span className="text-muted-foreground">
+                                                            {row.label}
+                                                        </span>
 
-                                                            <span className="text-right font-semibold">
-                                                                {row.value}
-                                                            </span>
-                                                        </div>
-                                                    ),
-                                                )}
+                                                        <span className="text-right font-semibold">
+                                                            {row.value}
+                                                        </span>
+                                                    </div>
+                                                ))}
                                             </div>
 
                                             <p className="mt-3 text-xs text-primary">
-                                                Complete the payment first, then
-                                                enter the transaction reference
-                                                below. The payment will remain
-                                                pending until an administrator
-                                                verifies it.
+                                                Complete the payment first,
+                                                then enter the transaction
+                                                reference below. The payment
+                                                will remain pending until an
+                                                administrator verifies it.
                                             </p>
                                         </div>
                                     )}

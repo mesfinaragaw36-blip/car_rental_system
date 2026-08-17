@@ -270,12 +270,11 @@ class BookingController extends Controller
                         2
                     )
                     : '0.00',
-
-                'customer' => $booking->customer
+            'customer' => ($booking->customer && $user->role === 'admin')
                     ? $this->customerPayload($booking, $user)
                     : null,
 
-                'owner' => $booking->owner
+                'owner' => ($booking->owner && $user->role === 'admin')
                     ? [
                         'id' => $booking->owner->id,
                         'name' => $booking->owner->name,
@@ -329,7 +328,7 @@ class BookingController extends Controller
                 'late_days' => $booking->late_days,
                 'late_fee' => $booking->late_fee,
 
-                'driver' => $booking->driverAssignment?->driver
+                'driver' => ($user->role === 'admin' && $booking->driverAssignment?->driver)
                     ? [
                         'id' => $booking->driverAssignment->driver->id,
                         'name' => $booking->driverAssignment->driver->name,
@@ -502,7 +501,9 @@ class BookingController extends Controller
             ]);
         }
 
-        if ($booking->hasPaidDeposit()) {
+        $hadPaidDeposit = $booking->hasPaidDeposit();
+
+        if ($hadPaidDeposit) {
             $depositAmount = $booking->depositAmount();
             $retained = round($depositAmount * 0.25, 2);
             $refundAmount = round($depositAmount - $retained, 2);
@@ -518,9 +519,24 @@ class BookingController extends Controller
             'status' => Booking::STATUS_CANCELLED,
         ]);
 
+        $booking->owner?->notifyNow(
+            "Booking #{$booking->id} cancelled",
+            sprintf(
+                'The customer cancelled their booking for your %s %s.%s',
+                $booking->car->brand,
+                $booking->car->model,
+                $hadPaidDeposit
+                    ? ' The deposit refund is being processed (25% retained per policy).'
+                    : ' No deposit had been paid.'
+            ),
+            'booking_cancelled',
+            Booking::class,
+            $booking->id,
+        );
+
         return back()->with('toast', [
             'type' => 'success',
-            'message' => $booking->hasPaidDeposit()
+            'message' => $hadPaidDeposit
                 ? 'Booking cancelled. 75% of your deposit will be refunded; 25% is non-refundable.'
                 : 'Booking cancelled.',
         ]);

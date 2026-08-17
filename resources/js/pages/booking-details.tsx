@@ -561,53 +561,56 @@ export default function BookingDetails({ booking, role }: Props) {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <User className="h-5 w-5" /> Customer
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            {booking.customer ? (
-                                <>
-                                    <p className="font-medium">
-                                        {booking.customer.name}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        {booking.customer.phone}
-                                        {booking.customer.email
-                                            ? ` \u00B7 ${booking.customer.email}`
-                                            : ''}
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-muted-foreground">N/A</p>
-                            )}
-                        </CardContent>
-                    </Card>
+                   {role === 'admin' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <User className="h-5 w-5" /> Customer
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                                {booking.customer ? (
+                                    <>
+                                        <p className="font-medium">
+                                            {booking.customer.name}
+                                        </p>
+                                        <p className="text-muted-foreground">
+                                            {booking.customer.phone}
+                                            {booking.customer.email
+                                                ? ` \u00B7 ${booking.customer.email}`
+                                                : ''}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p className="text-muted-foreground">N/A</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <UserCircle className="h-5 w-5" /> Owner
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            {booking.owner ? (
-                                <>
-                                    <p className="font-medium">
-                                        {booking.owner.name}
-                                    </p>
-                                    <p className="text-muted-foreground">
-                                        {booking.owner.phone}
-                                    </p>
-                                </>
-                            ) : (
-                                <p className="text-muted-foreground">N/A</p>
-                            )}
-                        </CardContent>
-                    </Card>
-
+                   {role === 'admin' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <UserCircle className="h-5 w-5" /> Owner
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                                {booking.owner ? (
+                                    <>
+                                        <p className="font-medium">
+                                            {booking.owner.name}
+                                        </p>
+                                        <p className="text-muted-foreground">
+                                            {booking.owner.phone}
+                                        </p>
+                                    </>
+                                ) : (
+                                    <p className="text-muted-foreground">N/A</p>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                     <Card>
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
@@ -779,35 +782,37 @@ export default function BookingDetails({ booking, role }: Props) {
                         </CardContent>
                     </Card>
 
-                    <Card>
-                        <CardHeader>
-                            <CardTitle className="flex items-center gap-2">
-                                <Files className="h-5 w-5" /> Driver
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent className="space-y-2 text-sm">
-                            {booking.need_driver ? (
-                                booking.driver ? (
-                                    <>
-                                        <p className="font-medium">
-                                            {booking.driver.name}
-                                        </p>
+                    {role === 'admin' && (
+                        <Card>
+                            <CardHeader>
+                                <CardTitle className="flex items-center gap-2">
+                                    <Files className="h-5 w-5" /> Driver
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2 text-sm">
+                                {booking.need_driver ? (
+                                    booking.driver ? (
+                                        <>
+                                            <p className="font-medium">
+                                                {booking.driver.name}
+                                            </p>
+                                            <p className="text-muted-foreground">
+                                                {booking.driver.phone}
+                                            </p>
+                                        </>
+                                    ) : (
                                         <p className="text-muted-foreground">
-                                            {booking.driver.phone}
+                                            No driver assigned yet
                                         </p>
-                                    </>
+                                    )
                                 ) : (
                                     <p className="text-muted-foreground">
-                                        No driver assigned yet
+                                        Not requested
                                     </p>
-                                )
-                            ) : (
-                                <p className="text-muted-foreground">
-                                    Not requested
-                                </p>
-                            )}
-                        </CardContent>
-                    </Card>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
                 </div>
 
                 {booking.notes && (
