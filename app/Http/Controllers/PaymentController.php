@@ -27,7 +27,7 @@ class PaymentController extends Controller
     |
     */
     private const PAYMENT_METHODS = [
-        'Cash',
+        'Telebirr',
         'CBE Birr',
         'Telebirr',
     ];

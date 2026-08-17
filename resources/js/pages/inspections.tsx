@@ -523,7 +523,6 @@ function InspectionForm({
         damages: [{ area: '', description: '' }] as Damage[],
         notes: '',
         photos: [] as File[],
-        id_verified: false,
     });
 
     const pickup = booking.inspections.find(
@@ -567,10 +566,6 @@ function InspectionForm({
         formData.append('fuel_level', data.fuel_level);
         formData.append('estimated_value', data.estimated_value);
         formData.append('notes', data.notes);
-
-        if (type === 'pickup' && data.id_verified) {
-            formData.append('id_verified', '1');
-        }
 
         damagesToSubmit.forEach((d, i) => {
             formData.append(`damages[${i}][area]`, d.area);
@@ -779,82 +774,6 @@ function InspectionForm({
                     <p className="text-xs text-red-600">{errors.notes}</p>
                 )}
             </div>
-
-            {type === 'pickup' && (
-                <div className="rounded-lg border border-slate-200 bg-white p-4">
-                    <div className="space-y-3">
-                        <div className="flex items-start gap-3">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
-                                <Users className="h-5 w-5 text-primary" />
-                            </div>
-                            <div className="flex-1">
-                                <p className="text-sm font-semibold text-slate-900">
-                                    Customer Identity Verification
-                                </p>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    {booking.customer ? (
-                                        <>
-                                            <span className="font-medium text-slate-900">
-                                                {booking.customer.name}
-                                            </span>
-                                            {booking.customer.national_id ? (
-                                                <>
-                                                    {' · '}
-                                                    <span className="font-mono">
-                                                        National ID:{' '}
-                                                        {
-                                                            booking.customer
-                                                                .national_id
-                                                        }
-                                                    </span>
-                                                </>
-                                            ) : (
-                                                <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                                    No National ID on file
-                                                </span>
-                                            )}
-                                        </>
-                                    ) : (
-                                        'Customer information not available'
-                                    )}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
-                            <input
-                                type="checkbox"
-                                id="id_verified"
-                                checked={data.id_verified}
-                                onChange={(e) =>
-                                    setData('id_verified', e.target.checked)
-                                }
-                                className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
-                            />
-                            <label
-                                htmlFor="id_verified"
-                                className="flex-1 cursor-pointer text-sm text-slate-700"
-                            >
-                                <span className="font-semibold">
-                                    I confirm that the customer's National ID
-                                    has been physically checked and matches the
-                                    customer.
-                                </span>
-                                <p className="mt-1 text-xs text-muted-foreground">
-                                    This verification is mandatory for pickup
-                                    inspections and will be recorded with your
-                                    staff ID and timestamp.
-                                </p>
-                            </label>
-                        </div>
-                        {errors.id_verified && (
-                            <p className="text-xs text-red-600">
-                                {errors.id_verified}
-                            </p>
-                        )}
-                    </div>
-                </div>
-            )}
-
             <div className="flex flex-wrap gap-2">
                 <Button
                     onClick={() => submitWith('approved')}
@@ -1099,6 +1018,7 @@ function BookingDetail({
     const [processingAction, setProcessingAction] = useState<
         'handover' | 'returned' | null
     >(null);
+    const [handoverIdVerified, setHandoverIdVerified] = useState(false);
 
     const showPickupForm =
         inspectionType === 'pickup' &&
@@ -1287,30 +1207,102 @@ function BookingDetail({
                     {inspectionType === 'pickup' &&
                         booking.status === 'paid' &&
                         pickupApproved && (
-                            <Button
-                                size="sm"
-                                disabled={processingAction !== null}
-                                onClick={() => {
-                                    setProcessingAction('handover');
+                            <div className="space-y-3 rounded-lg border border-slate-200 bg-white p-4">
+                                <div className="flex items-start gap-3">
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
+                                        <Users className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-sm font-semibold text-slate-900">
+                                            Customer Identity Verification
+                                        </p>
+                                        <p className="mt-1 text-sm text-muted-foreground">
+                                            {booking.customer ? (
+                                                <>
+                                                    <span className="font-medium text-slate-900">
+                                                        {booking.customer.name}
+                                                    </span>
+                                                    {booking.customer.national_id ? (
+                                                        <>
+                                                            {' · '}
+                                                            <span className="font-mono">
+                                                                National ID:{' '}
+                                                                {
+                                                                    booking.customer
+                                                                        .national_id
+                                                                }
+                                                            </span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                                                            No National ID on file
+                                                        </span>
+                                                    )}
+                                                </>
+                                            ) : (
+                                                'Customer information not available'
+                                            )}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+                                    <input
+                                        type="checkbox"
+                                        id="handover_id_verified"
+                                        checked={handoverIdVerified}
+                                        onChange={(e) =>
+                                            setHandoverIdVerified(
+                                                e.target.checked,
+                                            )
+                                        }
+                                        className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
+                                    />
+                                    <label
+                                        htmlFor="handover_id_verified"
+                                        className="flex-1 cursor-pointer text-sm text-slate-700"
+                                    >
+                                        <span className="font-semibold">
+                                            I confirm that the customer's National
+                                            ID has been physically checked and
+                                            matches the customer.
+                                        </span>
+                                        <p className="mt-1 text-xs text-muted-foreground">
+                                            This verification is mandatory before
+                                            handing over the vehicle and will be
+                                            recorded with your staff ID and
+                                            timestamp.
+                                        </p>
+                                    </label>
+                                </div>
 
-                                    router.post(
-                                        inspections.handover.url({
-                                            booking: booking.id,
-                                        }),
-                                        {},
-                                        {
-                                            preserveScroll: true,
-                                            onFinish: () =>
-                                                setProcessingAction(null),
-                                        },
-                                    );
-                                }}
-                            >
-                                <KeyRound className="mr-1.5 h-4 w-4" />
-                                {processingAction === 'handover'
-                                    ? 'Handing over...'
-                                    : 'Hand Over Keys (Mark Picked Up)'}
-                            </Button>
+                                <Button
+                                    size="sm"
+                                    disabled={
+                                        processingAction !== null ||
+                                        !handoverIdVerified
+                                    }
+                                    onClick={() => {
+                                        setProcessingAction('handover');
+
+                                        router.post(
+                                            inspections.handover.url({
+                                                booking: booking.id,
+                                            }),
+                                            { id_verified: handoverIdVerified },
+                                            {
+                                                preserveScroll: true,
+                                                onFinish: () =>
+                                                    setProcessingAction(null),
+                                            },
+                                        );
+                                    }}
+                                >
+                                    <KeyRound className="mr-1.5 h-4 w-4" />
+                                    {processingAction === 'handover'
+                                        ? 'Handing over...'
+                                        : 'Hand Over Keys (Mark Picked Up)'}
+                                </Button>
+                            </div>
                         )}
 
                     {inspectionType === 'return' &&

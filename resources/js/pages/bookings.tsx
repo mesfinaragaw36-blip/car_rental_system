@@ -540,12 +540,19 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     </div>
                                                 </div>
 
-                                                {/* Driver */}
+                                               {/* Driver */}
                                                 {booking.need_driver && (
-                                                    <span className="inline-flex items-center gap-1 rounded-full border border-accent bg-accent px-3 py-1 text-xs font-medium text-primary">
-                                                        <User className="h-3 w-3" />
-                                                        Driver requested
-                                                    </span>
+                                                    hasAssignedDriver(booking) ? (
+                                                        <span className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
+                                                            <User className="h-3 w-3" />
+                                                            Driver assigned
+                                                        </span>
+                                                    ) : (
+                                                        <span className="inline-flex items-center gap-1 rounded-full border border-accent bg-accent px-3 py-1 text-xs font-medium text-primary">
+                                                            <User className="h-3 w-3" />
+                                                            Driver requested
+                                                        </span>
+                                                    )
                                                 )}
 
                                                 {/* Booking Progress */}

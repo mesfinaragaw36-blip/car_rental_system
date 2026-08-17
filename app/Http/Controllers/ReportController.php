@@ -55,6 +55,178 @@ class ReportController extends Controller
     }
 
     /**
+     * Generate and download the report as a CSV file.
+     *
+     * If a "section" query parameter is provided, only that
+     * section's data is exported. Otherwise the full report
+     * is exported across multiple tables in one file.
+     */
+    public function exportCsv(Request $request)
+    {
+        $reportData = $this->getReportData($request);
+        $section = $request->input('section');
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $filename = 'ethio-car-rental-report';
+
+        if ($section) {
+            $filename .= "-{$section}";
+        }
+
+        if ($from && $to) {
+            $filename .= "-{$from}-to-{$to}";
+        } elseif ($from) {
+            $filename .= "-from-{$from}";
+        } elseif ($to) {
+            $filename .= "-until-{$to}";
+        }
+
+        $filename .= '.csv';
+
+        $callback = function () use ($reportData, $section) {
+            $handle = fopen('php://output', 'w');
+
+            if ($section) {
+                $this->writeCsvSection($handle, $section, $reportData);
+            } else {
+                foreach ($this->csvSectionKeys() as $key) {
+                    $this->writeCsvSection($handle, $key, $reportData);
+                    fputcsv($handle, []);
+                }
+            }
+
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+        ]);
+    }
+
+    /**
+     * The ordered list of exportable section keys.
+     */
+    private function csvSectionKeys(): array
+    {
+        return [
+            'summary',
+            'bookingStatuses',
+            'paymentTypes',
+            'paymentMethods',
+            'topCars',
+            'topCustomers',
+            'topOwners',
+            'topDrivers',
+            'refundStatuses',
+            'revenueByDate',
+        ];
+    }
+
+    /**
+     * Write a single section's rows to the CSV output stream.
+     */
+    private function writeCsvSection($handle, string $section, array $reportData): void
+    {
+        $formatLabel = fn (string $value) => ucwords(str_replace('_', ' ', $value));
+
+        switch ($section) {
+            case 'summary':
+                fputcsv($handle, ['Summary Item', 'Value']);
+                foreach ($reportData['summary'] as $key => $value) {
+                    fputcsv($handle, [$formatLabel($key), $value]);
+                }
+                break;
+
+            case 'bookingStatuses':
+                fputcsv($handle, ['Booking Status', 'Count']);
+                foreach ($reportData['bookingStatuses'] as $status => $count) {
+                    fputcsv($handle, [$formatLabel($status), $count]);
+                }
+                break;
+
+            case 'paymentTypes':
+                fputcsv($handle, ['Payment Type', 'Amount']);
+                foreach ($reportData['paymentTypes'] as $type => $amount) {
+                    fputcsv($handle, [$formatLabel($type), $amount]);
+                }
+                break;
+
+            case 'paymentMethods':
+                fputcsv($handle, ['Payment Method', 'Amount']);
+                foreach ($reportData['paymentMethods'] as $method => $amount) {
+                    fputcsv($handle, [$formatLabel($method), $amount]);
+                }
+                break;
+
+            case 'topCars':
+                fputcsv($handle, ['Rank', 'Vehicle', 'Plate Number', 'Bookings']);
+                foreach ($reportData['topCars'] as $index => $car) {
+                    fputcsv($handle, [
+                        $index + 1,
+                        $car['car'],
+                        $car['plate_number'],
+                        $car['bookings_count'],
+                    ]);
+                }
+                break;
+
+            case 'topCustomers':
+                fputcsv($handle, ['Rank', 'Customer', 'Email', 'Bookings']);
+                foreach ($reportData['topCustomers'] as $index => $customer) {
+                    fputcsv($handle, [
+                        $index + 1,
+                        $customer['name'],
+                        $customer['email'],
+                        $customer['bookings_count'],
+                    ]);
+                }
+                break;
+
+            case 'topOwners':
+                fputcsv($handle, ['Rank', 'Owner', 'Email', 'Cars Registered']);
+                foreach ($reportData['topOwners'] as $index => $owner) {
+                    fputcsv($handle, [
+                        $index + 1,
+                        $owner['name'],
+                        $owner['email'],
+                        $owner['cars_count'],
+                    ]);
+                }
+                break;
+
+            case 'topDrivers':
+                fputcsv($handle, ['Rank', 'Driver', 'Email', 'Assignments Accepted']);
+                foreach ($reportData['topDrivers'] as $index => $driver) {
+                    fputcsv($handle, [
+                        $index + 1,
+                        $driver['name'],
+                        $driver['email'],
+                        $driver['assignments_count'],
+                    ]);
+                }
+                break;
+
+            case 'refundStatuses':
+                fputcsv($handle, ['Refund Status', 'Count', 'Amount']);
+                foreach ($reportData['refundStatuses'] as $status => $data) {
+                    fputcsv($handle, [$formatLabel($status), $data['count'], $data['amount']]);
+                }
+                break;
+
+            case 'revenueByDate':
+                fputcsv($handle, ['Date', 'Revenue']);
+                foreach ($reportData['revenueByDate'] as $item) {
+                    fputcsv($handle, [$item['date'], $item['total']]);
+                }
+                break;
+        }
+    }
+
+
+    /**
      * Build all report data.
      *
      * This method is shared by the web report and PDF report
@@ -369,7 +541,6 @@ class ReportController extends Controller
             ->with('car:id,brand,model,plate_number')
             ->groupBy('car_id')
             ->orderByDesc('bookings_count')
-            ->limit(5)
             ->get()
             ->map(fn (Booking $booking) => [
                 'car' => $booking->car
@@ -379,6 +550,79 @@ class ReportController extends Controller
                 'plate_number' => $booking->car?->plate_number,
 
                 'bookings_count' => (int) $booking->bookings_count,
+            ])
+            ->values();
+
+
+            /*
+         * Top customers by bookings made.
+         */
+        $topCustomers = (clone $bookingQuery)
+            ->selectRaw('customer_id, COUNT(*) as bookings_count')
+            ->with('customer:id,name,email')
+            ->whereNotNull('customer_id')
+            ->groupBy('customer_id')
+            ->orderByDesc('bookings_count')
+            ->get()
+            ->map(fn (Booking $booking) => [
+                'name' => $booking->customer?->name ?? 'Unknown',
+                'email' => $booking->customer?->email,
+                'bookings_count' => (int) $booking->bookings_count,
+            ])
+            ->values();
+
+        /*
+         * Top owners by cars registered.
+         *
+         * Uses the car's own created_at, not the booking date range,
+         * since registration is independent of bookings.
+         */
+        $carQuery = Car::query();
+
+        if ($from) {
+            $carQuery->whereDate('created_at', '>=', $from);
+        }
+
+        if ($to) {
+            $carQuery->whereDate('created_at', '<=', $to);
+        }
+
+        $topOwners = $carQuery
+            ->selectRaw('owner_id, COUNT(*) as cars_count')
+            ->with('owner:id,name,email')
+            ->whereNotNull('owner_id')
+            ->groupBy('owner_id')
+            ->orderByDesc('cars_count')
+            ->get()
+            ->map(fn (Car $car) => [
+                'name' => $car->owner?->name ?? 'Unknown',
+                'email' => $car->owner?->email,
+                'cars_count' => (int) $car->cars_count,
+            ])
+            ->values();
+
+        /*
+         * Top drivers by accepted assignments.
+         *
+         * Counts assignments the driver actually took on
+         * (accepted, completed, or paid) rather than pending/rejected.
+         */
+        $topDrivers = (clone $driverPayoutQuery)
+            ->selectRaw('driver_id, COUNT(*) as assignments_count')
+            ->with('driver:id,name,email')
+            ->whereIn('status', [
+                BookingDriver::STATUS_ACCEPTED,
+                BookingDriver::STATUS_COMPLETED,
+                BookingDriver::STATUS_PAID,
+            ])
+            ->whereNotNull('driver_id')
+            ->groupBy('driver_id')
+            ->orderByDesc('assignments_count')
+            ->get()
+            ->map(fn (BookingDriver $assignment) => [
+                'name' => $assignment->driver?->name ?? 'Unknown',
+                'email' => $assignment->driver?->email,
+                'assignments_count' => (int) $assignment->assignments_count,
             ])
             ->values();
 
@@ -454,6 +698,12 @@ class ReportController extends Controller
             'paymentMethods' => $paymentMethods,
 
             'topCars' => $topCars,
+
+            'topCustomers' => $topCustomers,
+
+            'topOwners' => $topOwners,
+
+            'topDrivers' => $topDrivers,
 
             'refundStatuses' => $refundStatuses,
 
