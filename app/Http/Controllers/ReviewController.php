@@ -48,10 +48,11 @@ class ReviewController extends Controller
             if ($booking->car_id !== $reviewableId) {
                 abort(403);
             }
-        } elseif ($reviewableType === 'user') {
-            if (! ($booking->owner_id === $reviewableId || $booking->driverAssignment?->driver_id === $reviewableId)) {
-                abort(403);
-            }
+        } elseif (
+            $reviewableType === 'user'
+            && $booking->driverAssignment?->driver_id !== $reviewableId
+        ) {
+            abort(403);
         }
 
         $reviewableClass = $reviewableType === 'car' ? Car::class : User::class;

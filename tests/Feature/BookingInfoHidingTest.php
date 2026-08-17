@@ -39,7 +39,7 @@ class BookingInfoHidingTest extends TestCase
         ]);
     }
 
-    public function test_owner_does_not_see_customer_email_in_booking_details(): void
+    public function test_owner_does_not_see_customer_information_in_booking_details(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -49,9 +49,7 @@ class BookingInfoHidingTest extends TestCase
             ->get(route('bookings.show', ['booking' => $booking->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('booking.customer.name', $customer->name)
-                ->where('booking.customer.phone', $customer->phone)
-                ->missing('booking.customer.email'));
+                ->where('booking.customer', null));
     }
 
     public function test_owner_does_not_see_customer_email_in_booking_list(): void
@@ -69,7 +67,7 @@ class BookingInfoHidingTest extends TestCase
                 ->missing('bookings.data.0.customer.email'));
     }
 
-    public function test_customer_sees_their_own_email_in_booking_details(): void
+    public function test_customer_does_not_see_owner_information_in_booking_details(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -79,9 +77,7 @@ class BookingInfoHidingTest extends TestCase
             ->get(route('bookings.show', ['booking' => $booking->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('booking.customer.email', $customer->email)
-                ->where('booking.owner.name', $owner->name)
-                ->where('booking.owner.phone', $owner->phone));
+                ->where('booking.owner', null));
     }
 
     public function test_admin_sees_customer_email_in_booking_details(): void
@@ -147,7 +143,7 @@ class BookingInfoHidingTest extends TestCase
                 ->where('booking.pickup_inspection_approved', true));
     }
 
-    public function test_owner_still_sees_customer_phone_for_handoff(): void
+    public function test_owner_does_not_see_customer_information_even_past_booking(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
         $customer = User::factory()->create(['role' => 'customer']);
@@ -157,6 +153,6 @@ class BookingInfoHidingTest extends TestCase
             ->get(route('bookings.show', ['booking' => $booking->id]))
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
-                ->where('booking.customer.phone', $customer->phone));
+                ->where('booking.customer', null));
     }
 }

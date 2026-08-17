@@ -88,7 +88,18 @@ export default function CarDetails({
             onSuccess: () => {},
         });
     };
-
+   const verificationMessage =
+    verification_status === 'pending'
+        ? 'Your national ID is currently under review. You can book a car once your verification is approved.'
+        : verification_status === 'rejected'
+          ? 'Your national ID verification was rejected. Please review and resubmit your ID information.'
+          : 'Please submit your national ID to complete verification before booking a car.';
+          const verificationTitle =
+    verification_status === 'pending'
+        ? 'Verification Pending'
+        : verification_status === 'rejected'
+            ? 'Verification Rejected'
+            : 'Verification Required';
     return (
         <>
             <Head title={`${car.brand} ${car.model}`} />
@@ -354,14 +365,12 @@ export default function CarDetails({
                     (verification_status !== 'approved' ? (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Approval Required</CardTitle>
+                                <CardTitle>{verificationTitle}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
-                                    You need to be approved before booking a
-                                    car. Please submit your national ID on your
-                                    profile page to complete verification.
-                                </p>
+    {verificationMessage}
+</p>
                                 <Button asChild>
                                     <Link href={editProfile.url()}>
                                         Go to Profile

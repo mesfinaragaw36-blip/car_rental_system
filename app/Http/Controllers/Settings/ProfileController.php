@@ -37,9 +37,19 @@ class ProfileController extends Controller
         }
 
         if ($request->query('booking_gate') === 'requires_approval') {
+            $identity = $user->customerIdentity;
+
+            $message = match ($identity?->verification_status) {
+                CustomerIdentity::STATUS_PENDING => 'Your national ID is currently under review. You can book a car once your verification is approved.',
+
+                CustomerIdentity::STATUS_REJECTED => 'Your national ID verification was rejected. Please review and resubmit your ID information.',
+
+                default => 'Please submit your national ID to complete verification before booking a car.',
+            };
+
             Inertia::flash('toast', [
                 'type' => 'error',
-                'message' => 'You must be approved before booking a car. Please submit your national ID to complete verification.',
+                'message' => $message,
             ]);
         }
 

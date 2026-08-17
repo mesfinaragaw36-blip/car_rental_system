@@ -51,8 +51,8 @@ const FEATURES = [
     },
     {
         icon: Star,
-        title: 'Trusted Owners',
-        desc: 'Rated and reviewed owners, so you always know what to expect.',
+        title: 'Curated Fleet',
+        desc: 'Every vehicle is inspected and rated, so you always know what to expect.',
     },
     {
         icon: Gauge,

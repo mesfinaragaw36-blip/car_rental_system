@@ -141,10 +141,31 @@ class BrowseCarController extends Controller
         $user = auth()->user();
         $identity = $user->customerIdentity;
 
-        if (! $identity || $identity->verification_status !== 'approved') {
+        if (! $identity) {
             return redirect()->route('profile.edit')->with('toast', [
                 'type' => 'error',
-                'message' => 'You must verify your identity before booking a vehicle. Please submit your national ID to continue.',
+                'message' => 'Please submit your national ID to complete verification.',
+            ]);
+        }
+
+        if ($identity->verification_status === 'rejected') {
+            return redirect()->route('profile.edit')->with('toast', [
+                'type' => 'error',
+                'message' => 'The national ID you entered could not be verified. Please check your ID and try again.',
+            ]);
+        }
+
+        if ($identity->verification_status === 'pending') {
+            return redirect()->route('profile.edit')->with('toast', [
+                'type' => 'error',
+                'message' => 'Your national ID is still being verified. Please wait until verification is complete before booking.',
+            ]);
+        }
+
+        if ($identity->verification_status !== 'approved') {
+            return redirect()->route('profile.edit')->with('toast', [
+                'type' => 'error',
+                'message' => 'Your identity verification is not complete. Please verify your national ID before booking.',
             ]);
         }
 

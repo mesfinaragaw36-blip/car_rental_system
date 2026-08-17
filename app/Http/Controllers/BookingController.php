@@ -70,8 +70,7 @@ class BookingController extends Controller
 
             $booking->identity_approved =
                 $user->role !== 'customer'
-                || $identity === null
-                || $identity->isApproved();
+                || ($identity !== null && $identity->isApproved());
 
             $booking->identity_status =
                 $user->role === 'customer'
@@ -141,9 +140,7 @@ class BookingController extends Controller
 
         $reviewed = [
             'car' => false,
-            'owner' => false,
             'driver' => false,
-            'customer' => false,
         ];
 
         foreach ($userReviews as $review) {
@@ -151,21 +148,12 @@ class BookingController extends Controller
                 $reviewed['car'] = true;
             }
 
-            if ($review->reviewable_type === User::class) {
-                if ($review->reviewable_id === $booking->owner_id) {
-                    $reviewed['owner'] = true;
-                }
-
-                if (
-                    $review->reviewable_id
-                    === $booking->driverAssignment?->driver_id
-                ) {
-                    $reviewed['driver'] = true;
-                }
-
-                if ($review->reviewable_id === $booking->customer_id) {
-                    $reviewed['customer'] = true;
-                }
+            if (
+                $review->reviewable_type === User::class
+                && $review->reviewable_id
+                === $booking->driverAssignment?->driver_id
+            ) {
+                $reviewed['driver'] = true;
             }
         }
 
@@ -186,15 +174,6 @@ class BookingController extends Controller
                     'id' => $booking->car->id,
                     'name' => $booking->car->brand.' '.$booking->car->model,
                     'alreadyReviewed' => $reviewed['car'],
-                ];
-
-                $reviewTargets[] = [
-                    'key' => 'owner',
-                    'label' => 'Owner',
-                    'type' => 'user',
-                    'id' => $booking->owner->id,
-                    'name' => $booking->owner->name,
-                    'alreadyReviewed' => $reviewed['owner'],
                 ];
 
                 if ($booking->driverAssignment?->driver) {
@@ -225,9 +204,7 @@ class BookingController extends Controller
                             : 'Unknown Vehicle'
                     )
                     : match ($review->reviewable_id) {
-                        $booking->owner_id => $booking->owner->name,
                         $booking->driverAssignment?->driver_id => $booking->driverAssignment->driver->name,
-                        $booking->customer_id => $booking->customer->name,
                         default => 'Unknown',
                     };
 
@@ -270,9 +247,9 @@ class BookingController extends Controller
                         2
                     )
                     : '0.00',
-            'customer' => ($booking->customer && $user->role === 'admin')
-                    ? $this->customerPayload($booking, $user)
-                    : null,
+                'customer' => ($booking->customer && $user->role === 'admin')
+                        ? $this->customerPayload($booking, $user)
+                        : null,
 
                 'owner' => ($booking->owner && $user->role === 'admin')
                     ? [
@@ -378,12 +355,14 @@ class BookingController extends Controller
                 'reviews' => $reviewList,
 
                 'identity_approved' => $user->role !== 'customer'
-                    || $user->customerIdentity === null
-                    || $user->customerIdentity->isApproved(),
+    || (
+        $user->customerIdentity !== null
+        && $user->customerIdentity->isApproved()
+    ),
 
                 'identity_status' => $user->role === 'customer'
-                        ? $user->customerIdentity?->verification_status
-                        : null,
+                    ? $user->customerIdentity?->verification_status
+                    : null,
 
                 'security_deposit' => $booking->securityDepositAmount(),
 

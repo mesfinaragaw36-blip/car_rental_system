@@ -130,21 +130,21 @@ class ReviewSubmissionTest extends TestCase
 
         Review::create([
             'booking_id' => $booking->id,
-            'reviewer_id' => $owner->id,
-            'reviewable_type' => User::class,
-            'reviewable_id' => $customer->id,
+            'reviewer_id' => $customer->id,
+            'reviewable_type' => Car::class,
+            'reviewable_id' => $car->id,
             'rating' => 4,
-            'review_text' => 'Customer was punctual and easy to work with.',
+            'review_text' => 'Great vehicle, smooth ride.',
         ]);
 
         $response = $this->actingAs($admin)->get(route('bookings.show', $booking));
 
         $response->assertOk();
         $response->assertInertia(fn (Assert $page) => $page
-            ->where('booking.reviews.0.target', $customer->name)
-            ->where('booking.reviews.0.reviewer.name', $owner->name)
+            ->where('booking.reviews.0.target', 'Vehicle')
+            ->where('booking.reviews.0.reviewer.name', $customer->name)
             ->where('booking.reviews.0.rating', 4)
-            ->where('booking.reviews.0.review_text', 'Customer was punctual and easy to work with.')
+            ->where('booking.reviews.0.review_text', 'Great vehicle, smooth ride.')
         );
     }
 }
