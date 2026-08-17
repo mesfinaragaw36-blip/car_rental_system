@@ -12,12 +12,28 @@ import {
 import { cn } from '@/lib/utils';
 import { index, readAll, read } from '@/routes/notifications';
 
+interface SharedNotifications {
+    unread_count?: number;
+    latest?: {
+        id: number;
+        type: string;
+        title: string;
+        message: string;
+        read_at: string | null;
+        created_at: string;
+        url: string | null;
+    }[];
+}
+
 export function NotificationBell() {
-    const { notifications } = usePage().props;
-    const { unread_count: unreadCount, latest } = notifications;
+    const pageProps = usePage().props as Record<string, unknown>;
+    const shared = (pageProps.sharedNotifications ?? pageProps.notifications) as SharedNotifications | undefined;
+
+    const unreadCount = shared?.unread_count ?? 0;
+    const latest = shared?.latest ?? [];
 
     const handleMarkRead = (id: number) => {
-        router.post(read({ notification: id }), undefined, {
+        router.post(read.url({ notification: id }), undefined, {
             preserveScroll: true,
         });
     };
@@ -49,7 +65,7 @@ export function NotificationBell() {
                             type="button"
                             className="flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs font-medium text-neutral-500 hover:bg-accent hover:text-foreground"
                             onClick={() =>
-                                router.post(readAll(), undefined, {
+                                router.post(readAll.url(), undefined, {
                                     preserveScroll: true,
                                 })
                             }
@@ -98,7 +114,7 @@ export function NotificationBell() {
                 <DropdownMenuItem asChild>
                     <Link
                         className="flex w-full cursor-pointer justify-center text-sm font-medium"
-                        href={index()}
+                        href={index.url()}
                     >
                         View all notifications
                     </Link>

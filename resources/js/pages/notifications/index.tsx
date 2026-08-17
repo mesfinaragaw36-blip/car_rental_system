@@ -184,7 +184,7 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
 
     const handleClick = () => {
         if (unread) {
-            router.post(read({ notification: notification.id }), undefined, {
+            router.post(read.url({ notification: notification.id }), undefined, {
                 preserveScroll: true,
                 onSuccess: () => {
                     if (notification.url) {
@@ -205,7 +205,7 @@ function NotificationRow({ notification }: { notification: AppNotification }) {
         event.stopPropagation();
 
         if (unread) {
-            router.post(read({ notification: notification.id }), undefined, {
+            router.post(read.url({ notification: notification.id }), undefined, {
                 preserveScroll: true,
             });
         }
@@ -317,7 +317,7 @@ export default function NotificationsIndex({
 
         const page = new URL(url).searchParams.get('page');
 
-        router.get(index({ query: { page: page ?? '1' } }), undefined, {
+        router.get(index.url({ query: { page: page ?? '1' } }), undefined, {
             preserveScroll: true,
         });
     };
@@ -345,7 +345,7 @@ export default function NotificationsIndex({
                         <Button
                             variant="outline"
                             onClick={() =>
-                                router.post(readAll(), undefined, {
+                                router.post(readAll.url(), undefined, {
                                     preserveScroll: true,
                                 })
                             }

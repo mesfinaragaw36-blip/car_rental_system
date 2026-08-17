@@ -63,7 +63,7 @@ class HandleInertiaRequests extends Middleware
                 ] : null,
             ],
             'sidebarOpen' => ! $request->hasCookie('sidebar_state') || $request->cookie('sidebar_state') === 'true',
-            'notifications' => [
+            'sharedNotifications' => [
                 'unread_count' => $user ? $user->notifications()->whereNull('read_at')->count() : 0,
                 'latest' => $user ? $user->notifications()
                     ->latest()

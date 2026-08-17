@@ -29,6 +29,7 @@ class PaymentController extends Controller
     private const PAYMENT_METHODS = [
         'Cash',
         'CBE Birr',
+        'Telebirr',
     ];
 
     /**
@@ -524,7 +525,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -593,8 +594,7 @@ class PaymentController extends Controller
 
                     'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference'] ?? null,
+                    'transaction_reference' => $validated['transaction_reference'] ?? null,
 
                     'payment_status' => 'pending',
 
@@ -677,7 +677,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -751,8 +751,7 @@ class PaymentController extends Controller
 
                     'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference'] ?? null,
+                    'transaction_reference' => $validated['transaction_reference'] ?? null,
 
                     'payment_status' => 'pending',
 
@@ -840,7 +839,7 @@ class PaymentController extends Controller
             'payment_method' => [
                 'required',
                 'string',
-                'in:' . implode(',', self::PAYMENT_METHODS),
+                'in:'.implode(',', self::PAYMENT_METHODS),
             ],
 
             'transaction_reference' => [
@@ -876,11 +875,9 @@ class PaymentController extends Controller
                 }
 
                 $extraCharge->update([
-                    'payment_method' =>
-                        $validated['payment_method'],
+                    'payment_method' => $validated['payment_method'],
 
-                    'transaction_reference' =>
-                        $validated['transaction_reference'] ?? null,
+                    'transaction_reference' => $validated['transaction_reference'] ?? null,
 
                     'payment_status' => 'pending',
 
@@ -966,17 +963,13 @@ class PaymentController extends Controller
             });
         } catch (\RuntimeException $e) {
             $message = match ($e->getMessage()) {
-                'already-confirmed' =>
-                    'This payment has already been confirmed.',
+                'already-confirmed' => 'This payment has already been confirmed.',
 
-                'invalid-method' =>
-                    'This payment method is not supported by the system.',
+                'invalid-method' => 'This payment method is not supported by the system.',
 
-                'invalid-booking-status' =>
-                    'This booking is no longer in the correct payment stage.',
+                'invalid-booking-status' => 'This booking is no longer in the correct payment stage.',
 
-                default =>
-                    'This payment could not be confirmed.',
+                default => 'This payment could not be confirmed.',
             };
 
             return back()->with('toast', [
@@ -1281,8 +1274,7 @@ class PaymentController extends Controller
                 Payment::TYPE_SECURITY_DEPOSIT
             )
             ->sum(
-                fn (Payment $paidPayment) =>
-                    (float) $paidPayment->amount
+                fn (Payment $paidPayment) => (float) $paidPayment->amount
             );
 
         $balanceRemaining = round(
@@ -1302,141 +1294,111 @@ class PaymentController extends Controller
                 'type_label' => match (
                     $payment->type
                 ) {
-                    Payment::TYPE_DEPOSIT =>
-                        'Booking Deposit',
+                    Payment::TYPE_DEPOSIT => 'Booking Deposit',
 
-                    Payment::TYPE_BALANCE =>
-                        'Balance Payment',
+                    Payment::TYPE_BALANCE => 'Balance Payment',
 
-                    Payment::TYPE_SECURITY_DEPOSIT =>
-                        'Security Deposit',
+                    Payment::TYPE_SECURITY_DEPOSIT => 'Security Deposit',
 
-                    Payment::TYPE_EXTRA_CHARGE =>
-                        'Extra Charge',
+                    Payment::TYPE_EXTRA_CHARGE => 'Extra Charge',
 
-                    default =>
-                        'Payment',
+                    default => 'Payment',
                 },
 
                 'amount' => $payment->amount,
 
-                'payment_method' =>
-                    $payment->payment_method,
+                'payment_method' => $payment->payment_method,
 
-                'transaction_reference' =>
-                    $payment->transaction_reference,
+                'transaction_reference' => $payment->transaction_reference,
 
-                'payment_status' =>
-                    $payment->payment_status,
+                'payment_status' => $payment->payment_status,
 
-                'paid_at' =>
-                    $payment->paid_at?->toDateTimeString(),
+                'paid_at' => $payment->paid_at?->toDateTimeString(),
             ],
 
             'booking' => [
                 'id' => $booking->id,
 
-                'pickup_date' =>
-                    $booking->pickup_date->toDateString(),
+                'pickup_date' => $booking->pickup_date->toDateString(),
 
-                'return_date' =>
-                    $booking->return_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
 
-                'pickup_location' =>
-                    $booking->pickup_location,
+                'pickup_location' => $booking->pickup_location,
 
-                'return_location' =>
-                    $booking->return_location,
+                'return_location' => $booking->return_location,
 
-                'need_driver' =>
-                    $booking->need_driver,
+                'need_driver' => $booking->need_driver,
 
-                'total_price' =>
-                    number_format(
-                        $totalPrice,
-                        2
-                    ),
+                'total_price' => number_format(
+                    $totalPrice,
+                    2
+                ),
 
                 'days' => $days,
 
-                'daily_rate' =>
-                    number_format(
-                        $dailyRate,
-                        2
-                    ),
+                'daily_rate' => number_format(
+                    $dailyRate,
+                    2
+                ),
 
-                'subtotal' =>
-                    number_format(
-                        $rentalSubtotal,
-                        2
-                    ),
+                'subtotal' => number_format(
+                    $rentalSubtotal,
+                    2
+                ),
 
-                'driver_fee' =>
-                    number_format(
-                        $driverFee,
-                        2
-                    ),
+                'driver_fee' => number_format(
+                    $driverFee,
+                    2
+                ),
 
-                'deposit_amount' =>
-                    number_format(
-                        $booking->depositAmount(),
-                        2
-                    ),
+                'deposit_amount' => number_format(
+                    $booking->depositAmount(),
+                    2
+                ),
 
-                'full_deposit' =>
-                    number_format(
-                        $totalPrice,
-                        2
-                    ),
+                'full_deposit' => number_format(
+                    $totalPrice,
+                    2
+                ),
 
-                'full_deposit_balance' =>
-                    number_format(
-                        $booking->balanceAmount(),
-                        2
-                    ),
+                'full_deposit_balance' => number_format(
+                    $booking->balanceAmount(),
+                    2
+                ),
 
-                'security_deposit' =>
-                    number_format(
-                        $booking->securityDepositAmount(),
-                        2
-                    ),
+                'security_deposit' => number_format(
+                    $booking->securityDepositAmount(),
+                    2
+                ),
 
-                'paid_to_date' =>
-                    number_format(
-                        $paidToDate,
-                        2
-                    ),
+                'paid_to_date' => number_format(
+                    $paidToDate,
+                    2
+                ),
 
-                'balance_remaining' =>
-                    number_format(
-                        $balanceRemaining,
-                        2
-                    ),
+                'balance_remaining' => number_format(
+                    $balanceRemaining,
+                    2
+                ),
             ],
 
             'customer' => $booking->customer
                 ? [
-                    'name' =>
-                        $booking->customer->name,
+                    'name' => $booking->customer->name,
 
-                    'email' =>
-                        $booking->customer->email,
+                    'email' => $booking->customer->email,
 
-                    'phone' =>
-                        $booking->customer->phone,
+                    'phone' => $booking->customer->phone,
                 ]
                 : null,
 
             'car' => $booking->car
                 ? [
-                    'brand' =>
-                        $booking->car->brand,
+                    'brand' => $booking->car->brand,
 
-                    'model' =>
-                        $booking->car->model,
+                    'model' => $booking->car->model,
 
-                    'plate_number' =>
-                        $booking->car->plate_number,
+                    'plate_number' => $booking->car->plate_number,
                 ]
                 : null,
 
@@ -1445,24 +1407,19 @@ class PaymentController extends Controller
                     fn (
                         Refund $refund
                     ) => [
-                        'id' =>
-                            $refund->id,
+                        'id' => $refund->id,
 
-                        'amount' =>
-                            number_format(
-                                (float) $refund->amount,
-                                2
-                            ),
+                        'amount' => number_format(
+                            (float) $refund->amount,
+                            2
+                        ),
 
-                        'reason' =>
-                            $refund->reason,
+                        'reason' => $refund->reason,
 
-                        'status' =>
-                            $refund->status,
+                        'status' => $refund->status,
 
-                        'processed_at' =>
-                            $refund->processed_at
-                                ?->toDateTimeString(),
+                        'processed_at' => $refund->processed_at
+                            ?->toDateTimeString(),
                     ]
                 )
                 ->values(),

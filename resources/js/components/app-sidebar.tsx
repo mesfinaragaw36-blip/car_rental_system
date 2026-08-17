@@ -323,9 +323,9 @@ function getNavItems(
 }
 
 export function AppSidebar() {
-    const { auth, notifications } = usePage<{
+    const { auth, sharedNotifications } = usePage<{
         auth: Auth;
-        notifications: {
+        sharedNotifications: {
             unread_count: number;
         };
     }>().props;
@@ -340,7 +340,7 @@ export function AppSidebar() {
             title: 'Notifications',
             href: '/notifications',
             icon: Bell,
-            badge: notifications.unread_count,
+            badge: sharedNotifications?.unread_count ?? 0,
         },
     ];
 

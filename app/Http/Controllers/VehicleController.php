@@ -143,13 +143,17 @@ class VehicleController extends Controller
             'ownership_document.mimes' => 'The ownership document must be a JPEG, PNG, GIF, WebP, or PDF file.',
         ]);
 
-        $template = CarType::where('is_active', true)
-            ->where('brand', $validated['brand'])
-            ->where('model', $validated['model'])
-            ->get()
-            ->first(fn (CarType $carType) => $carType->matchesYear($validated['year']));
+        $isAdmin = $user->role === 'admin';
 
-        if ($template === null) {
+        $template = $isAdmin
+            ? null
+            : CarType::where('is_active', true)
+                ->where('brand', $validated['brand'])
+                ->where('model', $validated['model'])
+                ->get()
+                ->first(fn (CarType $carType) => $carType->matchesYear($validated['year']));
+
+        if (! $isAdmin && $template === null) {
             $exists = CarTypeRequest::where('requested_by', auth()->id())
                 ->where('brand', $validated['brand'])
                 ->where('model', $validated['model'])
@@ -224,7 +228,7 @@ class VehicleController extends Controller
             'seats' => $validated['seats'] ?? null,
             'description' => $validated['description'] ?? null,
             'owner_id' => auth()->id(),
-            'approval_status' => 'pending',
+            'approval_status' => $isAdmin ? 'approved' : 'pending',
             'availability_status' => $validated['availability_status'] ?? 'available',
         ]);
 
@@ -258,7 +262,7 @@ class VehicleController extends Controller
                 'document_type' => 'Ownership',
                 'document_path' => $path,
                 'expiry_date' => ! empty($validated['ownership_expiry']) ? $validated['ownership_expiry'] : null,
-                'verification_status' => 'pending',
+                'verification_status' => $isAdmin ? 'approved' : 'pending',
             ]);
         }
 
