@@ -175,25 +175,13 @@ class InspectionController extends Controller
             'notes' => ['nullable', 'string', 'max:2000'],
             'photos' => ['nullable', 'array'],
             'photos.*' => ['image', 'mimes:jpeg,png,jpg,webp', 'max:10240'],
-            'id_verified' => ['nullable', 'boolean'],
         ]);
 
         $type = $validated['type'];
-        $idVerified = $request->boolean('id_verified');
         $error = $this->validateBookingState($booking, $type);
 
         if ($error !== null) {
             return back()->with('toast', ['type' => 'error', 'message' => $error]);
-        }
-
-        // ID verification is mandatory for pickup inspections with approved status
-        if ($type === Inspection::TYPE_PICKUP && $validated['status'] === Inspection::STATUS_APPROVED) {
-            if (! $idVerified) {
-                return back()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'ID verification is required to approve a pickup inspection.',
-                ])->withInput();
-            }
         }
 
         if ($type === Inspection::TYPE_PICKUP && $booking->hasInspection($type)) {
@@ -218,13 +206,6 @@ class InspectionController extends Controller
             'notes' => $validated['notes'] ?? null,
             'photos' => $photoPaths,
         ];
-
-        // Add ID verification data for pickup inspections
-        if ($type === Inspection::TYPE_PICKUP && $idVerified) {
-            $inspectionData['id_verified'] = true;
-            $inspectionData['id_verified_by'] = $request->user()->id;
-            $inspectionData['id_verified_at'] = now();
-        }
 
         Inspection::updateOrCreate(
             ['booking_id' => $booking->id, 'type' => $type],
@@ -286,7 +267,7 @@ class InspectionController extends Controller
         ]);
     }
 
-    public function handover(Booking $booking): RedirectResponse
+    public function handover(Request $request, Booking $booking): RedirectResponse
     {
         if ($booking->status !== Booking::STATUS_PAID) {
             return back()->with('toast', [
@@ -301,6 +282,22 @@ class InspectionController extends Controller
                 'message' => 'The pickup inspection must be approved before handing over the vehicle.',
             ]);
         }
+
+        if (! $request->boolean('id_verified')) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => "You must confirm the customer's ID has been checked before handing over the vehicle.",
+            ]);
+        }
+
+        $booking->inspections()
+            ->where('type', Inspection::TYPE_PICKUP)
+            ->first()
+            ?->update([
+                'id_verified' => true,
+                'id_verified_by' => $request->user()->id,
+                'id_verified_at' => now(),
+            ]);
 
         $booking->update([
             'status' => Booking::STATUS_PICKED_UP,

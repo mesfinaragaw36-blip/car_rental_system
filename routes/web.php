@@ -479,6 +479,8 @@ Route::middleware(['auth'])->group(function () {
                     ->name('reports.index');
                 Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])
                      ->name('admin.reports.pdf');
+                Route::get('/reports/csv', [ReportController::class, 'exportCsv'])
+                    ->name('admin.reports.csv');
                 // -------------------------------------------------
                 // Staff
                 // -------------------------------------------------
