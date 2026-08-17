@@ -24,9 +24,9 @@ import {
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { useCan } from '@/hooks/use-can';
+import { StarRating } from '@/components/rating-stars';
+import { ReviewModal } from '@/components/review-modal';
 import { approve, reject, cancel, complete } from '@/routes/bookings';
 import reviews from '@/routes/bookings/reviews';
 
@@ -172,6 +172,8 @@ export default function BookingDetails({ booking, role }: Props) {
     const [selectedReviewTarget, setSelectedReviewTarget] =
         useState<ReviewTarget | null>(null);
 
+    const [reviewModalOpen, setReviewModalOpen] = useState(false);
+
     const [expandedInspection, setExpandedInspection] = useState<number | null>(
         null,
     );
@@ -225,13 +227,12 @@ export default function BookingDetails({ booking, role }: Props) {
         setSelectedReviewTarget(target);
         setData('reviewable_type', target.type);
         setData('reviewable_id', target.id);
-        setData('rating', 5);
+        setData('rating', 0);
         setData('review_text', '');
+        setReviewModalOpen(true);
     };
 
-    const handleReviewSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-        event.preventDefault();
-
+    const handleReviewSubmit = () => {
         if (!selectedReviewTarget) {
             return;
         }
@@ -241,6 +242,7 @@ export default function BookingDetails({ booking, role }: Props) {
             onSuccess: () => {
                 reset('review_text');
                 setSelectedReviewTarget(null);
+                setReviewModalOpen(false);
             },
         });
     };
@@ -1047,9 +1049,10 @@ export default function BookingDetails({ booking, role }: Props) {
                                                     {review.reviewer.name}
                                                 </p>
                                             </div>
-                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium">
-                                                {review.rating} ★
-                                            </span>
+                                            <StarRating
+                                                value={review.rating}
+                                                size="sm"
+                                            />
                                         </div>
                                         {review.review_text && (
                                             <p className="mt-3 text-sm text-muted-foreground">
@@ -1096,12 +1099,6 @@ export default function BookingDetails({ booking, role }: Props) {
                                                 </span>
                                             ) : (
                                                 <Button
-                                                    variant={
-                                                        selectedReviewTarget?.key ===
-                                                        target.key
-                                                            ? 'secondary'
-                                                            : 'outline'
-                                                    }
                                                     size="sm"
                                                     onClick={() =>
                                                         selectReviewTarget(
@@ -1109,116 +1106,12 @@ export default function BookingDetails({ booking, role }: Props) {
                                                         )
                                                     }
                                                 >
-                                                    {selectedReviewTarget?.key ===
-                                                    target.key
-                                                        ? 'Review selected'
-                                                        : 'Write review'}
+                                                    Write review
                                                 </Button>
                                             )}
                                         </div>
                                     ))}
                                 </div>
-
-                                {selectedReviewTarget && (
-                                    <form
-                                        onSubmit={handleReviewSubmit}
-                                        className="space-y-4"
-                                    >
-                                        <div className="grid gap-4 md:grid-cols-2">
-                                            <div className="space-y-1">
-                                                <Label htmlFor="rating">
-                                                    Rating
-                                                </Label>
-                                                <select
-                                                    id="rating"
-                                                    className="block w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
-                                                    value={data.rating}
-                                                    onChange={(e) =>
-                                                        setData(
-                                                            'rating',
-                                                            Number(
-                                                                e.target.value,
-                                                            ),
-                                                        )
-                                                    }
-                                                >
-                                                    {[5, 4, 3, 2, 1].map(
-                                                        (value) => (
-                                                            <option
-                                                                key={value}
-                                                                value={value}
-                                                            >
-                                                                {value} Star
-                                                                {value > 1
-                                                                    ? 's'
-                                                                    : ''}
-                                                            </option>
-                                                        ),
-                                                    )}
-                                                </select>
-                                                {errors.rating && (
-                                                    <p className="text-sm text-destructive">
-                                                        {errors.rating}
-                                                    </p>
-                                                )}
-                                            </div>
-
-                                            <div className="space-y-1">
-                                                <Label>Review for</Label>
-                                                <p className="rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm">
-                                                    {selectedReviewTarget.label}
-                                                    :{' '}
-                                                    {selectedReviewTarget.name}
-                                                </p>
-                                            </div>
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <Label htmlFor="review_text">
-                                                Review
-                                            </Label>
-                                            <Textarea
-                                                id="review_text"
-                                                value={data.review_text ?? ''}
-                                                onChange={(e) =>
-                                                    setData(
-                                                        'review_text',
-                                                        e.target.value,
-                                                    )
-                                                }
-                                                placeholder="Share what went well or what could improve."
-                                                rows={4}
-                                            />
-                                            {errors.review_text && (
-                                                <p className="text-sm text-destructive">
-                                                    {errors.review_text}
-                                                </p>
-                                            )}
-                                        </div>
-
-                                        <div className="flex flex-wrap gap-2">
-                                            <Button
-                                                type="submit"
-                                                disabled={processing}
-                                            >
-                                                {processing
-                                                    ? 'Submitting...'
-                                                    : 'Submit Review'}
-                                            </Button>
-                                            <Button
-                                                variant="ghost"
-                                                type="button"
-                                                onClick={() =>
-                                                    setSelectedReviewTarget(
-                                                        null,
-                                                    )
-                                                }
-                                            >
-                                                Cancel
-                                            </Button>
-                                        </div>
-                                    </form>
-                                )}
                             </CardContent>
                         </Card>
                     )}
@@ -1327,6 +1220,26 @@ export default function BookingDetails({ booking, role }: Props) {
                             </div>
                         )}
                 </div>
+
+                <ReviewModal
+                    open={reviewModalOpen}
+                    onClose={() => {
+                        setReviewModalOpen(false);
+                        setSelectedReviewTarget(null);
+                    }}
+                    title={`Rate & review ${selectedReviewTarget?.label ?? ''}`}
+                    subtitle={
+                        selectedReviewTarget
+                            ? `Your feedback for ${selectedReviewTarget.name}`
+                            : ''
+                    }
+                    rating={data.rating}
+                    onRatingChange={(rating) => setData('rating', rating)}
+                    reviewText={data.review_text ?? ''}
+                    onReviewTextChange={(text) => setData('review_text', text)}
+                    onSubmit={handleReviewSubmit}
+                    processing={processing}
+                />
             </div>
         </>
     );

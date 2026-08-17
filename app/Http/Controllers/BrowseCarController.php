@@ -58,6 +58,18 @@ class BrowseCarController extends Controller
                     'average_rating' => round($car->reviews()->avg('rating') ?? 0, 1),
                     'review_count' => $car->reviews()->count(),
                     'is_currently_booked' => $hasActiveBooking,
+                    'recent_reviews' => $car->reviews()
+                        ->with('reviewer')
+                        ->latest()
+                        ->take(3)
+                        ->get()
+                        ->map(fn ($r) => [
+                            'id' => $r->id,
+                            'reviewer' => ['id' => $r->reviewer->id, 'name' => $r->reviewer->name],
+                            'rating' => $r->rating,
+                            'review_text' => $r->review_text,
+                            'created_at' => $r->created_at->toDateTimeString(),
+                        ]),
                 ]);
             });
 

@@ -2,6 +2,7 @@ import { Head, router, Link } from '@inertiajs/react';
 import { Car, Search, Settings2, SlidersHorizontal } from 'lucide-react';
 import { useState } from 'react';
 import { CarDetailsModal } from '@/components/car-details-modal';
+import { StarRating } from '@/components/rating-stars';
 import { Button } from '@/components/ui/button';
 import { GlareCard } from '@/components/ui/glare-card';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,13 @@ interface Car {
     owner: { id: number; name: string; phone: string };
     average_rating?: number;
     review_count?: number;
+    recent_reviews?: {
+        id: number;
+        reviewer: { id: number; name: string };
+        rating: number;
+        review_text?: string | null;
+        created_at: string;
+    }[];
 }
 
 interface Props {
@@ -333,15 +341,25 @@ export default function BrowseCars({
                                                 </p>
                                                 {car.average_rating !==
                                                     undefined && (
-                                                    <p className="mt-1 text-sm text-slate-500">
-                                                        {car.average_rating} ★ ·{' '}
-                                                        {car.review_count ?? 0}{' '}
-                                                        review
-                                                        {(car.review_count ??
-                                                            0) === 1
-                                                            ? ''
-                                                            : 's'}
-                                                    </p>
+                                                    <div className="mt-1.5 flex items-center gap-1.5">
+                                                        <StarRating
+                                                            value={
+                                                                car.average_rating
+                                                            }
+                                                            size="sm"
+                                                        />
+                                                        <span className="text-xs text-slate-500">
+                                                            {car.average_rating}{' '}
+                                                            ·{' '}
+                                                            {car.review_count ??
+                                                                0}{' '}
+                                                            review
+                                                            {(car.review_count ??
+                                                                0) === 1
+                                                                ? ''
+                                                                : 's'}
+                                                        </span>
+                                                    </div>
                                                 )}
                                             </div>
                                             <div className="shrink-0 text-right">

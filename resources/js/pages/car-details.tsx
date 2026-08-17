@@ -1,5 +1,6 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
 import InputError from '@/components/input-error';
+import { StarRating } from '@/components/rating-stars';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -127,13 +128,19 @@ export default function CarDetails({
                                     {car.brand} {car.model} ({car.year})
                                 </h1>
                                 {car.average_rating !== undefined && (
-                                    <p className="text-sm text-muted-foreground">
-                                        {car.average_rating} ★ ·{' '}
-                                        {car.review_count ?? 0} review
-                                        {(car.review_count ?? 0) === 1
-                                            ? ''
-                                            : 's'}
-                                    </p>
+                                    <div className="mt-1 flex items-center gap-2">
+                                        <StarRating
+                                            value={car.average_rating}
+                                            size="sm"
+                                        />
+                                        <span className="text-sm text-muted-foreground">
+                                            {car.average_rating} ·{' '}
+                                            {car.review_count ?? 0} review
+                                            {(car.review_count ?? 0) === 1
+                                                ? ''
+                                                : 's'}
+                                        </span>
+                                    </div>
                                 )}
                             </div>
                             <p className="text-2xl font-bold text-primary">
@@ -194,29 +201,49 @@ export default function CarDetails({
                     </CardHeader>
                     <CardContent>
                         {car.recent_reviews && car.recent_reviews.length > 0 ? (
-                            <div className="space-y-3">
+                            <div className="space-y-4">
                                 {car.recent_reviews.map((r) => (
                                     <div
                                         key={r.id}
-                                        className="rounded-lg border p-4"
+                                        className="rounded-2xl border border-slate-100 bg-slate-50/50 p-5 transition-shadow hover:shadow-sm"
                                     >
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div>
-                                                <p className="font-medium">
-                                                    {r.reviewer.name}
-                                                </p>
-                                                <p className="text-sm text-muted-foreground">
-                                                    {new Date(
-                                                        r.created_at,
-                                                    ).toLocaleDateString()}
-                                                </p>
+                                        <div className="flex items-start justify-between gap-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
+                                                    {r.reviewer.name
+                                                        .split(' ')
+                                                        .map((part) =>
+                                                            part[0],
+                                                        )
+                                                        .slice(0, 2)
+                                                        .join('')
+                                                        .toUpperCase()}
+                                                </div>
+                                                <div>
+                                                    <p className="font-medium">
+                                                        {r.reviewer.name}
+                                                    </p>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        {new Date(
+                                                            r.created_at,
+                                                        ).toLocaleDateString(
+                                                            undefined,
+                                                            {
+                                                                year: 'numeric',
+                                                                month: 'short',
+                                                                day: 'numeric',
+                                                            },
+                                                        )}
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">
-                                                {r.rating} ★
-                                            </span>
+                                            <StarRating
+                                                value={r.rating}
+                                                size="sm"
+                                            />
                                         </div>
                                         {r.review_text && (
-                                            <p className="mt-3 text-sm text-muted-foreground">
+                                            <p className="mt-4 text-sm leading-relaxed text-foreground/80">
                                                 {r.review_text}
                                             </p>
                                         )}
@@ -225,7 +252,8 @@ export default function CarDetails({
                             </div>
                         ) : (
                             <p className="text-sm text-muted-foreground">
-                                No reviews yet for this vehicle.
+                                No reviews yet for this vehicle. Be the first to
+                                leave one.
                             </p>
                         )}
                     </CardContent>

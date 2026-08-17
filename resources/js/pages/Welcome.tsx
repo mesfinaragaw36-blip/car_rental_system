@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 import { AccountMenu } from '@/components/account-menu';
 import BrandLogo from '@/components/brand-logo';
 import { NotificationBell } from '@/components/notification-bell';
+import { StarRating } from '@/components/rating-stars';
 import {
     MobileNav,
     MobileNavHeader,
@@ -521,17 +522,29 @@ const navItems = isConsumer
                                                         <p className="mt-0.5 flex items-center gap-1.5 text-sm text-muted-foreground">
                                                             {car.transmission} ·{' '}
                                                             {car.fuel_type}
-                                                            {typeof car.average_rating ===
-                                                                'number' && (
-                                                                <span className="inline-flex items-center gap-1">
-                                                                    ·{' '}
-                                                                    {
-                                                                        car.average_rating
-                                                                    }{' '}
-                                                                    <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
-                                                                </span>
-                                                            )}
                                                         </p>
+                                                        {typeof car.average_rating ===
+                                                            'number' && (
+                                                            <div className="mt-1 flex items-center gap-1.5">
+                                                                <StarRating
+                                                                    value={
+                                                                        car.average_rating
+                                                                    }
+                                                                    size="sm"
+                                                                />
+                                                                <span className="text-xs text-muted-foreground">
+                                                                    {car.average_rating}{' '}
+                                                                    ·{' '}
+                                                                    {car.review_count ??
+                                                                        0}{' '}
+                                                                    review
+                                                                    {(car.review_count ??
+                                                                        0) === 1
+                                                                        ? ''
+                                                                        : 's'}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="shrink-0 text-right">
                                                         <p className="text-lg font-bold text-foreground">
