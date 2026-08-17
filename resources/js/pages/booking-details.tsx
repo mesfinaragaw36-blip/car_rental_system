@@ -1285,10 +1285,7 @@ export default function BookingDetails({ booking, role }: Props) {
                     {role === 'customer' &&
                         booking.status === 'confirmed' &&
                         !booking.payment &&
-                        booking.identity_approved !== false &&
-                        (!booking.need_driver ||
-                            booking.driver_status === 'assigned' ||
-                            booking.driver_status === 'accepted') && (
+                        booking.identity_approved !== false && (
                             <Button asChild>
                                 <Link href={`/bookings/${booking.id}/payment`}>
                                     Pay Deposit
