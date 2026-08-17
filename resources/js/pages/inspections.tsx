@@ -115,6 +115,8 @@ interface Props {
     awaiting_completion: Booking[];
 }
 
+type InspectionErrors = Record<string, string>;
+
 function StatusBadge({
     label,
     tone,
@@ -139,7 +141,9 @@ function StatusBadge({
     );
 }
 
-function deliveryTone(status: DeliveryStatus): 'green' | 'red' | 'yellow' {
+function deliveryTone(
+    status: DeliveryStatus,
+): 'green' | 'red' | 'yellow' {
     if (status === 'arrived') {
         return 'green';
     }
@@ -200,6 +204,7 @@ function CarGallery({ images }: { images: CarImage[] }) {
                     ))}
                 </div>
             )}
+
             <div className="flex-1 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50">
                 <div className="aspect-[4/3] w-full p-3">
                     {currentImage ? (
@@ -220,9 +225,10 @@ function CarGallery({ images }: { images: CarImage[] }) {
 }
 
 function DeliveryPanel({ booking }: { booking: Booking }) {
-    const [processing, setProcessing] = useState<'arrived' | 'failed' | null>(
-        null,
-    );
+    const [processing, setProcessing] = useState<
+        'arrived' | 'failed' | null
+    >(null);
+
     const status = booking.car_delivery_status;
 
     const confirm = (deliveryStatus: 'arrived' | 'failed') => {
@@ -240,7 +246,10 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
         router.post(
             inspections.delivery.url({ booking: booking.id }),
             { status: deliveryStatus },
-            { preserveScroll: true, onFinish: () => setProcessing(null) },
+            {
+                preserveScroll: true,
+                onFinish: () => setProcessing(null),
+            },
         );
     };
 
@@ -255,6 +264,7 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                     ) : (
                         <Truck className="mt-0.5 h-5 w-5 text-brand" />
                     )}
+
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                             Owner car delivery
@@ -263,10 +273,12 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                                 tone={deliveryTone(status)}
                             />
                         </p>
+
                         <p className="mt-0.5 text-sm text-muted-foreground">
                             Due by {booking.car_delivery_due_date} at{' '}
                             {booking.pickup_location}.
                         </p>
+
                         {status !== 'pending' &&
                             booking.car_delivery_confirmed_at && (
                                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -291,6 +303,7 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                                 ? 'Confirming...'
                                 : 'Car Arrived'}
                         </Button>
+
                         <Button
                             size="sm"
                             variant="destructive"
@@ -307,9 +320,9 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
 
                 {status === 'failed' && (
                     <p className="w-full text-sm text-red-600">
-                        The owner and admins have been notified. The booking has
-                        been cancelled and the customer's payment has been
-                        queued for refund.
+                        The owner and admins have been notified. The booking
+                        has been cancelled and the customer's payment has
+                        been queued for refund.
                     </p>
                 )}
             </div>
@@ -319,6 +332,7 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
 
 function ReturnArrivalPanel({ booking }: { booking: Booking }) {
     const [processing, setProcessing] = useState(false);
+
     const status = booking.return_arrival_status;
     const lateDays = booking.late_return_days;
 
@@ -328,7 +342,10 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
         router.post(
             inspections.returnArrival.url({ booking: booking.id }),
             {},
-            { preserveScroll: true, onFinish: () => setProcessing(false) },
+            {
+                preserveScroll: true,
+                onFinish: () => setProcessing(false),
+            },
         );
     };
 
@@ -344,7 +361,9 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
         setProcessing(true);
 
         router.post(
-            inspections.returnNotArrived.url({ booking: booking.id }),
+            inspections.returnNotArrived.url({
+                booking: booking.id,
+            }),
             {},
             {
                 preserveScroll: true,
@@ -362,27 +381,40 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                     ) : (
                         <KeyRound className="mt-0.5 h-5 w-5 text-brand" />
                     )}
+
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold">
                             Customer car return
+
                             <StatusBadge
                                 label={
-                                    status === 'arrived' ? 'arrived' : 'pending'
+                                    status === 'arrived'
+                                        ? 'arrived'
+                                        : 'pending'
                                 }
-                                tone={status === 'arrived' ? 'green' : 'yellow'}
+                                tone={
+                                    status === 'arrived'
+                                        ? 'green'
+                                        : 'yellow'
+                                }
                             />
+
                             {lateDays > 0 && status === 'pending' && (
                                 <StatusBadge
-                                    label={`Late by ${lateDays} day${lateDays > 1 ? 's' : ''}`}
+                                    label={`Late by ${lateDays} day${
+                                        lateDays > 1 ? 's' : ''
+                                    }`}
                                     tone="red"
                                 />
                             )}
                         </p>
+
                         <p className="mt-0.5 text-sm text-muted-foreground">
                             {status === 'arrived'
                                 ? `Car confirmed back at ${booking.return_location}.`
                                 : `Waiting for the customer to return the car to ${booking.return_location}.`}
                         </p>
+
                         {status === 'arrived' &&
                             booking.return_arrival_confirmed_at && (
                                 <p className="mt-0.5 text-xs text-muted-foreground">
@@ -423,34 +455,47 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
         </div>
     );
 }
+
 function SnapshotDiff({
     pickup,
     current,
 }: {
     pickup: InspectionRecord;
-    current: { mileage: string; fuel: string; damages: Damage[] };
+    current: {
+        mileage: string;
+        fuel: string;
+        damages: Damage[];
+    };
 }) {
     const mileageDiff =
-        pickup.mileage_reading !== null && current.mileage.trim() !== ''
+        pickup.mileage_reading !== null &&
+        current.mileage.trim() !== ''
             ? Math.max(
                   0,
-                  Number(current.mileage) - Number(pickup.mileage_reading),
+                  Number(current.mileage) -
+                      Number(pickup.mileage_reading),
               )
             : null;
+
     const fuelDiff =
-        pickup.fuel_level !== null && current.fuel.trim() !== ''
+        pickup.fuel_level !== null &&
+        current.fuel.trim() !== ''
             ? Number(current.fuel) - Number(pickup.fuel_level)
             : null;
 
     const submitted = current.damages.filter(
-        (d) => d.area.trim() !== '' || d.description.trim() !== '',
+        (d) =>
+            d.area.trim() !== '' ||
+            d.description.trim() !== '',
     );
+
     const pickupDamageKeys = new Set(
         (pickup.damages ?? []).map(
             (d) =>
                 `${d.area.trim().toLowerCase()}|${d.description.trim().toLowerCase()}`,
         ),
     );
+
     const newDamages = submitted.filter(
         (d) =>
             !pickupDamageKeys.has(
@@ -463,6 +508,7 @@ function SnapshotDiff({
             <p className="flex items-center gap-1.5 font-semibold text-primary">
                 <Timer className="h-4 w-4" /> Diff vs pickup snapshot
             </p>
+
             <div className="mt-2 grid gap-2 text-primary sm:grid-cols-3">
                 <p>
                     Miles driven:{' '}
@@ -472,6 +518,7 @@ function SnapshotDiff({
                             : '—'}
                     </span>
                 </p>
+
                 <p>
                     Fuel delta:{' '}
                     <span className="font-semibold">
@@ -480,25 +527,32 @@ function SnapshotDiff({
                             : '—'}
                     </span>
                 </p>
+
                 <p>
                     New damages:{' '}
-                    <span className="font-semibold">{newDamages.length}</span>
+                    <span className="font-semibold">
+                        {newDamages.length}
+                    </span>
                 </p>
             </div>
+
             {newDamages.length > 0 && (
                 <ul className="mt-2 list-inside list-disc text-red-700">
                     {newDamages.map((damage, i) => (
                         <li key={i}>
-                            <span className="font-medium">{damage.area}</span> -{' '}
-                            {damage.description}
+                            <span className="font-medium">
+                                {damage.area}
+                            </span>{' '}
+                            - {damage.description}
                         </li>
                     ))}
                 </ul>
             )}
+
             {newDamages.length === 0 && submitted.length === 0 && (
                 <p className="mt-2 text-primary">
-                    No new damages reported yet. Remember to record any damages
-                    found during the return inspection.
+                    No new damages reported yet. Remember to record any
+                    damages found during the return inspection.
                 </p>
             )}
         </div>
@@ -514,24 +568,174 @@ function InspectionForm({
     type: 'pickup' | 'return';
     onClose?: () => void;
 }) {
-    const { data, setData, processing, errors, reset } = useForm({
+    const {
+        data,
+        setData,
+        processing,
+        errors,
+        reset,
+    } = useForm({
         type,
         status: 'approved',
         mileage_reading: '',
         fuel_level: '',
-        estimated_value: booking.car.estimated_value?.toString() ?? '',
-        damages: [{ area: '', description: '' }] as Damage[],
+        estimated_value:
+            booking.car.estimated_value?.toString() ?? '',
+        damages: [
+            {
+                area: '',
+                description: '',
+            },
+        ] as Damage[],
         notes: '',
         photos: [] as File[],
         id_verified: false,
     });
 
+    const [clientErrors, setClientErrors] =
+        useState<InspectionErrors>({});
+
     const pickup = booking.inspections.find(
         (inspection) => inspection.type === 'pickup',
     );
 
+    const clearError = (field: string) => {
+        if (clientErrors[field]) {
+            setClientErrors((prev) => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
+            });
+        }
+    };
+
+    const validate = (): boolean => {
+        const newErrors: InspectionErrors = {};
+
+        // Mileage
+        if (!data.mileage_reading.trim()) {
+            newErrors.mileage_reading =
+                'Mileage is required.';
+        } else if (
+            Number.isNaN(Number(data.mileage_reading))
+        ) {
+            newErrors.mileage_reading =
+                'Mileage must be a valid number.';
+        } else if (Number(data.mileage_reading) < 0) {
+            newErrors.mileage_reading =
+                'Mileage cannot be negative.';
+        } else if (
+            !Number.isInteger(Number(data.mileage_reading))
+        ) {
+            newErrors.mileage_reading =
+                'Mileage must be a whole number.';
+        }
+
+        // Fuel
+        if (!data.fuel_level.trim()) {
+            newErrors.fuel_level =
+                'Fuel level is required.';
+        } else if (
+            Number.isNaN(Number(data.fuel_level))
+        ) {
+            newErrors.fuel_level =
+                'Fuel level must be a valid number.';
+        } else if (
+            Number(data.fuel_level) < 0 ||
+            Number(data.fuel_level) > 100
+        ) {
+            newErrors.fuel_level =
+                'Fuel level must be between 0 and 100%.';
+        }
+
+        // Estimated value
+        if (type === 'pickup') {
+            if (!data.estimated_value.trim()) {
+                newErrors.estimated_value =
+                    'Estimated car value is required.';
+            } else if (
+                Number.isNaN(
+                    Number(data.estimated_value),
+                )
+            ) {
+                newErrors.estimated_value =
+                    'Estimated car value must be a valid number.';
+            } else if (
+                Number(data.estimated_value) <= 0
+            ) {
+                newErrors.estimated_value =
+                    'Estimated car value must be greater than 0.';
+            }
+
+            // National ID verification
+            if (!data.id_verified) {
+                newErrors.id_verified =
+                    "You must confirm that the customer's National ID was physically checked.";
+            }
+        }
+
+        // Damages
+        data.damages.forEach((damage, index) => {
+            const hasArea =
+                damage.area.trim() !== '';
+            const hasDescription =
+                damage.description.trim() !== '';
+
+            if (hasArea && !hasDescription) {
+                newErrors[
+                    `damages.${index}.description`
+                ] = 'Damage description is required.';
+            }
+
+            if (!hasArea && hasDescription) {
+                newErrors[
+                    `damages.${index}.area`
+                ] = 'Damage area is required.';
+            }
+        });
+
+        // Photos
+        if (data.photos.length > 0) {
+            const invalidType = data.photos.some(
+                (photo) =>
+                    !photo.type.startsWith('image/'),
+            );
+
+            if (invalidType) {
+                newErrors.photos =
+                    'Only image files are allowed.';
+            }
+
+            const tooLarge = data.photos.some(
+                (photo) =>
+                    photo.size > 5 * 1024 * 1024,
+            );
+
+            if (tooLarge) {
+                newErrors.photos =
+                    'Each evidence photo must be 5 MB or smaller.';
+            }
+        }
+
+        // Notes
+        if (data.notes.length > 1000) {
+            newErrors.notes =
+                'Notes cannot exceed 1000 characters.';
+        }
+
+        setClientErrors(newErrors);
+
+        return Object.keys(newErrors).length === 0;
+    };
+
     const addDamage = () => {
-        setData('damages', [...data.damages, { area: '', description: '' }]);
+        setData('damages', [
+            ...data.damages,
+            {
+                area: '',
+                description: '',
+            },
+        ]);
     };
 
     const updateDamage = (
@@ -542,51 +746,106 @@ function InspectionForm({
         setData(
             'damages',
             data.damages.map((damage, i) =>
-                i === index ? { ...damage, [field]: value } : damage,
+                i === index
+                    ? {
+                          ...damage,
+                          [field]: value,
+                      }
+                    : damage,
             ),
         );
+
+        clearError(`damages.${index}.${field}`);
     };
 
     const removeDamage = (index: number) => {
         setData(
             'damages',
-            data.damages.filter((_, i) => i !== index),
+            data.damages.filter(
+                (_, i) => i !== index,
+            ),
         );
+
+        setClientErrors((prev) => {
+            const updated = { ...prev };
+
+            Object.keys(updated).forEach((key) => {
+                if (
+                    key.startsWith(
+                        `damages.${index}.`,
+                    )
+                ) {
+                    delete updated[key];
+                }
+            });
+
+            return updated;
+        });
     };
 
     const damagesToSubmit = data.damages.filter(
         (damage) =>
-            damage.area.trim() !== '' || damage.description.trim() !== '',
+            damage.area.trim() !== '' ||
+            damage.description.trim() !== '',
     );
 
-    const submitWith = (status: 'approved' | 'issues_found') => {
+    const submitWith = (
+        status: 'approved' | 'issues_found',
+    ) => {
+        if (!validate()) {
+            return;
+        }
+
         const formData = new FormData();
+
         formData.append('type', type);
         formData.append('status', status);
-        formData.append('mileage_reading', data.mileage_reading);
-        formData.append('fuel_level', data.fuel_level);
-        formData.append('estimated_value', data.estimated_value);
+        formData.append(
+            'mileage_reading',
+            data.mileage_reading,
+        );
+        formData.append(
+            'fuel_level',
+            data.fuel_level,
+        );
+        formData.append(
+            'estimated_value',
+            data.estimated_value,
+        );
         formData.append('notes', data.notes);
 
-        if (type === 'pickup' && data.id_verified) {
+        if (
+            type === 'pickup' &&
+            data.id_verified
+        ) {
             formData.append('id_verified', '1');
         }
 
-        damagesToSubmit.forEach((d, i) => {
-            formData.append(`damages[${i}][area]`, d.area);
-            formData.append(`damages[${i}][description]`, d.description);
+        damagesToSubmit.forEach((damage, i) => {
+            formData.append(
+                `damages[${i}][area]`,
+                damage.area,
+            );
+            formData.append(
+                `damages[${i}][description]`,
+                damage.description,
+            );
         });
+
         data.photos.forEach((photo) => {
             formData.append('photos[]', photo);
         });
 
         router.post(
-            inspections.conduct.url({ booking: booking.id }),
+            inspections.conduct.url({
+                booking: booking.id,
+            }),
             formData,
             {
                 preserveScroll: true,
                 onSuccess: () => {
                     reset();
+                    setClientErrors({});
 
                     if (onClose) {
                         onClose();
@@ -596,190 +855,388 @@ function InspectionForm({
         );
     };
 
+    const mileageError =
+        clientErrors.mileage_reading ||
+        errors.mileage_reading;
+
+    const fuelError =
+        clientErrors.fuel_level ||
+        errors.fuel_level;
+
+    const estimatedValueError =
+        clientErrors.estimated_value ||
+        errors.estimated_value;
+
+    const photosError =
+        clientErrors.photos ||
+        errors.photos;
+
+    const notesError =
+        clientErrors.notes ||
+        errors.notes;
+
+    const idVerifiedError =
+        clientErrors.id_verified ||
+        errors.id_verified;
+
     return (
         <div className="space-y-4 rounded-xl border bg-slate-50 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
-                Record {type === 'pickup' ? 'Pickup' : 'Return'} Inspection
+                Record{' '}
+                {type === 'pickup'
+                    ? 'Pickup'
+                    : 'Return'}{' '}
+                Inspection
             </div>
 
+            {/* Mileage and Fuel */}
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label>
-                        {type === 'pickup' ? 'Mileage' : 'Return mileage'} (km)
+                        {type === 'pickup'
+                            ? 'Mileage'
+                            : 'Return mileage'}{' '}
+                        (km)
                     </Label>
+
                     <Input
                         type="number"
                         min={0}
                         value={data.mileage_reading}
-                        onChange={(e) =>
-                            setData('mileage_reading', e.target.value)
-                        }
+                        onChange={(e) => {
+                            setData(
+                                'mileage_reading',
+                                e.target.value,
+                            );
+                            clearError(
+                                'mileage_reading',
+                            );
+                        }}
                         placeholder="e.g. 45230"
+                        className={cn(
+                            mileageError &&
+                                'border-red-500 focus-visible:ring-red-500',
+                        )}
                     />
-                    {errors.mileage_reading && (
+
+                    {mileageError && (
                         <p className="text-xs text-red-600">
-                            {errors.mileage_reading}
+                            {mileageError}
                         </p>
                     )}
                 </div>
+
                 <div className="space-y-2">
                     <Label>Fuel level (%)</Label>
+
                     <Input
                         type="number"
                         min={0}
                         max={100}
                         value={data.fuel_level}
-                        onChange={(e) => setData('fuel_level', e.target.value)}
+                        onChange={(e) => {
+                            setData(
+                                'fuel_level',
+                                e.target.value,
+                            );
+                            clearError('fuel_level');
+                        }}
                         placeholder="e.g. 75"
+                        className={cn(
+                            fuelError &&
+                                'border-red-500 focus-visible:ring-red-500',
+                        )}
                     />
-                    {errors.fuel_level && (
+
+                    {fuelError && (
                         <p className="text-xs text-red-600">
-                            {errors.fuel_level}
+                            {fuelError}
                         </p>
                     )}
                 </div>
             </div>
 
+            {/* Estimated Value */}
             {type === 'pickup' && (
                 <div className="rounded-lg border border-emerald-100 bg-emerald-50 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="max-w-sm space-y-1">
-                            <Label>Estimated car value (ETB)</Label>
+                            <Label>
+                                Estimated car value (ETB)
+                            </Label>
+
                             <Input
                                 type="number"
                                 min={0}
-                                value={data.estimated_value}
-                                onChange={(e) =>
-                                    setData('estimated_value', e.target.value)
+                                value={
+                                    data.estimated_value
                                 }
+                                onChange={(e) => {
+                                    setData(
+                                        'estimated_value',
+                                        e.target.value,
+                                    );
+                                    clearError(
+                                        'estimated_value',
+                                    );
+                                }}
                                 placeholder="e.g. 2500000"
+                                className={cn(
+                                    estimatedValueError &&
+                                        'border-red-500 focus-visible:ring-red-500',
+                                )}
                             />
+
                             <p className="text-xs text-muted-foreground">
-                                Used to calculate the 10% security deposit
-                                (minimum 1,000 ETB).
+                                Used to calculate the 10%
+                                security deposit (minimum
+                                1,000 ETB).
                             </p>
+
+                            {estimatedValueError && (
+                                <p className="text-xs text-red-600">
+                                    {estimatedValueError}
+                                </p>
+                            )}
                         </div>
+
                         <div className="text-right text-sm">
                             <p className="text-muted-foreground">
                                 Security deposit
                             </p>
+
                             <p className="text-xl font-bold text-emerald-700">
                                 ETB{' '}
                                 {Number(
                                     booking.security_deposit_amount,
                                 ).toLocaleString()}
                             </p>
+
                             {booking.car.estimated_value ? (
                                 <p className="text-xs text-muted-foreground">
                                     10% of ETB{' '}
                                     {Number(
-                                        booking.car.estimated_value,
+                                        booking.car
+                                            .estimated_value,
                                     ).toLocaleString()}
                                 </p>
                             ) : (
                                 <p className="text-xs text-muted-foreground">
-                                    Enter the value to update the deposit.
+                                    Enter the value to update
+                                    the deposit.
                                 </p>
                             )}
                         </div>
                     </div>
-                    {errors.estimated_value && (
-                        <p className="mt-2 text-xs text-red-600">
-                            {errors.estimated_value}
-                        </p>
-                    )}
                 </div>
             )}
 
+            {/* Damages */}
             <div className="space-y-3">
                 <div className="flex items-center justify-between">
                     <Label>Damages</Label>
+
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
                         onClick={addDamage}
                     >
-                        <Plus className="mr-1 h-3 w-3" /> Add damage
+                        <Plus className="mr-1 h-3 w-3" />
+                        Add damage
                     </Button>
                 </div>
-                {data.damages.map((damage, index) => (
-                    <div
-                        key={index}
-                        className="grid gap-2 md:grid-cols-[1fr_2fr_auto]"
-                    >
-                        <Input
-                            value={damage.area}
-                            onChange={(e) =>
-                                updateDamage(index, 'area', e.target.value)
-                            }
-                            placeholder="Area (e.g. front bumper)"
-                        />
-                        <Input
-                            value={damage.description}
-                            onChange={(e) =>
-                                updateDamage(
-                                    index,
-                                    'description',
-                                    e.target.value,
-                                )
-                            }
-                            placeholder="Description"
-                        />
-                        <Button
-                            type="button"
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => removeDamage(index)}
-                        >
-                            <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                    </div>
-                ))}
+
+                {data.damages.map(
+                    (damage, index) => {
+                        const areaError =
+                            clientErrors[
+                                `damages.${index}.area`
+                            ];
+
+                        const descriptionError =
+                            clientErrors[
+                                `damages.${index}.description`
+                            ];
+
+                        return (
+                            <div
+                                key={index}
+                                className="grid items-start gap-2 md:grid-cols-[1fr_2fr_auto]"
+                            >
+                                <div>
+                                    <Input
+                                        value={
+                                            damage.area
+                                        }
+                                        onChange={(e) =>
+                                            updateDamage(
+                                                index,
+                                                'area',
+                                                e.target
+                                                    .value,
+                                            )
+                                        }
+                                        placeholder="Area (e.g. front bumper)"
+                                        className={cn(
+                                            areaError &&
+                                                'border-red-500 focus-visible:ring-red-500',
+                                        )}
+                                    />
+
+                                    {areaError && (
+                                        <p className="mt-1 text-xs text-red-600">
+                                            {areaError}
+                                        </p>
+                                    )}
+                                </div>
+
+                                <div>
+                                    <Input
+                                        value={
+                                            damage.description
+                                        }
+                                        onChange={(e) =>
+                                            updateDamage(
+                                                index,
+                                                'description',
+                                                e.target
+                                                    .value,
+                                            )
+                                        }
+                                        placeholder="Description"
+                                        className={cn(
+                                            descriptionError &&
+                                                'border-red-500 focus-visible:ring-red-500',
+                                        )}
+                                    />
+
+                                    {descriptionError && (
+                                        <p className="mt-1 text-xs text-red-600">
+                                            {
+                                                descriptionError
+                                            }
+                                        </p>
+                                    )}
+                                </div>
+
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() =>
+                                        removeDamage(
+                                            index,
+                                        )
+                                    }
+                                >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                            </div>
+                        );
+                    },
+                )}
             </div>
 
-            {type === 'return' && pickup && pickup.status === 'approved' && (
-                <SnapshotDiff
-                    pickup={pickup}
-                    current={{
-                        mileage: data.mileage_reading,
-                        fuel: data.fuel_level,
-                        damages: damagesToSubmit,
-                    }}
-                />
-            )}
+            {/* Return Snapshot */}
+            {type === 'return' &&
+                pickup &&
+                pickup.status === 'approved' && (
+                    <SnapshotDiff
+                        pickup={pickup}
+                        current={{
+                            mileage:
+                                data.mileage_reading,
+                            fuel: data.fuel_level,
+                            damages: damagesToSubmit,
+                        }}
+                    />
+                )}
 
+            {/* Photos */}
             <div className="space-y-2">
-                <Label>Evidence Photos (Before / After inspection)</Label>
+                <Label>
+                    Evidence Photos (Before / After
+                    inspection)
+                </Label>
+
                 <Input
                     type="file"
                     multiple
                     accept="image/*"
                     onChange={(e) => {
-                        if (e.target.files) {
-                            setData('photos', Array.from(e.target.files));
-                        }
+                        const files = e.target.files
+                            ? Array.from(
+                                  e.target.files,
+                              )
+                            : [];
+
+                        setData('photos', files);
+                        clearError('photos');
                     }}
+                    className={cn(
+                        photosError &&
+                            'border-red-500',
+                    )}
                 />
-                {errors.photos && (
-                    <p className="text-xs text-red-600">{errors.photos}</p>
+
+                <p className="text-xs text-muted-foreground">
+                    Images only. Maximum file size: 5 MB
+                    per photo.
+                </p>
+
+                {photosError && (
+                    <p className="text-xs text-red-600">
+                        {photosError}
+                    </p>
                 )}
             </div>
 
+            {/* Notes */}
             <div className="space-y-2">
-                <Label>Notes</Label>
+                <div className="flex items-center justify-between">
+                    <Label>Notes</Label>
+
+                    <span
+                        className={cn(
+                            'text-xs',
+                            data.notes.length >
+                                1000
+                                ? 'text-red-600'
+                                : 'text-muted-foreground',
+                        )}
+                    >
+                        {data.notes.length}/1000
+                    </span>
+                </div>
+
                 <Textarea
                     value={data.notes}
-                    onChange={(e) => setData('notes', e.target.value)}
+                    maxLength={1000}
+                    onChange={(e) => {
+                        setData(
+                            'notes',
+                            e.target.value,
+                        );
+                        clearError('notes');
+                    }}
                     placeholder="Additional observations..."
                     rows={3}
+                    className={cn(
+                        notesError &&
+                            'border-red-500 focus-visible:ring-red-500',
+                    )}
                 />
-                {errors.notes && (
-                    <p className="text-xs text-red-600">{errors.notes}</p>
+
+                {notesError && (
+                    <p className="text-xs text-red-600">
+                        {notesError}
+                    </p>
                 )}
             </div>
 
+            {/* National ID */}
             {type === 'pickup' && (
                 <div className="rounded-lg border border-slate-200 bg-white p-4">
                     <div className="space-y-3">
@@ -787,30 +1244,42 @@ function InspectionForm({
                             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10">
                                 <Users className="h-5 w-5 text-primary" />
                             </div>
+
                             <div className="flex-1">
                                 <p className="text-sm font-semibold text-slate-900">
-                                    Customer Identity Verification
+                                    Customer Identity
+                                    Verification
                                 </p>
+
                                 <p className="mt-1 text-sm text-muted-foreground">
                                     {booking.customer ? (
                                         <>
                                             <span className="font-medium text-slate-900">
-                                                {booking.customer.name}
+                                                {
+                                                    booking
+                                                        .customer
+                                                        .name
+                                                }
                                             </span>
-                                            {booking.customer.national_id ? (
+
+                                            {booking
+                                                .customer
+                                                .national_id ? (
                                                 <>
                                                     {' · '}
                                                     <span className="font-mono">
                                                         National ID:{' '}
                                                         {
-                                                            booking.customer
+                                                            booking
+                                                                .customer
                                                                 .national_id
                                                         }
                                                     </span>
                                                 </>
                                             ) : (
                                                 <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                                    No National ID on file
+                                                    No National
+                                                    ID on file
                                                 </span>
                                             )}
                                         </>
@@ -820,49 +1289,84 @@ function InspectionForm({
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+
+                        <div
+                            className={cn(
+                                'flex items-start gap-3 rounded-lg border bg-slate-50 p-3',
+                                idVerifiedError
+                                    ? 'border-red-300 bg-red-50'
+                                    : 'border-slate-200',
+                            )}
+                        >
                             <input
                                 type="checkbox"
                                 id="id_verified"
-                                checked={data.id_verified}
-                                onChange={(e) =>
-                                    setData('id_verified', e.target.checked)
+                                checked={
+                                    data.id_verified
                                 }
+                                onChange={(e) => {
+                                    setData(
+                                        'id_verified',
+                                        e.target.checked,
+                                    );
+
+                                    if (
+                                        e.target.checked
+                                    ) {
+                                        clearError(
+                                            'id_verified',
+                                        );
+                                    }
+                                }}
                                 className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
                             />
+
                             <label
                                 htmlFor="id_verified"
                                 className="flex-1 cursor-pointer text-sm text-slate-700"
                             >
                                 <span className="font-semibold">
-                                    I confirm that the customer's National ID
-                                    has been physically checked and matches the
+                                    I confirm that the
+                                    customer's National
+                                    ID has been physically
+                                    checked and matches the
                                     customer.
                                 </span>
+
                                 <p className="mt-1 text-xs text-muted-foreground">
-                                    This verification is mandatory for pickup
-                                    inspections and will be recorded with your
-                                    staff ID and timestamp.
+                                    This verification is
+                                    mandatory for pickup
+                                    inspections and will be
+                                    recorded with your staff
+                                    ID and timestamp.
                                 </p>
                             </label>
                         </div>
-                        {errors.id_verified && (
+
+                        {idVerifiedError && (
                             <p className="text-xs text-red-600">
-                                {errors.id_verified}
+                                {idVerifiedError}
                             </p>
                         )}
                     </div>
                 </div>
             )}
 
+            {/* Submit Buttons */}
             <div className="flex flex-wrap gap-2">
                 <Button
-                    onClick={() => submitWith('approved')}
+                    onClick={() =>
+                        submitWith('approved')
+                    }
                     disabled={processing}
                 >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                    {processing ? 'Saving...' : 'Approve'}
+
+                    {processing
+                        ? 'Saving...'
+                        : 'Approve'}
                 </Button>
+
                 <Button
                     variant="destructive"
                     disabled={processing}
@@ -876,10 +1380,13 @@ function InspectionForm({
                             return;
                         }
 
-                        submitWith('issues_found');
+                        submitWith(
+                            'issues_found',
+                        );
                     }}
                 >
                     <XCircle className="mr-1.5 h-4 w-4" />
+
                     {processing
                         ? 'Saving...'
                         : type === 'pickup'
@@ -913,47 +1420,72 @@ function InspectionBadges({
                 >
                     <div className="flex flex-wrap items-center justify-between gap-2">
                         <span className="flex items-center gap-1.5 font-semibold capitalize">
-                            {inspection.type === 'pickup' ? (
+                            {inspection.type ===
+                            'pickup' ? (
                                 <ArrowDownToLine className="h-4 w-4 text-primary" />
                             ) : (
                                 <Gauge className="h-4 w-4 text-primary" />
                             )}
-                            {inspection.type} inspection
+
+                            {inspection.type}{' '}
+                            inspection
                         </span>
+
                         <StatusBadge
-                            label={inspection.status.replace('_', ' ')}
+                            label={inspection.status.replace(
+                                '_',
+                                ' ',
+                            )}
                             tone={
-                                inspection.status === 'approved'
+                                inspection.status ===
+                                'approved'
                                     ? 'green'
-                                    : inspection.status === 'issues_found'
+                                    : inspection.status ===
+                                        'issues_found'
                                       ? 'red'
                                       : 'yellow'
                             }
                         />
                     </div>
+
                     <p className="mt-1 text-muted-foreground">
                         {inspection.conducted_at
-                            ? `${new Date(inspection.conducted_at).toLocaleString()} by ${inspection.conducted_by_name ?? 'staff'}`
+                            ? `${new Date(
+                                  inspection.conducted_at,
+                              ).toLocaleString()} by ${
+                                  inspection.conducted_by_name ??
+                                  'staff'
+                              }`
                             : 'Conducted'}
-                        {inspection.mileage_reading !== null &&
+
+                        {inspection.mileage_reading !==
+                            null &&
                             ` · ${inspection.mileage_reading.toLocaleString()} km`}
-                        {inspection.fuel_level !== null &&
+
+                        {inspection.fuel_level !==
+                            null &&
                             ` · ${inspection.fuel_level}% fuel`}
                     </p>
+
                     {inspection.type === 'pickup' && (
                         <div className="mt-2">
                             {inspection.id_verified ? (
                                 <div className="flex items-center gap-1.5 text-sm">
                                     <Check className="h-3.5 w-3.5 text-green-600" />
+
                                     <span className="font-medium text-green-700">
                                         ID Verified
                                     </span>
+
                                     {inspection.id_verified_by_name && (
                                         <span className="text-muted-foreground">
                                             · by{' '}
-                                            {inspection.id_verified_by_name}
+                                            {
+                                                inspection.id_verified_by_name
+                                            }
                                         </span>
                                     )}
+
                                     {inspection.id_verified_at && (
                                         <span className="text-muted-foreground">
                                             ·{' '}
@@ -966,75 +1498,139 @@ function InspectionBadges({
                             ) : (
                                 <div className="flex items-center gap-1.5 text-sm">
                                     <X className="h-3.5 w-3.5 text-amber-600" />
+
                                     <span className="font-medium text-amber-700">
-                                        ID Verification Pending
+                                        ID Verification
+                                        Pending
                                     </span>
                                 </div>
                             )}
                         </div>
                     )}
-                    {inspection.damages && inspection.damages.length > 0 && (
-                        <ul className="mt-2 list-inside list-disc text-red-600">
-                            {inspection.damages.map((damage, i) => (
-                                <li key={i}>
-                                    <span className="font-medium">
-                                        {damage.area}
-                                    </span>{' '}
-                                    - {damage.description}
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+
+                    {inspection.damages &&
+                        inspection.damages.length >
+                            0 && (
+                            <ul className="mt-2 list-inside list-disc text-red-600">
+                                {inspection.damages.map(
+                                    (damage, i) => (
+                                        <li key={i}>
+                                            <span className="font-medium">
+                                                {
+                                                    damage.area
+                                                }
+                                            </span>{' '}
+                                            -{' '}
+                                            {
+                                                damage.description
+                                            }
+                                        </li>
+                                    ),
+                                )}
+                            </ul>
+                        )}
+
                     {inspection.notes && (
                         <p className="mt-2 text-muted-foreground">
                             {inspection.notes}
                         </p>
                     )}
-                    {inspection.photos && inspection.photos.length > 0 && (
-                        <div className="mt-3 flex flex-wrap gap-2">
-                            {inspection.photos.map((path, i) => (
-                                <a
-                                    key={i}
-                                    href={`/storage/${path}`}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="block h-16 w-16 overflow-hidden rounded-md border shadow-sm hover:opacity-90"
-                                >
-                                    <img
-                                        src={`/storage/${path}`}
-                                        alt="Evidence"
-                                        className="h-full w-full object-cover"
-                                    />
-                                </a>
-                            ))}
-                        </div>
-                    )}
+
+                    {inspection.photos &&
+                        inspection.photos.length >
+                            0 && (
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                {inspection.photos.map(
+                                    (path, i) => (
+                                        <a
+                                            key={i}
+                                            href={`/storage/${path}`}
+                                            target="_blank"
+                                            rel="noreferrer"
+                                            className="block h-16 w-16 overflow-hidden rounded-md border shadow-sm hover:opacity-90"
+                                        >
+                                            <img
+                                                src={`/storage/${path}`}
+                                                alt="Evidence"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </a>
+                                    ),
+                                )}
+                            </div>
+                        )}
                 </div>
             ))}
         </div>
     );
 }
 
-function CompletionCard({ booking }: { booking: Booking }) {
-    const [repairCost, setRepairCost] = useState('');
-    const [processing, setProcessing] = useState(false);
+function CompletionCard({
+    booking,
+}: {
+    booking: Booking;
+}) {
+    const [repairCost, setRepairCost] =
+        useState('');
+    const [repairCostError, setRepairCostError] =
+        useState('');
+    const [processing, setProcessing] =
+        useState(false);
 
-    const returnInspection = booking.inspections.find(
-        (inspection) => inspection.type === 'return',
-    );
-    const hasIssues = returnInspection?.status === 'issues_found';
+    const returnInspection =
+        booking.inspections.find(
+            (inspection) =>
+                inspection.type === 'return',
+        );
+
+    const hasIssues =
+        returnInspection?.status ===
+        'issues_found';
 
     const handleComplete = () => {
-        if (hasIssues && !repairCost.trim()) {
-            return;
+        if (hasIssues) {
+            if (!repairCost.trim()) {
+                setRepairCostError(
+                    'Repair cost is required when damages are found.',
+                );
+                return;
+            }
+
+            if (
+                Number.isNaN(Number(repairCost))
+            ) {
+                setRepairCostError(
+                    'Repair cost must be a valid number.',
+                );
+                return;
+            }
+
+            if (Number(repairCost) < 0) {
+                setRepairCostError(
+                    'Repair cost cannot be negative.',
+                );
+                return;
+            }
+
+            setRepairCostError('');
         }
 
         setProcessing(true);
 
         router.post(
-            inspections.complete.url({ booking: booking.id }),
-            hasIssues ? { repair_cost: repairCost } : {},
-            { preserveScroll: true, onFinish: () => setProcessing(false) },
+            inspections.complete.url({
+                booking: booking.id,
+            }),
+            hasIssues
+                ? {
+                      repair_cost: repairCost,
+                  }
+                : {},
+            {
+                preserveScroll: true,
+                onFinish: () =>
+                    setProcessing(false),
+            },
         );
     };
 
@@ -1044,32 +1640,52 @@ function CompletionCard({ booking }: { booking: Booking }) {
                 {hasIssues && (
                     <div className="space-y-1">
                         <Label>
-                            Repair cost (deducted from security deposit)
+                            Repair cost (deducted from
+                            security deposit)
                         </Label>
+
                         <Input
                             type="number"
                             min={0}
                             value={repairCost}
-                            onChange={(e) => setRepairCost(e.target.value)}
+                            onChange={(e) => {
+                                setRepairCost(
+                                    e.target.value,
+                                );
+
+                                if (
+                                    repairCostError
+                                ) {
+                                    setRepairCostError(
+                                        '',
+                                    );
+                                }
+                            }}
                             placeholder="e.g. 2000"
-                            className="w-56"
+                            className={cn(
+                                'w-56',
+                                repairCostError &&
+                                    'border-red-500 focus-visible:ring-red-500',
+                            )}
                         />
-                        {!repairCost.trim() && (
+
+                        {repairCostError && (
                             <p className="text-xs text-red-600">
-                                Required when damages are found.
+                                {repairCostError}
                             </p>
                         )}
                     </div>
                 )}
+
                 <Button
                     onClick={handleComplete}
                     disabled={
                         !returnInspection ||
-                        (hasIssues && !repairCost.trim()) ||
                         processing
                     }
                 >
-                    <Check className="mr-2 h-4 w-4" /> Mark Completed
+                    <Check className="mr-2 h-4 w-4" />
+                    Mark Completed
                 </Button>
             </div>
         </div>
@@ -1086,32 +1702,47 @@ function BookingDetail({
     onClose: () => void;
 }) {
     const car = booking.car;
-    const hasPickup = booking.inspections.some(
-        (inspection) => inspection.type === 'pickup',
-    );
-    const pickupApproved = booking.inspections.some(
-        (inspection) =>
-            inspection.type === 'pickup' && inspection.status === 'approved',
-    );
-    const hasReturnInspection = booking.inspections.some(
-        (inspection) => inspection.type === 'return',
-    );
-    const [processingAction, setProcessingAction] = useState<
-        'handover' | 'returned' | null
-    >(null);
+
+    const hasPickup =
+        booking.inspections.some(
+            (inspection) =>
+                inspection.type === 'pickup',
+        );
+
+    const pickupApproved =
+        booking.inspections.some(
+            (inspection) =>
+                inspection.type === 'pickup' &&
+                inspection.status === 'approved',
+        );
+
+    const hasReturnInspection =
+        booking.inspections.some(
+            (inspection) =>
+                inspection.type === 'return',
+        );
+
+    const [processingAction, setProcessingAction] =
+        useState<
+            'handover' | 'returned' | null
+        >(null);
 
     const showPickupForm =
         inspectionType === 'pickup' &&
         !hasPickup &&
-        booking.car_delivery_status === 'arrived';
+        booking.car_delivery_status ===
+            'arrived';
 
     const showReturnForm =
         inspectionType === 'return' &&
         !hasReturnInspection &&
-        booking.return_arrival_status === 'arrived';
+        booking.return_arrival_status ===
+            'arrived';
 
     const images = [...car.images].sort(
-        (a, b) => Number(b.is_primary) - Number(a.is_primary),
+        (a, b) =>
+            Number(b.is_primary) -
+            Number(a.is_primary),
     );
 
     const specs: Array<{
@@ -1119,12 +1750,36 @@ function BookingDetail({
         label: string;
         value: string | number;
     }> = [
-        { icon: Settings2, label: 'Transmission', value: car.transmission },
-        { icon: Fuel, label: 'Fuel Type', value: car.fuel_type },
-        { icon: Users, label: 'Seats', value: car.seats ?? '—' },
-        { icon: Calendar, label: 'Year', value: car.year },
-        { icon: Palette, label: 'Color', value: car.color },
-        { icon: Zap, label: 'Engine Size', value: car.engine_size ?? '—' },
+        {
+            icon: Settings2,
+            label: 'Transmission',
+            value: car.transmission,
+        },
+        {
+            icon: Fuel,
+            label: 'Fuel Type',
+            value: car.fuel_type,
+        },
+        {
+            icon: Users,
+            label: 'Seats',
+            value: car.seats ?? '—',
+        },
+        {
+            icon: Calendar,
+            label: 'Year',
+            value: car.year,
+        },
+        {
+            icon: Palette,
+            label: 'Color',
+            value: car.color,
+        },
+        {
+            icon: Zap,
+            label: 'Engine Size',
+            value: car.engine_size ?? '—',
+        },
         {
             icon: Gauge,
             label: 'Mileage',
@@ -1148,48 +1803,69 @@ function BookingDetail({
                         <h2 className="text-lg font-bold">
                             {car.brand} {car.model}
                         </h2>
+
                         <StatusBadge
-                            label={booking.status.replace('_', ' ')}
+                            label={booking.status.replace(
+                                '_',
+                                ' ',
+                            )}
                             tone={
-                                booking.status === 'deposit_paid'
+                                booking.status ===
+                                'deposit_paid'
                                     ? 'blue'
                                     : 'slate'
                             }
                         />
+
                         <span className="rounded-full bg-slate-200 px-2.5 py-0.5 text-xs font-medium text-slate-600">
                             Booking #{booking.id}
                         </span>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={onClose}>
-                        <X className="mr-1 h-4 w-4" /> Close
+
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={onClose}
+                    >
+                        <X className="mr-1 h-4 w-4" />
+                        Close
                     </Button>
                 </div>
             </div>
 
             <CardContent className="space-y-6 p-5">
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <CarGallery images={images} />
+                    <CarGallery
+                        images={images}
+                    />
 
                     <div className="space-y-4">
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    {car.year} · {car.category} ·{' '}
+                                    {car.year} ·{' '}
+                                    {car.category} ·{' '}
                                     {car.plate_number}
                                 </p>
+
                                 <p className="mt-1 text-2xl font-bold">
                                     ETB{' '}
-                                    {Number(car.daily_price).toLocaleString()}
+                                    {Number(
+                                        car.daily_price,
+                                    ).toLocaleString()}
+
                                     <span className="text-sm font-normal text-muted-foreground">
                                         {' '}
                                         / day
                                     </span>
                                 </p>
                             </div>
+
                             <div className="text-right text-sm">
                                 <p className="text-muted-foreground">
                                     Booking total
                                 </p>
+
                                 <p className="text-lg font-bold">
                                     ETB{' '}
                                     {Number(
@@ -1205,32 +1881,54 @@ function BookingDetail({
                                     <p className="text-xs text-muted-foreground">
                                         Pickup
                                     </p>
+
                                     <p className="font-medium">
-                                        {booking.pickup_date}
+                                        {
+                                            booking.pickup_date
+                                        }
                                     </p>
+
                                     <p className="text-muted-foreground">
-                                        {booking.pickup_location}
+                                        {
+                                            booking.pickup_location
+                                        }
                                     </p>
                                 </div>
+
                                 <div>
                                     <p className="text-xs text-muted-foreground">
                                         Return
                                     </p>
+
                                     <p className="font-medium">
-                                        {booking.return_date}
+                                        {
+                                            booking.return_date
+                                        }
                                     </p>
+
                                     <p className="text-muted-foreground">
-                                        {booking.return_location}
+                                        {
+                                            booking.return_location
+                                        }
                                     </p>
                                 </div>
                             </div>
+
                             <div className="mt-3 flex flex-wrap items-center gap-4 text-muted-foreground">
                                 <span>
-                                    Customer: {booking.customer?.name ?? 'N/A'}
+                                    Customer:{' '}
+                                    {booking.customer
+                                        ?.name ??
+                                        'N/A'}
                                 </span>
+
                                 <span>
-                                    Owner: {booking.owner?.name ?? 'N/A'}
+                                    Owner:{' '}
+                                    {booking.owner
+                                        ?.name ??
+                                        'N/A'}
                                 </span>
+
                                 {booking.security_deposit_amount && (
                                     <span>
                                         Deposit: ETB{' '}
@@ -1244,7 +1942,10 @@ function BookingDetail({
 
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                             {specs.map((spec) => (
-                                <SpecTile key={spec.label} {...spec} />
+                                <SpecTile
+                                    key={spec.label}
+                                    {...spec}
+                                />
                             ))}
                         </div>
 
@@ -1253,6 +1954,7 @@ function BookingDetail({
                                 <h3 className="text-sm font-semibold">
                                     About this vehicle
                                 </h3>
+
                                 <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
                                     {car.description}
                                 </p>
@@ -1262,91 +1964,143 @@ function BookingDetail({
                 </div>
 
                 <div className="space-y-4 border-t border-slate-100 pt-5">
-                    {inspectionType === 'pickup' && (
-                        <DeliveryPanel booking={booking} />
+                    {inspectionType ===
+                        'pickup' && (
+                        <DeliveryPanel
+                            booking={booking}
+                        />
                     )}
 
-                    {inspectionType === 'return' && (
-                        <ReturnArrivalPanel booking={booking} />
+                    {inspectionType ===
+                        'return' && (
+                        <ReturnArrivalPanel
+                            booking={booking}
+                        />
                     )}
 
-                    <InspectionBadges inspections={booking.inspections} />
+                    <InspectionBadges
+                        inspections={
+                            booking.inspections
+                        }
+                    />
 
                     {showPickupForm && (
                         <div className="pt-2">
-                            <InspectionForm booking={booking} type="pickup" />
+                            <InspectionForm
+                                booking={booking}
+                                type="pickup"
+                            />
                         </div>
                     )}
 
                     {showReturnForm && (
                         <div className="pt-2">
-                            <InspectionForm booking={booking} type="return" />
+                            <InspectionForm
+                                booking={booking}
+                                type="return"
+                            />
                         </div>
                     )}
 
-                    {inspectionType === 'pickup' &&
-                        booking.status === 'paid' &&
+                    {inspectionType ===
+                        'pickup' &&
+                        booking.status ===
+                            'paid' &&
                         pickupApproved && (
                             <Button
                                 size="sm"
-                                disabled={processingAction !== null}
+                                disabled={
+                                    processingAction !==
+                                    null
+                                }
                                 onClick={() => {
-                                    setProcessingAction('handover');
+                                    setProcessingAction(
+                                        'handover',
+                                    );
 
                                     router.post(
-                                        inspections.handover.url({
-                                            booking: booking.id,
-                                        }),
+                                        inspections.handover.url(
+                                            {
+                                                booking:
+                                                    booking.id,
+                                            },
+                                        ),
                                         {},
                                         {
-                                            preserveScroll: true,
-                                            onFinish: () =>
-                                                setProcessingAction(null),
+                                            preserveScroll:
+                                                true,
+                                            onFinish:
+                                                () =>
+                                                    setProcessingAction(
+                                                        null,
+                                                    ),
                                         },
                                     );
                                 }}
                             >
                                 <KeyRound className="mr-1.5 h-4 w-4" />
-                                {processingAction === 'handover'
+
+                                {processingAction ===
+                                'handover'
                                     ? 'Handing over...'
                                     : 'Hand Over Keys (Mark Picked Up)'}
                             </Button>
                         )}
 
-                    {inspectionType === 'return' &&
-                        booking.status === 'picked_up' &&
+                    {inspectionType ===
+                        'return' &&
+                        booking.status ===
+                            'picked_up' &&
                         hasReturnInspection && (
                             <Button
                                 className="w-full"
                                 variant="secondary"
-                                disabled={processingAction !== null}
+                                disabled={
+                                    processingAction !==
+                                    null
+                                }
                                 onClick={() => {
-                                    setProcessingAction('returned');
+                                    setProcessingAction(
+                                        'returned',
+                                    );
 
                                     router.post(
-                                        inspections.returned.url({
-                                            booking: booking.id,
-                                        }),
+                                        inspections.returned.url(
+                                            {
+                                                booking:
+                                                    booking.id,
+                                            },
+                                        ),
                                         {},
                                         {
-                                            preserveScroll: true,
-                                            onFinish: () =>
-                                                setProcessingAction(null),
+                                            preserveScroll:
+                                                true,
+                                            onFinish:
+                                                () =>
+                                                    setProcessingAction(
+                                                        null,
+                                                    ),
                                         },
                                     );
                                 }}
                             >
                                 <PackageCheck className="mr-1.5 h-4 w-4" />
-                                {processingAction === 'returned'
+
+                                {processingAction ===
+                                'returned'
                                     ? 'Marking...'
                                     : 'Mark Returned'}
                             </Button>
                         )}
 
-                    {inspectionType === 'return' &&
-                        booking.status === 'returned' && (
+                    {inspectionType ===
+                        'return' &&
+                        booking.status ===
+                            'returned' && (
                             <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
-                                <CompletionCard booking={booking} />
+                                <CompletionCard
+                                    booking={booking}
+                                />
                             </div>
                         )}
                 </div>
@@ -1367,23 +2121,33 @@ function InspectionCard({
     onSelect: () => void;
 }) {
     const car = booking.car;
+
     const image =
-        car.images.find((img) => img.is_primary)?.image_path ??
+        car.images.find(
+            (img) => img.is_primary,
+        )?.image_path ??
         car.images?.[0]?.image_path;
 
     const needsInspection =
         inspectionType === 'pickup'
             ? !booking.inspections.some(
-                  (inspection) => inspection.type === 'pickup',
+                  (inspection) =>
+                      inspection.type ===
+                      'pickup',
               )
             : !booking.inspections.some(
-                  (inspection) => inspection.type === 'return',
+                  (inspection) =>
+                      inspection.type ===
+                      'return',
               );
 
-    const pickupApproved = booking.inspections.some(
-        (inspection) =>
-            inspection.type === 'pickup' && inspection.status === 'approved',
-    );
+    const pickupApproved =
+        booking.inspections.some(
+            (inspection) =>
+                inspection.type === 'pickup' &&
+                inspection.status ===
+                    'approved',
+        );
 
     const readyForHandover =
         inspectionType === 'pickup' &&
@@ -1394,7 +2158,8 @@ function InspectionCard({
         <GlareCard
             className={cn(
                 'w-full cursor-pointer',
-                active && 'ring-2 ring-primary',
+                active &&
+                    'ring-2 ring-primary',
             )}
             onClick={onSelect}
         >
@@ -1428,19 +2193,27 @@ function InspectionCard({
                 <div className="mt-3 flex items-start justify-between gap-3 px-1 pb-1">
                     <div className="min-w-0">
                         <h3 className="truncate text-xs font-bold text-slate-900">
-                            {car.brand} {car.model}
+                            {car.brand}{' '}
+                            {car.model}
                         </h3>
+
                         <p className="mt-0.5 flex items-center gap-1 text-xs text-slate-500">
                             {car.transmission}
                         </p>
+
                         <p className="text-[11px] text-slate-500">
                             {car.plate_number}
                         </p>
                     </div>
+
                     <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-slate-900">
-                            ETB {Number(car.daily_price).toLocaleString()}
+                            ETB{' '}
+                            {Number(
+                                car.daily_price,
+                            ).toLocaleString()}
                         </p>
+
                         <p className="text-[10px] font-medium text-slate-400">
                             per day
                         </p>
@@ -1456,10 +2229,12 @@ export default function Inspections({
     return_queue,
     awaiting_completion,
 }: Props) {
-    const [tab, setTab] = useState<'pickup' | 'return' | 'completion'>(
-        'pickup',
-    );
-    const [selectedId, setSelectedId] = useState<number | null>(null);
+    const [tab, setTab] = useState<
+        'pickup' | 'return' | 'completion'
+    >('pickup');
+
+    const [selectedId, setSelectedId] =
+        useState<number | null>(null);
 
     const tabs = [
         {
@@ -1479,10 +2254,21 @@ export default function Inspections({
         },
     ] as const;
 
-    const active = tabs.find((item) => item.key === tab) ?? tabs[0];
-    const inspectionType = tab === 'completion' ? 'return' : tab;
+    const active =
+        tabs.find(
+            (item) => item.key === tab,
+        ) ?? tabs[0];
+
+    const inspectionType =
+        tab === 'completion'
+            ? 'return'
+            : tab;
+
     const selectedBooking =
-        active.queue.find((booking) => booking.id === selectedId) ?? null;
+        active.queue.find(
+            (booking) =>
+                booking.id === selectedId,
+        ) ?? null;
 
     return (
         <>
@@ -1490,10 +2276,15 @@ export default function Inspections({
 
             <div className="space-y-6 p-6">
                 <div>
-                    <h1 className="text-3xl font-bold">Booking Inspections</h1>
+                    <h1 className="text-3xl font-bold">
+                        Booking Inspections
+                    </h1>
+
                     <p className="mt-2 text-muted-foreground">
-                        Select a vehicle to confirm delivery, inspect it before
-                        handover and at return, then mark returned bookings as
+                        Select a vehicle to confirm
+                        delivery, inspect it before
+                        handover and at return, then
+                        mark returned bookings as
                         completed.
                     </p>
                 </div>
@@ -1505,11 +2296,18 @@ export default function Inspections({
                                 <Button
                                     key={item.key}
                                     variant={
-                                        tab === item.key ? 'default' : 'outline'
+                                        tab ===
+                                        item.key
+                                            ? 'default'
+                                            : 'outline'
                                     }
                                     onClick={() => {
-                                        setTab(item.key);
-                                        setSelectedId(null);
+                                        setTab(
+                                            item.key,
+                                        );
+                                        setSelectedId(
+                                            null,
+                                        );
                                     }}
                                 >
                                     {item.label}
@@ -1517,40 +2315,61 @@ export default function Inspections({
                             ))}
                         </div>
 
-                        {active.queue.length === 0 ? (
+                        {active.queue.length ===
+                        0 ? (
                             <Card>
                                 <CardContent className="py-16 text-center">
                                     <Check className="mx-auto h-12 w-12 text-green-500" />
+
                                     <p className="mt-4 text-lg font-semibold">
-                                        No bookings in this queue.
+                                        No bookings in
+                                        this queue.
                                     </p>
+
                                     <p className="mt-2 text-sm text-muted-foreground">
-                                        {tab === 'pickup' &&
+                                        {tab ===
+                                            'pickup' &&
                                             'Bookings with a paid deposit awaiting the pre-handover inspection will appear here.'}
-                                        {tab === 'return' &&
+
+                                        {tab ===
+                                            'return' &&
                                             'Picked up bookings awaiting the return inspection will appear here.'}
-                                        {tab === 'completion' &&
+
+                                        {tab ===
+                                            'completion' &&
                                             'Returned bookings awaiting final completion will appear here.'}
                                     </p>
                                 </CardContent>
                             </Card>
                         ) : (
                             <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                {active.queue.map((booking) => (
-                                    <InspectionCard
-                                        key={booking.id}
-                                        booking={booking}
-                                        inspectionType={inspectionType}
-                                        active={booking.id === selectedId}
-                                        onSelect={() =>
-                                            setSelectedId(
-                                                booking.id === selectedId
-                                                    ? null
-                                                    : booking.id,
-                                            )
-                                        }
-                                    />
-                                ))}
+                                {active.queue.map(
+                                    (booking) => (
+                                        <InspectionCard
+                                            key={
+                                                booking.id
+                                            }
+                                            booking={
+                                                booking
+                                            }
+                                            inspectionType={
+                                                inspectionType
+                                            }
+                                            active={
+                                                booking.id ===
+                                                selectedId
+                                            }
+                                            onSelect={() =>
+                                                setSelectedId(
+                                                    booking.id ===
+                                                        selectedId
+                                                        ? null
+                                                        : booking.id,
+                                                )
+                                            }
+                                        />
+                                    ),
+                                )}
                             </div>
                         )}
                     </>
@@ -1558,9 +2377,15 @@ export default function Inspections({
 
                 {selectedBooking && (
                     <BookingDetail
-                        booking={selectedBooking}
-                        inspectionType={inspectionType}
-                        onClose={() => setSelectedId(null)}
+                        booking={
+                            selectedBooking
+                        }
+                        inspectionType={
+                            inspectionType
+                        }
+                        onClose={() =>
+                            setSelectedId(null)
+                        }
                     />
                 )}
             </div>
@@ -1570,7 +2395,13 @@ export default function Inspections({
 
 Inspections.layout = {
     breadcrumbs: [
-        { title: 'Dashboard', href: '/dashboard' },
-        { title: 'Inspections', href: '/inspections' },
+        {
+            title: 'Dashboard',
+            href: '/dashboard',
+        },
+        {
+            title: 'Inspections',
+            href: '/inspections',
+        },
     ],
 };

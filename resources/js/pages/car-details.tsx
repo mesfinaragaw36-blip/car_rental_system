@@ -87,7 +87,18 @@ export default function CarDetails({
             onSuccess: () => {},
         });
     };
-
+   const verificationMessage =
+    verification_status === 'pending'
+        ? 'Your national ID is currently under review. You can book a car once your verification is approved.'
+        : verification_status === 'rejected'
+          ? 'Your national ID verification was rejected. Please review and resubmit your ID information.'
+          : 'Please submit your national ID to complete verification before booking a car.';
+          const verificationTitle =
+    verification_status === 'pending'
+        ? 'Verification Pending'
+        : verification_status === 'rejected'
+            ? 'Verification Rejected'
+            : 'Verification Required';
     return (
         <>
             <Head title={`${car.brand} ${car.model}`} />
@@ -127,14 +138,14 @@ export default function CarDetails({
                                     {car.brand} {car.model} ({car.year})
                                 </h1>
                                 {car.average_rating !== undefined && (
-                                    <p className="text-sm text-muted-foreground">
-                                        {car.average_rating} ★ ·{' '}
-                                        {car.review_count ?? 0} review
-                                        {(car.review_count ?? 0) === 1
-                                            ? ''
-                                            : 's'}
-                                    </p>
-                                )}
+    <p className="text-sm text-amber-500">
+        {car.average_rating} ★ ·{' '}
+        {car.review_count ?? 0}{' '}
+        {car.review_count === 1 ? 'review' : 'reviews'}
+    </p>
+)}
+
+                            
                             </div>
                             <p className="text-2xl font-bold text-primary">
                                 ETB {car.daily_rate}/day
@@ -211,9 +222,9 @@ export default function CarDetails({
                                                     ).toLocaleDateString()}
                                                 </p>
                                             </div>
-                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold">
-                                                {r.rating} ★
-                                            </span>
+                                            <span className="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-amber-500">
+                                              {r.rating} ★
+                                             </span>
                                         </div>
                                         {r.review_text && (
                                             <p className="mt-3 text-sm text-muted-foreground">
@@ -326,14 +337,12 @@ export default function CarDetails({
                     (verification_status !== 'approved' ? (
                         <Card>
                             <CardHeader>
-                                <CardTitle>Approval Required</CardTitle>
+                                <CardTitle>{verificationTitle}</CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
-                                    You need to be approved before booking a
-                                    car. Please submit your national ID on your
-                                    profile page to complete verification.
-                                </p>
+    {verificationMessage}
+</p>
                                 <Button asChild>
                                     <Link href={editProfile.url()}>
                                         Go to Profile

@@ -334,14 +334,11 @@ export default function BrowseCars({
                                                 {car.average_rating !==
                                                     undefined && (
                                                     <p className="mt-1 text-sm text-slate-500">
-                                                        {car.average_rating} ★ ·{' '}
-                                                        {car.review_count ?? 0}{' '}
-                                                        review
-                                                        {(car.review_count ??
-                                                            0) === 1
-                                                            ? ''
-                                                            : 's'}
-                                                    </p>
+    <span className="text-yellow-500">★</span>{' '}
+    {car.average_rating} · {car.review_count ?? 0}{' '}
+    review
+    {(car.review_count ?? 0) === 1 ? '' : 's'}
+</p>
                                                 )}
                                             </div>
                                             <div className="shrink-0 text-right">

@@ -70,8 +70,7 @@ class BookingController extends Controller
 
             $booking->identity_approved =
                 $user->role !== 'customer'
-                || $identity === null
-                || $identity->isApproved();
+                || ($identity !== null && $identity->isApproved());
 
             $booking->identity_status =
                 $user->role === 'customer'
@@ -379,12 +378,14 @@ class BookingController extends Controller
                 'reviews' => $reviewList,
 
                 'identity_approved' => $user->role !== 'customer'
-                    || $user->customerIdentity === null
-                    || $user->customerIdentity->isApproved(),
+    || (
+        $user->customerIdentity !== null
+        && $user->customerIdentity->isApproved()
+    ),
 
-                'identity_status' => $user->role === 'customer'
-                        ? $user->customerIdentity?->verification_status
-                        : null,
+'identity_status' => $user->role === 'customer'
+    ? $user->customerIdentity?->verification_status
+    : null,
 
                 'security_deposit' => $booking->securityDepositAmount(),
 
