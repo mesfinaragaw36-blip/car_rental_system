@@ -9,13 +9,58 @@ use App\Models\Inspection;
 use App\Models\OwnerPayout;
 use App\Models\Payment;
 use App\Models\Refund;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class ReportController extends Controller
 {
+    /**
+     * Display the reports page.
+     */
     public function index(Request $request): Response
+    {
+        $reportData = $this->getReportData($request);
+
+        return Inertia::render('admin/reports', $reportData);
+    }
+
+    /**
+     * Generate and download the report as a PDF.
+     */
+    public function exportPdf(Request $request)
+    {
+        $reportData = $this->getReportData($request);
+
+       $pdf = Pdf::loadView('reports.pdf', $reportData)
+            ->setPaper('a4', 'portrait');
+
+        $from = $request->input('from');
+        $to = $request->input('to');
+
+        $filename = 'ethio-car-rental-report';
+
+        if ($from && $to) {
+            $filename .= "-{$from}-to-{$to}";
+        } elseif ($from) {
+            $filename .= "-from-{$from}";
+        } elseif ($to) {
+            $filename .= "-until-{$to}";
+        }
+
+        $filename .= '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Build all report data.
+     *
+     * This method is shared by the web report and PDF report
+     * so both outputs always contain the same information.
+     */
+    private function getReportData(Request $request): array
     {
         $from = $request->input('from');
         $to = $request->input('to');
@@ -48,9 +93,15 @@ class ReportController extends Controller
             $driverPayoutQuery->whereDate('created_at', '<=', $to);
         }
 
+        /*
+         * Retrieve filtered report records.
+         */
         $bookings = (clone $bookingQuery)->get();
+
         $payments = (clone $paymentQuery)->get();
+
         $refunds = (clone $refundQuery)->get();
+
         $inspections = (clone $inspectionQuery)->get();
 
         $ownerPayouts = (clone $ownerPayoutQuery)
@@ -64,7 +115,10 @@ class ReportController extends Controller
         /*
          * Paid payments only.
          */
-        $paidPayments = $payments->where('payment_status', 'paid');
+        $paidPayments = $payments->where(
+            'payment_status',
+            'paid'
+        );
 
         /*
          * Rental revenue excludes security deposits.
@@ -118,7 +172,8 @@ class ReportController extends Controller
         ]);
 
         $companyCommission = $commissionablePayments->sum(
-            fn (Payment $payment) => (float) $payment->amount * ($commissionRate / 100)
+            fn (Payment $payment) => (float) $payment->amount
+                * ($commissionRate / 100)
         );
 
         /*
@@ -173,7 +228,10 @@ class ReportController extends Controller
             );
 
         $pendingDriverPayouts = $driverPayouts
-            ->where('payout_status', BookingDriver::STATUS_PENDING)
+            ->where(
+                'payout_status',
+                BookingDriver::STATUS_PENDING
+            )
             ->sum(
                 fn (BookingDriver $assignment) => (float) $assignment->earnings
             );
@@ -221,13 +279,22 @@ class ReportController extends Controller
 
             'paid_owner_payouts' => round($paidOwnerPayouts, 2),
 
-            'pending_owner_payouts' => round($pendingOwnerPayouts, 2),
+            'pending_owner_payouts' => round(
+                $pendingOwnerPayouts,
+                2
+            ),
 
             'driver_payouts' => round($totalDriverPayouts, 2),
 
-            'paid_driver_payouts' => round($paidDriverPayouts, 2),
+            'paid_driver_payouts' => round(
+                $paidDriverPayouts,
+                2
+            ),
 
-            'pending_driver_payouts' => round($pendingDriverPayouts, 2),
+            'pending_driver_payouts' => round(
+                $pendingDriverPayouts,
+                2
+            ),
 
             'total_cars' => Car::count(),
 
@@ -250,7 +317,10 @@ class ReportController extends Controller
                 ->count(),
 
             'issues_found' => $inspections
-                ->where('status', Inspection::STATUS_ISSUES_FOUND)
+                ->where(
+                    'status',
+                    Inspection::STATUS_ISSUES_FOUND
+                )
                 ->count(),
         ];
 
@@ -291,8 +361,8 @@ class ReportController extends Controller
         /*
          * Top cars.
          *
-         * Important: use the filtered booking query so the
-         * selected date range is respected.
+         * The filtered booking query is cloned so the selected
+         * date range is respected.
          */
         $topCars = (clone $bookingQuery)
             ->selectRaw('car_id, COUNT(*) as bookings_count')
@@ -331,8 +401,6 @@ class ReportController extends Controller
 
         /*
          * Revenue by date.
-         *
-         * This is useful for the revenue chart on the frontend.
          */
         $revenueByDate = $paidPayments
             ->whereIn('type', [
@@ -341,7 +409,8 @@ class ReportController extends Controller
                 Payment::TYPE_EXTRA_CHARGE,
             ])
             ->groupBy(
-                fn (Payment $payment) => $payment->created_at?->toDateString()
+                fn (Payment $payment) =>
+                    $payment->created_at?->toDateString()
             )
             ->map(fn ($items, $date) => [
                 'date' => $date,
@@ -353,9 +422,29 @@ class ReportController extends Controller
                     2
                 ),
             ])
+            ->sortBy('date')
             ->values();
 
-        return Inertia::render('admin/reports', [
+        /*
+         * Report metadata.
+         */
+        $report = [
+            'company_name' => 'Ethio Car Rental',
+
+            'subtitle' => 'Administrative Report',
+
+            'title' => 'Rental Business Report',
+
+            'generated_at' => now(),
+
+            'from' => $from,
+
+            'to' => $to,
+        ];
+
+        return [
+            'report' => $report,
+
             'summary' => $summary,
 
             'bookingStatuses' => $bookingStatuses,
@@ -374,6 +463,6 @@ class ReportController extends Controller
                 'from' => $from,
                 'to' => $to,
             ],
-        ]);
+        ];
     }
 }
