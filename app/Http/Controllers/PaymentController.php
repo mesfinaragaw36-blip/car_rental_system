@@ -8,6 +8,7 @@ use App\Models\Inspection;
 use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
+use App\Services\DriverMatchingService;
 use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,6 +18,10 @@ use Inertia\Response;
 
 class PaymentController extends Controller
 {
+    public function __construct(
+        private readonly DriverMatchingService $driverMatching
+    ) {}
+
     /*
     |--------------------------------------------------------------------------
     | Payment Methods
@@ -180,23 +185,6 @@ class PaymentController extends Controller
                 'type' => 'error',
                 'message' => 'Your national ID is awaiting admin approval. You can pay the deposit once your identity has been verified.',
             ]);
-        }
-
-        if ($booking->need_driver) {
-            $hasDriver = $booking
-                ->driverAssignment()
-                ->whereIn('status', [
-                    BookingDriver::STATUS_ASSIGNED,
-                    BookingDriver::STATUS_ACCEPTED,
-                ])
-                ->exists();
-
-            if (! $hasDriver) {
-                return redirect()->back()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'Payment is not available until a driver is assigned to this trip.',
-                ]);
-            }
         }
 
         $booking->load(
@@ -495,23 +483,6 @@ class PaymentController extends Controller
                 'type' => 'error',
                 'message' => 'Your national ID is awaiting admin approval. You can pay the deposit once your identity has been verified.',
             ]);
-        }
-
-        if ($booking->need_driver) {
-            $hasDriver = $booking
-                ->driverAssignment()
-                ->whereIn('status', [
-                    BookingDriver::STATUS_ASSIGNED,
-                    BookingDriver::STATUS_ACCEPTED,
-                ])
-                ->exists();
-
-            if (! $hasDriver) {
-                return redirect()->back()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'Payment is not available until a driver is assigned.',
-                ]);
-            }
         }
 
         if ($booking->hasPaidDeposit()) {
@@ -1035,6 +1006,9 @@ class PaymentController extends Controller
                 $booking,
                 (float) $payment->amount
             );
+
+            // Trigger driver assignment if inspection is already approved
+            $this->driverMatching->triggerDriverAssignmentIfReady($booking);
 
             return;
         }

@@ -92,6 +92,21 @@ class DriverMatchingService
     }
 
     /**
+     * Trigger driver assignment if all conditions are met
+     * (deposit paid + inspection approved).
+     */
+    public function triggerDriverAssignmentIfReady(Booking $booking): ?BookingDriver
+    {
+        if (! $booking->shouldAssignDriver()) {
+            return null;
+        }
+
+        $driver = $this->bestMatchFor($booking);
+
+        return $this->assignDriver($booking, $driver);
+    }
+
+    /**
      * Driver accepts a pending assignment.
      */
     public function acceptAssignment(BookingDriver $assignment): BookingDriver

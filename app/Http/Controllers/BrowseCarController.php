@@ -247,10 +247,6 @@ class BrowseCarController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'The selected dates overlap with an existing booking.']);
         }
 
-        if ($booking->need_driver) {
-            $this->driverMatching->assignDriver($booking, $this->driverMatching->bestMatchFor($booking));
-        }
-
         $booking->owner?->notifyNow(
             "New booking #{$booking->id} for your {$car->brand} {$car->model}",
             sprintf(

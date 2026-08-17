@@ -8,8 +8,10 @@ use App\Models\Car;
 use App\Models\CarAvailablePeriod;
 use App\Models\CustomerIdentity;
 use App\Models\DriverProfile;
+use App\Models\Inspection;
 use App\Models\Location;
 use App\Models\User;
+use App\Services\DriverMatchingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -74,6 +76,27 @@ class DriverOrchestrationTest extends TestCase
             ], $overrides));
     }
 
+    private function triggerDriverAssignment(Booking $booking): void
+    {
+        // Pay deposit
+        $booking->update([
+            'deposit_paid_at' => now(),
+            'status' => Booking::STATUS_DEPOSIT_PAID,
+        ]);
+
+        // Approve pickup inspection
+        Inspection::create([
+            'booking_id' => $booking->id,
+            'type' => 'pickup',
+            'status' => 'approved',
+            'conducted_by' => User::factory()->create(['role' => 'admin'])->id,
+            'conducted_at' => now(),
+        ]);
+
+        // Manually trigger driver assignment
+        app(DriverMatchingService::class)->triggerDriverAssignmentIfReady($booking->fresh());
+    }
+
     public function test_auto_assigns_eligible_driver_and_notifies_when_chauffeur_booked(): void
     {
         $owner = User::factory()->create(['role' => 'owner']);
@@ -85,10 +108,15 @@ class DriverOrchestrationTest extends TestCase
 
         $booking = Booking::where('customer_id', $customer->id)->first();
 
+        // Driver should NOT be assigned yet (needs deposit + inspection)
+        $this->assertDatabaseCount('booking_drivers', 0);
+
+        // Trigger driver assignment by paying deposit and approving inspection
+        $this->triggerDriverAssignment($booking);
+
         $this->assertDatabaseHas('booking_drivers', [
             'booking_id' => $booking->id,
             'driver_id' => $driver->id,
-            'assigned_by' => $customer->id,
             'status' => BookingDriver::STATUS_ASSIGNED,
         ]);
 
@@ -128,6 +156,9 @@ class DriverOrchestrationTest extends TestCase
         $this->bookChauffeur($car, $customer)->assertRedirect();
 
         $booking = Booking::where('customer_id', $customer->id)->first();
+
+        // Trigger driver assignment
+        $this->triggerDriverAssignment($booking);
 
         $this->assertDatabaseCount('booking_drivers', 0);
 
@@ -174,6 +205,9 @@ class DriverOrchestrationTest extends TestCase
 
         $booking = Booking::where('customer_id', $customer->id)->latest('id')->first();
 
+        // Trigger driver assignment
+        $this->triggerDriverAssignment($booking);
+
         $this->assertDatabaseHas('booking_drivers', [
             'booking_id' => $booking->id,
             'driver_id' => $freeDriver->id,
@@ -198,6 +232,9 @@ class DriverOrchestrationTest extends TestCase
         $this->bookChauffeur($car, $customer)->assertRedirect();
 
         $booking = Booking::where('customer_id', $customer->id)->first();
+
+        // Trigger driver assignment
+        $this->triggerDriverAssignment($booking);
 
         $this->assertDatabaseHas('booking_drivers', [
             'booking_id' => $booking->id,
@@ -242,6 +279,9 @@ class DriverOrchestrationTest extends TestCase
 
         $booking = Booking::where('customer_id', $customer->id)->first();
 
+        // Trigger driver assignment
+        $this->triggerDriverAssignment($booking);
+
         $this->actingAs($driver)
             ->post(route('driver.assignments.reject', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]), ['rejection_reason' => 'Not available'])
             ->assertRedirect();
@@ -266,6 +306,9 @@ class DriverOrchestrationTest extends TestCase
         $this->bookChauffeur($car, $customer)->assertRedirect();
 
         $booking = Booking::where('customer_id', $customer->id)->first();
+
+        // Trigger driver assignment
+        $this->triggerDriverAssignment($booking);
 
         $this->actingAs($driver)
             ->post(route('driver.assignments.accept', ['assignment' => BookingDriver::where('booking_id', $booking->id)->first()]))

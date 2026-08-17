@@ -8,6 +8,7 @@ use App\Models\Inspection;
 use App\Models\Refund;
 use App\Models\User;
 use App\Services\BookingCompletionService;
+use App\Services\DriverMatchingService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ class InspectionController extends Controller
 {
     private const PICKUP_ELIGIBLE_STATUSES = [Booking::STATUS_DEPOSIT_PAID, Booking::STATUS_PAID];
 
-    public function __construct(private readonly BookingCompletionService $completion) {}
+    public function __construct(
+        private readonly BookingCompletionService $completion,
+        private readonly DriverMatchingService $driverMatching
+    ) {}
 
     public function index(): Response
     {
@@ -508,6 +512,9 @@ class InspectionController extends Controller
             Booking::class,
             $booking->id,
         );
+
+        // Trigger driver assignment if deposit has been paid
+        $this->driverMatching->triggerDriverAssignmentIfReady($booking);
     }
 
     private function cancelForFailedPickupInspection(Booking $booking): void

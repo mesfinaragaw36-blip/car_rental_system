@@ -327,4 +327,22 @@ class Booking extends Model
                 ->diffInDays($endDate->copy()->startOfDay())
         );
     }
+
+    public function shouldAssignDriver(): bool
+    {
+        // Only assign driver if:
+        // 1. A driver was requested
+        // 2. No driver has been assigned yet (or all previous assignments were rejected)
+        // 3. Deposit has been paid
+        // 4. Pickup inspection has been approved
+        return $this->need_driver
+            && ! $this->driverAssignment()
+                ->whereIn('status', [
+                    BookingDriver::STATUS_ASSIGNED,
+                    BookingDriver::STATUS_ACCEPTED,
+                ])
+                ->exists()
+            && $this->hasPaidDeposit()
+            && $this->hasApprovedInspection(Inspection::TYPE_PICKUP);
+    }
 }

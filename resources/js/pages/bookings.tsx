@@ -704,9 +704,6 @@ export default function Bookings({ role, bookings, filters, stats }: Props) {
                                                     booking.status ===
                                                         'confirmed' &&
                                                     !booking.payment &&
-                                                    hasAssignedDriver(
-                                                        booking,
-                                                    ) &&
                                                     booking.identity_approved && (
                                                         <Button
                                                             size="sm"
