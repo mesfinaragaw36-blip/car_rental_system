@@ -1,5 +1,6 @@
 import type { FormComponentOptions } from '@inertiajs/core';
 import { Form, Head, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -14,7 +15,134 @@ type PageProps = {
     auth: Auth;
     profile?: Record<string, string | number | null>;
 };
+function RefundAccountFields({
+    profile,
+    errors,
+}: {
+    profile?: Record<string, string | number | null>;
+    errors: Record<string, string | undefined>;
+}) {
+    const [refundMethod, setRefundMethod] = useState<string>(
+        String(profile?.refund_method ?? ''),
+    );
 
+    return (
+        <div className="rounded-2xl border border-muted p-4 space-y-4">
+            <div>
+                <p className="text-sm font-medium">Refund Payment Details</p>
+                <p className="text-xs text-muted-foreground">
+                    Choose one payout method to use if a refund needs to be
+                    issued to you.
+                </p>
+            </div>
+
+            <div className="flex gap-4">
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="radio"
+                        name="refund_method"
+                        value="cbe"
+                        checked={refundMethod === 'cbe'}
+                        onChange={() => setRefundMethod('cbe')}
+                    />
+                    CBE Bank
+                </label>
+                <label className="flex items-center gap-2 text-sm">
+                    <input
+                        type="radio"
+                        name="refund_method"
+                        value="telebirr"
+                        checked={refundMethod === 'telebirr'}
+                        onChange={() => setRefundMethod('telebirr')}
+                    />
+                    Telebirr
+                </label>
+            </div>
+
+            <InputError className="mt-2" message={errors.refund_method} />
+
+            {refundMethod === 'cbe' && (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="cbe_account_number">
+                            CBE Account Number
+                        </Label>
+                        <Input
+                            id="cbe_account_number"
+                            className="mt-1 block w-full"
+                            defaultValue={profile?.cbe_account_number ?? ''}
+                            name="cbe_account_number"
+                            placeholder="CBE account number"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.cbe_account_number}
+                        />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="cbe_account_holder_name">
+                            CBE Account Holder Name
+                        </Label>
+                        <Input
+                            id="cbe_account_holder_name"
+                            className="mt-1 block w-full"
+                            defaultValue={
+                                profile?.cbe_account_holder_name ?? ''
+                            }
+                            name="cbe_account_holder_name"
+                            placeholder="Name on the CBE account"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.cbe_account_holder_name}
+                        />
+                    </div>
+                </>
+            )}
+
+            {refundMethod === 'telebirr' && (
+                <>
+                    <div className="grid gap-2">
+                        <Label htmlFor="telebirr_number">
+                            Telebirr Number
+                        </Label>
+                        <Input
+                            id="telebirr_number"
+                            className="mt-1 block w-full"
+                            defaultValue={profile?.telebirr_number ?? ''}
+                            name="telebirr_number"
+                            placeholder="Telebirr number"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.telebirr_number}
+                        />
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="telebirr_account_holder_name">
+                            Telebirr Account Holder Name
+                        </Label>
+                        <Input
+                            id="telebirr_account_holder_name"
+                            className="mt-1 block w-full"
+                            defaultValue={
+                                profile?.telebirr_account_holder_name ?? ''
+                            }
+                            name="telebirr_account_holder_name"
+                            placeholder="Name on the Telebirr account"
+                        />
+                        <InputError
+                            className="mt-2"
+                            message={errors.telebirr_account_holder_name}
+                        />
+                    </div>
+                </>
+            )}
+        </div>
+    );
+}
 function verificationBadgeClass(status: string): string {
     switch (status) {
         case 'approved':
@@ -177,7 +305,7 @@ export default function Profile() {
                                                 verificationStatus.slice(1)}
                                         </span>
                                     </div>
-
+                                    <RefundAccountFields profile={profile} errors={errors} />
                                     {isApproved ? (
                                         <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
                                             <p className="text-sm text-green-800">
@@ -391,17 +519,19 @@ export default function Profile() {
                                         />
                                     </div>
 
-                                    <div className="rounded-2xl border border-muted p-4">
-                                        <p className="text-sm font-medium text-muted-foreground">
-                                            Verification status
-                                        </p>
-                                        <p className="mt-2 text-base font-semibold">
-                                            {profile?.verification_status ??
-                                                'pending'}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
+                                                                <div className="rounded-2xl border border-muted p-4">
+                                <p className="text-sm font-medium text-muted-foreground">
+                                    Verification status
+                                </p>
+                                <p className="mt-2 text-base font-semibold">
+                                    {profile?.verification_status ??
+                                        'pending'}
+                                </p>
+                            </div>
+
+                            <RefundAccountFields profile={profile} errors={errors} />
+                        </div>
+                    )}
 
                             {isDriver && (
                                 <div className="space-y-6">

@@ -8,6 +8,7 @@ use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Models\CustomerIdentity;
 use App\Models\DriverProfile;
 use App\Models\OwnerProfile;
+use App\Models\RefundAccount;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,10 @@ class ProfileController extends Controller
             $profile = $user->driverProfile?->toArray();
         } elseif ($user->role === 'customer') {
             $profile = $user->customerIdentity?->toArray();
+        }
+
+        if (in_array($user->role, ['customer', 'owner'], true)) {
+            $profile = array_merge($profile ?? [], $user->refundAccount?->toArray() ?? []);
         }
 
         if ($profile !== null) {
@@ -130,6 +135,13 @@ class ProfileController extends Controller
 
                 CustomerIdentity::updateOrCreate(['user_id' => $user->id], $data);
             }
+        }
+
+        if (in_array($user->role, ['customer', 'owner'], true)) {
+            RefundAccount::updateOrCreate(
+                ['user_id' => $user->id],
+                Arr::only($validated, ['refund_method', 'cbe_account_number', 'cbe_account_holder_name', 'telebirr_number', 'telebirr_account_holder_name'])
+            );
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);

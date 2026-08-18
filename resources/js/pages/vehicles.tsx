@@ -239,35 +239,7 @@ export default function Vehicles({
                                                 </p>
                                             </div>
                                         </div>
-                                        {vehicle.latest_review && (
-                                            <div className="mt-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700">
-                                                <p className="font-semibold">
-                                                    Latest Review
-                                                </p>
-                                                <p className="mt-0.5">
-                                                    {
-                                                        vehicle.latest_review
-                                                            .reviewer.name
-                                                    }{' '}
-                                                    ·{' '}
-                                                    {
-                                                        vehicle.latest_review
-                                                            .rating
-                                                    }{' '}
-                                                    ★
-                                                </p>
-                                                {vehicle.latest_review
-                                                    .review_text && (
-                                                    <p className="mt-1 text-muted-foreground">
-                                                        {
-                                                            vehicle
-                                                                .latest_review
-                                                                .review_text
-                                                        }
-                                                    </p>
-                                                )}
-                                            </div>
-                                        )}
+                                        
                                     </div>
                                 </GlareCard>
                             );
