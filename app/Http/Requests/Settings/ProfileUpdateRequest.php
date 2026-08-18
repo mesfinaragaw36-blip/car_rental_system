@@ -29,11 +29,17 @@ class ProfileUpdateRequest extends FormRequest
         }
 
         if ($this->user()->hasDriverPermission()) {
+            $profile = $this->user()->driverProfile;
+            $isNewProfile = ! $profile;
+
             $rules = array_merge($rules, [
                 'license_number' => ['required', 'string', 'max:255'],
                 'license_type' => ['required', 'string', Rule::in(['አውቶ', 'ህዝብ', 'ደረቅ ጭነት', 'ፈሳሽ ጭነት', 'ግንባታ መሣሪያዎች / ኮንስትራክሽን'])],
                 'experience_years' => ['required', 'integer', 'min:0', 'max:50'],
                 'location' => ['required', 'string', 'max:255'],
+                'gender' => ['required', 'string', Rule::in(['Male', 'Female'])],
+                'daily_rate' => ['required', 'numeric', 'min:0'],
+                'license_file' => [$isNewProfile ? 'required' : 'nullable', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
             ]);
         }
 

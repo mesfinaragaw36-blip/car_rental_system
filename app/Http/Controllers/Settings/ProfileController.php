@@ -91,7 +91,21 @@ class ProfileController extends Controller
         }
 
         if ($user->hasDriverPermission()) {
-            $driverProfileData = Arr::only($validated, ['license_number', 'license_type', 'experience_years', 'location']);
+            $driverProfileData = Arr::only($validated, [
+                'license_number',
+                'license_type',
+                'experience_years',
+                'location',
+                'gender',
+                'daily_rate',
+            ]);
+
+            // Handle license file upload
+            if ($request->hasFile('license_file')) {
+                $path = $request->file('license_file')->store('driver-licenses', 'public');
+                $driverProfileData['license_file_path'] = '/storage/'.$path;
+            }
+
             DriverProfile::updateOrCreate(['user_id' => $user->id], $driverProfileData);
         }
 

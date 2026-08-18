@@ -136,13 +136,15 @@ const STAT_ICONS: Record<string, React.ReactNode> = {
 };
 
 const hasAssignedDriver = (booking: Booking): boolean => {
+    // If no driver needed, always return true
     if (!booking.need_driver) {
         return true;
     }
 
-    const status = booking.driver_assignment?.status;
-
-    return status === 'assigned' || status === 'accepted';
+    // If customer selected "Auto Assignment" or a specific driver,
+    // allow them to pay deposit. Driver will be assigned after deposit + inspection.
+    // No need to wait for driver assignment before payment.
+    return true;
 };
 
 export default function Bookings({ role, bookings, filters, stats }: Props) {
