@@ -30,7 +30,7 @@ class ProfileUpdateRequest extends FormRequest
 
         if ($this->user()->hasDriverPermission()) {
             $profile = $this->user()->driverProfile;
-            $isNewProfile = !$profile;
+            $isNewProfile = ! $profile;
 
             $rules = array_merge($rules, [
                 'license_number' => ['required', 'string', 'max:255'],
@@ -39,6 +39,8 @@ class ProfileUpdateRequest extends FormRequest
                 'location' => ['required', 'string', 'max:255'],
                 'gender' => ['required', 'string', Rule::in(['Male', 'Female'])],
                 'daily_rate' => ['required', 'numeric', 'min:0'],
+                'telebirr_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
+                'cbe_account' => ['nullable', 'string', 'max:50'],
                 'license_file' => [$isNewProfile ? 'required' : 'nullable', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
             ]);
         }

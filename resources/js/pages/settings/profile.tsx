@@ -589,6 +589,57 @@ export default function Profile() {
                                     </div>
 
                                     <div className="grid gap-2">
+                                        <Label htmlFor="telebirr_phone">
+                                            Telebirr Phone Number
+                                        </Label>
+
+                                        <Input
+                                            id="telebirr_phone"
+                                            type="tel"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.telebirr_phone ?? ''
+                                            }
+                                            name="telebirr_phone"
+                                            placeholder="e.g. 0912345678"
+                                        />
+
+                                        <p className="text-xs text-muted-foreground">
+                                            For receiving driver payments
+                                        </p>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.telebirr_phone}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="cbe_account">
+                                            CBE Account Number
+                                        </Label>
+
+                                        <Input
+                                            id="cbe_account"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.cbe_account ?? ''
+                                            }
+                                            name="cbe_account"
+                                            placeholder="e.g. 1000123456789"
+                                        />
+
+                                        <p className="text-xs text-muted-foreground">
+                                            For receiving driver payments
+                                        </p>
+
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.cbe_account}
+                                        />
+                                    </div>
+
+                                    <div className="grid gap-2">
                                         <Label htmlFor="license_file">
                                             License Document{' '}
                                             <span className="text-red-500">

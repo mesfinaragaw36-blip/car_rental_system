@@ -36,6 +36,8 @@ interface DriverProfile {
     availability: string;
     verification_status: string;
     license_file_path?: string | null;
+    telebirr_phone?: string | null;
+    cbe_account?: string | null;
 }
 
 interface CustomerIdentity {
@@ -658,6 +660,37 @@ export default function ShowUser({ user }: Props) {
                                         </p>
                                     </div>
                                 </div>
+
+                                {/* Payment Information */}
+                                {(user.driver_profile.telebirr_phone || user.driver_profile.cbe_account) && (
+                                    <div className="rounded-2xl border border-blue-200 bg-blue-50 p-4">
+                                        <p className="mb-3 text-sm font-semibold text-blue-900">
+                                            Payment Information
+                                        </p>
+                                        <div className="grid gap-3 md:grid-cols-2">
+                                            {user.driver_profile.telebirr_phone && (
+                                                <div>
+                                                    <p className="text-xs text-blue-700">
+                                                        Telebirr Phone
+                                                    </p>
+                                                    <p className="mt-1 font-mono font-medium text-blue-900">
+                                                        {user.driver_profile.telebirr_phone}
+                                                    </p>
+                                                </div>
+                                            )}
+                                            {user.driver_profile.cbe_account && (
+                                                <div>
+                                                    <p className="text-xs text-blue-700">
+                                                        CBE Account
+                                                    </p>
+                                                    <p className="mt-1 font-mono font-medium text-blue-900">
+                                                        {user.driver_profile.cbe_account}
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
 
                                 <div className="rounded-2xl border border-muted p-4">
                                     <p className="text-sm text-muted-foreground">

@@ -113,7 +113,8 @@ class TransactionController extends Controller
                     'booking.customer:id,name',
                     'booking.owner:id,name',
                     'booking.car:id,brand,model,plate_number',
-                    'driver:id,name',
+                    'driver:id,name,phone',
+                    'driver.driverProfile:user_id,telebirr_phone,cbe_account,license_number',
                 ])
                 ->whereHas('booking')
                 ->get()
@@ -655,6 +656,9 @@ class TransactionController extends Controller
     private function driverPayoutPayload(
         BookingDriver $assignment
     ): array {
+        $driver = $assignment->driver;
+        $driverProfile = $driver?->driverProfile;
+
         return [
             'type' => 'driver_payout',
             'id' => $assignment->id,
@@ -677,7 +681,15 @@ class TransactionController extends Controller
 
             'owner' => $assignment->booking?->owner?->name,
 
-            'driver' => $assignment->driver?->name,
+            'driver' => $driver?->name,
+
+            'driver_phone' => $driver?->phone,
+
+            'driver_telebirr' => $driverProfile?->telebirr_phone,
+
+            'driver_cbe_account' => $driverProfile?->cbe_account,
+
+            'driver_license' => $driverProfile?->license_number,
 
             'car' => $this->carLabel($assignment->booking),
 
