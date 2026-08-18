@@ -37,7 +37,7 @@ class ProfileUpdateRequest extends FormRequest
             ]);
         }
 
-        if ($this->user()->role === 'customer') {
+                if ($this->user()->role === 'customer') {
             $rules = array_merge($rules, [
                 'address' => ['required', 'string', 'max:255'],
             ]);
@@ -56,6 +56,16 @@ class ProfileUpdateRequest extends FormRequest
                     'national_id_back' => [$identity ? 'nullable' : 'required', 'image', 'mimes:jpeg,png,jpg,webp', 'max:5120'],
                 ]);
             }
+        }
+
+                if (in_array($this->user()->role, ['customer', 'owner'], true)) {
+            $rules = array_merge($rules, [
+                'refund_method' => ['nullable', Rule::in(['cbe', 'telebirr'])],
+                'cbe_account_number' => ['nullable', 'string', 'max:50', 'required_if:refund_method,cbe'],
+                'cbe_account_holder_name' => ['nullable', 'string', 'max:255', 'required_if:refund_method,cbe'],
+                'telebirr_number' => ['nullable', 'string', 'max:20', 'required_if:refund_method,telebirr'],
+                'telebirr_account_holder_name' => ['nullable', 'string', 'max:255', 'required_if:refund_method,telebirr'],
+            ]);
         }
 
         return $rules;

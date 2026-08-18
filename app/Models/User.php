@@ -129,7 +129,10 @@ class User extends Authenticatable
     {
         return $this->hasOne(CustomerIdentity::class);
     }
-
+    public function refundAccount(): HasOne
+    {
+    return $this->hasOne(RefundAccount::class);
+    }
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');
