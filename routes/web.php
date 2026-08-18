@@ -269,6 +269,9 @@ Route::middleware(['auth'])->group(function () {
 
                 Route::get('/driver/trip-history', [DriverBookingController::class, 'history'])
                     ->name('driver.trip-history');
+
+                Route::get('/driver/payments', [DriverBookingController::class, 'payments'])
+                    ->name('driver.payments');
             });
         });
 

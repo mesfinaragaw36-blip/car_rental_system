@@ -816,14 +816,14 @@ export default function Dashboard({
                                         title="Pending"
                                         value={s.pending_assignments}
                                         icon={<Clock className="h-4 w-4" />}
-                                        href="/assignments"
+                                        href="/driver/assignments"
                                         accent="text-brand"
                                     />
                                     <StatCard
                                         title="Active Trips"
                                         value={s.active_trips}
                                         icon={<Truck className="h-4 w-4" />}
-                                        href="/assignments"
+                                        href="/driver/assignments"
                                     />
                                     <StatCard
                                         title="Completed"

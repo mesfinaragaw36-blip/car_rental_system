@@ -225,6 +225,54 @@ class DriverBookingController extends Controller
     }
 
     /**
+     * Show completed trips with earnings and payout status
+     * for the currently logged-in driver.
+     */
+    public function payments(): Response
+    {
+        $assignments = BookingDriver::with([
+            'booking.car',
+            'booking.customer',
+        ])
+            ->where('driver_id', auth()->id())
+            ->whereIn('status', [
+                BookingDriver::STATUS_COMPLETED,
+                BookingDriver::STATUS_PAID,
+            ])
+            ->latest('assigned_at')
+            ->get()
+            ->map(function (BookingDriver $assignment) {
+                return [
+                    'id' => $assignment->id,
+                    'status' => $assignment->status,
+                    'earnings' => $assignment->earnings,
+                    'payout_status' => $assignment->payout_status,
+                    'paid_at' => $assignment->paid_at?->toDateTimeString(),
+
+                    'assigned_at' => $assignment->assigned_at?->toDateTimeString(),
+
+                    'booking' => [
+                        'id' => $assignment->booking?->id,
+
+                        'pickup_date' => $assignment->booking?->pickup_date?->toDateString(),
+
+                        'return_date' => $assignment->booking?->return_date?->toDateString(),
+                    ],
+
+                    'car' => [
+                        'brand' => $assignment->booking?->car?->brand,
+                        'model' => $assignment->booking?->car?->model,
+                        'plate_number' => $assignment->booking?->car?->plate_number,
+                    ],
+                ];
+            });
+
+        return Inertia::render('driver/payments', [
+            'assignments' => $assignments,
+        ]);
+    }
+
+    /**
      * Admin view of all driver assignments.
      */
     public function adminIndex(): Response

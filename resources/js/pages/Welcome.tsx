@@ -188,7 +188,11 @@ const navItems = isConsumer
                     ]
                   : []),
               ...(role === 'driver'
-                  ? [{ name: 'My Assignments', link: '/driver/assignments' }]
+                  ? [
+                        { name: 'My Assignments', link: '/driver/assignments' },
+                        { name: 'Trip History', link: '/driver/trip-history' },
+                        { name: 'Payment History', link: '/driver/payments' },
+                    ]
                   : []),
           ]
         : GUEST_NAV_ITEMS;

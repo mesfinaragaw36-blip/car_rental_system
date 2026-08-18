@@ -13,7 +13,7 @@ export default function AppLayout({
     const { auth } = usePage<{ auth: Auth }>().props;
     const role = auth.user?.role;
 
-    const usesStorefront = !role || role === 'customer' || role === 'driver';
+    const usesStorefront = !role || role === 'customer';
 
     if (usesStorefront) {
         return <StorefrontLayout>{children}</StorefrontLayout>;

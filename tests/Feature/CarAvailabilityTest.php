@@ -186,7 +186,7 @@ class CarAvailabilityTest extends TestCase
             'need_driver' => false,
         ]);
 
-        $response->assertSessionHas('toast');
+        $response->assertSessionHasErrors('pickup_date');
         $this->assertSame(0, Booking::count());
     }
 
@@ -207,7 +207,7 @@ class CarAvailabilityTest extends TestCase
             'need_driver' => false,
         ]);
 
-        $response->assertSessionHas('toast');
+        $response->assertSessionHasErrors('pickup_date');
         $this->assertSame(0, Booking::count());
     }
 

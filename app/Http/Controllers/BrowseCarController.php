@@ -11,6 +11,7 @@ use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -196,31 +197,34 @@ class BrowseCarController extends Controller
             ? max(1000.0, round($estimatedValue * 0.10, 2))
             : max(1000.0, round($totalPrice * 0.20, 2));
 
-        try {
-            $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
-                Car::whereKey($car->id)->lockForUpdate()->first();
+        $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
+            Car::whereKey($car->id)->lockForUpdate()->first();
 
-                $hasOverlap = Booking::where('car_id', $car->id)
-                    ->whereNotIn('status', Booking::INACTIVE_STATUSES)
-                    ->where(fn ($q) => $q->whereBetween('pickup_date', [$pickupDate, $returnDate])
-                        ->orWhereBetween('return_date', [$pickupDate, $returnDate])
-                        ->orWhere(fn ($q2) => $q2->where('pickup_date', '<=', $pickupDate)->where('return_date', '>=', $returnDate)))
-                    ->exists();
+            $hasOverlap = Booking::where('car_id', $car->id)
+                ->whereNotIn('status', Booking::INACTIVE_STATUSES)
+                ->where(fn ($q) => $q->whereBetween('pickup_date', [$pickupDate, $returnDate])
+                    ->orWhereBetween('return_date', [$pickupDate, $returnDate])
+                    ->orWhere(fn ($q2) => $q2->where('pickup_date', '<=', $pickupDate)->where('return_date', '>=', $returnDate)))
+                ->exists();
 
-                if ($hasOverlap) {
-                    throw new \RuntimeException('overlap');
-                }
+            if ($hasOverlap) {
+                throw ValidationException::withMessages([
+                    'pickup_date' => 'The selected dates overlap with an existing booking.',
+                ]);
+            }
 
-                $hasBlock = CarAvailablePeriod::where('car_id', $car->id)
-                    ->whereDate('start_date', '<=', $pickupDate)
-                    ->whereDate('end_date', '>=', $returnDate)
-                    ->doesntExist();
+            $hasBlock = CarAvailablePeriod::where('car_id', $car->id)
+                ->whereDate('start_date', '<=', $pickupDate)
+                ->whereDate('end_date', '>=', $returnDate)
+                ->doesntExist();
 
-                if ($hasBlock) {
-                    throw new \RuntimeException('blocked');
-                }
+            if ($hasBlock) {
+                throw ValidationException::withMessages([
+                    'pickup_date' => "The selected dates do not fit within the vehicle's available date ranges.",
+                ]);
+            }
 
-                return Booking::create([
+            return Booking::create([
                     'customer_id' => auth()->id(),
                     'owner_id' => $car->owner_id,
                     'car_id' => $car->id,
@@ -238,14 +242,7 @@ class BrowseCarController extends Controller
                     'status' => 'confirmed',
                     'notes' => $validated['notes'] ?? null,
                 ]);
-            });
-        } catch (\RuntimeException $exception) {
-            if ($exception->getMessage() === 'blocked') {
-                return back()->with('toast', ['type' => 'error', 'message' => "The selected dates do not fit within the vehicle's available date ranges."]);
-            }
-
-            return back()->with('toast', ['type' => 'error', 'message' => 'The selected dates overlap with an existing booking.']);
-        }
+        });
 
         $booking->owner?->notifyNow(
             "New booking #{$booking->id} for your {$car->brand} {$car->model}",
