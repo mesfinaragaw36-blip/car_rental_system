@@ -635,53 +635,6 @@ export default function Profile() {
                                         />
                                     </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="national_id_file">
-                                            National ID Document{' '}
-                                            <span className="text-red-500">
-                                                *
-                                            </span>
-                                        </Label>
-
-                                        <Input
-                                            id="national_id_file"
-                                            type="file"
-                                            accept="image/*,.pdf"
-                                            className="mt-1 block w-full"
-                                            name="national_id_file"
-                                            required={
-                                                !profile?.national_id_file_path
-                                            }
-                                        />
-
-                                        {profile?.national_id_file_path && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Current:{' '}
-                                                <a
-                                                    href={
-                                                        profile.national_id_file_path
-                                                    }
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="text-blue-600 hover:underline"
-                                                >
-                                                    View Document
-                                                </a>
-                                            </p>
-                                        )}
-
-                                        <p className="text-sm text-muted-foreground">
-                                            Upload a clear photo or scan of your
-                                            national ID (Required for
-                                            verification)
-                                        </p>
-
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.national_id_file}
-                                        />
-                                    </div>
-
                                     <div className="rounded-2xl border border-muted p-4">
                                         <p className="text-sm font-medium text-muted-foreground">
                                             Verification status

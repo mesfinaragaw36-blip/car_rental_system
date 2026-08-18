@@ -207,7 +207,14 @@ class BrowseCarController extends Controller
             'pickup_branch_id' => ['required', 'exists:locations,id'],
             'return_branch_id' => ['required', 'exists:locations,id'],
             'need_driver' => ['nullable', 'boolean'],
-            'driver_id' => ['nullable', 'exists:users,id'],
+            'driver_id' => ['nullable', function ($attribute, $value, $fail) {
+                if ($value === null || $value === -1 || $value === 0) {
+                    return; // Allow null, -1 (auto-assign), or 0 (choosing from list)
+                }
+                if (! User::where('id', $value)->where('role', 'driver')->exists()) {
+                    $fail('The selected driver is invalid.');
+                }
+            }],
             'notes' => ['nullable', 'string', 'max:1000'],
         ]);
 
@@ -282,7 +289,7 @@ class BrowseCarController extends Controller
 
         if ($booking->need_driver) {
             // If customer selected a specific driver, assign that driver
-            if (! empty($validated['driver_id'])) {
+            if (! empty($validated['driver_id']) && $validated['driver_id'] !== -1 && $validated['driver_id'] !== 0) {
                 $selectedDriver = User::find($validated['driver_id']);
                 if ($selectedDriver && $selectedDriver->role === 'driver') {
                     $this->driverMatching->assignDriver($booking, $selectedDriver);

@@ -42,14 +42,13 @@ class EnsureDriverProfileComplete
             empty($profile->location) ||
             empty($profile->gender) ||
             empty($profile->daily_rate) ||
-            empty($profile->license_file_path) ||
-            empty($profile->national_id_file_path)
+            empty($profile->license_file_path)
         ) {
             return redirect()
                 ->route('driver.profile')
                 ->with('toast', [
                     'type' => 'warning',
-                    'message' => 'Please complete all required profile fields including license and ID documents.',
+                    'message' => 'Please complete all required profile fields including driver license document.',
                 ]);
         }
 

@@ -96,12 +96,6 @@ class ProfileController extends Controller
                 $driverProfileData['license_file_path'] = '/storage/'.$path;
             }
 
-            // Handle national ID file upload
-            if ($request->hasFile('national_id_file')) {
-                $path = $request->file('national_id_file')->store('driver-national-ids', 'public');
-                $driverProfileData['national_id_file_path'] = '/storage/'.$path;
-            }
-
             DriverProfile::updateOrCreate(['user_id' => $user->id], $driverProfileData);
         }
 

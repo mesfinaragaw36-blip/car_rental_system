@@ -40,7 +40,6 @@ class ProfileUpdateRequest extends FormRequest
                 'gender' => ['required', 'string', Rule::in(['Male', 'Female'])],
                 'daily_rate' => ['required', 'numeric', 'min:0'],
                 'license_file' => [$isNewProfile ? 'required' : 'nullable', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
-                'national_id_file' => [$isNewProfile ? 'required' : 'nullable', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
             ]);
         }
 

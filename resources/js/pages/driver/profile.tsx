@@ -22,7 +22,6 @@ interface DriverProfile {
     gender?: string | null;
     daily_rate?: number | null;
     license_file_path?: string | null;
-    national_id_file_path?: string | null;
     verification_status?: string;
     average_rating?: number;
     review_count?: number;
@@ -96,7 +95,6 @@ export default function DriverProfilePage({ profile }: Props) {
         String(profile?.daily_rate ?? ''),
     );
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
-    const [nationalIdFile, setNationalIdFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -112,7 +110,6 @@ export default function DriverProfilePage({ profile }: Props) {
             gender,
             daily_rate: dailyRate,
             ...(licenseFile && { license_file: licenseFile }),
-            ...(nationalIdFile && { national_id_file: nationalIdFile }),
         };
 
         router.post('/driver/profile', formData, {
@@ -353,42 +350,6 @@ export default function DriverProfilePage({ profile }: Props) {
                                     license (Required for verification)
                                 </p>
                                 <InputError message={errors.license_file} />
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <Label htmlFor="national_id_file">
-                                    National ID Document{' '}
-                                    <span className="text-red-500">*</span>
-                                </Label>
-                                <Input
-                                    id="national_id_file"
-                                    type="file"
-                                    accept="image/*,.pdf"
-                                    onChange={(e) =>
-                                        setNationalIdFile(
-                                            e.target.files?.[0] || null,
-                                        )
-                                    }
-                                    required={!profile?.national_id_file_path}
-                                />
-                                {profile?.national_id_file_path && (
-                                    <p className="text-sm text-muted-foreground">
-                                        Current:{' '}
-                                        <a
-                                            href={profile.national_id_file_path}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="text-blue-600 hover:underline"
-                                        >
-                                            View Document
-                                        </a>
-                                    </p>
-                                )}
-                                <p className="text-sm text-muted-foreground">
-                                    Upload a clear photo or scan of your
-                                    national ID (Required for verification)
-                                </p>
-                                <InputError message={errors.national_id_file} />
                             </div>
 
                             <Button

@@ -405,7 +405,7 @@ export default function CarDetails({
                                                     )
                                                 }
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Select a pickup branch" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -445,7 +445,7 @@ export default function CarDetails({
                                                     )
                                                 }
                                             >
-                                                <SelectTrigger>
+                                                <SelectTrigger className="w-full">
                                                     <SelectValue placeholder="Select a return branch" />
                                                 </SelectTrigger>
                                                 <SelectContent>
@@ -473,31 +473,135 @@ export default function CarDetails({
                                             />
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2">
-                                        <input
-                                            type="checkbox"
-                                            id="need_driver"
-                                            checked={data.need_driver}
-                                            onChange={(e) =>
-                                                setData(
-                                                    'need_driver',
-                                                    e.target.checked,
-                                                )
-                                            }
-                                        />
-                                        <Label htmlFor="need_driver">
-                                            I need a driver
-                                        </Label>
+
+                                    {/* Driver Assignment Options */}
+                                    <div className="space-y-4">
+                                        <Label>Driver Assignment</Label>
+
+                                        <div className="grid grid-cols-2 gap-3">
+                                            <Button
+                                                type="button"
+                                                variant={
+                                                    data.need_driver
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
+                                                className="w-full"
+                                                onClick={() =>
+                                                    setData('need_driver', true)
+                                                }
+                                                disabled={
+                                                    !data.pickup_date ||
+                                                    !data.return_date ||
+                                                    !data.pickup_branch_id ||
+                                                    !data.return_branch_id
+                                                }
+                                            >
+                                                I need a driver
+                                            </Button>
+                                            <Button
+                                                type="button"
+                                                variant={
+                                                    !data.need_driver
+                                                        ? 'default'
+                                                        : 'outline'
+                                                }
+                                                className="w-full"
+                                                onClick={() => {
+                                                    setData('need_driver', false);
+                                                    setData('driver_id', null);
+                                                }}
+                                                disabled={
+                                                    !data.pickup_date ||
+                                                    !data.return_date ||
+                                                    !data.pickup_branch_id ||
+                                                    !data.return_branch_id
+                                                }
+                                            >
+                                                I don't need a driver
+                                            </Button>
+                                        </div>
+
+                                        {!data.pickup_date ||
+                                        !data.return_date ||
+                                        !data.pickup_branch_id ||
+                                        !data.return_branch_id ? (
+                                            <p className="text-xs text-muted-foreground">
+                                                Please select dates and branches
+                                                first
+                                            </p>
+                                        ) : null}
+
+                                        {/* Driver Options - Only show when need_driver is true */}
+                                        {data.need_driver && (
+                                            <div className="grid gap-3 sm:grid-cols-2">
+                                                <Button
+                                                    type="button"
+                                                    variant={
+                                                        data.driver_id === -1
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                    className="h-auto flex-col items-start gap-2 whitespace-normal p-4 text-left"
+                                                    onClick={() => {
+                                                        setData('driver_id', -1);
+                                                    }}
+                                                >
+                                                    <div className="font-semibold">
+                                                        Auto Assignment
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        System assigns driver
+                                                        after deposit and
+                                                        inspection
+                                                    </div>
+                                                </Button>
+
+                                                <Button
+                                                    type="button"
+                                                    variant={
+                                                        data.driver_id !== null &&
+                                                        data.driver_id !== -1
+                                                            ? 'default'
+                                                            : 'outline'
+                                                    }
+                                                    className="h-auto flex-col items-start gap-2 whitespace-normal p-4 text-left"
+                                                    onClick={() => {
+                                                        if (
+                                                            data.driver_id ===
+                                                                -1 ||
+                                                            data.driver_id === null
+                                                        ) {
+                                                            setData('driver_id', 0);
+                                                        }
+                                                    }}
+                                                >
+                                                    <div className="font-semibold">
+                                                        Choose Your Driver
+                                                    </div>
+                                                    <div className="text-xs text-muted-foreground">
+                                                        Browse and select from
+                                                        available drivers
+                                                    </div>
+                                                </Button>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Driver Selection */}
+                                    {/* Driver Selection List - Only show when "Choose Your Driver" is clicked */}
                                     {data.need_driver &&
+                                        data.driver_id !== null &&
+                                        data.driver_id !== -1 &&
                                         data.pickup_date &&
                                         data.return_date && (
                                             <DriverSelection
                                                 pickupDate={data.pickup_date}
                                                 returnDate={data.return_date}
-                                                selectedDriverId={data.driver_id}
+                                                selectedDriverId={
+                                                    data.driver_id === 0
+                                                        ? null
+                                                        : data.driver_id
+                                                }
                                                 onDriverSelect={(driverId) =>
                                                     setData('driver_id', driverId)
                                                 }

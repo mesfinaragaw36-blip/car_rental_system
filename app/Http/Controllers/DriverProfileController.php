@@ -35,7 +35,6 @@ class DriverProfileController extends Controller
                 'gender' => $profile->gender,
                 'daily_rate' => $profile->daily_rate,
                 'license_file_path' => $profile->license_file_path,
-                'national_id_file_path' => $profile->national_id_file_path,
                 'verification_status' => $profile->verification_status,
                 'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $driver->reviews()->count(),
@@ -59,7 +58,6 @@ class DriverProfileController extends Controller
             'gender' => 'required|string|in:Male,Female',
             'daily_rate' => 'required|numeric|min:0',
             'license_file' => $isNewProfile ? 'required|file|mimes:jpeg,png,jpg,pdf|max:5120' : 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
-            'national_id_file' => $isNewProfile ? 'required|file|mimes:jpeg,png,jpg,pdf|max:5120' : 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
         ]);
 
         $profileData = [
@@ -75,12 +73,6 @@ class DriverProfileController extends Controller
         if ($request->hasFile('license_file')) {
             $path = $request->file('license_file')->store('driver-licenses', 'public');
             $profileData['license_file_path'] = '/storage/'.$path;
-        }
-
-        // Handle national ID file upload
-        if ($request->hasFile('national_id_file')) {
-            $path = $request->file('national_id_file')->store('driver-national-ids', 'public');
-            $profileData['national_id_file_path'] = '/storage/'.$path;
         }
 
         DriverProfile::updateOrCreate(

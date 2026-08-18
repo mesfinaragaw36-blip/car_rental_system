@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Star, FileCheck, Shield, MapPin, DollarSign } from 'lucide-react';
+import { User, Star, FileCheck, Shield, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +29,8 @@ interface DriverSelectionProps {
     onDriverSelect: (driverId: number | null) => void;
 }
 
+const DRIVERS_PER_PAGE = 6; // Show 6 drivers per page (3 rows x 2 columns)
+
 export default function DriverSelection({
     pickupDate,
     returnDate,
@@ -38,12 +40,18 @@ export default function DriverSelection({
     const [drivers, setDrivers] = useState<Driver[]>([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
+    const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
         if (pickupDate && returnDate) {
             fetchDrivers();
         }
     }, [pickupDate, returnDate]);
+
+    useEffect(() => {
+        // Reset to page 1 when drivers list changes
+        setCurrentPage(1);
+    }, [drivers.length]);
 
     const fetchDrivers = async () => {
         setLoading(true);
@@ -116,6 +124,24 @@ export default function DriverSelection({
         );
     }
 
+    // Pagination logic
+    const totalPages = Math.ceil(drivers.length / DRIVERS_PER_PAGE);
+    const startIndex = (currentPage - 1) * DRIVERS_PER_PAGE;
+    const endIndex = startIndex + DRIVERS_PER_PAGE;
+    const currentDrivers = drivers.slice(startIndex, endIndex);
+
+    const goToNextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const goToPreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
     return (
         <div className="space-y-4">
             <div className="flex items-center justify-between">
@@ -132,8 +158,14 @@ export default function DriverSelection({
                 )}
             </div>
 
+            {drivers.length > 0 && (
+                <div className="text-sm text-muted-foreground">
+                    Showing {startIndex + 1}-{Math.min(endIndex, drivers.length)} of {drivers.length} available driver{drivers.length === 1 ? '' : 's'}
+                </div>
+            )}
+
             <div className="grid gap-4 sm:grid-cols-2">
-                {drivers.map((driver) => (
+                {currentDrivers.map((driver) => (
                     <Card
                         key={driver.id}
                         className={`cursor-pointer transition-all ${
@@ -240,10 +272,40 @@ export default function DriverSelection({
                 ))}
             </div>
 
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+                <div className="flex items-center justify-between border-t pt-4">
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={goToPreviousPage}
+                        disabled={currentPage === 1}
+                    >
+                        <ChevronLeft className="mr-2 h-4 w-4" />
+                        Previous
+                    </Button>
+
+                    <div className="text-sm text-muted-foreground">
+                        Page {currentPage} of {totalPages}
+                    </div>
+
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={goToNextPage}
+                        disabled={currentPage === totalPages}
+                    >
+                        Next
+                        <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                </div>
+            )}
+
             {!selectedDriverId && (
                 <p className="text-sm text-muted-foreground">
-                    Optional: Select a driver or leave blank for automatic
-                    assignment after deposit payment and vehicle inspection.
+                    Select a driver to continue with your booking
                 </p>
             )}
         </div>

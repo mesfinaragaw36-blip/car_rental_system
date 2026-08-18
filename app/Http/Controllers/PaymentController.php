@@ -182,22 +182,8 @@ class PaymentController extends Controller
             ]);
         }
 
-        if ($booking->need_driver) {
-            $hasDriver = $booking
-                ->driverAssignment()
-                ->whereIn('status', [
-                    BookingDriver::STATUS_ASSIGNED,
-                    BookingDriver::STATUS_ACCEPTED,
-                ])
-                ->exists();
-
-            if (! $hasDriver) {
-                return redirect()->back()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'Payment is not available until a driver is assigned to this trip.',
-                ]);
-            }
-        }
+        // Driver assignment check removed - driver will be assigned after deposit payment + inspection approval
+        // No need to wait for driver assignment before allowing payment
 
         $booking->load(
             'car',
@@ -497,22 +483,8 @@ class PaymentController extends Controller
             ]);
         }
 
-        if ($booking->need_driver) {
-            $hasDriver = $booking
-                ->driverAssignment()
-                ->whereIn('status', [
-                    BookingDriver::STATUS_ASSIGNED,
-                    BookingDriver::STATUS_ACCEPTED,
-                ])
-                ->exists();
-
-            if (! $hasDriver) {
-                return redirect()->back()->with('toast', [
-                    'type' => 'error',
-                    'message' => 'Payment is not available until a driver is assigned.',
-                ]);
-            }
-        }
+        // Driver assignment check removed - driver will be assigned after deposit payment + inspection approval
+        // No need to wait for driver assignment before allowing payment
 
         if ($booking->hasPaidDeposit()) {
             return back()->with('toast', [
