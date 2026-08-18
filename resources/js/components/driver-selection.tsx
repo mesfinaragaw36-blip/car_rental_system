@@ -112,11 +112,12 @@ export default function DriverSelection({
             <Card className="border-amber-200 bg-amber-50">
                 <CardContent className="py-6">
                     <div className="text-center text-amber-800">
-                        <p className="font-medium">No drivers available</p>
+                        <p className="font-medium">No available drivers at this time</p>
                         <p className="mt-1 text-sm">
-                            No drivers are available for your selected dates. A
-                            driver will be automatically assigned after you pay
-                            the deposit and the vehicle inspection is approved.
+                            There are no drivers available for your selected dates. 
+                            You can proceed with "System Auto Assign" and a driver 
+                            will be automatically assigned after you pay the deposit 
+                            and the vehicle inspection is approved.
                         </p>
                     </div>
                 </CardContent>

@@ -22,6 +22,8 @@ interface DriverProfile {
     gender?: string | null;
     daily_rate?: number | null;
     license_file_path?: string | null;
+    telebirr_phone?: string | null;
+    cbe_account?: string | null;
     verification_status?: string;
     average_rating?: number;
     review_count?: number;
@@ -36,6 +38,7 @@ interface DriverProfile {
 
 interface Props {
     profile: DriverProfile | null;
+    hasActiveAssignments: boolean;
 }
 
 function verificationBanner(status: string | undefined) {
@@ -70,7 +73,7 @@ function verificationBanner(status: string | undefined) {
     }
 }
 
-export default function DriverProfilePage({ profile }: Props) {
+export default function DriverProfilePage({ profile, hasActiveAssignments = false }: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
@@ -94,12 +97,19 @@ export default function DriverProfilePage({ profile }: Props) {
     const [dailyRate, setDailyRate] = useState(
         String(profile?.daily_rate ?? ''),
     );
+    const [telebirrPhone, setTelebirrPhone] = useState(profile?.telebirr_phone ?? '');
+    const [cbeAccount, setCbeAccount] = useState(profile?.cbe_account ?? '');
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+        
+        if (hasActiveAssignments && !isNew) {
+            return;
+        }
+        
         setProcessing(true);
 
         const formData = {
@@ -109,6 +119,8 @@ export default function DriverProfilePage({ profile }: Props) {
             location,
             gender,
             daily_rate: dailyRate,
+            telebirr_phone: telebirrPhone,
+            cbe_account: cbeAccount,
             ...(licenseFile && { license_file: licenseFile }),
         };
 
@@ -133,6 +145,16 @@ export default function DriverProfilePage({ profile }: Props) {
                         className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
                     >
                         {toast.message}
+                    </div>
+                )}
+
+                {hasActiveAssignments && !isNew && (
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-4">
+                        <p className="font-semibold text-red-900">Profile Update Restricted</p>
+                        <p className="mt-1 text-sm text-red-700">
+                            You cannot update any profile information while you have active assignments. 
+                            Please complete or reject your current assignments first.
+                        </p>
                     </div>
                 )}
 
@@ -215,6 +237,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                     onChange={(e) =>
                                         setLicenseNumber(e.target.value)
                                     }
+                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.license_number} />
@@ -225,6 +248,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                 <Select
                                     value={licenseType}
                                     onValueChange={setLicenseType}
+                                    disabled={hasActiveAssignments && !isNew}
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select license type" />
@@ -260,6 +284,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                     onChange={(e) =>
                                         setExperienceYears(e.target.value)
                                     }
+                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.experience_years} />
@@ -276,6 +301,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                     onChange={(e) =>
                                         setLocation(e.target.value)
                                     }
+                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.location} />
@@ -283,7 +309,11 @@ export default function DriverProfilePage({ profile }: Props) {
 
                             <div className="space-y-1.5">
                                 <Label>Gender</Label>
-                                <Select value={gender} onValueChange={setGender}>
+                                <Select 
+                                    value={gender} 
+                                    onValueChange={setGender}
+                                    disabled={hasActiveAssignments && !isNew}
+                                >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select gender" />
                                     </SelectTrigger>
@@ -311,9 +341,57 @@ export default function DriverProfilePage({ profile }: Props) {
                                     onChange={(e) =>
                                         setDailyRate(e.target.value)
                                     }
+                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.daily_rate} />
+                            </div>
+
+                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                <h3 className="mb-3 text-sm font-semibold text-blue-900">
+                                    Payment Information (Optional)
+                                </h3>
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="telebirr_phone">
+                                            Telebirr Phone Number
+                                        </Label>
+                                        <Input
+                                            id="telebirr_phone"
+                                            type="tel"
+                                            placeholder="e.g. 0912345678"
+                                            value={telebirrPhone}
+                                            onChange={(e) =>
+                                                setTelebirrPhone(e.target.value)
+                                            }
+                                            disabled={hasActiveAssignments && !isNew}
+                                        />
+                                        <p className="text-xs text-blue-700">
+                                            For receiving driver payments
+                                        </p>
+                                        <InputError message={errors.telebirr_phone} />
+                                    </div>
+
+                                    <div className="space-y-1.5">
+                                        <Label htmlFor="cbe_account">
+                                            CBE Account Number
+                                        </Label>
+                                        <Input
+                                            id="cbe_account"
+                                            type="text"
+                                            placeholder="e.g. 1000123456789"
+                                            value={cbeAccount}
+                                            onChange={(e) =>
+                                                setCbeAccount(e.target.value)
+                                            }
+                                            disabled={hasActiveAssignments && !isNew}
+                                        />
+                                        <p className="text-xs text-blue-700">
+                                            Commercial Bank of Ethiopia account
+                                        </p>
+                                        <InputError message={errors.cbe_account} />
+                                    </div>
+                                </div>
                             </div>
 
                             <div className="space-y-1.5">
@@ -330,6 +408,7 @@ export default function DriverProfilePage({ profile }: Props) {
                                             e.target.files?.[0] || null,
                                         )
                                     }
+                                    disabled={hasActiveAssignments && !isNew}
                                     required={!profile?.license_file_path}
                                 />
                                 {profile?.license_file_path && (
@@ -355,7 +434,7 @@ export default function DriverProfilePage({ profile }: Props) {
                             <Button
                                 type="submit"
                                 className="w-full"
-                                disabled={processing}
+                                disabled={processing || (hasActiveAssignments && !isNew)}
                             >
                                 {processing
                                     ? 'Saving...'

@@ -15,6 +15,8 @@ class DriverProfile extends Model
         'experience_years',
         'daily_rate',
         'location',
+        'telebirr_phone',
+        'cbe_account',
         'availability',
         'verification_status',
         'license_file_path',

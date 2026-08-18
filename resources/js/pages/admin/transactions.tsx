@@ -25,6 +25,10 @@ type Transaction = {
     customer: string | null;
     owner: string | null;
     driver: string | null;
+    driver_phone: string | null;
+    driver_telebirr: string | null;
+    driver_cbe_account: string | null;
+    driver_license: string | null;
     car: string | null;
     plate_number: string | null;
     reason: string | null;
@@ -126,6 +130,7 @@ export default function AdminTransactions({
     const type = filters.type ?? 'all';
 
     const [selected, setSelected] = useState<Transaction | null>(null);
+    const [driverPayoutModal, setDriverPayoutModal] = useState<Transaction | null>(null);
 
     function selectType(value: string) {
         router.get(
@@ -213,20 +218,40 @@ export default function AdminTransactions({
             return;
         }
 
-        if (confirm('Confirm this payout was transferred?')) {
-            const endpoint =
-                transaction.type === 'owner_payout'
-                    ? `/admin/transactions/owner-payouts/${id}/mark-paid`
-                    : `/admin/transactions/driver-payouts/${id}/mark-paid`;
+        // Owner payout - keep existing confirm dialog
+        if (transaction.type === 'owner_payout') {
+            if (confirm('Confirm this payout was transferred?')) {
+                router.post(
+                    `/admin/transactions/owner-payouts/${id}/mark-paid`,
+                    {},
+                    {
+                        preserveScroll: true,
+                    },
+                );
+            }
 
-            router.post(
-                endpoint,
-                {},
-                {
-                    preserveScroll: true,
-                },
-            );
+            return;
         }
+
+        // Driver payout - show modal with payment details
+        if (transaction.type === 'driver_payout') {
+            setDriverPayoutModal(transaction);
+        }
+    }
+
+    function confirmDriverPayout() {
+        if (!driverPayoutModal) {
+            return;
+        }
+
+        router.post(
+            `/admin/transactions/driver-payouts/${driverPayoutModal.id}/mark-paid`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setDriverPayoutModal(null),
+            },
+        );
     }
 
     function dateLabel(transaction: Transaction): string {
@@ -836,6 +861,137 @@ export default function AdminTransactions({
                                             </Button>
                                         </div>
                                     )}
+                            </>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* Driver Payout Payment Details Modal */}
+                <Dialog
+                    open={!!driverPayoutModal}
+                    onOpenChange={(open) => !open && setDriverPayoutModal(null)}
+                >
+                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Driver Payment Details</DialogTitle>
+                        </DialogHeader>
+
+                        {driverPayoutModal && (
+                            <>
+                                <div className="space-y-4">
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                        <p className="text-sm font-medium text-amber-900">
+                                            ⚠️ Payment Confirmation Required
+                                        </p>
+                                        <p className="mt-1 text-sm text-amber-800">
+                                            Please review the driver's payment
+                                            information and confirm the payment
+                                            has been transferred.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <DetailRow
+                                            label="Driver Name"
+                                            value={
+                                                driverPayoutModal.driver || '—'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Phone Number"
+                                            value={
+                                                driverPayoutModal.driver_phone ||
+                                                '—'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="License Number"
+                                            value={
+                                                driverPayoutModal.driver_license ||
+                                                '—'
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Telebirr Phone"
+                                            value={
+                                                driverPayoutModal.driver_telebirr ? (
+                                                    <span className="font-mono text-blue-600">
+                                                        {
+                                                            driverPayoutModal.driver_telebirr
+                                                        }
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="CBE Account"
+                                            value={
+                                                driverPayoutModal.driver_cbe_account ? (
+                                                    <span className="font-mono text-blue-600">
+                                                        {
+                                                            driverPayoutModal.driver_cbe_account
+                                                        }
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Payment Amount"
+                                            value={
+                                                <span className="text-lg font-bold text-green-600">
+                                                    ETB{' '}
+                                                    {driverPayoutModal.amount}
+                                                </span>
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Booking ID"
+                                            value={`#${driverPayoutModal.booking_id}`}
+                                        />
+
+                                        <DetailRow
+                                            label="Vehicle"
+                                            value={driverPayoutModal.car || '—'}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 border-t pt-4">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() =>
+                                            setDriverPayoutModal(null)
+                                        }
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={confirmDriverPayout}
+                                    >
+                                        <CircleCheck className="mr-2 h-4 w-4" />
+                                        Confirm Payment
+                                    </Button>
+                                </div>
                             </>
                         )}
                     </DialogContent>

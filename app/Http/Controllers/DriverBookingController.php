@@ -16,6 +16,9 @@ class DriverBookingController extends Controller
      */
     public function index(): Response
     {
+        $user = auth()->user();
+        $profile = $user->driverProfile;
+
         $assignments = BookingDriver::with([
             'booking.car',
             'booking.customer',
@@ -64,6 +67,17 @@ class DriverBookingController extends Controller
 
         return Inertia::render('driver/assignments', [
             'assignments' => $assignments,
+            'profileComplete' => $profile && 
+                                ! empty($profile->license_number) &&
+                                ! empty($profile->license_type) &&
+                                isset($profile->experience_years) &&
+                                ! empty($profile->location) &&
+                                ! empty($profile->gender) &&
+                                isset($profile->daily_rate) &&
+                                $profile->daily_rate > 0 &&
+                                ! empty($profile->license_file_path),
+            'profileApproved' => $profile && $profile->verification_status === 'approved',
+            'profileStatus' => $profile?->verification_status ?? 'incomplete',
         ]);
     }
 
@@ -72,10 +86,29 @@ class DriverBookingController extends Controller
      */
     public function accept(BookingDriver $assignment): RedirectResponse
     {
+        $driver = auth()->user();
+
         abort_unless(
-            $assignment->driver_id === auth()->id(),
+            $assignment->driver_id === $driver->id,
             403
         );
+
+        // Ensure driver profile is complete and approved
+        $profile = $driver->driverProfile;
+
+        if (! $profile) {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Please complete your driver profile before accepting assignments.',
+            ]);
+        }
+
+        if ($profile->verification_status !== 'approved') {
+            return back()->with('toast', [
+                'type' => 'error',
+                'message' => 'Your driver profile must be approved by admin before you can accept assignments.',
+            ]);
+        }
 
         if (
             $assignment->status !== BookingDriver::STATUS_ASSIGNED

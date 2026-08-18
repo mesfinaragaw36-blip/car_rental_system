@@ -125,8 +125,8 @@ class BookingController extends Controller
             'car',
             'payments',
             'refunds',
-            'driverAssignment.driver',
-            'driverAssignment.driver:id,name,phone',
+            'driverAssignment.driver.driverProfile',
+            'driverAssignment.driver.reviews',
             'reviews.reviewer',
             'inspections.conductedBy:id,name',
             'inspections.idVerifiedBy:id,name',
@@ -305,11 +305,19 @@ class BookingController extends Controller
                 'late_days' => $booking->late_days,
                 'late_fee' => $booking->late_fee,
 
-                'driver' => ($user->role === 'admin' && $booking->driverAssignment?->driver)
+                'driver' => $booking->driverAssignment?->driver
                     ? [
                         'id' => $booking->driverAssignment->driver->id,
                         'name' => $booking->driverAssignment->driver->name,
                         'phone' => $booking->driverAssignment->driver->phone,
+                        'license_number' => $booking->driverAssignment->driver->driverProfile?->license_number,
+                        'license_type' => $booking->driverAssignment->driver->driverProfile?->license_type,
+                        'experience_years' => $booking->driverAssignment->driver->driverProfile?->experience_years,
+                        'gender' => $booking->driverAssignment->driver->driverProfile?->gender,
+                        'location' => $booking->driverAssignment->driver->driverProfile?->location,
+                        'daily_rate' => $booking->driverAssignment->driver->driverProfile?->daily_rate,
+                        'average_rating' => round($booking->driverAssignment->driver->reviews()->avg('rating') ?? 0, 1),
+                        'review_count' => $booking->driverAssignment->driver->reviews()->count(),
                     ]
                     : null,
 

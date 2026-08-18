@@ -103,6 +103,8 @@ class ProfileController extends Controller
                 'location',
                 'gender',
                 'daily_rate',
+                'telebirr_phone',
+                'cbe_account',
             ]);
 
             // Handle license file upload

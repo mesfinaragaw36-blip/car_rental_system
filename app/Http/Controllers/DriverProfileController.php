@@ -25,6 +25,11 @@ class DriverProfileController extends Controller
             ];
         })->toArray();
 
+        // Check for active assignments
+        $hasActiveAssignments = \App\Models\BookingDriver::where('driver_id', $driver->id)
+            ->whereIn('status', ['assigned', 'accepted'])
+            ->exists();
+
         return Inertia::render('driver/profile', [
             'profile' => $profile ? [
                 'id' => $profile->id,
@@ -35,20 +40,34 @@ class DriverProfileController extends Controller
                 'gender' => $profile->gender,
                 'daily_rate' => $profile->daily_rate,
                 'license_file_path' => $profile->license_file_path,
+                'telebirr_phone' => $profile->telebirr_phone,
+                'cbe_account' => $profile->cbe_account,
                 'verification_status' => $profile->verification_status,
                 'average_rating' => round($driver->reviews()->avg('rating') ?? 0, 1),
                 'review_count' => $driver->reviews()->count(),
                 'recent_reviews' => $recent,
             ] : null,
+            'hasActiveAssignments' => $hasActiveAssignments,
         ]);
     }
 
     public function update(Request $request): RedirectResponse
     {
         $user = auth()->user();
-
         $profile = $user->driverProfile;
         $isNewProfile = ! $profile;
+
+        // Check if driver has active assignments - Block ALL updates
+        $hasActiveAssignments = \App\Models\BookingDriver::where('driver_id', $user->id)
+            ->whereIn('status', ['assigned', 'accepted'])
+            ->exists();
+
+        if ($hasActiveAssignments && ! $isNewProfile) {
+            return redirect()->route('driver.profile')->with('toast', [
+                'type' => 'error',
+                'message' => 'You cannot update any profile information while you have active assignments. Please complete or reject your current assignments first.',
+            ]);
+        }
 
         $validated = $request->validate([
             'license_number' => 'required|string|max:100',
@@ -58,6 +77,8 @@ class DriverProfileController extends Controller
             'gender' => 'required|string|in:Male,Female',
             'daily_rate' => 'required|numeric|min:0',
             'license_file' => $isNewProfile ? 'required|file|mimes:jpeg,png,jpg,pdf|max:5120' : 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
+            'telebirr_phone' => 'nullable|string|max:20',
+            'cbe_account' => 'nullable|string|max:50',
         ]);
 
         $profileData = [
@@ -67,7 +88,23 @@ class DriverProfileController extends Controller
             'location' => $validated['location'],
             'gender' => $validated['gender'],
             'daily_rate' => $validated['daily_rate'],
+            'telebirr_phone' => $validated['telebirr_phone'] ?? null,
+            'cbe_account' => $validated['cbe_account'] ?? null,
         ];
+
+        // Check if critical fields (license info) have changed
+        $criticalFieldsChanged = false;
+        if (! $isNewProfile) {
+            $criticalFieldsChanged = 
+                $profile->license_number !== $validated['license_number'] ||
+                $profile->license_type !== $validated['license_type'] ||
+                $request->hasFile('license_file');
+        }
+
+        // If critical fields changed OR new profile, set to pending status
+        if ($criticalFieldsChanged || $isNewProfile) {
+            $profileData['verification_status'] = 'pending';
+        }
 
         // Handle license file upload
         if ($request->hasFile('license_file')) {
@@ -75,14 +112,20 @@ class DriverProfileController extends Controller
             $profileData['license_file_path'] = '/storage/'.$path;
         }
 
-        DriverProfile::updateOrCreate(
+        \App\Models\DriverProfile::updateOrCreate(
             ['user_id' => $user->id],
             $profileData,
         );
 
+        $message = $isNewProfile 
+            ? 'Profile created. Your details are now under review — an admin will approve them shortly.'
+            : ($criticalFieldsChanged 
+                ? 'Profile updated. Since you changed critical license information, your profile needs admin re-approval before you can accept new assignments.'
+                : 'Profile updated successfully.');
+
         return redirect()->route('driver.profile')->with('toast', [
             'type' => 'success',
-            'message' => 'Profile updated. Your details are now under review — an admin will approve them shortly.',
+            'message' => $message,
         ]);
     }
 }

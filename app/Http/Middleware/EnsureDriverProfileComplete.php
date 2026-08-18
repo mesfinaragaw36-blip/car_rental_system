@@ -22,8 +22,17 @@ class EnsureDriverProfileComplete
             return $next($request);
         }
 
-        // No profile yet: force the driver to complete it.
+        // Allow viewing assignments even if profile is incomplete,
+        // but don't allow accepting assignments.
+        $allowViewOnly = $request->routeIs('driver.assignments.index') || 
+                         $request->routeIs('driver.trip-history');
+
+        // No profile yet: force the driver to complete it (unless just viewing).
         if (! $user->driverProfile) {
+            if ($allowViewOnly) {
+                return $next($request);
+            }
+
             return redirect()
                 ->route('driver.profile')
                 ->with('toast', [
@@ -38,12 +47,18 @@ class EnsureDriverProfileComplete
         if (
             empty($profile->license_number) ||
             empty($profile->license_type) ||
-            empty($profile->experience_years) ||
+            ! isset($profile->experience_years) ||
+            $profile->experience_years < 0 ||
             empty($profile->location) ||
             empty($profile->gender) ||
-            empty($profile->daily_rate) ||
+            ! isset($profile->daily_rate) ||
+            $profile->daily_rate <= 0 ||
             empty($profile->license_file_path)
         ) {
+            if ($allowViewOnly) {
+                return $next($request);
+            }
+
             return redirect()
                 ->route('driver.profile')
                 ->with('toast', [
@@ -53,12 +68,17 @@ class EnsureDriverProfileComplete
         }
 
         // Profile exists but has not been approved by admin yet.
+        // Allow viewing assignments, but don't allow accepting them.
         if ($profile->verification_status !== 'approved') {
+            if ($allowViewOnly) {
+                return $next($request);
+            }
+
             return redirect()
                 ->route('driver.profile')
                 ->with('toast', [
                     'type' => 'warning',
-                    'message' => 'Your driver profile is waiting for admin verification.',
+                    'message' => 'Your driver profile is waiting for admin verification. You can view assignments but cannot accept them until approved.',
                 ]);
         }
 

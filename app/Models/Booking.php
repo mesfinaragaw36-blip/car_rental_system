@@ -192,7 +192,16 @@ class Booking extends Model
             ->where('status', BookingDriver::STATUS_ACCEPTED)
             ->get()
             ->each(function (BookingDriver $assignment): void {
-                $assignment->update(['status' => BookingDriver::STATUS_COMPLETED]);
+                // Calculate driver earnings: days * driver daily rate
+                $days = max(1, $this->pickup_date->diffInDays($this->return_date));
+                $driverDailyRate = $assignment->driver?->driverProfile?->daily_rate ?? 0;
+                $earnings = $days * (float) $driverDailyRate;
+
+                $assignment->update([
+                    'status' => BookingDriver::STATUS_COMPLETED,
+                    'earnings' => $earnings,
+                    'payout_status' => $earnings > 0 ? BookingDriver::STATUS_PENDING : null,
+                ]);
 
                 $assignment->driver?->notifyNow(
                     "Trip completed - Booking #{$this->id}",

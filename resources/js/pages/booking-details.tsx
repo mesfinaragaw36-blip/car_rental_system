@@ -116,7 +116,19 @@ interface BookingDetails {
         status: string;
         paid_at: string | null;
     } | null;
-    driver: { id: number; name: string; phone: string } | null;
+    driver: {
+        id: number;
+        name: string;
+        phone: string;
+        license_number?: string | null;
+        license_type?: string | null;
+        experience_years?: number | null;
+        gender?: string | null;
+        location?: string | null;
+        daily_rate?: number | null;
+        average_rating?: number | null;
+        review_count?: number | null;
+    } | null;
     driver_status: string | null;
     identity_approved?: boolean;
     identity_status?: string | null;
@@ -784,32 +796,95 @@ export default function BookingDetails({ booking, role }: Props) {
                         </CardContent>
                     </Card>
 
-                    {role === 'admin' && (
+                    {booking.need_driver && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Files className="h-5 w-5" /> Driver
+                                    <Files className="h-5 w-5" /> Driver Information
                                 </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-2 text-sm">
-                                {booking.need_driver ? (
-                                    booking.driver ? (
-                                        <>
-                                            <p className="font-medium">
+                            <CardContent className="space-y-3 text-sm">
+                                {booking.driver ? (
+                                    <>
+                                        {/* Driver Name & Rating */}
+                                        <div>
+                                            <p className="font-semibold text-base">
                                                 {booking.driver.name}
                                             </p>
-                                            <p className="text-muted-foreground">
-                                                {booking.driver.phone}
-                                            </p>
-                                        </>
-                                    ) : (
-                                        <p className="text-muted-foreground">
-                                            No driver assigned yet
-                                        </p>
-                                    )
+                                            {booking.driver.average_rating !== undefined && booking.driver.review_count !== undefined && booking.driver.review_count > 0 && (
+                                                <div className="mt-1 flex items-center gap-1.5 text-xs">
+                                                    <span className="text-yellow-500">★</span>
+                                                    <span className="font-medium">
+                                                        {booking.driver.average_rating.toFixed(1)}
+                                                    </span>
+                                                    <span className="text-muted-foreground">
+                                                        ({booking.driver.review_count} {booking.driver.review_count === 1 ? 'review' : 'reviews'})
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Contact & Basic Info */}
+                                        <div className="space-y-1.5 border-t pt-2">
+                                            <div className="flex items-start justify-between">
+                                                <span className="text-muted-foreground">Phone</span>
+                                                <span className="font-medium">{booking.driver.phone}</span>
+                                            </div>
+                                            {booking.driver.gender && (
+                                                <div className="flex items-start justify-between">
+                                                    <span className="text-muted-foreground">Gender</span>
+                                                    <span className="font-medium">{booking.driver.gender}</span>
+                                                </div>
+                                            )}
+                                            {booking.driver.location && (
+                                                <div className="flex items-start justify-between">
+                                                    <span className="text-muted-foreground">Location</span>
+                                                    <span className="font-medium">{booking.driver.location}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* License & Experience */}
+                                        {(booking.driver.license_number || booking.driver.license_type || booking.driver.experience_years !== undefined) && (
+                                            <div className="space-y-1.5 border-t pt-2">
+                                                {booking.driver.license_number && (
+                                                    <div className="flex items-start justify-between">
+                                                        <span className="text-muted-foreground">License Number</span>
+                                                        <span className="font-medium font-mono">{booking.driver.license_number}</span>
+                                                    </div>
+                                                )}
+                                                {booking.driver.license_type && (
+                                                    <div className="flex items-start justify-between">
+                                                        <span className="text-muted-foreground">License Type</span>
+                                                        <span className="font-medium">{booking.driver.license_type}</span>
+                                                    </div>
+                                                )}
+                                                {booking.driver.experience_years !== undefined && (
+                                                    <div className="flex items-start justify-between">
+                                                        <span className="text-muted-foreground">Experience</span>
+                                                        <span className="font-medium">
+                                                            {booking.driver.experience_years} {booking.driver.experience_years === 1 ? 'year' : 'years'}
+                                                        </span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+
+                                        {/* Daily Rate */}
+                                        {booking.driver.daily_rate !== undefined && (
+                                            <div className="border-t pt-2">
+                                                <div className="flex items-start justify-between">
+                                                    <span className="text-muted-foreground">Daily Rate</span>
+                                                    <span className="font-semibold text-primary">
+                                                        ETB {Number(booking.driver.daily_rate).toLocaleString()}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <p className="text-muted-foreground">
-                                        Not requested
+                                        No driver assigned yet
                                     </p>
                                 )}
                             </CardContent>
