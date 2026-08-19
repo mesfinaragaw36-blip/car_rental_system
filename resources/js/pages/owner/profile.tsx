@@ -43,7 +43,7 @@ const organizationTypes = [
 ];
 
 export default function OwnerProfile({ ownerProfile }: Props) {
-    const { errors } = usePage<{ errors: Record<string, string> }>().props;
+    const { errors, toast } = usePage<{ errors: Record<string, string>; toast?: { type: string; message: string } }>().props;
     const [formData, setFormData] = useState({
         organization_type: ownerProfile.organization_type || '',
         tin_number: ownerProfile.tin_number || '',
@@ -94,7 +94,31 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                     </p>
                 </div>
 
+                {toast && (
+                    <div
+                        className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
+                        {toast.message}
+                    </div>
+                )}
+
                 {/* Profile Status */}
+                {ownerProfile.verification_status === 'pending' && ownerProfile.profile_completed && (
+                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                        <div className="flex items-start gap-3">
+                            <FileText className="mt-0.5 h-5 w-5 text-blue-600" />
+                            <div className="flex-1">
+                                <h3 className="font-semibold text-blue-900">
+                                    Profile Under Review
+                                </h3>
+                                <p className="mt-1 text-sm text-blue-800">
+                                    Your profile has been submitted and is currently under review by an administrator. You will be notified once it is approved.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {!ownerProfile.profile_completed && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                         <div className="flex items-start gap-3">
@@ -319,14 +343,16 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                     <div className="flex justify-end gap-4">
                         <Button
                             type="submit"
-                            disabled={isSubmitting}
+                            disabled={isSubmitting || ownerProfile.verification_status === 'pending'}
                             size="lg"
                         >
                             {isSubmitting
                                 ? 'Saving...'
-                                : ownerProfile.profile_completed
-                                  ? 'Update Profile'
-                                  : 'Complete Profile'}
+                                : ownerProfile.verification_status === 'pending'
+                                  ? 'Profile Under Review'
+                                  : ownerProfile.profile_completed
+                                    ? 'Update Profile'
+                                    : 'Submit Profile'}
                         </Button>
                     </div>
                 </form>

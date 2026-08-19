@@ -92,14 +92,28 @@ class ProfileController extends Controller
                 ($ownerProfile->business_license_file_path || isset($updateData['business_license_file_path']))
             ) {
                 $updateData['profile_completed'] = true;
+
+                if (! $ownerProfile->profile_completed) {
+                    $updateData['verification_status'] = 'pending';
+                }
             }
         } else {
             // For individual owners, mark as completed once address is provided
-            $updateData['profile_completed'] = true;
+            if (! $ownerProfile->profile_completed) {
+                $updateData['profile_completed'] = true;
+                $updateData['verification_status'] = 'pending';
+            }
         }
 
         $ownerProfile->update($updateData);
 
-        return redirect()->back()->with('success', 'Profile updated successfully');
+        $message = isset($updateData['verification_status'])
+            ? 'Profile submitted successfully. Your profile is now under review.'
+            : 'Profile updated successfully.';
+
+        return redirect()->back()->with('toast', [
+            'type' => 'success',
+            'message' => $message,
+        ]);
     }
 }

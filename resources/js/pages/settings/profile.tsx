@@ -14,6 +14,7 @@ import type { Auth } from '@/types';
 type PageProps = {
     auth: Auth;
     profile?: Record<string, string | number | null>;
+    toast?: { type: 'success' | 'error'; message: string };
 };
 function RefundAccountFields({
     profile,
@@ -160,7 +161,7 @@ function verificationBadgeClass(status: string): string {
 }
 
 export default function Profile() {
-    const { auth, profile } = usePage<PageProps>().props;
+    const { auth, profile, toast } = usePage<PageProps>().props;
     const role = auth.user.role;
     const isDriver =
         role === 'driver' ||
@@ -186,6 +187,14 @@ export default function Profile() {
                     title="Profile"
                     description="Update your profile information"
                 />
+
+                {toast && (
+                    <div
+                        className={`rounded-lg p-4 ${toast.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
+                    >
+                        {toast.message}
+                    </div>
+                )}
 
                 {profile?.average_rating !== undefined && (
                     <div className="rounded-2xl border border-muted bg-muted/5 p-4">
@@ -998,10 +1007,14 @@ export default function Profile() {
 
                             <div className="flex items-center gap-4">
                                 <Button
-                                    disabled={processing}
+                                    disabled={processing || (role === 'owner' && profile?.verification_status === 'pending')}
                                     data-test="update-profile-button"
                                 >
-                                    Update Profile
+                                    {role === 'owner' && profile?.verification_status === 'pending'
+                                        ? 'Profile Under Review'
+                                        : role === 'owner' && !profile?.profile_completed
+                                          ? 'Submit Profile'
+                                          : 'Update Profile'}
                                 </Button>
                             </div>
                         </>
