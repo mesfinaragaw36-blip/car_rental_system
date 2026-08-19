@@ -106,8 +106,17 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         
+        // Block submission if trying to update license fields with active assignments
         if (hasActiveAssignments && !isNew) {
-            return;
+            const licenseFieldChanged = 
+                (profile?.license_number !== licenseNumber) ||
+                (profile?.license_type !== licenseType) ||
+                licenseFile !== null;
+
+            if (licenseFieldChanged) {
+                // The error will be shown by backend, but we prevent unnecessary request
+                return;
+            }
         }
         
         setProcessing(true);
@@ -149,10 +158,10 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                 )}
 
                 {hasActiveAssignments && !isNew && (
-                    <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-                        <p className="font-semibold text-red-900">Profile Update Restricted</p>
-                        <p className="mt-1 text-sm text-red-700">
-                            You cannot update any profile information while you have active assignments. 
+                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                        <p className="font-semibold text-amber-900">License Information Update Restricted</p>
+                        <p className="mt-1 text-sm text-amber-700">
+                            You cannot update your license information (License Number, License Type, or License Document) while you have active assignments. 
                             Please complete or reject your current assignments first.
                         </p>
                     </div>
@@ -284,7 +293,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                     onChange={(e) =>
                                         setExperienceYears(e.target.value)
                                     }
-                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.experience_years} />
@@ -301,7 +309,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                     onChange={(e) =>
                                         setLocation(e.target.value)
                                     }
-                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.location} />
@@ -312,7 +319,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                 <Select 
                                     value={gender} 
                                     onValueChange={setGender}
-                                    disabled={hasActiveAssignments && !isNew}
                                 >
                                     <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select gender" />
@@ -341,7 +347,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                     onChange={(e) =>
                                         setDailyRate(e.target.value)
                                     }
-                                    disabled={hasActiveAssignments && !isNew}
                                     required
                                 />
                                 <InputError message={errors.daily_rate} />
@@ -364,7 +369,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                             onChange={(e) =>
                                                 setTelebirrPhone(e.target.value)
                                             }
-                                            disabled={hasActiveAssignments && !isNew}
                                         />
                                         <p className="text-xs text-blue-700">
                                             For receiving driver payments
@@ -384,7 +388,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                             onChange={(e) =>
                                                 setCbeAccount(e.target.value)
                                             }
-                                            disabled={hasActiveAssignments && !isNew}
                                         />
                                         <p className="text-xs text-blue-700">
                                             Commercial Bank of Ethiopia account
@@ -434,7 +437,7 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                             <Button
                                 type="submit"
                                 className="w-full"
-                                disabled={processing || (hasActiveAssignments && !isNew)}
+                                disabled={processing}
                             >
                                 {processing
                                     ? 'Saving...'

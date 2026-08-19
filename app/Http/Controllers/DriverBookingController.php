@@ -17,7 +17,9 @@ class DriverBookingController extends Controller
     public function index(): Response
     {
         $user = auth()->user();
-        $profile = $user->driverProfile;
+        
+        // Force fresh profile data from database
+        $profile = $user->driverProfile()->first();
 
         $assignments = BookingDriver::with([
             'booking.car',
@@ -65,19 +67,32 @@ class DriverBookingController extends Controller
                 ];
             });
 
+        $profileComplete = $profile && 
+                            ! empty($profile->license_number) &&
+                            ! empty($profile->license_type) &&
+                            isset($profile->experience_years) &&
+                            ! empty($profile->location) &&
+                            ! empty($profile->gender) &&
+                            isset($profile->daily_rate) &&
+                            $profile->daily_rate > 0 &&
+                            ! empty($profile->license_file_path);
+        
+        $profileApproved = $profile && $profile->verification_status === 'approved';
+        $profileStatus = $profile?->verification_status ?? 'incomplete';
+
+        // Log for debugging
+        \Log::info('Driver assignments page loaded', [
+            'user_id' => $user->id,
+            'profile_status' => $profileStatus,
+            'profile_approved' => $profileApproved,
+            'profile_complete' => $profileComplete,
+        ]);
+
         return Inertia::render('driver/assignments', [
             'assignments' => $assignments,
-            'profileComplete' => $profile && 
-                                ! empty($profile->license_number) &&
-                                ! empty($profile->license_type) &&
-                                isset($profile->experience_years) &&
-                                ! empty($profile->location) &&
-                                ! empty($profile->gender) &&
-                                isset($profile->daily_rate) &&
-                                $profile->daily_rate > 0 &&
-                                ! empty($profile->license_file_path),
-            'profileApproved' => $profile && $profile->verification_status === 'approved',
-            'profileStatus' => $profile?->verification_status ?? 'incomplete',
+            'profileComplete' => $profileComplete,
+            'profileApproved' => $profileApproved,
+            'profileStatus' => $profileStatus,
         ]);
     }
 
