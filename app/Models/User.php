@@ -27,6 +27,11 @@ class User extends Authenticatable
         'status',
         'address',
         'profile_photo',
+        'refund_method',
+        'cbe_account_number',
+        'cbe_account_holder_name',
+        'telebirr_number',
+        'telebirr_account_holder_name',
     ];
 
     protected $hidden = [
@@ -129,10 +134,7 @@ class User extends Authenticatable
     {
         return $this->hasOne(CustomerIdentity::class);
     }
-    public function refundAccount(): HasOne
-    {
-    return $this->hasOne(RefundAccount::class);
-    }
+
     public function reviews(): MorphMany
     {
         return $this->morphMany(Review::class, 'reviewable');

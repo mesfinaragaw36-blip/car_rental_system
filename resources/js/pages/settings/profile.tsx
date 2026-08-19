@@ -816,6 +816,8 @@ export default function Profile() {
                                         />
                                     </div>
 
+                                    <RefundAccountFields profile={profile} errors={errors} />
+
                                     <div className="rounded-2xl border border-muted p-4">
                                         <p className="text-sm font-medium text-muted-foreground">
                                             Verification status

@@ -8,7 +8,6 @@ use App\Http\Requests\Settings\ProfileUpdateRequest;
 use App\Models\CustomerIdentity;
 use App\Models\DriverProfile;
 use App\Models\OwnerProfile;
-use App\Models\RefundAccount;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,11 +31,13 @@ class ProfileController extends Controller
             $profile = $user->customerIdentity?->toArray();
         }
 
-        if (in_array($user->role, ['customer', 'owner'], true)) {
-            $profile = array_merge($profile ?? [], $user->refundAccount?->toArray() ?? []);
-        }
-
         if ($profile !== null) {
+            $profile['refund_method'] = $user->refund_method;
+            $profile['cbe_account_number'] = $user->cbe_account_number;
+            $profile['cbe_account_holder_name'] = $user->cbe_account_holder_name;
+            $profile['telebirr_number'] = $user->telebirr_number;
+            $profile['telebirr_account_holder_name'] = $user->telebirr_account_holder_name;
+
             $profile['average_rating'] = round($user->reviews()->avg('rating') ?? 0, 1);
             $profile['review_count'] = $user->reviews()->count();
         }
@@ -70,7 +71,17 @@ class ProfileController extends Controller
         $user = $request->user();
         $validated = $request->validated();
 
-        $user->fill(Arr::only($validated, ['name', 'email', 'phone', 'address']));
+        $user->fill(Arr::only($validated, [
+            'name',
+            'email',
+            'phone',
+            'address',
+            'refund_method',
+            'cbe_account_number',
+            'cbe_account_holder_name',
+            'telebirr_number',
+            'telebirr_account_holder_name',
+        ]));
 
         if ($user->isDirty('email')) {
             $user->email_verified_at = null;
@@ -137,13 +148,6 @@ class ProfileController extends Controller
 
                 CustomerIdentity::updateOrCreate(['user_id' => $user->id], $data);
             }
-        }
-
-        if (in_array($user->role, ['customer', 'owner'], true)) {
-            RefundAccount::updateOrCreate(
-                ['user_id' => $user->id],
-                Arr::only($validated, ['refund_method', 'cbe_account_number', 'cbe_account_holder_name', 'telebirr_number', 'telebirr_account_holder_name'])
-            );
         }
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);

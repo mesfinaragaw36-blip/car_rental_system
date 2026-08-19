@@ -45,7 +45,7 @@ class ProfileUpdateRequest extends FormRequest
             ]);
         }
 
-                if ($this->user()->role === 'customer') {
+        if ($this->user()->role === 'customer') {
             $rules = array_merge($rules, [
                 'address' => ['required', 'string', 'max:255'],
             ]);
@@ -66,7 +66,7 @@ class ProfileUpdateRequest extends FormRequest
             }
         }
 
-                if (in_array($this->user()->role, ['customer', 'owner'], true)) {
+        if (in_array($this->user()->role, ['customer', 'owner', 'driver'], true)) {
             $rules = array_merge($rules, [
                 'refund_method' => ['nullable', Rule::in(['cbe', 'telebirr'])],
                 'cbe_account_number' => ['nullable', 'string', 'max:50', 'required_if:refund_method,cbe'],

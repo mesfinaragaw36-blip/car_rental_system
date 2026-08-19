@@ -22,8 +22,6 @@ interface DriverProfile {
     gender?: string | null;
     daily_rate?: number | null;
     license_file_path?: string | null;
-    telebirr_phone?: string | null;
-    cbe_account?: string | null;
     verification_status?: string;
     average_rating?: number;
     review_count?: number;
@@ -97,8 +95,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     const [dailyRate, setDailyRate] = useState(
         String(profile?.daily_rate ?? ''),
     );
-    const [telebirrPhone, setTelebirrPhone] = useState(profile?.telebirr_phone ?? '');
-    const [cbeAccount, setCbeAccount] = useState(profile?.cbe_account ?? '');
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
@@ -119,8 +115,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
             location,
             gender,
             daily_rate: dailyRate,
-            telebirr_phone: telebirrPhone,
-            cbe_account: cbeAccount,
             ...(licenseFile && { license_file: licenseFile }),
         };
 
@@ -345,53 +339,6 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                     required
                                 />
                                 <InputError message={errors.daily_rate} />
-                            </div>
-
-                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                                <h3 className="mb-3 text-sm font-semibold text-blue-900">
-                                    Payment Information (Optional)
-                                </h3>
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="telebirr_phone">
-                                            Telebirr Phone Number
-                                        </Label>
-                                        <Input
-                                            id="telebirr_phone"
-                                            type="tel"
-                                            placeholder="e.g. 0912345678"
-                                            value={telebirrPhone}
-                                            onChange={(e) =>
-                                                setTelebirrPhone(e.target.value)
-                                            }
-                                            disabled={hasActiveAssignments && !isNew}
-                                        />
-                                        <p className="text-xs text-blue-700">
-                                            For receiving driver payments
-                                        </p>
-                                        <InputError message={errors.telebirr_phone} />
-                                    </div>
-
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="cbe_account">
-                                            CBE Account Number
-                                        </Label>
-                                        <Input
-                                            id="cbe_account"
-                                            type="text"
-                                            placeholder="e.g. 1000123456789"
-                                            value={cbeAccount}
-                                            onChange={(e) =>
-                                                setCbeAccount(e.target.value)
-                                            }
-                                            disabled={hasActiveAssignments && !isNew}
-                                        />
-                                        <p className="text-xs text-blue-700">
-                                            Commercial Bank of Ethiopia account
-                                        </p>
-                                        <InputError message={errors.cbe_account} />
-                                    </div>
-                                </div>
                             </div>
 
                             <div className="space-y-1.5">
