@@ -26,13 +26,18 @@ function RefundAccountFields({
         String(profile?.refund_method ?? ''),
     );
 
+    const isOrganization = profile?.is_organization === true;
+
     return (
         <div className="rounded-2xl border border-muted p-4 space-y-4">
             <div>
-                <p className="text-sm font-medium">Refund Payment Details</p>
+                <p className="text-sm font-medium">
+                    {isOrganization ? 'Business Bank Account Details' : 'Refund Payment Details'}
+                </p>
                 <p className="text-xs text-muted-foreground">
-                    Choose one payout method to use if a refund needs to be
-                    issued to you.
+                    {isOrganization 
+                        ? 'Enter your business bank account information for payouts'
+                        : 'Choose one payout method to use if a refund needs to be issued to you.'}
                 </p>
             </div>
 
@@ -45,7 +50,7 @@ function RefundAccountFields({
                         checked={refundMethod === 'cbe'}
                         onChange={() => setRefundMethod('cbe')}
                     />
-                    CBE Bank
+                    CBE Birr
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                     <input
@@ -65,14 +70,14 @@ function RefundAccountFields({
                 <>
                     <div className="grid gap-2">
                         <Label htmlFor="cbe_account_number">
-                            CBE Account Number
+                            CBE Birr Phone
                         </Label>
                         <Input
                             id="cbe_account_number"
                             className="mt-1 block w-full"
                             defaultValue={profile?.cbe_account_number ?? ''}
                             name="cbe_account_number"
-                            placeholder="CBE account number"
+                            placeholder="CBE Birr phone number"
                         />
                         <InputError
                             className="mt-2"
@@ -82,7 +87,7 @@ function RefundAccountFields({
 
                     <div className="grid gap-2">
                         <Label htmlFor="cbe_account_holder_name">
-                            CBE Account Holder Name
+                            CBE Birr Account Holder Name
                         </Label>
                         <Input
                             id="cbe_account_holder_name"
@@ -91,7 +96,7 @@ function RefundAccountFields({
                                 profile?.cbe_account_holder_name ?? ''
                             }
                             name="cbe_account_holder_name"
-                            placeholder="Name on the CBE account"
+                            placeholder="Name on the CBE Birr account"
                         />
                         <InputError
                             className="mt-2"
@@ -401,9 +406,156 @@ export default function Profile() {
 
                             {role === 'owner' && (
                                 <div className="space-y-6">
+                                    {/* Owner Type Display */}
+                                    <div className="rounded-2xl border border-muted bg-muted/5 p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Owner Type
+                                        </p>
+                                        <p className="mt-1 text-base font-semibold capitalize">
+                                            {profile?.owner_type ?? 'individual'}
+                                        </p>
+                                    </div>
+
+                                    {/* Organization Fields - Only for organization owners */}
+                                    {profile?.is_organization && (
+                                        <>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="business_name">
+                                                    Business Name
+                                                </Label>
+
+                                                <Input
+                                                    id="business_name"
+                                                    className="mt-1 block w-full"
+                                                    defaultValue={
+                                                        profile?.business_name ?? ''
+                                                    }
+                                                    name="business_name"
+                                                    required
+                                                    placeholder="Company name"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={errors.business_name}
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="organization_type">
+                                                    Organization Type
+                                                </Label>
+
+                                                <select
+                                                    id="organization_type"
+                                                    name="organization_type"
+                                                    defaultValue={
+                                                        profile?.organization_type ?? ''
+                                                    }
+                                                    required
+                                                    onChange={(e) => {
+                                                        const select = e.target;
+                                                        const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+                                                        if (otherInput) {
+                                                            otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
+                                                        }
+                                                    }}
+                                                    className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
+                                                >
+                                                    <option value="">
+                                                        Select type
+                                                    </option>
+                                                    <option value="private_limited_company">
+                                                        Private Limited Company (PLC)
+                                                    </option>
+                                                    <option value="share_company">
+                                                        Share Company (S.C.)
+                                                    </option>
+                                                    <option value="sole_proprietorship">
+                                                        Sole Proprietorship
+                                                    </option>
+                                                    <option value="partnership">
+                                                        Partnership
+                                                    </option>
+                                                    <option value="cooperative">
+                                                        Cooperative
+                                                    </option>
+                                                    <option value="government_organization">
+                                                        Government Organization
+                                                    </option>
+                                                    <option value="ngo_non_profit">
+                                                        NGO / Non-Profit Organization
+                                                    </option>
+                                                    <option value="other">
+                                                        Other
+                                                    </option>
+                                                </select>
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={errors.organization_type}
+                                                />
+                                                
+                                                <Input
+                                                    id="organization_type_other"
+                                                    type="text"
+                                                    name="organization_type_other"
+                                                    placeholder="Please specify organization type"
+                                                    className="mt-2"
+                                                    style={{display: profile?.organization_type === 'other' ? 'block' : 'none'}}
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="tin_number">
+                                                    TIN Number
+                                                </Label>
+
+                                                <Input
+                                                    id="tin_number"
+                                                    className="mt-1 block w-full"
+                                                    defaultValue={
+                                                        profile?.tin_number ?? ''
+                                                    }
+                                                    name="tin_number"
+                                                    required
+                                                    maxLength={10}
+                                                    placeholder="10-digit TIN number"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={errors.tin_number}
+                                                />
+                                            </div>
+
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="trade_license_number">
+                                                    Trade License Number
+                                                </Label>
+
+                                                <Input
+                                                    id="trade_license_number"
+                                                    className="mt-1 block w-full"
+                                                    defaultValue={
+                                                        profile?.trade_license_number ?? ''
+                                                    }
+                                                    name="trade_license_number"
+                                                    required
+                                                    placeholder="Trade license number"
+                                                />
+
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={errors.trade_license_number}
+                                                />
+                                            </div>
+                                        </>
+                                    )}
+
                                     <div className="grid gap-2">
                                         <Label htmlFor="phone">
-                                            Phone number
+                                            {profile?.is_organization ? 'Company Contact' : 'Phone number'}
                                         </Label>
 
                                         <Input
@@ -422,102 +574,106 @@ export default function Profile() {
                                         />
                                     </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="national_id">
-                                            National ID
-                                        </Label>
+                                    {!profile?.is_organization && (
+                                        <>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id">
+                                                    National ID
+                                                </Label>
 
-                                        <Input
-                                            id="national_id"
-                                            className="mt-1 block w-full"
-                                            defaultValue={
-                                                profile?.national_id ?? ''
-                                            }
-                                            name="national_id"
-                                            required
-                                            maxLength={12}
-                                            placeholder="12-digit National ID number(FIN)"
-                                        />
+                                                <Input
+                                                    id="national_id"
+                                                    className="mt-1 block w-full"
+                                                    defaultValue={
+                                                        profile?.national_id ?? ''
+                                                    }
+                                                    name="national_id"
+                                                    required
+                                                    maxLength={12}
+                                                    placeholder="12-digit National ID number(FIN)"
+                                                />
 
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.national_id}
-                                        />
-                                    </div>
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={errors.national_id}
+                                                />
+                                            </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="national_id_front_file">
-                                            National ID photo (front)
-                                        </Label>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id_front_file">
+                                                    National ID photo (front)
+                                                </Label>
 
-                                        <p className="text-sm text-muted-foreground">
-                                            Upload a clear photo of the front of
-                                            your National ID card.
-                                        </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Upload a clear photo of the front of
+                                                    your National ID card.
+                                                </p>
 
-                                        <Input
-                                            id="national_id_front_file"
-                                            type="file"
-                                            className="mt-1 block w-full"
-                                            name="national_id_front_file"
-                                            accept="image/*"
-                                        />
+                                                <Input
+                                                    id="national_id_front_file"
+                                                    type="file"
+                                                    className="mt-1 block w-full"
+                                                    name="national_id_front_file"
+                                                    accept="image/*"
+                                                />
 
-                                        {profile?.national_id_front_file_path && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Existing file:{' '}
-                                                className="text-primary
-                                                underline" href=
-                                                {`/storage/${profile.national_id_front_file_path}`}
-                                                target="_blank" rel="noreferrer"
-                                                <a>View upload</a>
-                                            </p>
-                                        )}
+                                                {profile?.national_id_front_file_path && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Existing file:{' '}
+                                                        className="text-primary
+                                                        underline" href=
+                                                        {`/storage/${profile.national_id_front_file_path}`}
+                                                        target="_blank" rel="noreferrer"
+                                                        <a>View upload</a>
+                                                    </p>
+                                                )}
 
-                                        <InputError
-                                            className="mt-2"
-                                            message={
-                                                errors.national_id_front_file
-                                            }
-                                        />
-                                    </div>
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={
+                                                        errors.national_id_front_file
+                                                    }
+                                                />
+                                            </div>
 
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="national_id_back_file">
-                                            National ID photo (back)
-                                        </Label>
+                                            <div className="grid gap-2">
+                                                <Label htmlFor="national_id_back_file">
+                                                    National ID photo (back)
+                                                </Label>
 
-                                        <p className="text-sm text-muted-foreground">
-                                            Upload a clear photo of the back of
-                                            your National ID card.
-                                        </p>
+                                                <p className="text-sm text-muted-foreground">
+                                                    Upload a clear photo of the back of
+                                                    your National ID card.
+                                                </p>
 
-                                        <Input
-                                            id="national_id_back_file"
-                                            type="file"
-                                            className="mt-1 block w-full"
-                                            name="national_id_back_file"
-                                            accept="image/*"
-                                        />
+                                                <Input
+                                                    id="national_id_back_file"
+                                                    type="file"
+                                                    className="mt-1 block w-full"
+                                                    name="national_id_back_file"
+                                                    accept="image/*"
+                                                />
 
-                                        {profile?.national_id_back_file_path && (
-                                            <p className="text-sm text-muted-foreground">
-                                                Existing file:{' '}
-                                                className="text-primary
-                                                underline" href=
-                                                {`/storage/${profile.national_id_back_file_path}`}
-                                                target="_blank" rel="noreferrer"
-                                                <a>View upload</a>
-                                            </p>
-                                        )}
+                                                {profile?.national_id_back_file_path && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        Existing file:{' '}
+                                                        className="text-primary
+                                                        underline" href=
+                                                        {`/storage/${profile.national_id_back_file_path}`}
+                                                        target="_blank" rel="noreferrer"
+                                                        <a>View upload</a>
+                                                    </p>
+                                                )}
 
-                                        <InputError
-                                            className="mt-2"
-                                            message={
-                                                errors.national_id_back_file
-                                            }
-                                        />
-                                    </div>
+                                                <InputError
+                                                    className="mt-2"
+                                                    message={
+                                                        errors.national_id_back_file
+                                                    }
+                                                />
+                                            </div>
+                                        </>
+                                    )}
 
                                                                 <div className="rounded-2xl border border-muted p-4">
                                 <p className="text-sm font-medium text-muted-foreground">

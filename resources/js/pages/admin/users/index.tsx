@@ -28,6 +28,7 @@ import {
 interface OwnerProfile {
     id: number;
     user_id: number;
+    owner_type: string;
     business_name: string | null;
     verification_status: string;
     verified_at: string | null;
@@ -43,6 +44,8 @@ interface DriverProfile {
 interface UserData {
     id: number;
     name: string;
+    display_name: string;
+    is_organization: boolean;
     email: string;
     phone: string;
     role: string;
