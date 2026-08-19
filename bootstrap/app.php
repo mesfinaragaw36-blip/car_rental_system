@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureDriverProfileComplete;
+use App\Http\Middleware\EnsureOrganizationProfileComplete;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\RoleMiddleware;
@@ -30,6 +31,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'staff_permission' => StaffPermissionMiddleware::class,
             'driver.profile.complete' => EnsureDriverProfileComplete::class,
+            'organization.profile.complete' => EnsureOrganizationProfileComplete::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

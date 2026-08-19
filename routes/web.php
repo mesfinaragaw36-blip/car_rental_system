@@ -19,6 +19,7 @@ use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\Owner\ProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
@@ -180,41 +181,54 @@ Route::middleware(['auth'])->group(function () {
     // Vehicles - Owner Management
     // =========================================================
 
-    Route::get('/vehicles', [VehicleController::class, 'index'])
-        ->name('vehicles.index');
+    Route::middleware(['role:owner'])->prefix('owner')->name('owner.')->group(function () {
 
-    Route::get('/vehicles/create', [VehicleController::class, 'create'])
-        ->name('vehicles.create');
+        Route::get('/profile', [ProfileController::class, 'show'])
+            ->name('profile');
 
-    Route::post('/vehicles', [VehicleController::class, 'store'])
-        ->name('vehicles.store');
+        Route::post('/profile', [ProfileController::class, 'update'])
+            ->name('profile.update');
+    });
 
-    Route::get('/vehicles/{car}/edit', [VehicleController::class, 'edit'])
-        ->name('vehicles.edit');
+    Route::middleware(['organization.profile.complete'])->group(function () {
 
-    Route::put('/vehicles/{car}', [VehicleController::class, 'update'])
-        ->name('vehicles.update');
+        Route::get('/vehicles', [VehicleController::class, 'index'])
+            ->name('vehicles.index');
 
-    Route::put('/vehicles/{car}/images/{image}/primary', [VehicleController::class, 'setPrimaryImage'])
-        ->name('vehicles.images.primary');
+        Route::get('/vehicles/create', [VehicleController::class, 'create'])
+            ->name('vehicles.create');
 
-    Route::delete('/vehicles/{car}', [VehicleController::class, 'destroy'])
-        ->name('vehicles.destroy');
+        Route::post('/vehicles', [VehicleController::class, 'store'])
+            ->name('vehicles.store');
 
-    Route::delete('/vehicles/{car}/images/{image}', [VehicleController::class, 'deleteImage'])
-        ->name('vehicles.images.delete');
+        Route::get('/vehicles/{car}/edit', [VehicleController::class, 'edit'])
+            ->name('vehicles.edit');
 
-    Route::delete('/vehicles/{car}/documents/{document}', [VehicleController::class, 'destroyDocument'])
-        ->name('vehicles.documents.destroy');
+        Route::put('/vehicles/{car}', [VehicleController::class, 'update'])
+            ->name('vehicles.update');
 
-    Route::post('/vehicles/{car}/toggle-availability', [VehicleController::class, 'toggleAvailability'])
-        ->name('vehicles.toggle-availability');
+        Route::put('/vehicles/{car}/images/{image}/primary', [VehicleController::class, 'setPrimaryImage'])
+            ->name('vehicles.images.primary');
 
-    Route::post('/vehicles/{car}/available-periods', [VehicleController::class, 'storeAvailablePeriod'])
-        ->name('vehicles.available-periods.store');
+        Route::delete('/vehicles/{car}', [VehicleController::class, 'destroy'])
+            ->name('vehicles.destroy');
 
-    Route::delete('/vehicles/{car}/available-periods/{availablePeriod}', [VehicleController::class, 'destroyAvailablePeriod'])
-        ->name('vehicles.available-periods.destroy');
+        Route::delete('/vehicles/{car}/images/{image}', [VehicleController::class, 'deleteImage'])
+            ->name('vehicles.images.delete');
+
+        Route::delete('/vehicles/{car}/documents/{document}', [VehicleController::class, 'destroyDocument'])
+            ->name('vehicles.documents.destroy');
+
+        Route::post('/vehicles/{car}/toggle-availability', [VehicleController::class, 'toggleAvailability'])
+            ->name('vehicles.toggle-availability');
+
+        Route::post('/vehicles/{car}/available-periods', [VehicleController::class, 'storeAvailablePeriod'])
+            ->name('vehicles.available-periods.store');
+
+        Route::delete('/vehicles/{car}/available-periods/{availablePeriod}', [VehicleController::class, 'destroyAvailablePeriod'])
+            ->name('vehicles.available-periods.destroy');
+
+    }); // End of organization.profile.complete middleware
 
     // =========================================================
     // Car Type Requests (owners request unregistered configs)
@@ -478,7 +492,7 @@ Route::middleware(['auth'])->group(function () {
                 Route::get('/reports', [ReportController::class, 'index'])
                     ->name('reports.index');
                 Route::get('/reports/pdf', [ReportController::class, 'exportPdf'])
-                     ->name('admin.reports.pdf');
+                    ->name('admin.reports.pdf');
                 Route::get('/reports/csv', [ReportController::class, 'exportCsv'])
                     ->name('admin.reports.csv');
                 // -------------------------------------------------
