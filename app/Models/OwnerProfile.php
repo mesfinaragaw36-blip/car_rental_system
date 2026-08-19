@@ -12,6 +12,7 @@ class OwnerProfile extends Model
         'owner_type',
         'business_name',
         'organization_type',
+        'organization_type_other',
         'tin_number',
         'address',
         'national_id',

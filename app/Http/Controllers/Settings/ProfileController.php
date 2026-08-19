@@ -25,7 +25,19 @@ class ProfileController extends Controller
         $profile = null;
 
         if ($user->role === 'owner') {
-            $profile = $user->ownerProfile?->toArray();
+            $ownerProfile = $user->ownerProfile;
+            $profile = $ownerProfile?->toArray();
+
+            // Include owner type and organization fields
+            if ($profile && $ownerProfile) {
+                $profile['owner_type'] = $ownerProfile->owner_type;
+                $profile['business_name'] = $ownerProfile->business_name;
+                $profile['organization_type'] = $ownerProfile->organization_type;
+                $profile['organization_type_other'] = $ownerProfile->organization_type_other;
+                $profile['tin_number'] = $ownerProfile->tin_number;
+                $profile['trade_license_number'] = $ownerProfile->trade_license_number;
+                $profile['is_organization'] = $ownerProfile->owner_type === 'organization';
+            }
         } elseif ($user->hasDriverPermission()) {
             $profile = $user->driverProfile?->toArray();
         } elseif ($user->role === 'customer') {
@@ -79,7 +91,7 @@ class ProfileController extends Controller
         $user->save();
 
         if ($user->role === 'owner') {
-            $ownerData = Arr::only($validated, ['national_id']);
+            $ownerData = Arr::only($validated, ['national_id', 'business_name', 'organization_type', 'organization_type_other', 'tin_number', 'trade_license_number']);
 
             if ($request->hasFile('national_id_front_file')) {
                 $ownerData['national_id_front_file_path'] = $request->file('national_id_front_file')->store('owner_documents', 'public');

@@ -133,44 +133,59 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                         <div className="space-y-6">
                             {/* Organization Type - Only for organizations */}
                             {isOrganization && (
-                                <div className="space-y-2">
-                                    <Label htmlFor="organization_type">
-                                        Organization Type{' '}
-                                        <span className="text-destructive">
-                                            *
-                                        </span>
-                                    </Label>
-                                    <select
-                                        id="organization_type"
-                                        value={formData.organization_type}
-                                        onChange={(e) =>
-                                            setFormData({
-                                                ...formData,
-                                                organization_type:
-                                                    e.target.value,
-                                            })
-                                        }
-                                        required
-                                        className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
-                                    >
-                                        <option value="">
-                                            Select organization type
-                                        </option>
-                                        {organizationTypes.map((type) => (
-                                            <option
-                                                key={type.value}
-                                                value={type.value}
-                                            >
-                                                {type.label}
+                                <>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="organization_type">
+                                            Organization Type{' '}
+                                            <span className="text-destructive">
+                                                *
+                                            </span>
+                                        </Label>
+                                        <select
+                                            id="organization_type"
+                                            value={formData.organization_type}
+                                            onChange={(e) => {
+                                                setFormData({
+                                                    ...formData,
+                                                    organization_type:
+                                                        e.target.value,
+                                                });
+                                                const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+                                                if (otherInput) {
+                                                    otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
+                                                }
+                                            }}
+                                            required
+                                            className="h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                                        >
+                                            <option value="">
+                                                Select organization type
                                             </option>
-                                        ))}
-                                    </select>
-                                    {errors.organization_type && (
-                                        <p className="text-sm text-destructive">
-                                            {errors.organization_type}
-                                        </p>
-                                    )}
-                                </div>
+                                            {organizationTypes.map((type) => (
+                                                <option
+                                                    key={type.value}
+                                                    value={type.value}
+                                                >
+                                                    {type.label}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        {errors.organization_type && (
+                                            <p className="text-sm text-destructive">
+                                                {errors.organization_type}
+                                            </p>
+                                        )}
+                                    </div>
+                                    
+                                    <Input
+                                        id="organization_type_other"
+                                        type="text"
+                                        name="organization_type_other"
+                                        placeholder="Please specify organization type"
+                                        className="mt-2"
+                                        style={{display: formData.organization_type === 'other' ? 'block' : 'none'}}
+                                    />
+                                </>
                             )}
 
                             {/* TIN Number - Only for organizations */}

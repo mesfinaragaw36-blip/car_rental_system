@@ -22,6 +22,7 @@ class ProfileController extends Controller
                 'owner_type' => $ownerProfile->owner_type,
                 'business_name' => $ownerProfile->business_name,
                 'organization_type' => $ownerProfile->organization_type,
+                'organization_type_other' => $ownerProfile->organization_type_other,
                 'tin_number' => $ownerProfile->tin_number,
                 'address' => $ownerProfile->address,
                 'national_id' => $ownerProfile->national_id,
@@ -59,6 +60,7 @@ class ProfileController extends Controller
                     'ngo_non_profit',
                     'other',
                 ])],
+                'organization_type_other' => ['nullable', 'string', 'max:255'],
                 'tin_number' => ['required', 'digits:10'],
                 'business_license' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
                 'vehicle_ownership_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
@@ -73,6 +75,7 @@ class ProfileController extends Controller
 
         if ($ownerProfile->owner_type === 'organization') {
             $updateData['organization_type'] = $validated['organization_type'];
+            $updateData['organization_type_other'] = $validated['organization_type_other'] ?? null;
             $updateData['tin_number'] = $validated['tin_number'];
 
             // Handle business license upload

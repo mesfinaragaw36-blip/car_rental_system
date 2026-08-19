@@ -33,7 +33,7 @@ class UserController extends Controller
         // Load verification profiles so the frontend can display
         // owner/driver verification status.
         $query->with([
-            'ownerProfile:id,user_id,business_name,verification_status,verified_at',
+            'ownerProfile:id,user_id,owner_type,business_name,verification_status,verified_at',
             'driverProfile:id,user_id,license_number,verification_status',
         ]);
 
@@ -63,7 +63,17 @@ class UserController extends Controller
             ->withQueryString();
 
         $users->getCollection()->transform(function (User $user) {
+            $ownerProfile = $user->ownerProfile;
+            $displayName = $user->name;
+
+            // For organization owners, show business name alongside personal name
+            if ($ownerProfile && $ownerProfile->owner_type === 'organization' && $ownerProfile->business_name) {
+                $displayName = $ownerProfile->business_name.' ('.$user->name.')';
+            }
+
             return array_merge($user->toArray(), [
+                'display_name' => $displayName,
+                'is_organization' => $ownerProfile && $ownerProfile->owner_type === 'organization',
                 'customer_identity_status' => $user->customerIdentity?->verification_status,
                 'has_customer_identity' => $user->customerIdentity !== null,
             ]);
