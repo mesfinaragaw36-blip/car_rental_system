@@ -1,5 +1,5 @@
-import { Head, router, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+import { useState, useMemo } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +12,24 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
+import { CheckCircle2, Clock, XCircle, ShieldCheck, FileText, Star, Pencil } from 'lucide-react';
+
+const LANGUAGES = [
+    'Amharic',
+    'Oromo',
+    'Tigrinya',
+    'Somali',
+    'Afar',
+    'English',
+    'Arabic',
+    'French',
+    'Swahili',
+    'Chinese',
+    'Hindi',
+    'Turkish',
+    'Spanish',
+    'Other',
+];
 
 interface DriverProfile {
     id: number;
@@ -21,8 +39,7 @@ interface DriverProfile {
     location: string;
     gender?: string | null;
     daily_rate?: number | null;
-    telebirr_phone?: string | null;
-    cbe_account?: string | null;
+    proficient_language?: string | null;
     license_file_path?: string | null;
     verification_status?: string;
     average_rating?: number;
@@ -45,25 +62,30 @@ function verificationBanner(status: string | undefined) {
     switch (status) {
         case 'pending':
             return {
-                classes: 'bg-amber-50 text-amber-800 border border-amber-200',
-                title: 'Your profile is under review',
+                icon: Clock,
+                classes: 'border-amber-200 bg-amber-50 text-amber-800',
+                iconClass: 'text-amber-600',
+                title: 'Profile Under Review',
                 message:
-                    "Thanks for submitting your details. An admin is reviewing your profile and will approve it shortly. You'll be able to receive trip assignments once approved.",
+                    "Your profile is being reviewed by an admin. You'll be able to accept assignments once approved.",
             };
 
         case 'approved':
             return {
-                classes:
-                    'bg-emerald-50 text-emerald-800 border border-emerald-200',
-                title: 'Your profile is verified',
+                icon: CheckCircle2,
+                classes: 'border-emerald-200 bg-emerald-50 text-emerald-800',
+                iconClass: 'text-emerald-600',
+                title: 'Profile Verified',
                 message:
-                    "You're all set. You can now receive chauffeur trip assignments.",
+                    "You're all set. You can receive chauffeur trip assignments.",
             };
 
         case 'rejected':
             return {
-                classes: 'bg-red-50 text-red-800 border border-red-200',
-                title: 'Your profile needs changes',
+                icon: XCircle,
+                classes: 'border-red-200 bg-red-50 text-red-800',
+                iconClass: 'text-red-600',
+                title: 'Profile Needs Changes',
                 message:
                     'Your submission was not approved. Please review your details below and resubmit.',
             };
@@ -79,46 +101,34 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     }>();
     const toast = p.toast;
     const isNew = !profile;
-    const banner = profile
-        ? verificationBanner(profile.verification_status)
-        : null;
+    const banner = profile ? verificationBanner(profile.verification_status) : null;
 
-    const [licenseNumber, setLicenseNumber] = useState(
-        profile?.license_number && profile.license_number !== 'PENDING'
-            ? profile.license_number
-            : '',
-    );
+    const [licenseNumber, setLicenseNumber] = useState(profile?.license_number ?? '');
     const [licenseType, setLicenseType] = useState(profile?.license_type ?? '');
-    const [experienceYears, setExperienceYears] = useState(
-        String(profile?.experience_years ?? ''),
-    );
+    const [experienceYears, setExperienceYears] = useState(String(profile?.experience_years ?? ''));
     const [location, setLocation] = useState(profile?.location ?? '');
     const [gender, setGender] = useState(profile?.gender ?? '');
-    const [dailyRate, setDailyRate] = useState(
-        String(profile?.daily_rate ?? ''),
-    );
+    const [dailyRate, setDailyRate] = useState(String(profile?.daily_rate ?? ''));
+    const [proficientLanguage, setProficientLanguage] = useState(profile?.proficient_language ?? '');
+    const [languageSearch, setLanguageSearch] = useState('');
+    const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
-    const [telebirrPhone, setTelebirrPhone] = useState(profile?.telebirr_phone ?? '');
-    const [cbeAccount, setCbeAccount] = useState(profile?.cbe_account ?? '');
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [processing, setProcessing] = useState(false);
 
+    const filteredLanguages = useMemo(() => {
+        if (!languageSearch) return LANGUAGES;
+        const q = languageSearch.toLowerCase();
+        return LANGUAGES.filter((l) => l.toLowerCase().includes(q));
+    }, [languageSearch]);
+
     function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
-        
-        // Block submission if trying to update license fields with active assignments
-        if (hasActiveAssignments && !isNew) {
-            const licenseFieldChanged = 
-                (profile?.license_number !== licenseNumber) ||
-                (profile?.license_type !== licenseType) ||
-                licenseFile !== null;
 
-            if (licenseFieldChanged) {
-                // The error will be shown by backend, but we prevent unnecessary request
-                return;
-            }
+        if (hasActiveAssignments && !isNew) {
+            return;
         }
-        
+
         setProcessing(true);
 
         const formData = {
@@ -128,8 +138,7 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
             location,
             gender,
             daily_rate: dailyRate,
-            telebirr_phone: telebirrPhone,
-            cbe_account: cbeAccount,
+            proficient_language: proficientLanguage,
             ...(licenseFile && { license_file: licenseFile }),
         };
 
@@ -144,7 +153,8 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     return (
         <>
             <Head title="Driver Profile" />
-            <div className="mx-auto max-w-lg space-y-6 p-6">
+
+            <div className="space-y-6 p-6">
                 <h1 className="text-3xl font-bold">
                     {isNew ? 'Complete Your Profile' : 'Driver Profile'}
                 </h1>
@@ -161,256 +171,210 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
                         <p className="font-semibold text-amber-900">License Information Update Restricted</p>
                         <p className="mt-1 text-sm text-amber-700">
-                            You cannot update your license information (License Number, License Type, or License Document) while you have active assignments. 
+                            You cannot update your license information while you have active assignments.
                             Please complete or reject your current assignments first.
                         </p>
                     </div>
                 )}
 
                 {!isNew && banner && (
-                    <div className={`rounded-lg p-4 ${banner.classes}`}>
-                        <p className="font-semibold">{banner.title}</p>
-                        <p className="mt-1 text-sm">{banner.message}</p>
+                    <div className={`flex items-start gap-3 rounded-lg border p-4 ${banner.classes}`}>
+                        <banner.icon className={`mt-0.5 h-5 w-5 shrink-0 ${banner.iconClass}`} />
+                        <div>
+                            <p className="font-semibold">{banner.title}</p>
+                            <p className="mt-1 text-sm">{banner.message}</p>
+                        </div>
                     </div>
                 )}
 
                 {!isNew && profile && (
-                    <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="grid gap-4 sm:grid-cols-2">
                         {profile.average_rating !== undefined && (
-                            <div className="flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground">
-                                    Rating:
-                                </span>
-                                <span className="font-semibold">
-                                    {profile.average_rating} ★
-                                </span>
-                                <span className="text-sm text-muted-foreground">
-                                    ({profile.review_count ?? 0})
-                                </span>
-                            </div>
+                            <Card>
+                                <CardContent className="flex items-center gap-4 p-5">
+                                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-accent">
+                                        <Star className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Average Rating</p>
+                                        <p className="text-2xl font-bold">
+                                            {profile.average_rating} ★
+                                            <span className="ml-1 text-sm font-normal text-muted-foreground">
+                                                ({profile.review_count ?? 0})
+                                            </span>
+                                        </p>
+                                    </div>
+                                </CardContent>
+                            </Card>
                         )}
-                        {profile.recent_reviews &&
-                            profile.recent_reviews.length > 0 && (
-                                <div className="mt-4">
-                                    <h3 className="text-lg font-semibold">
-                                        Recent Reviews
-                                    </h3>
-                                    <div className="mt-3 space-y-3">
-                                        {profile.recent_reviews.map((r) => (
-                                            <div
-                                                key={r.id}
-                                                className="rounded-lg border p-3"
-                                            >
-                                                <div className="flex items-center justify-between">
-                                                    <div>
-                                                        <p className="font-medium">
-                                                            {r.reviewer.name}
-                                                        </p>
-                                                        <p className="text-sm text-muted-foreground">
-                                                            {new Date(
-                                                                r.created_at,
-                                                            ).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                    <div className="font-semibold">
-                                                        {r.rating} ★
-                                                    </div>
-                                                </div>
-                                                {r.review_text && (
-                                                    <p className="mt-2 text-sm text-muted-foreground">
-                                                        {r.review_text}
-                                                    </p>
-                                                )}
+                        {profile.recent_reviews && profile.recent_reviews.length > 0 && (
+                            <Card>
+                                <CardContent className="p-5">
+                                    <p className="text-sm text-muted-foreground">Recent Reviews</p>
+                                    <div className="mt-2 space-y-2">
+                                        {profile.recent_reviews.slice(0, 3).map((r) => (
+                                            <div key={r.id} className="flex items-center justify-between text-sm">
+                                                <span className="font-medium">{r.reviewer.name}</span>
+                                                <span className="text-amber-500">{r.rating} ★</span>
                                             </div>
                                         ))}
                                     </div>
-                                </div>
-                            )}
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 )}
 
                 <Card>
                     <CardHeader>
-                        <CardTitle>Driver Information</CardTitle>
+                        <CardTitle className="flex items-center gap-2">
+                            <Pencil className="h-4 w-4" />
+                            {isNew ? 'Profile Information' : 'Edit Profile'}
+                        </CardTitle>
                     </CardHeader>
                     <CardContent>
                         <form onSubmit={handleSubmit} className="space-y-4">
-                            <div className="space-y-1.5">
-                                <Label htmlFor="license_number">
-                                    License Number
-                                </Label>
-                                <Input
-                                    id="license_number"
-                                    placeholder="e.g. DL-123456"
-                                    value={licenseNumber}
-                                    onChange={(e) =>
-                                        setLicenseNumber(e.target.value)
-                                    }
-                                    disabled={hasActiveAssignments && !isNew}
-                                    required
-                                />
-                                <InputError message={errors.license_number} />
-                            </div>
+                            <div className="grid gap-4 sm:grid-cols-2">
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="license_number">License Number</Label>
+                                    <Input
+                                        id="license_number"
+                                        placeholder="e.g. DL-123456"
+                                        value={licenseNumber}
+                                        onChange={(e) => setLicenseNumber(e.target.value)}
+                                        disabled={hasActiveAssignments && !isNew}
+                                        required
+                                    />
+                                    <InputError message={errors.license_number} />
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label>License Type</Label>
-                                <Select
-                                    value={licenseType}
-                                    onValueChange={setLicenseType}
-                                    disabled={hasActiveAssignments && !isNew}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select license type" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="አውቶ">አውቶ</SelectItem>
-                                        <SelectItem value="ህዝብ">ህዝብ</SelectItem>
-                                        <SelectItem value="ደረቅ ጭነት">
-                                            ደረቅ ጭነት
-                                        </SelectItem>
-                                        <SelectItem value="ፈሳሽ ጭነት">
-                                            ፈሳሽ ጭነት
-                                        </SelectItem>
-                                        <SelectItem value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
-                                            ግንባታ መሣሪያዎች / ኮንስትራክሽን
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.license_type} />
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label>License Type</Label>
+                                    <Select
+                                        value={licenseType}
+                                        onValueChange={setLicenseType}
+                                        disabled={hasActiveAssignments && !isNew}
+                                    >
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select license type" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="አውቶ">አውቶ</SelectItem>
+                                            <SelectItem value="ህዝብ">ህዝብ</SelectItem>
+                                            <SelectItem value="ደረቅ ጭነት">ደረቅ ጭነት</SelectItem>
+                                            <SelectItem value="ፈሳሽ ጭነት">ፈሳሽ ጭነት</SelectItem>
+                                            <SelectItem value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
+                                                ግንባታ መሣሪያዎች / ኮንስትራክሽን
+                                            </SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.license_type} />
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="experience_years">
-                                    Experience (Years)
-                                </Label>
-                                <Input
-                                    id="experience_years"
-                                    type="number"
-                                    min="0"
-                                    max="50"
-                                    placeholder="e.g. 3"
-                                    value={experienceYears}
-                                    onChange={(e) =>
-                                        setExperienceYears(e.target.value)
-                                    }
-                                    required
-                                />
-                                <InputError message={errors.experience_years} />
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="experience_years">Experience (Years)</Label>
+                                    <Input
+                                        id="experience_years"
+                                        type="number"
+                                        min="0"
+                                        max="50"
+                                        placeholder="e.g. 3"
+                                        value={experienceYears}
+                                        onChange={(e) => setExperienceYears(e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.experience_years} />
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="location">
-                                    Location / City
-                                </Label>
-                                <Input
-                                    id="location"
-                                    placeholder="e.g. Addis Ababa"
-                                    value={location}
-                                    onChange={(e) =>
-                                        setLocation(e.target.value)
-                                    }
-                                    required
-                                />
-                                <InputError message={errors.location} />
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="location">Location / City</Label>
+                                    <Input
+                                        id="location"
+                                        placeholder="e.g. Addis Ababa"
+                                        value={location}
+                                        onChange={(e) => setLocation(e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.location} />
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label>Gender</Label>
-                                <Select 
-                                    value={gender} 
-                                    onValueChange={setGender}
-                                >
-                                    <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Select gender" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        <SelectItem value="Male">Male</SelectItem>
-                                        <SelectItem value="Female">
-                                            Female
-                                        </SelectItem>
-                                    </SelectContent>
-                                </Select>
-                                <InputError message={errors.gender} />
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label>Gender</Label>
+                                    <Select value={gender} onValueChange={setGender}>
+                                        <SelectTrigger className="w-full">
+                                            <SelectValue placeholder="Select gender" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Male">Male</SelectItem>
+                                            <SelectItem value="Female">Female</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                    <InputError message={errors.gender} />
+                                </div>
 
-                            <div className="space-y-1.5">
-                                <Label htmlFor="daily_rate">
-                                    Daily Rate (ETB)
-                                </Label>
-                                <Input
-                                    id="daily_rate"
-                                    type="number"
-                                    min="0"
-                                    step="0.01"
-                                    placeholder="e.g. 500"
-                                    value={dailyRate}
-                                    onChange={(e) =>
-                                        setDailyRate(e.target.value)
-                                    }
-                                    required
-                                />
-                                <InputError message={errors.daily_rate} />
-                            </div>
+                                <div className="space-y-1.5">
+                                    <Label htmlFor="daily_rate">Daily Rate (ETB)</Label>
+                                    <Input
+                                        id="daily_rate"
+                                        type="number"
+                                        min="0"
+                                        step="0.01"
+                                        placeholder="e.g. 500"
+                                        value={dailyRate}
+                                        onChange={(e) => setDailyRate(e.target.value)}
+                                        required
+                                    />
+                                    <InputError message={errors.daily_rate} />
+                                </div>
 
-                            <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                                <h3 className="mb-3 text-sm font-semibold text-blue-900">
-                                    Payment Information (Optional)
-                                </h3>
-                                <div className="space-y-4">
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="telebirr_phone">
-                                            Telebirr Phone Number
-                                        </Label>
+                                <div className="space-y-1.5 sm:col-span-2">
+                                    <Label>Proficient Language</Label>
+                                    <div className="relative">
                                         <Input
-                                            id="telebirr_phone"
-                                            type="tel"
-                                            placeholder="e.g. 0912345678"
-                                            value={telebirrPhone}
-                                            onChange={(e) =>
-                                                setTelebirrPhone(e.target.value)
-                                            }
+                                            placeholder="Search languages..."
+                                            value={showLanguageDropdown ? languageSearch : proficientLanguage}
+                                            onChange={(e) => {
+                                                setLanguageSearch(e.target.value);
+                                                setShowLanguageDropdown(true);
+                                            }}
+                                            onFocus={() => setShowLanguageDropdown(true)}
+                                            onBlur={() => setTimeout(() => setShowLanguageDropdown(false), 200)}
                                         />
-                                        <p className="text-xs text-blue-700">
-                                            For receiving driver payments
-                                        </p>
-                                        <InputError message={errors.telebirr_phone} />
+                                        {showLanguageDropdown && filteredLanguages.length > 0 && (
+                                            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                                                {filteredLanguages.map((lang) => (
+                                                    <button
+                                                        key={lang}
+                                                        type="button"
+                                                        className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${
+                                                            proficientLanguage === lang ? 'bg-accent font-medium' : ''
+                                                        }`}
+                                                        onMouseDown={(e) => e.preventDefault()}
+                                                        onClick={() => {
+                                                            setProficientLanguage(lang);
+                                                            setLanguageSearch('');
+                                                            setShowLanguageDropdown(false);
+                                                        }}
+                                                    >
+                                                        {lang}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        )}
                                     </div>
-
-                                    <div className="space-y-1.5">
-                                        <Label htmlFor="cbe_account">
-                                            CBE Account Number
-                                        </Label>
-                                        <Input
-                                            id="cbe_account"
-                                            type="text"
-                                            placeholder="e.g. 1000123456789"
-                                            value={cbeAccount}
-                                            onChange={(e) =>
-                                                setCbeAccount(e.target.value)
-                                            }
-                                        />
-                                        <p className="text-xs text-blue-700">
-                                            Commercial Bank of Ethiopia account
-                                        </p>
-                                        <InputError message={errors.cbe_account} />
-                                    </div>
+                                    <InputError message={errors.proficient_language} />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="license_file">
-                                    License Document{' '}
-                                    <span className="text-red-500">*</span>
+                                    License Document <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="license_file"
                                     type="file"
                                     accept="image/*,.pdf"
-                                    onChange={(e) =>
-                                        setLicenseFile(
-                                            e.target.files?.[0] || null,
-                                        )
-                                    }
+                                    onChange={(e) => setLicenseFile(e.target.files?.[0] || null)}
                                     disabled={hasActiveAssignments && !isNew}
                                     required={!profile?.license_file_path}
                                 />
@@ -428,22 +392,13 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                     </p>
                                 )}
                                 <p className="text-sm text-muted-foreground">
-                                    Upload a clear photo or scan of your driving
-                                    license (Required for verification)
+                                    Upload a clear photo or scan of your driving license (Required for verification)
                                 </p>
                                 <InputError message={errors.license_file} />
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="w-full"
-                                disabled={processing}
-                            >
-                                {processing
-                                    ? 'Saving...'
-                                    : isNew
-                                      ? 'Create Profile'
-                                      : 'Update Profile'}
+                            <Button type="submit" className="w-full" disabled={processing}>
+                                {processing ? 'Saving...' : isNew ? 'Create Profile' : 'Update Profile'}
                             </Button>
                         </form>
                     </CardContent>

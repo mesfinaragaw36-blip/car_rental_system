@@ -41,6 +41,7 @@ class DriverProfileController extends Controller
                 'gender' => $profile->gender,
                 'daily_rate' => $profile->daily_rate,
                 'license_file_path' => $profile->license_file_path,
+                'proficient_language' => $profile->proficient_language,
                 'telebirr_phone' => $profile->telebirr_phone,
                 'cbe_account' => $profile->cbe_account,
                 'verification_status' => $profile->verification_status,
@@ -86,6 +87,7 @@ class DriverProfileController extends Controller
             'location' => 'required|string|max:255',
             'gender' => 'required|string|in:Male,Female',
             'daily_rate' => 'required|numeric|min:0',
+            'proficient_language' => 'nullable|string|max:100',
             'license_file' => $isNewProfile ? 'required|file|mimes:jpeg,png,jpg,pdf|max:5120' : 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'telebirr_phone' => 'nullable|string|max:20',
             'cbe_account' => 'nullable|string|max:50',
@@ -98,6 +100,7 @@ class DriverProfileController extends Controller
             'location' => $validated['location'],
             'gender' => $validated['gender'],
             'daily_rate' => $validated['daily_rate'],
+            'proficient_language' => $validated['proficient_language'] ?? null,
             'telebirr_phone' => $validated['telebirr_phone'] ?? null,
             'cbe_account' => $validated['cbe_account'] ?? null,
         ];
@@ -108,7 +111,7 @@ class DriverProfileController extends Controller
             $licenseNumberChanged = $profile->license_number !== $validated['license_number'];
             $licenseTypeChanged = $profile->license_type !== $validated['license_type'];
             $licenseFileChanged = $request->hasFile('license_file');
-            
+
             \Log::info('Checking critical field changes', [
                 'old_license_number' => $profile->license_number,
                 'new_license_number' => $validated['license_number'],
@@ -118,7 +121,7 @@ class DriverProfileController extends Controller
                 'license_type_changed' => $licenseTypeChanged,
                 'license_file_changed' => $licenseFileChanged,
             ]);
-            
+
             $criticalFieldsChanged = $licenseNumberChanged || $licenseTypeChanged || $licenseFileChanged;
         }
 

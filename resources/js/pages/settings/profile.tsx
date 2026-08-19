@@ -890,53 +890,23 @@ export default function Profile() {
                                     </div>
 
                                     <div className="grid gap-2">
-                                        <Label htmlFor="telebirr_phone">
-                                            Telebirr Phone Number
+                                        <Label htmlFor="proficient_language">
+                                            Proficient Language
                                         </Label>
 
                                         <Input
-                                            id="telebirr_phone"
-                                            type="tel"
+                                            id="proficient_language"
                                             className="mt-1 block w-full"
                                             defaultValue={
-                                                profile?.telebirr_phone ?? ''
+                                                profile?.proficient_language ?? ''
                                             }
-                                            name="telebirr_phone"
-                                            placeholder="e.g. 0912345678"
+                                            name="proficient_language"
+                                            placeholder="e.g. English, Amharic"
                                         />
-
-                                        <p className="text-xs text-muted-foreground">
-                                            For receiving driver payments
-                                        </p>
 
                                         <InputError
                                             className="mt-2"
-                                            message={errors.telebirr_phone}
-                                        />
-                                    </div>
-
-                                    <div className="grid gap-2">
-                                        <Label htmlFor="cbe_account">
-                                            CBE Account Number
-                                        </Label>
-
-                                        <Input
-                                            id="cbe_account"
-                                            className="mt-1 block w-full"
-                                            defaultValue={
-                                                profile?.cbe_account ?? ''
-                                            }
-                                            name="cbe_account"
-                                            placeholder="e.g. 1000123456789"
-                                        />
-
-                                        <p className="text-xs text-muted-foreground">
-                                            For receiving driver payments
-                                        </p>
-
-                                        <InputError
-                                            className="mt-2"
-                                            message={errors.cbe_account}
+                                            message={errors.proficient_language}
                                         />
                                     </div>
 

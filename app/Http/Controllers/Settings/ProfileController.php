@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
+use App\Models\BookingDriver;
 use App\Models\CustomerIdentity;
 use App\Models\DriverProfile;
 use App\Models\OwnerProfile;
@@ -112,6 +113,36 @@ class ProfileController extends Controller
                 $ownerData['national_id_back_file_path'] = $request->file('national_id_back_file')->store('owner_documents', 'public');
             }
 
+            $existingProfile = $user->ownerProfile;
+            $isOrgOwner = $existingProfile && $existingProfile->owner_type === 'organization';
+
+            // Check if critical org fields changed for re-approval
+            if ($existingProfile && $isOrgOwner) {
+                $criticalOwnerFieldsChanged =
+                    (isset($ownerData['organization_type']) && $existingProfile->organization_type !== $ownerData['organization_type']) ||
+                    (isset($ownerData['tin_number']) && $existingProfile->tin_number !== $ownerData['tin_number']) ||
+                    (isset($ownerData['business_name']) && $existingProfile->business_name !== $ownerData['business_name']) ||
+                    $request->hasFile('national_id_front_file') ||
+                    $request->hasFile('national_id_back_file');
+
+                if ($criticalOwnerFieldsChanged && $existingProfile->verification_status === 'approved') {
+                    $ownerData['verification_status'] = 'pending';
+                    $ownerData['verified_at'] = null;
+                }
+            }
+
+            // Individual owner: re-approve if ID files change
+            if ($existingProfile && ! $isOrgOwner) {
+                $criticalOwnerFieldsChanged =
+                    $request->hasFile('national_id_front_file') ||
+                    $request->hasFile('national_id_back_file');
+
+                if ($criticalOwnerFieldsChanged && $existingProfile->verification_status === 'approved') {
+                    $ownerData['verification_status'] = 'pending';
+                    $ownerData['verified_at'] = null;
+                }
+            }
+
             OwnerProfile::updateOrCreate(
                 ['user_id' => $user->id],
                 $ownerData
@@ -121,12 +152,12 @@ class ProfileController extends Controller
         if ($user->hasDriverPermission()) {
             $profile = $user->driverProfile;
             $isNewProfile = ! $profile;
-            
+
             // Check if driver has active assignments
-            $hasActiveAssignments = \App\Models\BookingDriver::where('driver_id', $user->id)
+            $hasActiveAssignments = BookingDriver::where('driver_id', $user->id)
                 ->whereIn('status', ['assigned', 'accepted'])
                 ->exists();
-            
+
             $driverProfileData = Arr::only($validated, [
                 'license_number',
                 'license_type',
@@ -134,13 +165,14 @@ class ProfileController extends Controller
                 'location',
                 'gender',
                 'daily_rate',
+                'proficient_language',
                 'telebirr_phone',
                 'cbe_account',
             ]);
 
             // Check if license fields are being changed
             $licenseFieldChanged = false;
-            if (!$isNewProfile && $hasActiveAssignments) {
+            if (! $isNewProfile && $hasActiveAssignments) {
                 $licenseFieldChanged =
                     ($request->filled('license_number') && $profile->license_number !== $request->input('license_number')) ||
                     ($request->filled('license_type') && $profile->license_type !== $request->input('license_type')) ||
@@ -151,6 +183,7 @@ class ProfileController extends Controller
                         'type' => 'error',
                         'message' => 'You cannot update license information while you have active assignments. Please complete or reject your current assignments first.',
                     ]);
+
                     return to_route('profile.edit');
                 }
             }
@@ -176,14 +209,14 @@ class ProfileController extends Controller
             }
 
             DriverProfile::updateOrCreate(['user_id' => $user->id], $driverProfileData);
-            
+
             // Update flash message if license info was updated
             if ($criticalFieldsChanged) {
                 Inertia::flash('toast', [
                     'type' => 'success',
                     'message' => 'Profile updated. Since you changed critical license information, your profile needs admin re-approval before you can accept new assignments.',
                 ]);
-                
+
                 return to_route('profile.edit');
             }
         }
@@ -193,6 +226,8 @@ class ProfileController extends Controller
             $isLocked = $identity?->verification_status === 'approved';
 
             if (! $isLocked) {
+                $isResubmission = $identity && in_array($identity->verification_status, ['pending', 'rejected']);
+
                 $data = [
                     'national_id_number' => $validated['national_id_number'],
                     'verification_status' => 'pending',
@@ -208,6 +243,15 @@ class ProfileController extends Controller
                 }
 
                 CustomerIdentity::updateOrCreate(['user_id' => $user->id], $data);
+
+                if ($isResubmission) {
+                    Inertia::flash('toast', [
+                        'type' => 'success',
+                        'message' => 'Identity updated. Your profile needs admin re-approval before you can book vehicles.',
+                    ]);
+
+                    return to_route('profile.edit');
+                }
             }
         }
 

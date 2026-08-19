@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import {
     Car,
     User,
@@ -126,6 +126,12 @@ export default function Assignments({ assignments = [], profileComplete = false,
                                     <p className="mt-1 text-sm text-amber-700">
                                         Please complete all required fields in your driver profile to accept assignments.
                                     </p>
+                                    <Link
+                                        href="/driver/profile"
+                                        className="mt-2 inline-block text-sm font-medium text-amber-900 underline hover:text-amber-700"
+                                    >
+                                        Go to Profile →
+                                    </Link>
                                 </div>
                             </div>
                         </CardContent>

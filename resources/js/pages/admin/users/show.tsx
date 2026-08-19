@@ -53,6 +53,7 @@ interface DriverProfile {
     experience_years: number;
     location: string;
     availability: string;
+    proficient_language?: string | null;
     verification_status: string;
     license_file_path?: string | null;
     telebirr_phone?: string | null;
@@ -344,7 +345,7 @@ export default function ShowUser({ user }: Props) {
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
                             <SpecTile icon={Mail} label="Email" value={user.email} />
                             <SpecTile icon={Phone} label="Phone" value={user.phone} />
-                            <SpecTile icon={MapPin} label="Address" value={user.address} />
+                            <SpecTile icon={MapPin} label="Location" value={user.address} />
                             <SpecTile icon={Calendar} label="Joined" value={formatDate(user.created_at)} />
                             <SpecTile icon={CreditCard} label="User ID" value={`#${user.id}`} />
                         </div>
@@ -569,6 +570,9 @@ export default function ShowUser({ user }: Props) {
                                 <SpecTile icon={Calendar} label="Experience" value={`${user.driver_profile.experience_years} years`} />
                                 <SpecTile icon={MapPin} label="Location" value={user.driver_profile.location} />
                                 <SpecTile icon={BadgeCheck} label="Availability" value={user.driver_profile.availability} />
+                                {user.driver_profile.proficient_language && (
+                                    <SpecTile icon={BadgeCheck} label="Language" value={user.driver_profile.proficient_language} />
+                                )}
                             </div>
 
                             {/* Payment Information */}
