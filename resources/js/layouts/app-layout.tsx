@@ -3,6 +3,16 @@ import AppLayoutTemplate from '@/layouts/app/app-sidebar-layout';
 import StorefrontLayout from '@/layouts/app/storefront-layout';
 import type { Auth, BreadcrumbItem } from '@/types';
 
+const STOREFRONT_PAGES = [
+    'browse-cars',
+    'car-details',
+    'bookings',
+    'booking-details',
+    'payment',
+    'payments',
+    'receipt',
+];
+
 export default function AppLayout({
     breadcrumbs = [],
     children,
@@ -10,12 +20,14 @@ export default function AppLayout({
     breadcrumbs?: BreadcrumbItem[];
     children: React.ReactNode;
 }) {
-    const { auth } = usePage<{ auth: Auth }>().props;
-    const role = auth.user?.role;
+    const page = usePage<{ auth: Auth }>();
+    const componentName = (page.component ?? '').split('/').pop() ?? '';
+    const role = page.props.auth.user?.role;
 
-    const usesStorefront = !role || role === 'customer';
+    const isStorefrontPage = STOREFRONT_PAGES.includes(componentName);
+    const isCustomer = role === 'customer';
 
-    if (usesStorefront) {
+    if (isCustomer && isStorefrontPage) {
         return <StorefrontLayout>{children}</StorefrontLayout>;
     }
 
