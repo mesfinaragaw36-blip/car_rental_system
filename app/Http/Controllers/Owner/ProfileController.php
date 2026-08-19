@@ -30,7 +30,6 @@ class ProfileController extends Controller
                 'national_id_back_file_path' => $ownerProfile->national_id_back_file_path,
                 'trade_license_number' => $ownerProfile->trade_license_number,
                 'business_license_file_path' => $ownerProfile->business_license_file_path,
-                'vehicle_ownership_certificate_file_path' => $ownerProfile->vehicle_ownership_certificate_file_path,
                 'profile_completed' => $ownerProfile->profile_completed,
                 'verification_status' => $ownerProfile->verification_status,
             ],
@@ -44,7 +43,7 @@ class ProfileController extends Controller
 
         // Validate based on owner type
         $rules = [
-            'address' => ['required', 'string', 'max:500'],
+            'address' => ['nullable', 'string', 'max:500'],
         ];
 
         if ($ownerProfile->owner_type === 'organization') {
@@ -61,9 +60,8 @@ class ProfileController extends Controller
                     'other',
                 ])],
                 'organization_type_other' => ['nullable', 'string', 'max:255'],
-                'tin_number' => ['required', 'digits:10'],
+                'tin_number' => ['required', 'string', 'max:255'],
                 'business_license' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
-                'vehicle_ownership_certificate' => ['nullable', 'file', 'mimes:pdf,jpg,jpeg,png', 'max:5120'],
             ];
         }
 
@@ -87,22 +85,11 @@ class ProfileController extends Controller
                     ->store('owner/business_licenses', 'public');
             }
 
-            // Handle vehicle ownership certificate upload
-            if ($request->hasFile('vehicle_ownership_certificate')) {
-                if ($ownerProfile->vehicle_ownership_certificate_file_path) {
-                    Storage::disk('public')->delete($ownerProfile->vehicle_ownership_certificate_file_path);
-                }
-                $updateData['vehicle_ownership_certificate_file_path'] = $request->file('vehicle_ownership_certificate')
-                    ->store('owner/vehicle_ownership_certificates', 'public');
-            }
-
             // Mark profile as completed if all required fields are filled
             if (
                 ! empty($updateData['organization_type']) &&
                 ! empty($updateData['tin_number']) &&
-                ! empty($updateData['address']) &&
-                ($ownerProfile->business_license_file_path || isset($updateData['business_license_file_path'])) &&
-                ($ownerProfile->vehicle_ownership_certificate_file_path || isset($updateData['vehicle_ownership_certificate_file_path']))
+                ($ownerProfile->business_license_file_path || isset($updateData['business_license_file_path']))
             ) {
                 $updateData['profile_completed'] = true;
             }

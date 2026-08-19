@@ -50,8 +50,6 @@ export default function OwnerProfile({ ownerProfile }: Props) {
         address: ownerProfile.address || '',
     });
     const [businessLicense, setBusinessLicense] = useState<File | null>(null);
-    const [vehicleOwnershipCertificate, setVehicleOwnershipCertificate] =
-        useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -67,13 +65,6 @@ export default function OwnerProfile({ ownerProfile }: Props) {
 
             if (businessLicense) {
                 data.append('business_license', businessLicense);
-            }
-
-            if (vehicleOwnershipCertificate) {
-                data.append(
-                    'vehicle_ownership_certificate',
-                    vehicleOwnershipCertificate,
-                );
             }
         }
 
@@ -209,21 +200,22 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                         /\D/g,
                                                         '',
                                                     );
-                                                if (value.length <= 10) {
+                                                // if (value.length <= 10) {
                                                     setFormData({
                                                         ...formData,
                                                         tin_number: value,
                                                     });
-                                                }
+                                                // }
                                             }}
                                             required
-                                            maxLength={10}
+                                            // maxLength={10}
                                             placeholder="0123456789"
                                             className="pl-9"
                                         />
                                     </div>
                                     <p className="text-xs text-muted-foreground">
-                                        10 digits, numbers only
+                                        {/* 10 digits, numbers only */}
+                                        Numbers only
                                     </p>
                                     {errors.tin_number && (
                                         <p className="text-sm text-destructive">
@@ -238,8 +230,7 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                 <Label htmlFor="address">
                                     {isOrganization
                                         ? 'Business Address'
-                                        : 'Address'}{' '}
-                                    <span className="text-destructive">*</span>
+                                        : 'Address'}
                                 </Label>
                                 <div className="relative">
                                     <MapPin className="absolute top-3 left-3 h-4 w-4 text-muted-foreground" />
@@ -252,9 +243,8 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                 address: e.target.value,
                                             })
                                         }
-                                        required
                                         rows={3}
-                                        placeholder="Enter your full address"
+                                        placeholder="Enter your full address (optional)"
                                         className="resize-none pl-9"
                                     />
                                 </div>
@@ -320,59 +310,6 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                         )}
                                     </div>
 
-                                    {/* Vehicle Ownership Certificate */}
-                                    <div className="space-y-2">
-                                        <Label htmlFor="vehicle_ownership_certificate">
-                                            Vehicle Ownership Certificate{' '}
-                                            {!ownerProfile.vehicle_ownership_certificate_file_path && (
-                                                <span className="text-destructive">
-                                                    *
-                                                </span>
-                                            )}
-                                        </Label>
-                                        {ownerProfile.vehicle_ownership_certificate_file_path && (
-                                            <p className="text-sm text-muted-foreground">
-                                                ✓ Document uploaded
-                                            </p>
-                                        )}
-                                        <div className="flex items-center gap-4">
-                                            <label
-                                                htmlFor="vehicle_ownership_certificate"
-                                                className="flex h-32 w-full cursor-pointer items-center justify-center rounded-lg border-2 border-dashed border-border transition-colors hover:border-primary"
-                                            >
-                                                <div className="text-center">
-                                                    <Upload className="mx-auto h-8 w-8 text-muted-foreground" />
-                                                    <p className="mt-2 text-sm text-muted-foreground">
-                                                        {vehicleOwnershipCertificate
-                                                            ? vehicleOwnershipCertificate.name
-                                                            : 'Click to upload certificate'}
-                                                    </p>
-                                                    <p className="mt-1 text-xs text-muted-foreground">
-                                                        PDF, JPG, PNG (max 5MB)
-                                                    </p>
-                                                </div>
-                                                <input
-                                                    id="vehicle_ownership_certificate"
-                                                    type="file"
-                                                    accept=".pdf,.jpg,.jpeg,.png"
-                                                    onChange={(e) =>
-                                                        setVehicleOwnershipCertificate(
-                                                            e.target.files?.[0] ||
-                                                                null,
-                                                        )
-                                                    }
-                                                    className="hidden"
-                                                />
-                                            </label>
-                                        </div>
-                                        {errors.vehicle_ownership_certificate && (
-                                            <p className="text-sm text-destructive">
-                                                {
-                                                    errors.vehicle_ownership_certificate
-                                                }
-                                            </p>
-                                        )}
-                                    </div>
                                 </>
                             )}
                         </div>

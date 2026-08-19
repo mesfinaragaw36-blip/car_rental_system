@@ -620,11 +620,14 @@ export default function Profile() {
                                                 {profile?.national_id_front_file_path && (
                                                     <p className="text-sm text-muted-foreground">
                                                         Existing file:{' '}
-                                                        className="text-primary
-                                                        underline" href=
-                                                        {`/storage/${profile.national_id_front_file_path}`}
-                                                        target="_blank" rel="noreferrer"
-                                                        <a>View upload</a>
+                                                        <a
+                                                            className="text-primary underline"
+                                                            href={`/storage/${profile.national_id_front_file_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            View upload
+                                                        </a>
                                                     </p>
                                                 )}
 
@@ -657,11 +660,14 @@ export default function Profile() {
                                                 {profile?.national_id_back_file_path && (
                                                     <p className="text-sm text-muted-foreground">
                                                         Existing file:{' '}
-                                                        className="text-primary
-                                                        underline" href=
-                                                        {`/storage/${profile.national_id_back_file_path}`}
-                                                        target="_blank" rel="noreferrer"
-                                                        <a>View upload</a>
+                                                        <a
+                                                            className="text-primary underline"
+                                                            href={`/storage/${profile.national_id_back_file_path}`}
+                                                            target="_blank"
+                                                            rel="noreferrer"
+                                                        >
+                                                            View upload
+                                                        </a>
                                                     </p>
                                                 )}
 
@@ -995,7 +1001,7 @@ export default function Profile() {
                                     disabled={processing}
                                     data-test="update-profile-button"
                                 >
-                                    Submit
+                                    Update Profile
                                 </Button>
                             </div>
                         </>
