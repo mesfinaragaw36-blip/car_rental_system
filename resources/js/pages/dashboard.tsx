@@ -22,7 +22,12 @@ import {
     Cell,
     CartesianGrid,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+    Card,
+    CardContent,
+    CardHeader,
+    CardTitle,
+} from '@/components/ui/card';
 import { index as disputesIndex } from '@/routes/disputes';
 
 interface AdminStats {
@@ -46,6 +51,7 @@ interface MonthlyData {
     revenue: number;
     commission: number;
 }
+
 interface OwnerStats {
     total_vehicles: number;
     active_bookings: number;
@@ -55,6 +61,7 @@ interface OwnerStats {
     rented_vehicles: number;
     pending_vehicles: number;
 }
+
 interface RecentBooking {
     id: number;
     status: string;
@@ -62,11 +69,17 @@ interface RecentBooking {
     customer: { name: string } | null;
     car: { brand: string; model: string } | null;
 }
+
 interface CustomerStats {
     active_bookings: number;
     past_bookings: number;
-    upcoming_returns: { id: number; vehicle: string; return_date: string }[];
+    upcoming_returns: {
+        id: number;
+        vehicle: string;
+        return_date: string;
+    }[];
 }
+
 interface DriverStats {
     pending_assignments: number;
     active_trips: number;
@@ -84,8 +97,16 @@ interface Assignment {
         pickup_location: string;
         return_location: string;
     };
-    customer: { name: string; phone: string };
-    car: { brand: string; model: string; year: number; plate_number: string };
+    customer: {
+        name: string;
+        phone: string;
+    };
+    car: {
+        brand: string;
+        model: string;
+        year: number;
+        plate_number: string;
+    };
 }
 
 interface Props {
@@ -112,19 +133,23 @@ function StatCard({
     const inner = (
         <Card
             className={
-                href ? 'cursor-pointer transition-shadow hover:shadow-md' : ''
+                href
+                    ? 'cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:border-[#87CEEB] hover:shadow-lg hover:shadow-[#87CEEB]/10'
+                    : 'transition-all duration-200'
             }
         >
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium text-muted-foreground">
+                <CardTitle className="text-sm font-medium text-[#5E6A76]">
                     {title}
                 </CardTitle>
-                <span className={accent ?? 'text-muted-foreground'}>
+
+                <span className={accent ?? 'text-[#007BA7]'}>
                     {icon}
                 </span>
             </CardHeader>
+
             <CardContent>
-                <p className="text-3xl font-bold">{value}</p>
+                <p className="text-3xl font-bold text-[#16425B]">{value}</p>
             </CardContent>
         </Card>
     );
@@ -133,26 +158,47 @@ function StatCard({
 }
 
 const ASSIGNMENT_STATUS_STYLES: Record<string, string> = {
-    assigned: 'bg-brand-soft text-brand',
-    accepted: 'bg-accent text-primary',
+    assigned: 'bg-[#E5F8FC] text-[#007BA7]',
+    accepted: 'bg-[#CDEFF7] text-[#16425B]',
 };
 
 const BOOKING_STATUS_STYLES: Record<string, string> = {
-    pending: 'bg-brand-soft text-brand',
-    approved: 'bg-accent text-primary',
+    pending: 'bg-[#E5F8FC] text-[#007BA7]',
+    approved: 'bg-[#CDEFF7] text-[#16425B]',
     paid: 'bg-emerald-50 text-emerald-700',
-    picked_up: 'bg-accent text-primary',
-    completed: 'bg-muted text-muted-foreground',
+    picked_up: 'bg-[#CDEFF7] text-[#16425B]',
+    completed: 'bg-[#E8F8FC] text-[#5E6A76]',
     cancelled: 'bg-red-50 text-red-700',
 };
 
 function formatMonth(ym: string): string {
     const [y, m] = ym.split('-');
 
-    return `${['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][parseInt(m) - 1]} '${y.slice(2)}`;
+    return `${
+        [
+            'Jan',
+            'Feb',
+            'Mar',
+            'Apr',
+            'May',
+            'Jun',
+            'Jul',
+            'Aug',
+            'Sep',
+            'Oct',
+            'Nov',
+            'Dec',
+        ][parseInt(m) - 1]
+    } '${y.slice(2)}`;
 }
 
-function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
+function GroupedBarChart({
+    data,
+    max,
+}: {
+    data: MonthlyData[];
+    max: number;
+}) {
     if (data.length === 0) {
         return null;
     }
@@ -163,51 +209,65 @@ function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
                 {[0.25, 0.5, 0.75, 1].map((pct) => (
                     <div
                         key={pct}
-                        className="absolute right-0 left-0 border-t border-dashed border-gray-200"
+                        className="absolute right-0 left-0 border-t border-dashed border-[#D7F2F8]"
                         style={{ bottom: `${pct * 25}%` }}
                     />
                 ))}
+
                 {data.map((d) => (
                     <div
                         key={d.month}
                         className="relative z-10 flex flex-1 items-end justify-center gap-1"
                     >
+                        {/* Revenue */}
                         <div
                             className="w-5 cursor-pointer rounded-t transition-all hover:opacity-80"
                             style={{
-                                height: `${Math.max((d.revenue / max) * 100, 2)}%`,
-                                backgroundColor: '#1A365D',
+                                height: `${Math.max(
+                                    (d.revenue / max) * 100,
+                                    2,
+                                )}%`,
+                                backgroundColor: '#007BA7',
                             }}
                             title={`Revenue: ETB ${d.revenue.toLocaleString()}`}
                         />
+
+                        {/* Commission */}
                         <div
                             className="w-5 cursor-pointer rounded-t transition-all hover:opacity-80"
                             style={{
-                                height: `${Math.max((d.commission / max) * 100, 2)}%`,
+                                height: `${Math.max(
+                                    (d.commission / max) * 100,
+                                    2,
+                                )}%`,
                                 backgroundColor: '#FF6B00',
                             }}
                             title={`Commission: ETB ${d.commission.toLocaleString()}`}
                         />
                     </div>
                 ))}
+
                 {/* Y-axis labels */}
                 <div className="pointer-events-none absolute inset-y-0 right-0 -left-1 flex flex-col justify-between">
-                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-muted-foreground">
+                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-[#7F8D9A]">
                         ETB {max.toLocaleString()}
                     </span>
-                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-muted-foreground">
+
+                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-[#7F8D9A]">
                         ETB {(max * 0.5).toFixed(0)}
                     </span>
-                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-muted-foreground">
+
+                    <span className="-ml-14 -translate-y-1/2 text-right text-[10px] text-[#7F8D9A]">
                         ETB 0
                     </span>
                 </div>
             </div>
+
             <div className="mt-1 ml-0 flex justify-around">
                 {data.map((d) => (
                     <span
                         key={d.month}
-                        className="flex-1 text-center text-[11px] text-muted-foreground"
+                        className="flex-1 text-center text-[11px] text-[#7F8D9A]"
                     >
                         {formatMonth(d.month)}
                     </span>
@@ -216,6 +276,7 @@ function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
         </>
     );
 }
+
 export default function Dashboard({
     role,
     stats,
@@ -226,13 +287,21 @@ export default function Dashboard({
     return (
         <>
             <Head title="Dashboard" />
-            <div className="space-y-6 p-6">
-                <h1 className="text-3xl font-bold">Dashboard</h1>
+
+            <div className="min-h-full space-y-6 bg-[#F7FCFF] p-6 text-[#16425B]">
+                <h1 className="text-3xl font-bold text-[#16425B]">
+                    Dashboard
+                </h1>
+
+                {/* =====================================================
+                    ADMIN DASHBOARD
+                ====================================================== */}
 
                 {role === 'admin' &&
                     (() => {
                         const s = stats as AdminStats;
                         const monthly = monthlyData as MonthlyData[];
+
                         const maxRevenue = Math.max(
                             ...monthly.map((d) => d.revenue),
                             1,
@@ -240,21 +309,18 @@ export default function Dashboard({
 
                         return (
                             <>
-                                <div
-                                    className="rounded-2xl bg-gradient-to-br p-8 text-white"
-                                    style={{
-                                        background:
-                                            'linear-gradient(135deg, #1A365D 0%, #2D5B8E 100%)',
-                                    }}
-                                >
+                                {/* ADMIN HERO */}
+                                <div className="rounded-2xl bg-gradient-to-br from-[#16425B] via-[#007BA7] to-[#2D8FAF] p-8 text-white shadow-lg shadow-[#007BA7]/10">
                                     <h1 className="text-2xl font-bold tracking-tight">
                                         Admin Dashboard
                                     </h1>
+
                                     <p className="mt-1 text-white/80">
                                         Platform overview at a glance.
                                     </p>
                                 </div>
 
+                                {/* ADMIN STAT CARDS */}
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                     <StatCard
                                         title="Total Revenue"
@@ -263,26 +329,32 @@ export default function Dashboard({
                                             <CircleDollarSign className="h-4 w-4" />
                                         }
                                     />
+
                                     <StatCard
                                         title="Commission"
                                         value={`ETB ${s.total_commission}`}
                                         icon={
                                             <CircleDollarSign className="h-4 w-4" />
                                         }
-                                        accent="text-brand"
+                                        accent="text-[#FF6B00]"
                                     />
+
                                     <StatCard
                                         title="Active Bookings"
                                         value={s.active_bookings}
-                                        icon={<Activity className="h-4 w-4" />}
+                                        icon={
+                                            <Activity className="h-4 w-4" />
+                                        }
                                         href="/bookings"
                                     />
+
                                     <StatCard
                                         title="Total Users"
                                         value={s.total_users}
                                         icon={<Users className="h-4 w-4" />}
                                         href="/admin/users"
                                     />
+
                                     <StatCard
                                         title="Booking Disputes"
                                         value="View"
@@ -290,28 +362,57 @@ export default function Dashboard({
                                             <AlertTriangle className="h-4 w-4" />
                                         }
                                         href={disputesIndex.url()}
+                                        accent="text-[#FF6B00]"
                                     />
                                 </div>
 
                                 <div className="grid gap-6 lg:grid-cols-2">
+                                    {/* REVENUE & COMMISSION */}
                                     <Card className="overflow-hidden rounded-2xl shadow-sm lg:col-span-2">
-                                        <CardHeader className="border-b px-6 py-4">
+                                        <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC] px-6 py-4">
                                             <div className="flex items-center justify-between">
                                                 <div>
-                                                    <CardTitle className="text-base font-semibold">
+                                                    <CardTitle className="text-base font-semibold text-[#16425B]">
                                                         Revenue & Commission
                                                     </CardTitle>
-                                                    <p className="mt-0.5 text-xs text-muted-foreground">
+
+                                                    <p className="mt-0.5 text-xs text-[#5E6A76]">
                                                         Monthly revenue and{' '}
                                                         {s.commission_rate}%
                                                         platform commission
                                                     </p>
                                                 </div>
+
+                                                {/* LEGEND */}
+                                                <div className="flex items-center gap-4 text-xs text-[#5E6A76]">
+                                                    <span className="flex items-center gap-1.5">
+                                                        <span
+                                                            className="h-3 w-3 rounded-sm"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    '#007BA7',
+                                                            }}
+                                                        />
+                                                        Revenue
+                                                    </span>
+
+                                                    <span className="flex items-center gap-1.5">
+                                                        <span
+                                                            className="h-3 w-3 rounded-sm"
+                                                            style={{
+                                                                backgroundColor:
+                                                                    '#FF6B00',
+                                                            }}
+                                                        />
+                                                        Commission
+                                                    </span>
+                                                </div>
                                             </div>
                                         </CardHeader>
+
                                         <CardContent className="p-6">
                                             {monthly.length === 0 ? (
-                                                <p className="py-12 text-center text-sm text-muted-foreground">
+                                                <p className="py-12 text-center text-sm text-[#5E6A76]">
                                                     No transaction data yet.
                                                 </p>
                                             ) : (
@@ -320,11 +421,13 @@ export default function Dashboard({
                                                         parseFloat(
                                                             s.total_revenue,
                                                         );
+
                                                     const avgMonthly =
                                                         monthly.length > 0
                                                             ? totalRevenueNum /
                                                               monthly.length
                                                             : 0;
+
                                                     const bestEntry =
                                                         monthly.reduce(
                                                             (b, c) =>
@@ -333,8 +436,10 @@ export default function Dashboard({
                                                                     ? c
                                                                     : b,
                                                         );
+
                                                     const lastIdx =
                                                         monthly.length - 1;
+
                                                     const growth =
                                                         monthly.length >= 2
                                                             ? ((monthly[lastIdx]
@@ -352,61 +457,81 @@ export default function Dashboard({
 
                                                     return (
                                                         <div className="space-y-6">
+                                                            {/* SUMMARY INDICATORS */}
                                                             <div className="grid grid-cols-2 gap-3 md:grid-cols-5">
-                                                                <div className="rounded-lg bg-accent p-3">
-                                                                    <p className="text-[11px] font-medium text-primary">
+                                                                {/* Revenue */}
+                                                                <div className="rounded-lg bg-[#E5F8FC] p-3">
+                                                                    <p className="text-[11px] font-medium text-[#007BA7]">
                                                                         Total
                                                                         Revenue
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-primary">
+
+                                                                    <p className="text-lg font-bold text-[#16425B]">
                                                                         ETB{' '}
                                                                         {
                                                                             s.total_revenue
                                                                         }
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-brand-soft p-3">
-                                                                    <p className="text-[11px] font-medium text-brand">
+
+                                                                {/* Commission */}
+                                                                <div className="rounded-lg bg-orange-50 p-3">
+                                                                    <p className="text-[11px] font-medium text-[#FF6B00]">
                                                                         Total
                                                                         Commission
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-brand">
+
+                                                                    <p className="text-lg font-bold text-[#D95F00]">
                                                                         ETB{' '}
                                                                         {
                                                                             s.total_commission
                                                                         }
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-muted p-3">
-                                                                    <p className="text-[11px] font-medium text-muted-foreground">
+
+                                                                {/* Monthly Average */}
+                                                                <div className="rounded-lg bg-[#E8F8FC] p-3">
+                                                                    <p className="text-[11px] font-medium text-[#5E6A76]">
                                                                         Monthly
                                                                         Avg
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-foreground">
+
+                                                                    <p className="text-lg font-bold text-[#16425B]">
                                                                         ETB{' '}
                                                                         {avgMonthly.toFixed(
                                                                             2,
                                                                         )}
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-green-50/80 p-3">
-                                                                    <p className="text-[11px] font-medium text-green-600">
+
+                                                                {/* Best Month */}
+                                                                <div className="rounded-lg bg-emerald-50 p-3">
+                                                                    <p className="text-[11px] font-medium text-emerald-600">
                                                                         Best
                                                                         Month
                                                                     </p>
-                                                                    <p className="text-lg font-bold text-green-800">
+
+                                                                    <p className="text-lg font-bold text-emerald-800">
                                                                         {formatMonth(
                                                                             bestEntry.month,
                                                                         )}
                                                                     </p>
                                                                 </div>
-                                                                <div className="rounded-lg bg-accent p-3">
-                                                                    <p className="text-[11px] font-medium text-primary">
+
+                                                                {/* Growth */}
+                                                                <div className="rounded-lg bg-[#E5F8FC] p-3">
+                                                                    <p className="text-[11px] font-medium text-[#007BA7]">
                                                                         MoM
                                                                         Growth
                                                                     </p>
+
                                                                     <p
-                                                                        className={`text-lg font-bold ${growth >= 0 ? 'text-green-600' : 'text-red-600'}`}
+                                                                        className={`text-lg font-bold ${
+                                                                            growth >=
+                                                                            0
+                                                                                ? 'text-emerald-600'
+                                                                                : 'text-red-600'
+                                                                        }`}
                                                                     >
                                                                         {growth >=
                                                                         0
@@ -419,28 +544,7 @@ export default function Dashboard({
                                                                     </p>
                                                                 </div>
                                                             </div>
-                                                            <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                                                <span className="flex items-center gap-1.5">
-                                                                    <span
-                                                                        className="h-3 w-3 rounded-sm"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                '#1A365D',
-                                                                        }}
-                                                                    />{' '}
-                                                                    Revenue
-                                                                </span>
-                                                                <span className="flex items-center gap-1.5">
-                                                                    <span
-                                                                        className="h-3 w-3 rounded-sm"
-                                                                        style={{
-                                                                            backgroundColor:
-                                                                                '#FF6B00',
-                                                                        }}
-                                                                    />{' '}
-                                                                    Commission
-                                                                </span>
-                                                            </div>
+
                                                             <GroupedBarChart
                                                                 data={monthly}
                                                                 max={maxRevenue}
@@ -452,98 +556,118 @@ export default function Dashboard({
                                         </CardContent>
                                     </Card>
 
+                                    {/* PLATFORM SUMMARY */}
                                     <Card className="overflow-hidden rounded-2xl shadow-sm">
-                                        <CardHeader className="border-b bg-slate-50/50 px-6 py-4">
-                                            <CardTitle className="text-sm font-semibold">
+                                        <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC] px-6 py-4">
+                                            <CardTitle className="text-sm font-semibold text-[#16425B]">
                                                 Platform Summary
                                             </CardTitle>
                                         </CardHeader>
+
                                         <CardContent className="space-y-5 p-6">
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Total Vehicles
                                                 </span>
-                                                <span className="text-lg font-bold">
+
+                                                <span className="text-lg font-bold text-[#16425B]">
                                                     {s.total_vehicles}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Total Bookings
                                                 </span>
-                                                <span className="text-lg font-bold">
+
+                                                <span className="text-lg font-bold text-[#16425B]">
                                                     {s.total_bookings}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Awaiting Deposit
                                                 </span>
-                                                <span className="text-lg font-bold text-brand">
+
+                                                <span className="text-lg font-bold text-[#007BA7]">
                                                     {s.pending_bookings}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Completed
                                                 </span>
+
                                                 <span className="text-lg font-bold text-emerald-600">
                                                     {s.completed_bookings}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Commission Rate
                                                 </span>
-                                                <span className="text-lg font-bold text-brand">
+
+                                                <span className="text-lg font-bold text-[#FF6B00]">
                                                     {s.commission_rate}%
                                                 </span>
                                             </div>
                                         </CardContent>
                                     </Card>
 
+                                    {/* VERIFICATION QUEUE */}
                                     <Card className="overflow-hidden rounded-2xl shadow-sm">
-                                        <CardHeader className="border-b bg-slate-50/50 px-6 py-4">
-                                            <CardTitle className="text-sm font-semibold">
+                                        <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC] px-6 py-4">
+                                            <CardTitle className="text-sm font-semibold text-[#16425B]">
                                                 Verification Queue
                                             </CardTitle>
                                         </CardHeader>
+
                                         <CardContent className="space-y-5 p-6">
                                             <Link
                                                 href="/admin/drivers"
                                                 className="group flex items-center justify-between"
                                             >
-                                                <span className="text-sm text-muted-foreground group-hover:text-foreground">
+                                                <span className="text-sm text-[#5E6A76] transition group-hover:text-[#007BA7]">
                                                     Pending Drivers
                                                 </span>
-                                                <span className="text-lg font-bold text-brand">
+
+                                                <span className="text-lg font-bold text-[#007BA7]">
                                                     {s.pending_drivers}
                                                 </span>
                                             </Link>
+
                                             <Link
                                                 href="/admin/vehicles"
                                                 className="group flex items-center justify-between"
                                             >
-                                                <span className="text-sm text-muted-foreground group-hover:text-foreground">
+                                                <span className="text-sm text-[#5E6A76] transition group-hover:text-[#007BA7]">
                                                     Pending Owners
                                                 </span>
-                                                <span className="text-lg font-bold text-brand">
+
+                                                <span className="text-lg font-bold text-[#007BA7]">
                                                     {s.pending_owners}
                                                 </span>
                                             </Link>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Active Users
                                                 </span>
-                                                <span className="text-lg font-bold">
+
+                                                <span className="text-lg font-bold text-[#16425B]">
                                                     {s.active_users}
                                                 </span>
                                             </div>
+
                                             <div className="flex items-center justify-between">
-                                                <span className="text-sm text-muted-foreground">
+                                                <span className="text-sm text-[#5E6A76]">
                                                     Staff
                                                 </span>
-                                                <span className="text-lg font-bold">
+
+                                                <span className="text-lg font-bold text-[#16425B]">
                                                     {s.total_staff}
                                                 </span>
                                             </div>
@@ -554,27 +678,44 @@ export default function Dashboard({
                         );
                     })()}
 
+                {/* =====================================================
+                    OWNER DASHBOARD
+                ====================================================== */}
+
                 {role === 'owner' &&
                     (() => {
                         const s = stats as OwnerStats;
+
                         const vehicleStatusData = [
-                            { name: 'Available', value: s.available_vehicles },
-                            { name: 'Rented', value: s.rented_vehicles },
-                            { name: 'Pending', value: s.pending_vehicles },
+                            {
+                                name: 'Available',
+                                value: s.available_vehicles,
+                            },
+                            {
+                                name: 'Rented',
+                                value: s.rented_vehicles,
+                            },
+                            {
+                                name: 'Pending',
+                                value: s.pending_vehicles,
+                            },
                         ];
 
                         return (
                             <>
-                                <div className="rounded-2xl bg-gradient-to-br from-primary via-[#1d4370] to-[#14294a] p-8 text-white">
+                                {/* OWNER HERO */}
+                                <div className="rounded-2xl bg-gradient-to-br from-[#16425B] via-[#007BA7] to-[#2D8FAF] p-8 text-white shadow-lg shadow-[#007BA7]/10">
                                     <h1 className="text-2xl font-bold tracking-tight">
                                         Welcome back!
                                     </h1>
+
                                     <p className="mt-1 text-white/80">
                                         Here&apos;s what&apos;s happening with
                                         your fleet today.
                                     </p>
                                 </div>
 
+                                {/* VEHICLE STATS */}
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                                     <StatCard
                                         title="Total Vehicles"
@@ -582,42 +723,52 @@ export default function Dashboard({
                                         icon={<Car className="h-4 w-4" />}
                                         href="/vehicles"
                                     />
+
                                     <StatCard
                                         title="Available"
                                         value={s.available_vehicles}
                                         icon={
                                             <CheckCircle className="h-4 w-4" />
                                         }
-                                        accent="text-green-600"
+                                        accent="text-emerald-600"
                                     />
+
                                     <StatCard
                                         title="Rented"
                                         value={s.rented_vehicles}
-                                        icon={<BookOpen className="h-4 w-4" />}
-                                        accent="text-primary"
+                                        icon={
+                                            <BookOpen className="h-4 w-4" />
+                                        }
+                                        accent="text-[#007BA7]"
                                     />
+
                                     <StatCard
                                         title="Pending Approval"
                                         value={s.pending_vehicles}
                                         icon={<Clock className="h-4 w-4" />}
-                                        accent="text-brand"
+                                        accent="text-[#FF6B00]"
                                     />
                                 </div>
 
+                                {/* BOOKING STATS */}
                                 <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                                     <StatCard
                                         title="Active Bookings"
                                         value={s.active_bookings}
-                                        icon={<Activity className="h-4 w-4" />}
+                                        icon={
+                                            <Activity className="h-4 w-4" />
+                                        }
                                         href="/bookings"
                                     />
+
                                     <StatCard
                                         title="Awaiting Deposit"
                                         value={s.pending_bookings}
                                         icon={<Clock className="h-4 w-4" />}
                                         href="/bookings"
-                                        accent="text-brand"
+                                        accent="text-[#FF6B00]"
                                     />
+
                                     <StatCard
                                         title="Total Earnings"
                                         value={`ETB ${s.total_earnings}`}
@@ -627,10 +778,14 @@ export default function Dashboard({
                                     />
                                 </div>
 
+                                {/* OWNER CHARTS */}
                                 <div className="grid gap-4 lg:grid-cols-2">
+                                    {/* FLEET STATUS */}
                                     <Card>
-                                        <CardHeader>
-                                            <CardTitle>Fleet Status</CardTitle>
+                                        <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC]">
+                                            <CardTitle>
+                                                Fleet Status
+                                            </CardTitle>
                                         </CardHeader>
 
                                         <CardContent>
@@ -661,9 +816,8 @@ export default function Dashboard({
                                                                         fill={
                                                                             [
                                                                                 '#22C55E',
-                                                                                '#1A365D',
+                                                                                '#007BA7',
                                                                                 '#FF6B00',
-                                                                                '#EF4444',
                                                                             ][
                                                                                 index
                                                                             ]
@@ -678,7 +832,7 @@ export default function Dashboard({
                                                 </ResponsiveContainer>
                                             </div>
 
-                                            <div className="flex justify-center gap-5 text-sm">
+                                            <div className="flex justify-center gap-5 text-sm text-[#5E6A76]">
                                                 {vehicleStatusData.map(
                                                     (item) => (
                                                         <div key={item.name}>
@@ -691,19 +845,22 @@ export default function Dashboard({
                                         </CardContent>
                                     </Card>
 
+                                    {/* MONTHLY EARNINGS */}
                                     <Card>
-                                        <CardHeader>
+                                        <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC]">
                                             <CardTitle>
                                                 Monthly Earnings
                                             </CardTitle>
-                                            <p className="text-sm text-muted-foreground">
-                                                Your earnings from paid bookings
+
+                                            <p className="text-sm text-[#5E6A76]">
+                                                Your earnings from paid
+                                                bookings
                                             </p>
                                         </CardHeader>
 
                                         <CardContent>
                                             {monthlyData.length === 0 ? (
-                                                <p className="py-10 text-center text-sm text-muted-foreground">
+                                                <p className="py-10 text-center text-sm text-[#5E6A76]">
                                                     No earnings data available
                                                     yet.
                                                 </p>
@@ -716,26 +873,53 @@ export default function Dashboard({
                                                         <LineChart
                                                             data={monthlyData}
                                                         >
-                                                            <CartesianGrid strokeDasharray="3 3" />
+                                                            <CartesianGrid
+                                                                strokeDasharray="3 3"
+                                                                stroke="#D7F2F8"
+                                                            />
 
                                                             <XAxis
                                                                 dataKey="month"
                                                                 tick={{
                                                                     fontSize: 12,
+                                                                    fill: '#5E6A76',
+                                                                }}
+                                                                axisLine={{
+                                                                    stroke: '#D7F2F8',
+                                                                }}
+                                                                tickLine={{
+                                                                    stroke: '#D7F2F8',
                                                                 }}
                                                             />
 
                                                             <YAxis
                                                                 tick={{
                                                                     fontSize: 12,
+                                                                    fill: '#5E6A76',
+                                                                }}
+                                                                axisLine={{
+                                                                    stroke: '#D7F2F8',
+                                                                }}
+                                                                tickLine={{
+                                                                    stroke: '#D7F2F8',
                                                                 }}
                                                             />
 
                                                             <Tooltip
+                                                                contentStyle={{
+                                                                    backgroundColor:
+                                                                        '#F0F9FC',
+                                                                    border: '1px solid #D7F2F8',
+                                                                    borderRadius:
+                                                                        '12px',
+                                                                    color: '#16425B',
+                                                                }}
                                                                 formatter={(
                                                                     value,
                                                                 ) => [
-                                                                    `ETB ${Number(value).toLocaleString()}`,
+                                                                    `ETB ${Number(
+                                                                        value,
+                                                                    ).toLocaleString()}`,
                                                                     'Revenue',
                                                                 ]}
                                                             />
@@ -743,8 +927,16 @@ export default function Dashboard({
                                                             <Line
                                                                 type="monotone"
                                                                 dataKey="revenue"
-                                                                strokeWidth={2}
-                                                                dot={{ r: 4 }}
+                                                                stroke="#007BA7"
+                                                                strokeWidth={3}
+                                                                dot={{
+                                                                    r: 4,
+                                                                    fill: '#007BA7',
+                                                                }}
+                                                                activeDot={{
+                                                                    r: 6,
+                                                                    fill: '#87CEEB',
+                                                                }}
                                                             />
                                                         </LineChart>
                                                     </ResponsiveContainer>
@@ -754,35 +946,41 @@ export default function Dashboard({
                                     </Card>
                                 </div>
 
+                                {/* RECENT BOOKINGS */}
                                 <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between">
-                                        <CardTitle>Recent Bookings</CardTitle>
+                                    <CardHeader className="flex flex-row items-center justify-between border-b border-[#D7F2F8] bg-[#E8F8FC]">
+                                        <CardTitle>
+                                            Recent Bookings
+                                        </CardTitle>
+
                                         <Link
                                             href="/bookings"
-                                            className="text-xs font-medium text-primary hover:underline"
+                                            className="text-xs font-medium text-[#007BA7] transition hover:text-[#16425B] hover:underline"
                                         >
                                             View all →
                                         </Link>
                                     </CardHeader>
+
                                     <CardContent>
                                         {recentBookings.length === 0 ? (
-                                            <p className="py-6 text-center text-sm text-muted-foreground">
+                                            <p className="py-6 text-center text-sm text-[#5E6A76]">
                                                 No bookings yet.
                                             </p>
                                         ) : (
-                                            <div className="divide-y">
+                                            <div className="divide-y divide-[#D7F2F8]">
                                                 {recentBookings.map((b) => (
                                                     <div
                                                         key={b.id}
                                                         className="flex items-center justify-between py-4"
                                                     >
                                                         <div>
-                                                            <p className="font-semibold">
+                                                            <p className="font-semibold text-[#16425B]">
                                                                 {b.car
                                                                     ? `${b.car.brand} ${b.car.model}`
                                                                     : 'Vehicle'}
                                                             </p>
-                                                            <p className="text-sm text-muted-foreground">
+
+                                                            <p className="text-sm text-[#5E6A76]">
                                                                 {b.pickup_date}{' '}
                                                                 &middot;{' '}
                                                                 {b.customer
@@ -790,8 +988,14 @@ export default function Dashboard({
                                                                     'N/A'}
                                                             </p>
                                                         </div>
+
                                                         <span
-                                                            className={`rounded-full px-3 py-1 text-xs font-medium ${BOOKING_STATUS_STYLES[b.status] ?? 'bg-muted text-muted-foreground'}`}
+                                                            className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                                                BOOKING_STATUS_STYLES[
+                                                                    b.status
+                                                                ] ??
+                                                                'bg-[#E8F8FC] text-[#5E6A76]'
+                                                            }`}
                                                         >
                                                             {b.status}
                                                         </span>
@@ -805,49 +1009,61 @@ export default function Dashboard({
                         );
                     })()}
 
+                {/* =====================================================
+                    DRIVER DASHBOARD
+                ====================================================== */}
+
                 {role === 'driver' &&
                     (() => {
                         const s = stats as DriverStats;
 
                         return (
                             <>
+                                {/* DRIVER STATS */}
                                 <div className="grid gap-4 md:grid-cols-3">
                                     <StatCard
                                         title="Pending"
                                         value={s.pending_assignments}
                                         icon={<Clock className="h-4 w-4" />}
                                         href="/assignments"
-                                        accent="text-brand"
+                                        accent="text-[#FF6B00]"
                                     />
+
                                     <StatCard
                                         title="Active Trips"
                                         value={s.active_trips}
                                         icon={<Truck className="h-4 w-4" />}
                                         href="/assignments"
                                     />
+
                                     <StatCard
                                         title="Completed"
                                         value={s.completed_trips}
                                         icon={
                                             <CheckCircle className="h-4 w-4" />
                                         }
+                                        accent="text-emerald-600"
                                     />
                                 </div>
+
+                                {/* CURRENT ASSIGNMENTS */}
                                 <Card>
-                                    <CardHeader className="flex flex-row items-center justify-between">
+                                    <CardHeader className="flex flex-row items-center justify-between border-b border-[#D7F2F8] bg-[#E8F8FC]">
                                         <CardTitle>
                                             Current Assignments
                                         </CardTitle>
+
                                         <Link
                                             href="/assignments"
-                                            className="text-xs text-primary hover:underline"
+                                            className="text-xs text-[#007BA7] transition hover:text-[#16425B] hover:underline"
                                         >
                                             View all →
                                         </Link>
                                     </CardHeader>
+
                                     <CardContent>
                                         {recentAssignments.length === 0 ? (
-                                            <p className="text-sm text-muted-foreground">
+                                            <p className="text-sm text-[#5E6A76]">
                                                 No active assignments. The owner
                                                 will assign you once a customer
                                                 books a vehicle with a driver.
@@ -858,11 +1074,11 @@ export default function Dashboard({
                                                     (assignment) => (
                                                         <div
                                                             key={assignment.id}
-                                                            className="space-y-2 rounded-lg border p-4"
+                                                            className="space-y-2 rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] p-4"
                                                         >
                                                             <div className="flex items-start justify-between">
                                                                 <div>
-                                                                    <p className="font-semibold">
+                                                                    <p className="font-semibold text-[#16425B]">
                                                                         {
                                                                             assignment
                                                                                 .car
@@ -881,7 +1097,8 @@ export default function Dashboard({
                                                                         }
                                                                         )
                                                                     </p>
-                                                                    <p className="text-sm text-muted-foreground">
+
+                                                                    <p className="text-sm text-[#5E6A76]">
                                                                         {
                                                                             assignment
                                                                                 .car
@@ -889,18 +1106,27 @@ export default function Dashboard({
                                                                         }
                                                                     </p>
                                                                 </div>
+
                                                                 <span
-                                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${ASSIGNMENT_STATUS_STYLES[assignment.status] ?? 'bg-muted text-muted-foreground'}`}
+                                                                    className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                                                        ASSIGNMENT_STATUS_STYLES[
+                                                                            assignment
+                                                                                .status
+                                                                        ] ??
+                                                                        'bg-[#E8F8FC] text-[#5E6A76]'
+                                                                    }`}
                                                                 >
                                                                     {
                                                                         assignment.status
                                                                     }
                                                                 </span>
                                                             </div>
-                                                            <p className="text-sm">
+
+                                                            <p className="text-sm text-[#16425B]">
                                                                 <span className="font-medium">
                                                                     Customer:{' '}
                                                                 </span>
+
                                                                 {
                                                                     assignment
                                                                         .customer
@@ -913,11 +1139,13 @@ export default function Dashboard({
                                                                         .phone
                                                                 }
                                                             </p>
-                                                            <div className="space-y-0.5 text-sm">
+
+                                                            <div className="space-y-0.5 text-sm text-[#5E6A76]">
                                                                 <p>
-                                                                    <span className="font-medium">
+                                                                    <span className="font-medium text-[#16425B]">
                                                                         Pickup:{' '}
                                                                     </span>
+
                                                                     {
                                                                         assignment
                                                                             .booking
@@ -930,10 +1158,12 @@ export default function Dashboard({
                                                                             .pickup_location
                                                                     }
                                                                 </p>
+
                                                                 <p>
-                                                                    <span className="font-medium">
+                                                                    <span className="font-medium text-[#16425B]">
                                                                         Return:{' '}
                                                                     </span>
+
                                                                     {
                                                                         assignment
                                                                             .booking

@@ -17,7 +17,7 @@ import {
     Wallet,
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useMemo, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 
@@ -259,8 +259,8 @@ function Pagination({
     }
 
     return (
-        <div className="mt-4 flex flex-col gap-3 border-t border-slate-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
-            <p className="text-xs text-slate-500">
+        <div className="mt-4 flex flex-col gap-3 border-t border-[#D7F2F8] pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs text-[#7F8D9A]">
                 Page {currentPage} of {totalPages} · {totalItems} total records
             </p>
 
@@ -271,13 +271,13 @@ function Pagination({
                     size="sm"
                     disabled={currentPage === 1}
                     onClick={() => onPageChange(currentPage - 1)}
-                    className="gap-1"
+                    className="gap-1 border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC]"
                 >
                     <ChevronLeft className="h-4 w-4" />
                     Previous
                 </Button>
 
-                <div className="flex h-8 min-w-8 items-center justify-center rounded-md border border-slate-200 bg-slate-50 px-2 text-xs font-semibold text-slate-700">
+                <div className="flex h-8 min-w-8 items-center justify-center rounded-md border border-[#D7F2F8] bg-[#E8F8FC] px-2 text-xs font-semibold text-[#16425B]">
                     {currentPage}
                 </div>
 
@@ -287,7 +287,7 @@ function Pagination({
                     size="sm"
                     disabled={currentPage === totalPages}
                     onClick={() => onPageChange(currentPage + 1)}
-                    className="gap-1"
+                    className="gap-1 border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC]"
                 >
                     Next
                     <ChevronRight className="h-4 w-4" />
@@ -297,11 +297,7 @@ function Pagination({
     );
 }
 
-function PaginatedRows<T>(
-    items: T[],
-    page: number,
-    pageSize = 10,
-) {
+function PaginatedRows<T>(items: T[], page: number, pageSize = 10) {
     const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
     const safePage = Math.min(page, totalPages);
     const start = (safePage - 1) * pageSize;
@@ -322,19 +318,19 @@ function SectionHeader({
     icon: ReactNode;
 }) {
     return (
-        <div className="mb-6 flex flex-col gap-4 border-b border-slate-200 pb-5 sm:flex-row sm:items-start sm:justify-between">
+        <div className="mb-6 flex flex-col gap-4 border-b border-[#D7F2F8] pb-5 sm:flex-row sm:items-start sm:justify-between">
             <div>
                 <div className="flex items-center gap-2">
-                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-900 text-white">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#E5F8FC] text-[#007BA7]">
                         {icon}
                     </div>
 
-                    <h2 className="text-xl font-bold text-slate-900">
+                    <h2 className="text-xl font-bold text-[#16425B]">
                         {title}
                     </h2>
                 </div>
 
-                <p className="mt-2 text-sm text-slate-500">{description}</p>
+                <p className="mt-2 text-sm text-[#5E6A76]">{description}</p>
             </div>
         </div>
     );
@@ -350,17 +346,17 @@ function MetricCard({
     description?: string;
 }) {
     return (
-        <div className="border border-slate-200 bg-white p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+        <div className="border border-[#D7F2F8] bg-white p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-[#7F8D9A]">
                 {label}
             </p>
 
-            <p className="mt-2 text-2xl font-bold tracking-tight text-slate-900">
+            <p className="mt-2 text-2xl font-bold tracking-tight text-[#16425B]">
                 {value}
             </p>
 
             {description && (
-                <p className="mt-1 text-xs text-slate-500">{description}</p>
+                <p className="mt-1 text-xs text-[#5E6A76]">{description}</p>
             )}
         </div>
     );
@@ -374,14 +370,14 @@ function ReportTable({
     rows: ReactNode[][];
 }) {
     return (
-        <div className="overflow-x-auto border border-slate-200">
+        <div className="overflow-x-auto rounded-xl border border-[#D7F2F8]">
             <table className="w-full min-w-[600px] border-collapse text-sm">
                 <thead>
-                    <tr className="border-b border-slate-300 bg-slate-50">
+                    <tr className="border-b border-[#D7F2F8] bg-[#E8F8FC]">
                         {headers.map((header) => (
                             <th
                                 key={header}
-                                className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-slate-500"
+                                className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#5E6A76]"
                             >
                                 {header}
                             </th>
@@ -393,14 +389,14 @@ function ReportTable({
                     {rows.map((row, rowIndex) => (
                         <tr
                             key={rowIndex}
-                            className="border-b border-slate-100 last:border-b-0 hover:bg-slate-50/70"
+                            className="border-b border-[#D7F2F8] last:border-b-0 hover:bg-[#F7FCFF]"
                         >
                             {row.map((cell, cellIndex) => (
                                 <td
                                     key={cellIndex}
-                                    className={`px-4 py-3 text-slate-700 ${
+                                    className={`px-4 py-3 text-[#5E6A76] ${
                                         cellIndex === row.length - 1
-                                            ? 'font-semibold text-slate-900'
+                                            ? 'font-semibold text-[#16425B]'
                                             : ''
                                     }`}
                                 >
@@ -417,14 +413,14 @@ function ReportTable({
 
 function EmptyReportState() {
     return (
-        <div className="border border-dashed border-slate-300 px-5 py-10 text-center">
-            <FileText className="mx-auto h-7 w-7 text-slate-300" />
+        <div className="rounded-xl border border-dashed border-[#D7F2F8] bg-[#F7FCFF] px-5 py-10 text-center">
+            <FileText className="mx-auto h-7 w-7 text-[#87CEEB]" />
 
-            <p className="mt-2 text-sm font-medium text-slate-500">
+            <p className="mt-2 text-sm font-medium text-[#5E6A76]">
                 No data available
             </p>
 
-            <p className="mt-1 text-xs text-slate-400">
+            <p className="mt-1 text-xs text-[#7F8D9A]">
                 There are no records for this section and reporting period.
             </p>
         </div>
@@ -538,34 +534,34 @@ export default function Reports({
     const refundStatusEntries = Object.entries(refundStatuses);
 
     const paginatedCustomers = PaginatedRows(
-    topCustomers,
-    customerPage,
-    pageSize,
-);
+        topCustomers,
+        customerPage,
+        pageSize,
+    );
 
-const paginatedOwners = PaginatedRows(
-    topOwners,
-    ownerPage,
-    pageSize,
-);
+    const paginatedOwners = PaginatedRows(
+        topOwners,
+        ownerPage,
+        pageSize,
+    );
 
-   const paginatedDrivers = PaginatedRows(
-    topDrivers,
-    driverPage,
-    pageSize,
-);
+    const paginatedDrivers = PaginatedRows(
+        topDrivers,
+        driverPage,
+        pageSize,
+    );
 
     const paginatedCars = PaginatedRows(
-    topCars,
-    carPage,
-    pageSize,
-);
+        topCars,
+        carPage,
+        pageSize,
+    );
 
     const paginatedRevenue = PaginatedRows(
-    revenueByDate,
-    revenuePage,
-    pageSize,
-);
+        revenueByDate,
+        revenuePage,
+        pageSize,
+    );
 
     const maxRevenue = Math.max(
         ...revenueByDate.map((item) => Number(item.total)),
@@ -591,21 +587,22 @@ const paginatedOwners = PaginatedRows(
         <>
             <Head title="Reports" />
 
-            <div className="min-h-screen bg-slate-50/70 px-4 py-6 sm:px-6 lg:px-8">
+            <div className="min-h-screen bg-[#F7FCFF] px-4 py-6 text-[#16425B] sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl">
-                    {/* Page Header */}
+
+                    {/* PAGE HEADER */}
                     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
-                            <div className="flex items-center gap-2 text-sm font-medium text-blue-700">
+                            <div className="flex items-center gap-2 text-sm font-medium text-[#007BA7]">
                                 <FileText className="h-4 w-4" />
                                 Business Reporting
                             </div>
 
-                            <h1 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+                            <h1 className="mt-1 text-3xl font-bold tracking-tight text-[#16425B]">
                                 Reports
                             </h1>
 
-                            <p className="mt-1 text-sm text-slate-500">
+                            <p className="mt-1 text-sm text-[#5E6A76]">
                                 Review operational, financial, fleet, customer,
                                 owner, and driver performance.
                             </p>
@@ -616,7 +613,7 @@ const paginatedOwners = PaginatedRows(
                                 type="button"
                                 variant="outline"
                                 onClick={() => exportCsv()}
-                                className="gap-2"
+                                className="gap-2 border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC] hover:text-[#007BA7]"
                             >
                                 <FileSpreadsheet className="h-4 w-4" />
                                 Export Full CSV
@@ -625,7 +622,7 @@ const paginatedOwners = PaginatedRows(
                             <Button
                                 type="button"
                                 onClick={exportPdf}
-                                className="gap-2"
+                                className="gap-2 bg-[#007BA7] text-white hover:bg-[#16425B]"
                             >
                                 <FileDown className="h-4 w-4" />
                                 Export PDF
@@ -633,18 +630,18 @@ const paginatedOwners = PaginatedRows(
                         </div>
                     </div>
 
-                    {/* Filters */}
-                    <div className="mb-6 border border-slate-200 bg-white shadow-sm">
-                        <div className="border-b border-slate-200 px-5 py-4">
+                    {/* FILTERS */}
+                    <div className="mb-6 overflow-hidden rounded-2xl border border-[#D7F2F8] bg-white shadow-sm">
+                        <div className="border-b border-[#D7F2F8] bg-[#E8F8FC] px-5 py-4">
                             <div className="flex items-center gap-2">
-                                <CalendarDays className="h-4 w-4 text-blue-700" />
+                                <CalendarDays className="h-4 w-4 text-[#007BA7]" />
 
-                                <h2 className="text-sm font-semibold text-slate-900">
+                                <h2 className="text-sm font-semibold text-[#16425B]">
                                     Report Period
                                 </h2>
                             </div>
 
-                            <p className="mt-1 text-xs text-slate-500">
+                            <p className="mt-1 text-xs text-[#5E6A76]">
                                 Select the period you want to include in the
                                 report.
                             </p>
@@ -657,7 +654,7 @@ const paginatedOwners = PaginatedRows(
                             <div className="flex-1">
                                 <label
                                     htmlFor="from"
-                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#5E6A76]"
                                 >
                                     From
                                 </label>
@@ -669,14 +666,14 @@ const paginatedOwners = PaginatedRows(
                                     onChange={(event) =>
                                         setFrom(event.target.value)
                                     }
-                                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] outline-none transition focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
                                 />
                             </div>
 
                             <div className="flex-1">
                                 <label
                                     htmlFor="to"
-                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-slate-600"
+                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#5E6A76]"
                                 >
                                     To
                                 </label>
@@ -688,18 +685,24 @@ const paginatedOwners = PaginatedRows(
                                     onChange={(event) =>
                                         setTo(event.target.value)
                                     }
-                                    className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] outline-none transition focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
                                 />
                             </div>
 
                             <div className="flex gap-2">
-                                <Button type="submit">Apply</Button>
+                                <Button
+                                    type="submit"
+                                    className="bg-[#007BA7] text-white hover:bg-[#16425B]"
+                                >
+                                    Apply
+                                </Button>
 
                                 {(from || to) && (
                                     <Button
                                         type="button"
                                         variant="outline"
                                         onClick={clearFilters}
+                                        className="border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC]"
                                     >
                                         Clear
                                     </Button>
@@ -708,8 +711,8 @@ const paginatedOwners = PaginatedRows(
                         </form>
                     </div>
 
-                    {/* Report Navigation */}
-                    <div className="mb-6 overflow-x-auto border border-slate-200 bg-white shadow-sm">
+                    {/* REPORT NAVIGATION */}
+                    <div className="mb-6 overflow-x-auto rounded-2xl border border-[#D7F2F8] bg-white shadow-sm">
                         <div className="flex min-w-max">
                             {REPORT_SECTIONS.map((section) => {
                                 const isActive =
@@ -728,8 +731,8 @@ const paginatedOwners = PaginatedRows(
                                         }}
                                         className={`flex items-center gap-2 border-b-2 px-4 py-4 text-sm font-medium transition ${
                                             isActive
-                                                ? 'border-slate-900 bg-slate-50 text-slate-900'
-                                                : 'border-transparent text-slate-500 hover:bg-slate-50 hover:text-slate-800'
+                                                ? 'border-[#007BA7] bg-[#E8F8FC] text-[#007BA7]'
+                                                : 'border-transparent text-[#5E6A76] hover:bg-[#F7FCFF] hover:text-[#16425B]'
                                         }`}
                                     >
                                         {section.icon}
@@ -740,33 +743,34 @@ const paginatedOwners = PaginatedRows(
                         </div>
                     </div>
 
-                    {/* Active Report */}
-                    <article className="border border-slate-200 bg-white shadow-sm">
-                        {/* Report Header */}
-                        <header className="border-b-2 border-slate-900 px-6 py-7 sm:px-8">
+                    {/* ACTIVE REPORT */}
+                    <article className="overflow-hidden rounded-2xl border border-[#D7F2F8] bg-white shadow-sm">
+
+                        {/* REPORT HEADER */}
+                        <header className="border-b-2 border-[#007BA7] bg-[#F7FCFF] px-6 py-7 sm:px-8">
                             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
                                 <div>
                                     <div className="mb-3 flex items-center gap-2">
-                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
+                                        <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#E5F8FC] text-[#007BA7]">
                                             <Car className="h-5 w-5" />
                                         </div>
 
                                         <div>
-                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
+                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#16425B]">
                                                 Ethio Car Rental
                                             </p>
 
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-[#7F8D9A]">
                                                 Administrative Report
                                             </p>
                                         </div>
                                     </div>
 
-                                    <h2 className="text-2xl font-bold tracking-tight text-slate-950">
+                                    <h2 className="text-2xl font-bold tracking-tight text-[#16425B]">
                                         {activeSectionInfo.label}
                                     </h2>
 
-                                    <p className="mt-1 text-sm text-slate-500">
+                                    <p className="mt-1 text-sm text-[#5E6A76]">
                                         Reporting period: {reportPeriod}
                                     </p>
                                 </div>
@@ -779,7 +783,7 @@ const paginatedOwners = PaginatedRows(
                                         onClick={() =>
                                             exportCsv(activeSection)
                                         }
-                                        className="gap-2"
+                                        className="gap-2 border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC] hover:text-[#007BA7]"
                                     >
                                         <Download className="h-4 w-4" />
                                         Export Section CSV
@@ -789,7 +793,8 @@ const paginatedOwners = PaginatedRows(
                         </header>
 
                         <div className="p-6 sm:p-8">
-                            {/* Executive Summary */}
+
+                            {/* EXECUTIVE SUMMARY */}
                             {activeSection === 'executive' && (
                                 <section>
                                     <SectionHeader
@@ -800,7 +805,7 @@ const paginatedOwners = PaginatedRows(
                                         }
                                     />
 
-                                    <div className="grid grid-cols-1 gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2 lg:grid-cols-4">
+                                    <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#D7F2F8] bg-[#D7F2F8] sm:grid-cols-2 lg:grid-cols-4">
                                         <MetricCard
                                             label="Total Bookings"
                                             value={summary.total_bookings}
@@ -870,7 +875,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Financial Summary */}
+                            {/* FINANCIAL SUMMARY */}
                             {activeSection === 'financial' && (
                                 <section>
                                     <SectionHeader
@@ -946,7 +951,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Payouts */}
+                            {/* PAYOUTS */}
                             {activeSection === 'payouts' && (
                                 <section>
                                     <SectionHeader
@@ -992,7 +997,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Bookings */}
+                            {/* BOOKINGS */}
                             {activeSection === 'bookings' && (
                                 <section>
                                     <SectionHeader
@@ -1031,7 +1036,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Payments */}
+                            {/* PAYMENTS */}
                             {activeSection === 'payments' && (
                                 <section>
                                     <SectionHeader
@@ -1044,7 +1049,7 @@ const paginatedOwners = PaginatedRows(
 
                                     <div className="space-y-8">
                                         <div>
-                                            <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                                            <h3 className="mb-3 text-sm font-semibold text-[#16425B]">
                                                 Payments by Type
                                             </h3>
 
@@ -1070,7 +1075,7 @@ const paginatedOwners = PaginatedRows(
                                         </div>
 
                                         <div>
-                                            <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                                            <h3 className="mb-3 text-sm font-semibold text-[#16425B]">
                                                 Payments by Method
                                             </h3>
 
@@ -1098,7 +1103,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Revenue */}
+                            {/* REVENUE */}
                             {activeSection === 'revenue' && (
                                 <section>
                                     <SectionHeader
@@ -1131,9 +1136,9 @@ const paginatedOwners = PaginatedRows(
                                                             key={item.date}
                                                             className="flex items-center gap-3"
                                                         >
-                                                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-slate-100">
+                                                            <div className="h-2 flex-1 overflow-hidden rounded-full bg-[#E5F8FC]">
                                                                 <div
-                                                                    className="h-full rounded-full bg-slate-800"
+                                                                    className="h-full rounded-full bg-[#007BA7]"
                                                                     style={{
                                                                         width: `${Math.max(
                                                                             (Number(
@@ -1147,7 +1152,7 @@ const paginatedOwners = PaginatedRows(
                                                                 />
                                                             </div>
 
-                                                            <span className="w-12 text-right text-xs text-slate-500">
+                                                            <span className="w-12 text-right text-xs text-[#5E6A76]">
                                                                 {(
                                                                     (Number(
                                                                         item.total,
@@ -1177,7 +1182,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Fleet */}
+                            {/* FLEET */}
                             {activeSection === 'fleet' && (
                                 <section>
                                     <SectionHeader
@@ -1186,7 +1191,7 @@ const paginatedOwners = PaginatedRows(
                                         icon={<Car className="h-4 w-4" />}
                                     />
 
-                                    <div className="mb-6 grid grid-cols-1 gap-px border border-slate-200 bg-slate-200 sm:grid-cols-3">
+                                    <div className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#D7F2F8] bg-[#D7F2F8] sm:grid-cols-3">
                                         <MetricCard
                                             label="Total Cars"
                                             value={summary.total_cars}
@@ -1203,7 +1208,7 @@ const paginatedOwners = PaginatedRows(
                                         />
                                     </div>
 
-                                    <h3 className="mb-3 text-sm font-semibold text-slate-800">
+                                    <h3 className="mb-3 text-sm font-semibold text-[#16425B]">
                                         Top Cars by Bookings
                                     </h3>
 
@@ -1250,7 +1255,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Customers */}
+                            {/* CUSTOMERS */}
                             {activeSection === 'customers' && (
                                 <section>
                                     <SectionHeader
@@ -1304,7 +1309,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Owners */}
+                            {/* OWNERS */}
                             {activeSection === 'owners' && (
                                 <section>
                                     <SectionHeader
@@ -1356,7 +1361,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Drivers */}
+                            {/* DRIVERS */}
                             {activeSection === 'drivers' && (
                                 <section>
                                     <SectionHeader
@@ -1408,7 +1413,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Inspections */}
+                            {/* INSPECTIONS */}
                             {activeSection === 'inspections' && (
                                 <section>
                                     <SectionHeader
@@ -1442,7 +1447,7 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Refunds */}
+                            {/* REFUNDS */}
                             {activeSection === 'refunds' && (
                                 <section>
                                     <SectionHeader
@@ -1453,7 +1458,7 @@ const paginatedOwners = PaginatedRows(
                                         }
                                     />
 
-                                    <div className="mb-6 grid grid-cols-1 gap-px border border-slate-200 bg-slate-200 sm:grid-cols-2">
+                                    <div className="mb-6 grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#D7F2F8] bg-[#D7F2F8] sm:grid-cols-2">
                                         <MetricCard
                                             label="Processed Refunds"
                                             value={`ETB ${formatMoney(
@@ -1492,9 +1497,9 @@ const paginatedOwners = PaginatedRows(
                                 </section>
                             )}
 
-                            {/* Footer */}
-                            <footer className="mt-10 border-t-2 border-slate-900 pt-5">
-                                <div className="flex flex-col gap-2 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+                            {/* FOOTER */}
+                            <footer className="mt-10 border-t-2 border-[#D7F2F8] pt-5">
+                                <div className="flex flex-col gap-2 text-xs text-[#7F8D9A] sm:flex-row sm:items-center sm:justify-between">
                                     <p>
                                         Ethio Car Rental · Administrative
                                         Report

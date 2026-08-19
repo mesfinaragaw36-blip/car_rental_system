@@ -23,7 +23,7 @@ export default function Login({ status, canResetPassword }: Props) {
             <Head title="Log in" />
 
             {status && (
-                <div className="mb-5 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-center text-sm font-medium text-green-700">
+                <div className="mb-5 rounded-xl border !border-[#87CEEB]/30 !bg-white/10 px-4 py-3 text-center text-sm font-medium !text-[#BCEBFA] backdrop-blur-sm">
                     {status}
                 </div>
             )}
@@ -31,17 +31,22 @@ export default function Login({ status, canResetPassword }: Props) {
             <Form
                 {...store.form()}
                 resetOnSuccess={['password']}
-                className="flex flex-col gap-4"
+                className="flex flex-col gap-5"
             >
                 {({ processing, errors }) => (
                     <>
                         {/* Email */}
-                        <div className="space-y-1.5">
-                            <Label htmlFor="email" className="font-semibold">
+                        <div className="space-y-2">
+                            <Label
+                                htmlFor="email"
+                                className="font-semibold !text-white"
+                            >
                                 Email
                             </Label>
+
                             <div className="relative">
-                                <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Mail className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#007BA7]" />
+
                                 <Input
                                     id="email"
                                     type="email"
@@ -51,33 +56,37 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="you@example.com"
-                                    className="h-11 rounded-xl border-border/60 bg-muted/50 pl-9 focus-visible:bg-background"
+                                    className="h-11 rounded-xl pl-9 !border-[#D7F2F8] !bg-[#F7FCFF] !text-[#16425B] placeholder:!text-[#5E6A76]/50 shadow-none transition-all focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
                                 />
                             </div>
+
                             <InputError message={errors.email} />
                         </div>
 
                         {/* Password */}
-                        <div className="space-y-1.5">
+                        <div className="space-y-2">
                             <div className="flex items-center justify-between">
                                 <Label
                                     htmlFor="password"
-                                    className="font-semibold"
+                                    className="font-semibold !text-white"
                                 >
                                     Password
                                 </Label>
+
                                 {canResetPassword && (
                                     <TextLink
                                         href={request()}
-                                        className="text-xs text-muted-foreground no-underline hover:text-foreground"
+                                        className="text-xs font-semibold !text-[#87CEEB] no-underline transition hover:!text-white hover:underline"
                                         tabIndex={5}
                                     >
                                         Forgot password?
                                     </TextLink>
                                 )}
                             </div>
+
                             <div className="relative">
-                                <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                                <Lock className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-[#007BA7]" />
+
                                 <PasswordInput
                                     id="password"
                                     name="password"
@@ -85,9 +94,10 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="••••••••"
-                                    className="h-11 rounded-xl border-border/60 bg-muted/50 pl-9 focus-visible:bg-background"
+                                    className="h-11 rounded-xl pl-9 !border-[#D7F2F8] !bg-[#F7FCFF] !text-[#16425B] placeholder:!text-[#5E6A76]/50 shadow-none transition-all focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
                                 />
                             </div>
+
                             <InputError message={errors.password} />
                         </div>
 
@@ -97,10 +107,12 @@ export default function Login({ status, canResetPassword }: Props) {
                                 id="remember"
                                 name="remember"
                                 tabIndex={3}
+                                className="!border-white/40 data-[state=checked]:!border-[#87CEEB] data-[state=checked]:!bg-[#87CEEB] focus-visible:!ring-[#87CEEB]/30"
                             />
+
                             <Label
                                 htmlFor="remember"
-                                className="cursor-pointer text-sm font-normal text-muted-foreground select-none"
+                                className="cursor-pointer text-sm font-normal !text-white/80 select-none"
                             >
                                 Keep me signed in
                             </Label>
@@ -109,35 +121,39 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Submit */}
                         <Button
                             type="submit"
-                            className="mt-1 h-11 w-full rounded-full text-sm font-semibold shadow-md shadow-primary/20 transition-all hover:-translate-y-0.5 hover:bg-primary/90"
                             tabIndex={4}
                             disabled={processing}
+                            className="mt-1 h-11 w-full rounded-full !bg-[#87CEEB] text-sm font-semibold !text-[#16425B] shadow-md shadow-black/10 transition-all hover:-translate-y-0.5 hover:!bg-white hover:shadow-lg"
                         >
                             {processing ? (
                                 <>
-                                    <Spinner /> Signing in…
+                                    <Spinner />
+                                    Signing in…
                                 </>
                             ) : (
-                                'Sign in'
+                                'Log in'
                             )}
                         </Button>
 
                         {/* Divider */}
                         <div className="relative my-1 flex items-center gap-3">
-                            <div className="h-px flex-1 bg-border/60" />
-                            <span className="text-xs text-muted-foreground">
+                            <div className="h-px flex-1 !bg-white/15" />
+
+                            <span className="text-xs !text-white/50">
                                 or
                             </span>
-                            <div className="h-px flex-1 bg-border/60" />
+
+                            <div className="h-px flex-1 !bg-white/15" />
                         </div>
 
-                        {/* Footer */}
-                        <p className="text-center text-sm text-muted-foreground">
+                        {/* Register */}
+                        <p className="text-center text-sm !text-white/70">
                             Don&apos;t have an account?{' '}
+
                             <TextLink
                                 href={register()}
                                 tabIndex={6}
-                                className="font-semibold text-primary no-underline hover:underline"
+                                className="font-semibold !text-[#87CEEB] no-underline transition hover:!text-white hover:underline"
                             >
                                 Create one free
                             </TextLink>
