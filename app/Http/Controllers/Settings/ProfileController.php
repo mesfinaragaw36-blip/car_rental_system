@@ -119,6 +119,14 @@ class ProfileController extends Controller
         }
 
         if ($user->hasDriverPermission()) {
+            $profile = $user->driverProfile;
+            $isNewProfile = ! $profile;
+            
+            // Check if driver has active assignments
+            $hasActiveAssignments = \App\Models\BookingDriver::where('driver_id', $user->id)
+                ->whereIn('status', ['assigned', 'accepted'])
+                ->exists();
+            
             $driverProfileData = Arr::only($validated, [
                 'license_number',
                 'license_type',
@@ -130,13 +138,54 @@ class ProfileController extends Controller
                 'cbe_account',
             ]);
 
+            // Check if license fields are being changed
+            $licenseFieldChanged = false;
+            if (!$isNewProfile && $hasActiveAssignments) {
+                $licenseFieldChanged =
+                    ($request->filled('license_number') && $profile->license_number !== $request->input('license_number')) ||
+                    ($request->filled('license_type') && $profile->license_type !== $request->input('license_type')) ||
+                    $request->hasFile('license_file');
+
+                if ($licenseFieldChanged) {
+                    Inertia::flash('toast', [
+                        'type' => 'error',
+                        'message' => 'You cannot update license information while you have active assignments. Please complete or reject your current assignments first.',
+                    ]);
+                    return to_route('profile.edit');
+                }
+            }
+
             // Handle license file upload
             if ($request->hasFile('license_file')) {
                 $path = $request->file('license_file')->store('driver-licenses', 'public');
                 $driverProfileData['license_file_path'] = '/storage/'.$path;
             }
 
+            // Check if critical fields (license info) have changed
+            $criticalFieldsChanged = false;
+            if (! $isNewProfile) {
+                $criticalFieldsChanged =
+                    (isset($driverProfileData['license_number']) && $profile->license_number !== $driverProfileData['license_number']) ||
+                    (isset($driverProfileData['license_type']) && $profile->license_type !== $driverProfileData['license_type']) ||
+                    $request->hasFile('license_file');
+            }
+
+            // If critical fields changed OR new profile, set to pending status
+            if ($criticalFieldsChanged || $isNewProfile) {
+                $driverProfileData['verification_status'] = 'pending';
+            }
+
             DriverProfile::updateOrCreate(['user_id' => $user->id], $driverProfileData);
+            
+            // Update flash message if license info was updated
+            if ($criticalFieldsChanged) {
+                Inertia::flash('toast', [
+                    'type' => 'success',
+                    'message' => 'Profile updated. Since you changed critical license information, your profile needs admin re-approval before you can accept new assignments.',
+                ]);
+                
+                return to_route('profile.edit');
+            }
         }
 
         if ($user->role === 'customer') {
