@@ -41,6 +41,7 @@ class ProfileUpdateRequest extends FormRequest
                 'daily_rate' => ['required', 'numeric', 'min:0'],
                 'telebirr_phone' => ['nullable', 'string', 'max:20', 'regex:/^[0-9+\-\s()]+$/'],
                 'cbe_account' => ['nullable', 'string', 'max:50'],
+                'proficient_language' => ['nullable', 'string', 'max:500'],
                 'license_file' => [$isNewProfile ? 'required' : 'nullable', 'file', 'mimes:jpeg,png,jpg,pdf', 'max:5120'],
             ]);
         }

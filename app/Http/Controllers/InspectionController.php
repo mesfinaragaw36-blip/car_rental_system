@@ -50,6 +50,11 @@ class InspectionController extends Controller
             'car' => $this->carPayload($booking->car),
             'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'national_id' => $booking->customer->ownerProfile?->national_id] : null,
             'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
+            'has_leverage_document' => $booking->hasLeverageDocument(),
+            'has_paid_security_deposit' => $booking->hasPaidSecurityDeposit(),
+            'leverage_document_type' => $booking->leverage_document_type,
+            'leverage_document_name' => $booking->leverage_document_name,
+            'leverage_document_status' => $booking->leverage_document_status,
             'inspections' => $booking->inspections
                 ->map(fn (Inspection $inspection) => $this->inspectionPayload($inspection))
                 ->values(),
@@ -276,7 +281,7 @@ class InspectionController extends Controller
         if ($booking->status !== Booking::STATUS_PAID) {
             return back()->with('toast', [
                 'type' => 'error',
-                'message' => 'The rental balance and security deposit must be collected before handing over the vehicle.',
+                'message' => 'The rental balance must be collected before handing over the vehicle.',
             ]);
         }
 
@@ -292,6 +297,43 @@ class InspectionController extends Controller
                 'type' => 'error',
                 'message' => "You must confirm the customer's ID has been checked before handing over the vehicle.",
             ]);
+        }
+
+        if (
+            ! $booking->hasLeverageDocument() &&
+            ! $booking->hasPaidSecurityDeposit()
+        ) {
+            $request->validate([
+                'leverage_document_type' => [
+                    'required',
+                    'string',
+                    'in:check,property_document,other',
+                ],
+                'leverage_document' => [
+                    'required',
+                    'file',
+                    'mimes:jpeg,png,jpg,gif,webp,pdf',
+                    'max:10240',
+                ],
+                'leverage_document_description' => [
+                    'nullable',
+                    'string',
+                    'max:500',
+                ],
+            ]);
+
+            if ($request->hasFile('leverage_document')) {
+                $path = $request->file('leverage_document')
+                    ->store('leverage-documents', 'public');
+
+                $booking->update([
+                    'leverage_document_type' => $request->input('leverage_document_type'),
+                    'leverage_document_path' => $path,
+                    'leverage_document_name' => $request->file('leverage_document')->getClientOriginalName(),
+                    'leverage_document_description' => $request->input('leverage_document_description') ?? null,
+                    'leverage_document_status' => 'held',
+                ]);
+            }
         }
 
         $booking->inspections()

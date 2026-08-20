@@ -239,7 +239,7 @@ export default function Welcome({ cars = [] }: Props) {
                     NAVBAR
                 ====================================================== */}
 
-                <Navbar className="border-[#D7F2F8] bg-[#F7FCFF]/90">
+                <Navbar className="border-[#D7F2F8] bg-[#F7FCFF]">
                     <NavBody>
                         <NavbarLogo>
                             <BrandLogo />

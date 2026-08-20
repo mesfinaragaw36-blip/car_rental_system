@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
-use App\Models\BookingDriver;
 use App\Models\Inspection;
 use App\Models\Payment;
 use App\Models\Refund;
@@ -115,6 +114,8 @@ class PaymentController extends Controller
                         'plate_number' => $payment->booking->car->plate_number,
                     ]
                     : null,
+
+                'leverage_document_status' => $payment->booking->leverage_document_status,
             ]);
 
         return Inertia::render('payments', [
@@ -254,6 +255,7 @@ class PaymentController extends Controller
      * Show pickup balance payment page.
      */
     public function createPickup(
+        Request $request,
         Booking $booking
     ): Response|RedirectResponse {
         $user = auth()->user();
@@ -319,8 +321,15 @@ class PaymentController extends Controller
             'driverAssignment.driver'
         );
 
+        $paySecurityDeposit = $request->boolean(
+            'security_deposit',
+            true
+        );
+
         return Inertia::render('payment', [
             'mode' => 'pickup',
+
+            'pay_security_deposit' => $paySecurityDeposit,
 
             'payment_methods' => self::PAYMENT_METHODS,
 
@@ -371,6 +380,8 @@ class PaymentController extends Controller
                             ->name,
                     ]
                     : null,
+
+                'has_leverage_document' => $booking->hasLeverageDocument(),
             ],
 
             'role' => $user->role,
@@ -644,6 +655,11 @@ class PaymentController extends Controller
             ]);
         }
 
+        $paySecurityDeposit = $request->boolean(
+            'security_deposit',
+            true
+        );
+
         $validated = $request->validate([
             'payment_method' => [
                 'required',
@@ -664,10 +680,12 @@ class PaymentController extends Controller
             2
         );
 
-        $securityDeposit = round(
-            $booking->securityDepositAmount(),
-            2
-        );
+        $securityDeposit = $paySecurityDeposit
+            ? round(
+                $booking->securityDepositAmount(),
+                2
+            )
+            : 0.0;
 
         try {
             DB::transaction(function () use (
@@ -675,6 +693,7 @@ class PaymentController extends Controller
                 $balance,
                 $securityDeposit,
                 $validated
+
             ) {
                 $lockedBooking = Booking::whereKey(
                     $booking->id
@@ -717,50 +736,39 @@ class PaymentController extends Controller
                     );
                 }
 
-                $paymentData = [
-                    'booking_id' => $lockedBooking->id,
-
-                    'payment_method' => $validated['payment_method'],
-
-                    'transaction_reference' => $validated['transaction_reference'] ?? null,
-
-                    'payment_status' => 'pending',
-
-                    'paid_at' => null,
-                ];
-
-                $createdPayment = null;
+                $createdPayments = collect();
 
                 if ($balance > 0) {
-                    $createdPayment = Payment::create([
-                        ...$paymentData,
-
-                        'type' => Payment::TYPE_BALANCE,
-
-                        'amount' => $balance,
-                    ]);
+                    $createdPayments->push(
+                        Payment::create([
+                            'booking_id' => $lockedBooking->id,
+                            'type' => Payment::TYPE_BALANCE,
+                            'amount' => $balance,
+                            'payment_method' => $validated['payment_method'],
+                            'transaction_reference' => $validated['transaction_reference'] ?? null,
+                            'payment_status' => 'pending',
+                            'paid_at' => null,
+                        ])
+                    );
                 }
 
                 if ($securityDeposit > 0) {
-                    $securityPayment = Payment::create([
-                        ...$paymentData,
-
-                        'type' => Payment::TYPE_SECURITY_DEPOSIT,
-
-                        'amount' => $securityDeposit,
-                    ]);
-
-                    if ($createdPayment === null) {
-                        $createdPayment = $securityPayment;
-                    }
+                    $createdPayments->push(
+                        Payment::create([
+                            'booking_id' => $lockedBooking->id,
+                            'type' => Payment::TYPE_SECURITY_DEPOSIT,
+                            'amount' => $securityDeposit,
+                            'payment_method' => $validated['payment_method'],
+                            'transaction_reference' => $validated['transaction_reference'] ?? null,
+                            'payment_status' => 'pending',
+                            'paid_at' => null,
+                        ])
+                    );
                 }
 
-                /*
-                 * Apply the pickup payments immediately.
-                 */
-                if ($createdPayment) {
+                foreach ($createdPayments as $payment) {
                     $this->confirmPayment(
-                        $createdPayment,
+                        $payment,
                         now()
                     );
                 }
@@ -768,9 +776,7 @@ class PaymentController extends Controller
         } catch (\RuntimeException $e) {
             $message = match ($e->getMessage()) {
                 'pending' => 'A pickup payment has already been submitted for this booking.',
-
                 'already-paid' => 'The balance has already been paid for this booking.',
-
                 default => 'This booking is no longer available for pickup payment.',
             };
 
@@ -1015,16 +1021,30 @@ class PaymentController extends Controller
 
         /*
          * ------------------------------------------------------
-         * PICKUP BALANCE / SECURITY DEPOSIT
+         * SECURITY DEPOSIT — just mark the single payment as paid
          * ------------------------------------------------------
          */
-        if (
-            $payment->type ===
-                Payment::TYPE_BALANCE
-            ||
-            $payment->type ===
-            Payment::TYPE_SECURITY_DEPOSIT
-        ) {
+        if ($payment->type === Payment::TYPE_SECURITY_DEPOSIT) {
+            $payment->update([
+                'payment_status' => 'paid',
+                'paid_at' => $now,
+            ]);
+
+            if (! $booking->security_deposit_paid_at) {
+                $booking->update([
+                    'security_deposit_paid_at' => $now,
+                ]);
+            }
+
+            return;
+        }
+
+        /*
+         * ------------------------------------------------------
+         * PICKUP BALANCE
+         * ------------------------------------------------------
+         */
+        if ($payment->type === Payment::TYPE_BALANCE) {
             if (
                 $booking->status !==
                 Booking::STATUS_DEPOSIT_PAID
@@ -1034,18 +1054,14 @@ class PaymentController extends Controller
                 );
             }
 
-            /*
-             * Balance and security deposit are submitted together.
-             * Apply all pending pickup payments for this booking.
-             */
             $pickupPayments = Payment::where(
                 'booking_id',
                 $booking->id
             )
-                ->whereIn('type', [
-                    Payment::TYPE_BALANCE,
-                    Payment::TYPE_SECURITY_DEPOSIT,
-                ])
+                ->where(
+                    'type',
+                    Payment::TYPE_BALANCE
+                )
                 ->where(
                     'payment_status',
                     'pending'
@@ -1069,9 +1085,6 @@ class PaymentController extends Controller
                 ]);
             }
 
-            /*
-             * Check whether both required components are paid.
-             */
             $balancePaid =
                 $booking->balanceAmount() <= 0
                 ||
@@ -1089,10 +1102,16 @@ class PaymentController extends Controller
                     )
                     ->exists();
 
-            $securityDepositPaid =
-                $booking->securityDepositAmount() <= 0
-                ||
-                Payment::where(
+            if (
+                $balancePaid
+            ) {
+                $balance =
+                    $booking->balanceAmount();
+
+                $securityDeposit =
+                    $booking->securityDepositAmount();
+
+                $hasSecurityDepositPayment = Payment::where(
                     'booking_id',
                     $booking->id
                 )
@@ -1106,22 +1125,12 @@ class PaymentController extends Controller
                     )
                     ->exists();
 
-            if (
-                $balancePaid &&
-                $securityDepositPaid
-            ) {
-                $balance =
-                    $booking->balanceAmount();
-
-                $securityDeposit =
-                    $booking->securityDepositAmount();
-
                 $booking->update([
                     'status' => Booking::STATUS_PAID,
 
                     'balance_paid_at' => $now,
 
-                    'security_deposit_paid_at' => $now,
+                    'security_deposit_paid_at' => $hasSecurityDepositPayment ? $now : $booking->security_deposit_paid_at,
                 ]);
 
                 $booking->loadMissing('car');
@@ -1135,7 +1144,7 @@ class PaymentController extends Controller
                 $this->notifyBookingFullyPaid(
                     $booking,
                     $balance,
-                    $securityDeposit
+                    $hasSecurityDepositPayment ? $securityDeposit : 0.0
                 );
             }
 
@@ -1156,6 +1165,42 @@ class PaymentController extends Controller
 
                 'paid_at' => $now,
             ]);
+
+            $pendingExtraCharges = $booking->payments()
+                ->where(
+                    'type',
+                    Payment::TYPE_EXTRA_CHARGE
+                )
+                ->where(
+                    'payment_status',
+                    'pending'
+                )
+                ->exists();
+
+            if (
+                $booking->hasLeverageDocument() &&
+                $booking->leverage_document_status === 'pending_charges' &&
+                ! $pendingExtraCharges
+            ) {
+                $booking->releaseLeverageDocument();
+
+                $booking->loadMissing(
+                    'customer',
+                    'car'
+                );
+
+                $booking->customer?->notifyNow(
+                    "Leverage document released - Booking #{$booking->id}",
+                    sprintf(
+                        'Your leverage document for the %s %s has been released after settling all outstanding charges.',
+                        $booking->car?->brand,
+                        $booking->car?->model,
+                    ),
+                    'leverage_document_released',
+                    Booking::class,
+                    $booking->id,
+                );
+            }
 
             $booking->loadMissing(
                 'owner',
@@ -1230,10 +1275,7 @@ class PaymentController extends Controller
         );
 
         $driverFee = round(
-            max(
-                0.0,
-                $totalPrice - $rentalSubtotal
-            ),
+            (float) ($booking->driver_fee ?? 0.0),
             2
         );
 
@@ -1478,91 +1520,132 @@ class PaymentController extends Controller
             'car'
         );
 
-        $totalReceived = round(
-            $balance + $securityDeposit,
-            2
-        );
-
         if (
             $booking->customer &&
             $booking->car
         ) {
-            $booking->customer->notifyNow(
-                "Booking #{$booking->id} fully paid",
-                sprintf(
-                    'Your payment of ETB %s (ETB %s rental balance + ETB %s security deposit) was received for the %s %s. The vehicle is ready for pickup at %s on %s.',
-                    number_format(
-                        $totalReceived,
-                        2
-                    ),
+            if ($securityDeposit > 0) {
+                $totalReceived = round(
+                    $balance + $securityDeposit,
+                    2
+                );
 
-                    number_format(
-                        $balance,
-                        2
-                    ),
-
-                    number_format(
-                        $securityDeposit,
-                        2
-                    ),
-
-                    $booking->car->brand,
-
-                    $booking->car->model,
-
-                    $booking->pickup_location,
-
-                    $booking
-                        ->pickup_date
-                        ->format(
-                            'M j, Y g:i A'
+                $booking->customer->notifyNow(
+                    "Booking #{$booking->id} fully paid",
+                    sprintf(
+                        'Your payment of ETB %s (ETB %s rental balance + ETB %s security deposit) was received for the %s %s. The vehicle is ready for pickup at %s on %s.',
+                        number_format(
+                            $totalReceived,
+                            2
                         ),
-                ),
-                'booking_paid',
-                Booking::class,
-                $booking->id,
-            );
+                        number_format(
+                            $balance,
+                            2
+                        ),
+                        number_format(
+                            $securityDeposit,
+                            2
+                        ),
+                        $booking->car->brand,
+                        $booking->car->model,
+                        $booking->pickup_location,
+                        $booking
+                            ->pickup_date
+                            ->format(
+                                'M j, Y g:i A'
+                            ),
+                    ),
+                    'booking_paid',
+                    Booking::class,
+                    $booking->id,
+                );
+            } else {
+                $booking->customer->notifyNow(
+                    "Booking #{$booking->id} fully paid",
+                    sprintf(
+                        'Your payment of ETB %s (rental balance) was received for the %s %s. A leverage document will be collected during handover. The vehicle is ready for pickup at %s on %s.',
+                        number_format(
+                            $balance,
+                            2
+                        ),
+                        $booking->car->brand,
+                        $booking->car->model,
+                        $booking->pickup_location,
+                        $booking
+                            ->pickup_date
+                            ->format(
+                                'M j, Y g:i A'
+                            ),
+                    ),
+                    'booking_paid',
+                    Booking::class,
+                    $booking->id,
+                );
+            }
         }
 
         if (
             $booking->owner &&
             $booking->car
         ) {
-            $booking->owner->notifyNow(
-                "Booking #{$booking->id} fully paid",
-                sprintf(
-                    'The customer paid ETB %s (ETB %s rental balance + ETB %s security deposit) for your %s %s. Prepare for handover at %s on %s.',
-                    number_format(
-                        $totalReceived,
-                        2
-                    ),
+            if ($securityDeposit > 0) {
+                $totalReceived = round(
+                    $balance + $securityDeposit,
+                    2
+                );
 
-                    number_format(
-                        $balance,
-                        2
-                    ),
-
-                    number_format(
-                        $securityDeposit,
-                        2
-                    ),
-
-                    $booking->car->brand,
-
-                    $booking->car->model,
-
-                    $booking->pickup_location,
-
-                    $booking
-                        ->pickup_date
-                        ->format(
-                            'M j, Y g:i A'
+                $booking->owner->notifyNow(
+                    "Booking #{$booking->id} fully paid",
+                    sprintf(
+                        'The customer paid ETB %s (ETB %s rental balance + ETB %s security deposit) for your %s %s. Prepare for handover at %s on %s.',
+                        number_format(
+                            $totalReceived,
+                            2
                         ),
-                ),
-                'booking_paid',
-                Booking::class,
-                $booking->id,
-            );
+                        number_format(
+                            $balance,
+                            2
+                        ),
+                        number_format(
+                            $securityDeposit,
+                            2
+                        ),
+                        $booking->car->brand,
+                        $booking->car->model,
+                        $booking->pickup_location,
+                        $booking
+                            ->pickup_date
+                            ->format(
+                                'M j, Y g:i A'
+                            ),
+                    ),
+                    'booking_paid',
+                    Booking::class,
+                    $booking->id,
+                );
+            } else {
+                $booking->owner->notifyNow(
+                    "Booking #{$booking->id} fully paid",
+                    sprintf(
+                        'The customer paid ETB %s (rental balance) for your %s %s. A leverage document will be collected during handover. Prepare for handover at %s on %s.',
+                        number_format(
+                            $balance,
+                            2
+                        ),
+                        $booking->car->brand,
+                        $booking->car->model,
+                        $booking->pickup_location,
+                        $booking
+                            ->pickup_date
+                            ->format(
+                                'M j, Y g:i A'
+                            ),
+                    ),
+                    'booking_paid',
+                    Booking::class,
+                    $booking->id,
+                );
+            }
         }
     }
 }

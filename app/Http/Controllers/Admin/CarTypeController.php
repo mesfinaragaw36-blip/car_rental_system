@@ -138,7 +138,7 @@ class CarTypeController extends Controller
             return back()->with('toast', ['type' => 'error', 'message' => 'A matching configuration already exists, so the request was rejected.']);
         }
 
-        CarType::create([
+        $carType = CarType::create([
             'brand' => $carTypeRequest->brand,
             'model' => $carTypeRequest->model,
             'year' => $carTypeRequest->year,
@@ -155,6 +155,7 @@ class CarTypeController extends Controller
 
         if ($carTypeRequest->plate_number !== null) {
             $car = Car::create([
+                'car_type_id' => $carType->id,
                 'brand' => $carTypeRequest->brand,
                 'model' => $carTypeRequest->model,
                 'year' => (int) $carTypeRequest->year,

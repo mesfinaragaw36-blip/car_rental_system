@@ -29,6 +29,7 @@ interface Booking {
     extra_charge_amount?: number;
     pickup_date: string;
     return_date: string;
+    has_leverage_document?: boolean;
 
     car: {
         brand: string;
@@ -46,6 +47,8 @@ interface Booking {
 interface Props {
     booking: Booking;
     mode?: 'deposit' | 'pickup' | 'extra_charge';
+    pay_security_deposit?: boolean;
+    payment_methods?: string[];
 }
 
 const METHODS = [
@@ -104,6 +107,7 @@ const formatETB = (value: number) =>
 export default function PaymentForm({
     booking,
     mode = 'deposit',
+    pay_security_deposit = true,
 }: Props) {
     const { props: p } = usePage<{
         toast?: {
@@ -135,8 +139,13 @@ export default function PaymentForm({
 
     const totalDueNow = isExtraCharge
         ? (booking.extra_charge_amount ?? 0)
-        : (booking.balance_amount ?? 0) +
-          (booking.security_deposit_amount ?? 0);
+        : isPickup
+          ? (booking.balance_amount ?? 0) +
+            (pay_security_deposit
+                ? (booking.security_deposit_amount ?? 0)
+                : 0)
+          : (booking.balance_amount ?? 0) +
+            (booking.security_deposit_amount ?? 0);
 
     function handleMethodChange(value: string) {
         setMethod(value);
@@ -178,37 +187,36 @@ export default function PaymentForm({
               ? `/bookings/${booking.id}/payment/pickup`
               : `/bookings/${booking.id}/payment`;
 
-        router.post(
-            endpoint,
-            {
-                payment_method: method,
-                transaction_reference: showRefInput
-                    ? transactionRef.trim()
-                    : '',
+        const payload: Record<string, string> = {
+            payment_method: method,
+            transaction_reference: showRefInput
+                ? transactionRef.trim()
+                : '',
+        };
+
+        if (isPickup) {
+            payload.security_deposit = pay_security_deposit
+                ? 'true'
+                : 'false';
+        }
+
+        router.post(endpoint, payload, {
+            preserveScroll: true,
+            onFinish: () => {
+                setProcessing(false);
             },
-            {
-                onFinish: () => {
-                    setProcessing(false);
-                },
-
-                onError: (errors) => {
-                    const messages = Object.values(errors)
-                        .filter(Boolean)
-                        .join(' ');
-
-                    setError(
-                        messages ||
-                            'Something went wrong. Please try again.',
-                    );
-                },
-
-                onSuccess: () => {
-                    setMethod('');
-                    setTransactionRef('');
-                    setError('');
-                },
+            onError: (errors) => {
+                const messages = Object.values(errors)
+                    .filter(Boolean)
+                    .join(' ');
+                setError(messages || 'Something went wrong. Please try again.');
             },
-        );
+            onSuccess: () => {
+                setMethod('');
+                setTransactionRef('');
+                setError('');
+            },
+        });
     }
 
     const paymentAmount = isExtraCharge
@@ -220,7 +228,7 @@ export default function PaymentForm({
     const paymentDescription = isExtraCharge
         ? 'Outstanding balance'
         : isPickup
-          ? 'Rental balance & security deposit'
+          ? 'Rental balance & leverage document'
           : 'Booking deposit';
 
     return (
@@ -243,7 +251,7 @@ export default function PaymentForm({
                         {isExtraCharge
                             ? 'Pay Outstanding Balance'
                             : isPickup
-                              ? 'Pay Rental Balance & Security Deposit'
+                              ? 'Pay Rental Balance & Submit Leverage Document'
                               : 'Pay Booking Deposit'}
                     </h1>
 
@@ -251,7 +259,7 @@ export default function PaymentForm({
                         {isExtraCharge
                             ? 'Pay the outstanding amount caused by additional charges.'
                             : isPickup
-                              ? 'Pay the remaining rental balance and refundable security deposit before pickup.'
+                              ? 'Pay the remaining rental balance and submit a leverage document as security guarantee before pickup.'
                               : 'Pay the required deposit to secure your booking.'}
                     </p>
                 </div>
@@ -373,19 +381,20 @@ export default function PaymentForm({
                                         </span>
                                     </div>
 
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-sm text-muted-foreground">
-                                            Security Deposit (Refundable)
-                                        </span>
+                                    {pay_security_deposit && (
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-sm text-muted-foreground">
+                                                Security Deposit (refundable)
+                                            </span>
 
-                                        <span className="font-medium">
-                                            ETB{' '}
-                                            {formatETB(
-                                                booking.security_deposit_amount ??
-                                                    0,
-                                            )}
-                                        </span>
-                                    </div>
+                                            <span className="font-medium">
+                                                ETB{' '}
+                                                {formatETB(
+                                                    booking.security_deposit_amount ?? 0,
+                                                )}
+                                            </span>
+                                        </div>
+                                    )}
 
                                     <div className="flex items-center justify-between border-t pt-3">
                                         <span className="text-lg font-semibold">
@@ -397,6 +406,13 @@ export default function PaymentForm({
                                             {formatETB(totalDueNow)}
                                         </span>
                                     </div>
+
+                                    {!pay_security_deposit && (
+                                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
+                                            <p className="font-medium">Security Deposit: ETB {formatETB(booking.security_deposit_amount ?? 0)}</p>
+                                            <p className="mt-1">You will provide a leverage document (check, property document, etc.) as security guarantee instead of paying the security deposit upfront.</p>
+                                        </div>
+                                    )}
                                 </>
                             ) : (
                                 <>

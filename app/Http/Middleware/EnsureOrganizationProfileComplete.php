@@ -19,16 +19,15 @@ class EnsureOrganizationProfileComplete
             $user &&
             $user->role === 'owner' &&
             $user->ownerProfile &&
-            $user->ownerProfile->owner_type === 'organization' &&
-            ! $user->ownerProfile->profile_completed
+            ! $user->ownerProfile->profile_completed &&
+            $user->ownerProfile->verification_status !== 'approved'
         ) {
-            // Allow access to the profile page itself
-            if ($request->routeIs('owner.profile') || $request->routeIs('owner.profile.update')) {
+            if ($request->routeIs('profile.edit') || $request->routeIs('profile.update')) {
                 return $next($request);
             }
 
-            return redirect()->route('owner.profile')
-                ->with('warning', 'Please complete your organization profile to continue.');
+            return redirect()->route('profile.edit')
+                ->with('warning', 'Please complete your profile to continue.');
         }
 
         return $next($request);

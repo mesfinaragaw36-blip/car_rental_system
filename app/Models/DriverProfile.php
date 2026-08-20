@@ -15,6 +15,7 @@ class DriverProfile extends Model
         'experience_years',
         'daily_rate',
         'location',
+        'proficient_language',
         'telebirr_phone',
         'cbe_account',
         'availability',
@@ -28,6 +29,7 @@ class DriverProfile extends Model
         return [
             'experience_years' => 'integer',
             'daily_rate' => 'decimal:2',
+            'proficient_language' => 'array',
         ];
     }
 

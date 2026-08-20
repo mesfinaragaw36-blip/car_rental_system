@@ -353,14 +353,6 @@ export default function AdminDriverAssignments({ assignments }: Props) {
                                                                         .name
                                                                 }
                                                             </p>
-
-                                                            <p className="text-sm text-muted-foreground">
-                                                                {
-                                                                    assignment
-                                                                        .driver
-                                                                        .phone
-                                                                }
-                                                            </p>
                                                         </div>
                                                     ) : (
                                                         <span className="text-sm text-muted-foreground">

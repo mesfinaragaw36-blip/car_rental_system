@@ -20,6 +20,8 @@ import {
     EyeOff,
     Check,
     X,
+    ShieldCheck,
+    FileText,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -29,6 +31,13 @@ import { StarRating } from '@/components/rating-stars';
 import { ReviewModal } from '@/components/review-modal';
 import { approve, reject, cancel, complete } from '@/routes/bookings';
 import reviews from '@/routes/bookings/reviews';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+} from '@/components/ui/dialog';
 
 interface ReviewTarget {
     key: string;
@@ -103,6 +112,11 @@ interface BookingDetails {
     has_security_deposit_paid: boolean;
     balance_paid_at: string | null;
     security_deposit_paid_at: string | null;
+    has_leverage_document: boolean;
+    leverage_document_type: string | null;
+    leverage_document_name: string | null;
+    leverage_document_status: string | null;
+    leverage_document_released_at: string | null;
     refunds?: {
         id: number;
         amount: string;
@@ -126,6 +140,7 @@ interface BookingDetails {
         gender?: string | null;
         location?: string | null;
         daily_rate?: number | null;
+        proficient_language?: string[] | null;
         average_rating?: number | null;
         review_count?: number | null;
     } | null;
@@ -189,6 +204,8 @@ export default function BookingDetails({ booking, role }: Props) {
     const [expandedInspection, setExpandedInspection] = useState<number | null>(
         null,
     );
+
+    const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
     const handleAction = (action: string) => {
         const routeMap: Record<string, any> = {
@@ -842,6 +859,18 @@ export default function BookingDetails({ booking, role }: Props) {
                                                     <span className="font-medium">{booking.driver.location}</span>
                                                 </div>
                                             )}
+                                            {booking.driver.proficient_language && booking.driver.proficient_language.length > 0 && (
+                                                <div className="flex items-start justify-between gap-2">
+                                                    <span className="shrink-0 text-muted-foreground">Languages</span>
+                                                    <div className="flex flex-wrap justify-end gap-1">
+                                                        {booking.driver.proficient_language.map((lang) => (
+                                                            <span key={lang} className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                                                                {lang}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* License & Experience */}
@@ -1268,12 +1297,8 @@ export default function BookingDetails({ booking, role }: Props) {
                     {(role === 'customer' || role === 'admin') &&
                         booking.status === 'deposit_paid' &&
                         booking.pickup_inspection_approved && (
-                            <Button asChild>
-                                <Link
-                                    href={`/bookings/${booking.id}/payment/pickup`}
-                                >
-                                    Pay Balance & Security Deposit
-                                </Link>
+                            <Button onClick={() => setPaymentModalOpen(true)}>
+                                Pay Balance & Security Deposit
                             </Button>
                         )}
                     {role === 'customer' &&
@@ -1292,6 +1317,58 @@ export default function BookingDetails({ booking, role }: Props) {
                             </div>
                         )}
                 </div>
+
+                <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>How would you like to proceed?</DialogTitle>
+                            <DialogDescription>
+                                Choose how to handle the security deposit for this booking.
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <div className="space-y-3 pt-2">
+                            <button
+                                onClick={() => {
+                                    setPaymentModalOpen(false);
+                                    router.visit(`/bookings/${booking.id}/payment/pickup?security_deposit=true`);
+                                }}
+                                className="flex w-full items-start gap-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 text-left transition hover:border-emerald-400 hover:shadow-md"
+                            >
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                                    <CreditCard className="h-5 w-5 text-emerald-700" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-emerald-900">Pay Security Deposit</p>
+                                    <p className="mt-1 text-sm text-emerald-700">
+                                        Pay the rental balance plus a refundable security deposit of ETB{' '}
+                                        {booking.security_deposit_amount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0'}.
+                                        Fully refunded if no damages on return.
+                                    </p>
+                                </div>
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    setPaymentModalOpen(false);
+                                    router.visit(`/bookings/${booking.id}/payment/pickup?security_deposit=false`);
+                                }}
+                                className="flex w-full items-start gap-4 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:shadow-md"
+                            >
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blue-100">
+                                    <FileText className="h-5 w-5 text-blue-700" />
+                                </div>
+                                <div>
+                                    <p className="font-semibold text-blue-900">Attach Leverage Document</p>
+                                    <p className="mt-1 text-sm text-blue-700">
+                                        Pay only the rental balance. Upload a leverage document (check, property document, etc.)
+                                        as a guarantee instead of paying the security deposit upfront.
+                                    </p>
+                                </div>
+                            </button>
+                        </div>
+                    </DialogContent>
+                </Dialog>
 
                 <ReviewModal
                     open={reviewModalOpen}

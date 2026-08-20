@@ -21,7 +21,7 @@ type OwnerProfile = {
     business_license_file_path: string | null;
     vehicle_ownership_certificate_file_path: string | null;
     profile_completed: boolean;
-    verification_status: 'pending' | 'approved' | 'rejected';
+    verification_status: 'incomplete' | 'pending' | 'approved' | 'rejected';
 };
 
 type Props = {
@@ -343,16 +343,14 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                     <div className="flex justify-end gap-4">
                         <Button
                             type="submit"
-                            disabled={isSubmitting || ownerProfile.verification_status === 'pending'}
+                            disabled={isSubmitting}
                             size="lg"
                         >
                             {isSubmitting
                                 ? 'Saving...'
-                                : ownerProfile.verification_status === 'pending'
-                                  ? 'Profile Under Review'
-                                  : ownerProfile.profile_completed
-                                    ? 'Update Profile'
-                                    : 'Submit Profile'}
+                                : ownerProfile.profile_completed
+                                  ? 'Update Profile'
+                                  : 'Submit Profile'}
                         </Button>
                     </div>
                 </form>

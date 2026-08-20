@@ -50,25 +50,9 @@ interface Pagination {
     next_page: number | null;
 }
 
-interface RequestItem {
-    id: number;
-    brand: string;
-    model: string;
-    year: string;
-    category: string | null;
-    fuel_type: string | null;
-    transmission: string | null;
-    engine_size: string | null;
-    seats: number | null;
-    note: string | null;
-    requested_by: string;
-    created_at: string | null;
-}
-
 interface Props {
     items: Configuration[];
     pagination: Pagination;
-    requests: RequestItem[];
 }
 
 const DEFAULT_FUEL_TYPES = ['Petrol', 'Diesel', 'Hybrid', 'Electric'];
@@ -116,7 +100,6 @@ const DEFAULT_COLORS = [
 export default function ConfigurationsIndex({
     items,
     pagination,
-    requests,
 }: Props) {
     const can = useCan();
 
@@ -278,39 +261,6 @@ export default function ConfigurationsIndex({
         }
     }
 
-    function handleApprove(item: RequestItem) {
-        if (
-            confirm(
-                `Approve request and add "${item.brand} ${item.model} (${item.year})" as an active configuration?`,
-            )
-        ) {
-            router.post(
-                `/admin/car-types/configurations/requests/${item.id}/approve`,
-                {},
-                {
-                    preserveScroll: true,
-                    only: ['items', 'pagination', 'requests'],
-                },
-            );
-        }
-    }
-
-    function handleReject(item: RequestItem) {
-        const note = prompt(
-            `Reject request for "${item.brand} ${item.model} (${item.year})"?\n\nRejection note (optional):`,
-        );
-
-        if (note === null) {
-            return;
-        }
-
-        router.post(
-            `/admin/car-types/configurations/requests/${item.id}/reject`,
-            { admin_note: note },
-            { preserveScroll: true, only: ['items', 'pagination', 'requests'] },
-        );
-    }
-
     function goToPage(page: number | null) {
         if (!page) {
             return;
@@ -346,84 +296,6 @@ export default function ConfigurationsIndex({
                         )}
                     </div>
                 </div>
-
-                {can('car-types.manage') && requests.length > 0 && (
-                    <Card>
-                        <CardContent className="space-y-3 p-5">
-                            <div>
-                                <h2 className="text-lg font-semibold">
-                                    Pending Configuration Requests
-                                </h2>
-                                <p className="text-sm text-muted-foreground">
-                                    Owners requested these configurations.
-                                    Approving adds them to the available
-                                    templates.
-                                </p>
-                            </div>
-                            <div className="divide-y">
-                                {requests.map((request) => (
-                                    <div
-                                        key={request.id}
-                                        className="flex flex-col gap-3 py-3 first:pt-0 last:pb-0 sm:flex-row sm:items-center sm:justify-between"
-                                    >
-                                        <div className="min-w-0">
-                                            <p className="font-medium">
-                                                {request.brand} {request.model}{' '}
-                                                ({request.year})
-                                            </p>
-                                            <p className="mt-0.5 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-muted-foreground">
-                                                <span>
-                                                    {request.requested_by}
-                                                </span>
-                                                {request.created_at && (
-                                                    <span>
-                                                        {request.created_at}
-                                                    </span>
-                                                )}
-                                                <span>
-                                                    {request.category ??
-                                                        'Category unspecified'}
-                                                </span>
-                                                <span>
-                                                    {request.fuel_type ??
-                                                        'Fuel unspecified'}{' '}
-                                                    ·{' '}
-                                                    {request.transmission ??
-                                                        'Transmission unspecified'}
-                                                </span>
-                                            </p>
-                                            {request.note && (
-                                                <p className="mt-1 truncate text-xs text-muted-foreground">
-                                                    &quot;{request.note}&quot;
-                                                </p>
-                                            )}
-                                        </div>
-                                        <div className="flex shrink-0 items-center gap-2">
-                                            <Button
-                                                size="sm"
-                                                variant="outline"
-                                                className="text-destructive hover:text-destructive"
-                                                onClick={() =>
-                                                    handleReject(request)
-                                                }
-                                            >
-                                                Reject
-                                            </Button>
-                                            <Button
-                                                size="sm"
-                                                onClick={() =>
-                                                    handleApprove(request)
-                                                }
-                                            >
-                                                Approve
-                                            </Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
 
                 {items.length === 0 ? (
                     <Card>

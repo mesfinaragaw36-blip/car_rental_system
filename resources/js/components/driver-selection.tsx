@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { User, Star, FileCheck, Shield, MapPin, DollarSign, ChevronLeft, ChevronRight } from 'lucide-react';
+import { User, Star, FileCheck, Shield, MapPin, DollarSign, ChevronLeft, ChevronRight, Languages } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,7 @@ interface DriverProfile {
     location: string | null;
     has_license_document: boolean;
     has_national_id_document: boolean;
+    proficient_language: string[] | null;
 }
 
 interface Driver {
@@ -230,6 +231,20 @@ export default function DriverSelection({
                                     <span className="text-muted-foreground">
                                         {driver.profile.location}
                                     </span>
+                                </div>
+                            )}
+
+                            {/* Languages */}
+                            {driver.profile.proficient_language && driver.profile.proficient_language.length > 0 && (
+                                <div className="flex items-center gap-2">
+                                    <Languages className="h-4 w-4 text-purple-500" />
+                                    <div className="flex flex-wrap gap-1">
+                                        {driver.profile.proficient_language.map((lang) => (
+                                            <Badge key={lang} variant="secondary" className="text-xs">
+                                                {lang}
+                                            </Badge>
+                                        ))}
+                                    </div>
                                 </div>
                             )}
 

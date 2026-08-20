@@ -19,7 +19,6 @@ use App\Http\Controllers\DriverBookingController;
 use App\Http\Controllers\DriverProfileController;
 use App\Http\Controllers\InspectionController;
 use App\Http\Controllers\NotificationController;
-use App\Http\Controllers\Owner\ProfileController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\ReviewController;
@@ -32,7 +31,7 @@ use Inertia\Inertia;
 Route::get('/', function () {
     $user = auth()->user();
 
-    if ($user && in_array($user->role, ['owner', 'admin'], true)) {
+    if ($user && in_array($user->role, ['owner', 'admin', 'driver'], true)) {
         return redirect()->route('dashboard');
     }
 
@@ -183,15 +182,6 @@ Route::middleware(['auth'])->group(function () {
     // =========================================================
     // Vehicles - Owner Management
     // =========================================================
-
-    Route::middleware(['role:owner'])->prefix('owner')->name('owner.')->group(function () {
-
-        Route::get('/profile', [ProfileController::class, 'show'])
-            ->name('profile');
-
-        Route::post('/profile', [ProfileController::class, 'update'])
-            ->name('profile.update');
-    });
 
     Route::middleware(['organization.profile.complete'])->group(function () {
 

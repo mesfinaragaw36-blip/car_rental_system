@@ -123,7 +123,7 @@ export default function AdminVehicles({ vehicles, filters, requests }: Props) {
 
         setApproving(true);
         router.post(
-            `/car-types/configurations/requests/${id}/approve`,
+            `/admin/car-types/configurations/requests/${id}/approve`,
             {},
             {
                 preserveScroll: true,
@@ -144,7 +144,7 @@ export default function AdminVehicles({ vehicles, filters, requests }: Props) {
         }
 
         router.post(
-            `/car-types/configurations/requests/${selectedRequest.id}/reject`,
+            `/admin/car-types/configurations/requests/${selectedRequest.id}/reject`,
             { admin_note: rejectReason },
             {
                 preserveScroll: true,

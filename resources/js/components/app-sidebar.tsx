@@ -126,13 +126,13 @@ function getNavItems(
             });
         }
 
-        if (allowedRoutes.has('/disputes')) {
-            items.push({
-                title: 'Disputes',
-                href: '/disputes',
-                icon: Wrench,
-            });
-        }
+        // if (allowedRoutes.has('/disputes')) {
+        //     items.push({
+        //         title: 'Disputes',
+        //         href: '/disputes',
+        //         icon: Wrench,
+        //     });
+        // }
 
         if (allowedRoutes.has('/admin/roles')) {
             items.push({
@@ -226,11 +226,11 @@ function getNavItems(
                     href: '/admin/reports',
                     icon: BarChart3,
                 },
-                {
-                    title: 'Disputes',
-                    href: '/disputes',
-                    icon: Wrench,
-                },
+                // {
+                //     title: 'Disputes',
+                //     href: '/disputes',
+                //     icon: Wrench,
+                // },
                 {
                     title: 'Roles & Permissions',
                     href: '/admin/roles',

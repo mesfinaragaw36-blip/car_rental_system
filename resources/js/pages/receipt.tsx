@@ -3,6 +3,7 @@ import {
     Banknote,
     CalendarDays,
     Car,
+    Download,
     Printer,
     ReceiptText,
     RefreshCcw,
@@ -111,26 +112,26 @@ export default function Receipt({
         <>
             <Head title={`Receipt #${payment.id}`} />
 
-            <div className="flex min-h-screen w-full items-center justify-center bg-muted/50 px-4 py-10 print:bg-white print:px-0 print:py-0">
-                <div className="w-full max-w-2xl print:max-w-none">
-                    <div className="overflow-hidden rounded-2xl border bg-card shadow-sm print:rounded-none print:border-0 print:shadow-none">
+            <div className="receipt-page flex min-h-screen w-full items-center justify-center bg-muted/50 px-4 py-10">
+                <div className="w-full max-w-2xl">
+                    <div className="receipt-card overflow-hidden rounded-2xl border bg-card shadow-sm">
                         {/* Header */}
-                        <div className="bg-gradient-to-br from-primary via-primary/95 to-primary/80 px-6 pt-9 pb-7 text-center text-primary-foreground print:bg-white print:text-foreground">
+                        <div className="receipt-header bg-gradient-to-br from-primary via-primary/95 to-primary/80 px-6 pt-9 pb-7 text-center text-primary-foreground">
                             <img
                                 src="/images/logo.png"
                                 alt={name}
-                                className="mx-auto mb-3 h-16 w-16 rounded-full border-4 border-white/40 bg-white object-cover print:border-slate-200"
+                                className="mx-auto mb-3 h-16 w-16 rounded-full border-4 border-white/40 bg-white object-cover"
                             />
                             <h1 className="text-2xl font-bold tracking-tight">
                                 {name}
                             </h1>
-                            <p className="mt-1 text-xs font-semibold tracking-[0.25em] text-primary-foreground/80 uppercase print:text-slate-500">
+                            <p className="mt-1 text-xs font-semibold tracking-[0.25em] text-primary-foreground/80 uppercase">
                                 Official Payment Receipt
                             </p>
 
-                            <div className="mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm backdrop-blur-sm print:border print:bg-white print:text-foreground">
+                            <div className="receipt-badge mx-auto mt-5 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-1.5 text-sm backdrop-blur-sm">
                                 <ReceiptText className="h-4 w-4" />
-                                <span className="text-primary-foreground/80 print:text-slate-500">
+                                <span className="receipt-badge-label text-primary-foreground/80">
                                     Receipt No.
                                 </span>
                                 <span className="font-bold">#{payment.id}</span>
@@ -425,11 +426,16 @@ export default function Receipt({
                         <div className="border-t border-dashed px-6 py-6 text-center">
                             <Button
                                 onClick={() => window.print()}
-                                className="print:hidden"
+                                className="receipt-btn"
                             >
                                 <Printer className="mr-2 h-4 w-4" />
-                                Print Receipt
+                                Print / Download PDF
+                                <Download className="ml-2 h-4 w-4" />
                             </Button>
+
+                            <p className="receipt-tip mt-2 text-xs text-muted-foreground/60">
+                                Tip: In the print dialog, select 'Save as PDF' to download a PDF copy.
+                            </p>
 
                             <p className="mt-4 text-sm text-muted-foreground">
                                 Thank you for choosing {name}.

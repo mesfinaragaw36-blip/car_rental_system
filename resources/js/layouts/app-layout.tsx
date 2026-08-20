@@ -21,13 +21,20 @@ export default function AppLayout({
     children: React.ReactNode;
 }) {
     const page = usePage<{ auth: Auth }>();
-    const componentName = (page.component ?? '').split('/').pop() ?? '';
+    const fullComponent = page.component ?? '';
+    const componentName = fullComponent.split('/').pop() ?? '';
     const role = page.props.auth.user?.role;
 
-    const isStorefrontPage = STOREFRONT_PAGES.includes(componentName);
     const isCustomer = role === 'customer';
+    const isStorefrontPage = STOREFRONT_PAGES.includes(componentName);
+    const isCustomerPage = isCustomer && (
+        isStorefrontPage ||
+        fullComponent.startsWith('settings/') ||
+        fullComponent.startsWith('notifications/') ||
+        componentName === 'car-type-request-status'
+    );
 
-    if (isCustomer && isStorefrontPage) {
+    if (isCustomerPage) {
         return <StorefrontLayout>{children}</StorefrontLayout>;
     }
 

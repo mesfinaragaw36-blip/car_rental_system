@@ -312,6 +312,7 @@ export default function CreateVehicle({ carTypes, rejectedRequest }: Props) {
         }
 
         const formData = new FormData();
+        formData.append('car_type_id', matchedConfig ? String(matchedConfig.id) : '');
         formData.append('brand', data.brand);
         formData.append('model', data.model);
         formData.append('year', data.year);

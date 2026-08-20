@@ -139,6 +139,7 @@ class BrowseCarController extends Controller
                         'location' => $driver->driverProfile->location,
                         'has_license_document' => ! empty($driver->driverProfile->license_file_path),
                         'has_national_id_document' => ! empty($driver->driverProfile->national_id_file_path),
+                        'proficient_language' => $driver->driverProfile->proficient_language,
                     ],
                 ];
             })
@@ -264,13 +265,29 @@ class BrowseCarController extends Controller
         }
 
         $totalPrice = round($days * $car->daily_price, 2);
+        $driverFee = 0.0;
+
+        // If a specific driver is selected, add their daily rate to the total
+        if (
+            ($validated['need_driver'] ?? false)
+            && ! empty($validated['driver_id'])
+            && $validated['driver_id'] !== -1
+            && $validated['driver_id'] !== 0
+        ) {
+            $selectedDriver = User::find($validated['driver_id']);
+            if ($selectedDriver && $selectedDriver->role === 'driver' && $selectedDriver->driverProfile) {
+                $driverFee = round($days * (float) $selectedDriver->driverProfile->daily_rate, 2);
+                $totalPrice = round($totalPrice + $driverFee, 2);
+            }
+        }
+
         $depositAmount = max(500.0, round($totalPrice * 0.10, 2));
         $estimatedValue = (float) $car->estimated_value;
         $securityDepositAmount = $estimatedValue > 0
             ? max(1000.0, round($estimatedValue * 0.10, 2))
             : max(1000.0, round($totalPrice * 0.20, 2));
 
-        $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount) {
+        $booking = DB::transaction(function () use ($car, $validated, $pickupBranch, $returnBranch, $pickupDate, $returnDate, $totalPrice, $depositAmount, $securityDepositAmount, $driverFee) {
             Car::whereKey($car->id)->lockForUpdate()->first();
 
             $hasOverlap = Booking::where('car_id', $car->id)
@@ -309,6 +326,7 @@ class BrowseCarController extends Controller
                 'return_location' => $this->branchLabel($returnBranch),
                 'need_driver' => $validated['need_driver'] ?? false,
                 'total_price' => $totalPrice,
+                'driver_fee' => $driverFee > 0 ? $driverFee : null,
                 'deposit_amount' => $depositAmount,
                 'deposit_hold_until' => now()->addHours(24),
                 'security_deposit_amount' => $securityDepositAmount,

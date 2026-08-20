@@ -93,14 +93,29 @@ class ProfileController extends Controller
             ) {
                 $updateData['profile_completed'] = true;
 
-                if (! $ownerProfile->profile_completed) {
+                if ($ownerProfile->verification_status === 'incomplete') {
                     $updateData['verification_status'] = 'pending';
                 }
             }
+
+            // If profile was already approved and owner makes changes,
+            // send it back to pending for re-review.
+            if ($ownerProfile->verification_status === 'approved') {
+                $updateData['verification_status'] = 'pending';
+            }
         } else {
-            // For individual owners, mark as completed once address is provided
+            // For individual owners, mark as completed on first save.
             if (! $ownerProfile->profile_completed) {
                 $updateData['profile_completed'] = true;
+
+                if ($ownerProfile->verification_status === 'incomplete') {
+                    $updateData['verification_status'] = 'pending';
+                }
+            }
+
+            // If profile was already approved and owner makes changes,
+            // send it back to pending for re-review.
+            if ($ownerProfile->verification_status === 'approved') {
                 $updateData['verification_status'] = 'pending';
             }
         }

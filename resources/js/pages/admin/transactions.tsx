@@ -23,7 +23,15 @@ type Transaction = {
     status_at: string | null;
     created_at: string;
     customer: string | null;
+    customer_email: string | null;
+    customer_refund_method: string | null;
+    customer_account_number: string | null;
+    customer_account_holder: string | null;
     owner: string | null;
+    owner_email: string | null;
+    owner_refund_method: string | null;
+    owner_account_number: string | null;
+    owner_account_holder: string | null;
     driver: string | null;
     driver_phone: string | null;
     driver_telebirr: string | null;
@@ -131,6 +139,8 @@ export default function AdminTransactions({
 
     const [selected, setSelected] = useState<Transaction | null>(null);
     const [driverPayoutModal, setDriverPayoutModal] = useState<Transaction | null>(null);
+    const [refundModal, setRefundModal] = useState<Transaction | null>(null);
+    const [ownerPayoutModal, setOwnerPayoutModal] = useState<Transaction | null>(null);
 
     function selectType(value: string) {
         router.get(
@@ -202,41 +212,49 @@ export default function AdminTransactions({
             return;
         }
 
-        const id = transaction.id;
-
         if (transaction.type === 'refund') {
-            if (confirm('Mark this refund as processed?')) {
-                router.post(
-                    `/admin/transactions/refunds/${id}/process`,
-                    {},
-                    {
-                        preserveScroll: true,
-                    },
-                );
-            }
-
+            setRefundModal(transaction);
             return;
         }
 
-        // Owner payout - keep existing confirm dialog
         if (transaction.type === 'owner_payout') {
-            if (confirm('Confirm this payout was transferred?')) {
-                router.post(
-                    `/admin/transactions/owner-payouts/${id}/mark-paid`,
-                    {},
-                    {
-                        preserveScroll: true,
-                    },
-                );
-            }
-
+            setOwnerPayoutModal(transaction);
             return;
         }
 
-        // Driver payout - show modal with payment details
         if (transaction.type === 'driver_payout') {
             setDriverPayoutModal(transaction);
         }
+    }
+
+    function confirmRefund() {
+        if (!refundModal) {
+            return;
+        }
+
+        router.post(
+            `/admin/transactions/refunds/${refundModal.id}/process`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setRefundModal(null),
+            },
+        );
+    }
+
+    function confirmOwnerPayout() {
+        if (!ownerPayoutModal) {
+            return;
+        }
+
+        router.post(
+            `/admin/transactions/owner-payouts/${ownerPayoutModal.id}/mark-paid`,
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => setOwnerPayoutModal(null),
+            },
+        );
     }
 
     function confirmDriverPayout() {
@@ -987,6 +1005,284 @@ export default function AdminTransactions({
                                     <Button
                                         className="flex-1"
                                         onClick={confirmDriverPayout}
+                                    >
+                                        <CircleCheck className="mr-2 h-4 w-4" />
+                                        Confirm Payment
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* Refund Details Modal */}
+                <Dialog
+                    open={!!refundModal}
+                    onOpenChange={(open) => !open && setRefundModal(null)}
+                >
+                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Payment Details</DialogTitle>
+                        </DialogHeader>
+
+                        {refundModal && (
+                            <>
+                                <div className="space-y-4">
+                                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                                        <p className="text-sm font-medium text-blue-900">
+                                            Refund Confirmation Required
+                                        </p>
+                                        <p className="mt-1 text-sm text-blue-800">
+                                            Please review the customer's refund
+                                            account details and confirm the
+                                            refund has been transferred.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <DetailRow
+                                            label="Customer Name"
+                                            value={
+                                                refundModal.customer || '—'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Email"
+                                            value={
+                                                <span className="text-sm">
+                                                    {refundModal.customer_email || '—'}
+                                                </span>
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Refund Method"
+                                            value={
+                                                refundModal.customer_refund_method === 'telebirr'
+                                                    ? 'Telebirr'
+                                                    : refundModal.customer_refund_method === 'cbe'
+                                                        ? 'CBE Birr'
+                                                        : 'Not set'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Account Number"
+                                            value={
+                                                refundModal.customer_account_number ? (
+                                                    <span className="font-mono text-blue-600">
+                                                        {refundModal.customer_account_number}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Account Holder"
+                                            value={
+                                                refundModal.customer_account_holder || (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Refund Amount"
+                                            value={
+                                                <span className="text-lg font-bold text-green-600">
+                                                    ETB{' '}
+                                                    {refundModal.amount}
+                                                </span>
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Booking ID"
+                                            value={`#${refundModal.booking_id}`}
+                                        />
+
+                                        <DetailRow
+                                            label="Vehicle"
+                                            value={refundModal.car || '—'}
+                                        />
+
+                                        {refundModal.reason && (
+                                            <DetailRow
+                                                label="Reason"
+                                                value={
+                                                    <span className="max-w-[200px] text-sm">
+                                                        {refundModal.reason}
+                                                    </span>
+                                                }
+                                            />
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 border-t pt-4">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() =>
+                                            setRefundModal(null)
+                                        }
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={confirmRefund}
+                                    >
+                                        <CircleCheck className="mr-2 h-4 w-4" />
+                                        Confirm Refund
+                                    </Button>
+                                </div>
+                            </>
+                        )}
+                    </DialogContent>
+                </Dialog>
+
+                {/* Owner Payout Payment Details Modal */}
+                <Dialog
+                    open={!!ownerPayoutModal}
+                    onOpenChange={(open) => !open && setOwnerPayoutModal(null)}
+                >
+                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                        <DialogHeader>
+                            <DialogTitle>Owner Payout Details</DialogTitle>
+                        </DialogHeader>
+
+                        {ownerPayoutModal && (
+                            <>
+                                <div className="space-y-4">
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
+                                        <p className="text-sm font-medium text-amber-900">
+                                            Payment Confirmation Required
+                                        </p>
+                                        <p className="mt-1 text-sm text-amber-800">
+                                            Please review the owner's payment
+                                            information and confirm the payout
+                                            has been transferred.
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <DetailRow
+                                            label="Owner Name"
+                                            value={
+                                                ownerPayoutModal.owner || '—'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Email"
+                                            value={
+                                                <span className="text-sm">
+                                                    {ownerPayoutModal.owner_email || '—'}
+                                                </span>
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Payout Method"
+                                            value={
+                                                ownerPayoutModal.owner_refund_method === 'telebirr'
+                                                    ? 'Telebirr'
+                                                    : ownerPayoutModal.owner_refund_method === 'cbe'
+                                                        ? 'CBE Birr'
+                                                        : 'Not set'
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Account Number"
+                                            value={
+                                                ownerPayoutModal.owner_account_number ? (
+                                                    <span className="font-mono text-blue-600">
+                                                        {ownerPayoutModal.owner_account_number}
+                                                    </span>
+                                                ) : (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Account Holder"
+                                            value={
+                                                ownerPayoutModal.owner_account_holder || (
+                                                    <span className="text-muted-foreground">
+                                                        Not provided
+                                                    </span>
+                                                )
+                                            }
+                                        />
+
+                                        <div className="my-4 border-t" />
+
+                                        <DetailRow
+                                            label="Payout Amount"
+                                            value={
+                                                <span className="text-lg font-bold text-green-600">
+                                                    ETB{' '}
+                                                    {ownerPayoutModal.amount}
+                                                </span>
+                                            }
+                                        />
+
+                                        <DetailRow
+                                            label="Booking ID"
+                                            value={`#${ownerPayoutModal.booking_id}`}
+                                        />
+
+                                        <DetailRow
+                                            label="Vehicle"
+                                            value={ownerPayoutModal.car || '—'}
+                                        />
+
+                                        {ownerPayoutModal.gross_amount && (
+                                            <>
+                                                <DetailRow
+                                                    label="Gross"
+                                                    value={`ETB ${ownerPayoutModal.gross_amount}`}
+                                                />
+                                                <DetailRow
+                                                    label="Commission"
+                                                    value={`ETB ${ownerPayoutModal.commission_amount ?? '0.00'}`}
+                                                />
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                <div className="flex gap-3 border-t pt-4">
+                                    <Button
+                                        variant="outline"
+                                        className="flex-1"
+                                        onClick={() =>
+                                            setOwnerPayoutModal(null)
+                                        }
+                                    >
+                                        Cancel
+                                    </Button>
+                                    <Button
+                                        className="flex-1"
+                                        onClick={confirmOwnerPayout}
                                     >
                                         <CircleCheck className="mr-2 h-4 w-4" />
                                         Confirm Payment

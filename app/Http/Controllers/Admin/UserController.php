@@ -76,6 +76,7 @@ class UserController extends Controller
                 'is_organization' => $ownerProfile && $ownerProfile->owner_type === 'organization',
                 'customer_identity_status' => $user->customerIdentity?->verification_status,
                 'has_customer_identity' => $user->customerIdentity !== null,
+                'owner_profile' => $ownerProfile?->toArray(),
             ]);
         });
 
@@ -175,6 +176,8 @@ class UserController extends Controller
         }
 
         $userArray = $user->toArray();
+
+        $userArray['owner_profile'] = $user->ownerProfile?->toArray();
 
         if ($user->customerIdentity) {
             $userArray['customer_identity'] = array_merge($user->customerIdentity->toArray(), [
@@ -279,6 +282,7 @@ class UserController extends Controller
 
         $profile->update([
             'verification_status' => 'approved',
+            'profile_completed' => true,
             'verified_at' => now(),
         ]);
 

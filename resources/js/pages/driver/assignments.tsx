@@ -127,7 +127,7 @@ export default function Assignments({ assignments = [], profileComplete = false,
                                         Please complete all required fields in your driver profile to accept assignments.
                                     </p>
                                     <Link
-                                        href="/driver/profile"
+                                        href="/settings/profile"
                                         className="mt-2 inline-block text-sm font-medium text-amber-900 underline hover:text-amber-700"
                                     >
                                         Go to Profile →

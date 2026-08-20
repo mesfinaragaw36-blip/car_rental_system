@@ -17,6 +17,7 @@ class Car extends Model
 
     protected $fillable = [
         'owner_id',
+        'car_type_id',
         'brand',
         'model',
         'year',
@@ -50,6 +51,11 @@ class Car extends Model
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'owner_id');
+    }
+
+    public function carType(): BelongsTo
+    {
+        return $this->belongsTo(CarType::class);
     }
 
     public function images(): HasMany

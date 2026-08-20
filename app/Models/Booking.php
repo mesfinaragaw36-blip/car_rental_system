@@ -54,6 +54,7 @@ class Booking extends Model
         'returned_at',
         'need_driver',
         'total_price',
+        'driver_fee',
         'deposit_amount',
         'deposit_paid_at',
         'deposit_hold_until',
@@ -71,6 +72,12 @@ class Booking extends Model
         'late_fee',
         'status',
         'notes',
+        'leverage_document_type',
+        'leverage_document_path',
+        'leverage_document_name',
+        'leverage_document_description',
+        'leverage_document_status',
+        'leverage_document_released_at',
     ];
 
     protected $appends = ['payment'];
@@ -133,6 +140,26 @@ class Booking extends Model
     public function hasPaidSecurityDeposit(): bool
     {
         return $this->security_deposit_paid_at !== null;
+    }
+
+    public function hasLeverageDocument(): bool
+    {
+        return $this->leverage_document_type !== null && $this->leverage_document_path !== null;
+    }
+
+    public function isLeverageDocumentHeld(): bool
+    {
+        return $this->hasLeverageDocument() && $this->leverage_document_status === 'held';
+    }
+
+    public function releaseLeverageDocument(): void
+    {
+        if ($this->hasLeverageDocument()) {
+            $this->update([
+                'leverage_document_status' => 'released',
+                'leverage_document_released_at' => now(),
+            ]);
+        }
     }
 
     public function isConfirmedAndAwaitingDeposit(): bool

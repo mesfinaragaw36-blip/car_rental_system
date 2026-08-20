@@ -200,6 +200,8 @@ export default function VehicleDetails({ vehicle }: Props) {
         (a, b) => Number(b.is_primary) - Number(a.is_primary),
     );
 
+    const [expandedReviewId, setExpandedReviewId] = useState<number | null>(null);
+
     const specs: Array<{
         icon: LucideIcon;
         label: string;
@@ -525,7 +527,7 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                 key={r.id}
                                                 className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-3"
                                             >
-                                                <div>
+                                                <div className="min-w-0 flex-1">
                                                     <p className="font-medium">
                                                         {r.reviewer.name}
                                                     </p>
@@ -536,9 +538,31 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                         ).toLocaleDateString()}
                                                     </p>
                                                     {r.review_text && (
-                                                        <p className="mt-2 text-sm text-muted-foreground">
-                                                            {r.review_text}
-                                                        </p>
+                                                        <div className="mt-2">
+                                                            <p
+                                                                className={cn(
+                                                                    'text-sm text-muted-foreground',
+                                                                    expandedReviewId !== r.id && 'line-clamp-2',
+                                                                )}
+                                                            >
+                                                                {r.review_text}
+                                                            </p>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() =>
+                                                                    setExpandedReviewId(
+                                                                        expandedReviewId === r.id
+                                                                            ? null
+                                                                            : r.id,
+                                                                    )
+                                                                }
+                                                                className="mt-1 text-xs font-medium text-primary hover:underline"
+                                                            >
+                                                                {expandedReviewId === r.id
+                                                                    ? 'Show less'
+                                                                    : 'Read more'}
+                                                            </button>
+                                                        </div>
                                                     )}
                                                 </div>
                                                 <Button

@@ -302,6 +302,12 @@ class BookingController extends Controller
 
                 'security_deposit_paid_at' => $booking->security_deposit_paid_at?->toDateTimeString(),
 
+                'has_leverage_document' => $booking->hasLeverageDocument(),
+                'leverage_document_type' => $booking->leverage_document_type,
+                'leverage_document_name' => $booking->leverage_document_name,
+                'leverage_document_status' => $booking->leverage_document_status,
+                'leverage_document_released_at' => $booking->leverage_document_released_at,
+
                 'late_days' => $booking->late_days,
                 'late_fee' => $booking->late_fee,
 
@@ -316,6 +322,7 @@ class BookingController extends Controller
                         'gender' => $booking->driverAssignment->driver->driverProfile?->gender,
                         'location' => $booking->driverAssignment->driver->driverProfile?->location,
                         'daily_rate' => $booking->driverAssignment->driver->driverProfile?->daily_rate,
+                        'proficient_language' => $booking->driverAssignment->driver->driverProfile?->proficient_language,
                         'average_rating' => round($booking->driverAssignment->driver->reviews()->avg('rating') ?? 0, 1),
                         'review_count' => $booking->driverAssignment->driver->reviews()->count(),
                     ]

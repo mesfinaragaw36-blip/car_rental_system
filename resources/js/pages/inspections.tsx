@@ -23,6 +23,7 @@ import {
     X,
     XCircle,
     Zap,
+    FileText,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { useState } from 'react';
@@ -107,6 +108,11 @@ interface Booking {
         national_id?: string | null;
     } | null;
     owner: { id: number; name: string; phone: string } | null;
+    has_leverage_document: boolean;
+    has_paid_security_deposit: boolean;
+    leverage_document_type: string | null;
+    leverage_document_name: string | null;
+    leverage_document_status: string | null;
     inspections: InspectionRecord[];
 }
 
@@ -1228,8 +1234,11 @@ function CompletionCard({
                 {hasIssues && (
                     <div className="space-y-1">
                         <Label>
-                            Repair cost (deducted from
-                            security deposit)
+                            Repair cost (deducted from{' '}
+                            {booking.has_paid_security_deposit
+                                ? 'security deposit'
+                                : 'outstanding balance'}
+                            )
                         </Label>
 
                         <Input
@@ -1312,6 +1321,21 @@ function BookingDetail({
         handoverIdVerified,
         setHandoverIdVerified,
     ] = useState(false);
+
+    const [
+        handoverLeverageDocType,
+        setHandoverLeverageDocType,
+    ] = useState('');
+
+    const [
+        handoverLeverageDocFile,
+        setHandoverLeverageDocFile,
+    ] = useState<File | null>(null);
+
+    const [
+        handoverLeverageDocDescription,
+        setHandoverLeverageDocDescription,
+    ] = useState('');
 
     const showPickupForm =
         inspectionType === 'pickup' &&
@@ -1635,6 +1659,71 @@ function BookingDetail({
                                     </div>
                                 </div>
 
+                                {/* Leverage Document Status */}
+                                {booking.has_leverage_document && (
+                                    <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3">
+                                        <FileText className="mt-0.5 h-4 w-4 text-blue-600" />
+                                        <div className="flex-1 text-sm">
+                                            <span className="font-semibold text-blue-800">
+                                                Leverage Document Submitted
+                                            </span>
+                                            <p className="mt-1 text-xs text-blue-600">
+                                                Type: {booking.leverage_document_type === 'check' ? 'Check' : booking.leverage_document_type === 'property_document' ? 'Property Document' : 'Other'}
+                                                {booking.leverage_document_name && ` — ${booking.leverage_document_name}`}
+                                                {booking.leverage_document_status === 'held' && ' (Held)'}
+                                                {booking.leverage_document_status === 'released' && ' (Released)'}
+                                                {booking.leverage_document_status === 'pending_charges' && ' (Pending Charges)'}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {!booking.has_leverage_document && !booking.has_paid_security_deposit && (
+                                    <div className="space-y-3 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-4">
+                                        <div className="flex items-center gap-2">
+                                            <FileText className="h-4 w-4 text-blue-600" />
+                                            <span className="text-sm font-semibold text-blue-800">
+                                                Leverage Document Required
+                                            </span>
+                                        </div>
+                                        <p className="text-xs text-blue-700">
+                                            The customer chose to provide a leverage document instead of paying the security deposit. Collect and upload it now.
+                                        </p>
+
+                                        <select
+                                            value={handoverLeverageDocType}
+                                            onChange={(e) => setHandoverLeverageDocType(e.target.value)}
+                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        >
+                                            <option value="">Select document type</option>
+                                            <option value="check">Check</option>
+                                            <option value="property_document">Property Document</option>
+                                            <option value="other">Other</option>
+                                        </select>
+
+                                        <input
+                                            type="file"
+                                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,application/pdf"
+                                            onChange={(e) => {
+                                                const file = e.target.files?.[0] ?? null;
+                                                if (file && file.size > 10 * 1024 * 1024) {
+                                                    return;
+                                                }
+                                                setHandoverLeverageDocFile(file);
+                                            }}
+                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-blue-700"
+                                        />
+
+                                        <input
+                                            type="text"
+                                            placeholder="Description (optional, e.g. Check #12345 from Dashen Bank)"
+                                            value={handoverLeverageDocDescription}
+                                            onChange={(e) => setHandoverLeverageDocDescription(e.target.value)}
+                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        />
+                                    </div>
+                                )}
+
                                 <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3">
                                     <input
                                         type="checkbox"
@@ -1680,33 +1769,56 @@ function BookingDetail({
                                     disabled={
                                         processingAction !==
                                             null ||
-                                        !handoverIdVerified
+                                        !handoverIdVerified ||
+                                        (!booking.has_leverage_document && !booking.has_paid_security_deposit && (!handoverLeverageDocType || !handoverLeverageDocFile))
                                     }
                                     onClick={() => {
                                         setProcessingAction(
                                             'handover',
                                         );
 
-                                        router.post(
-                                            inspections.handover.url(
+                                        const needsLeverageUpload =
+                                            !booking.has_leverage_document &&
+                                            !booking.has_paid_security_deposit;
+
+                                        if (needsLeverageUpload) {
+                                            const formData = new FormData();
+                                            formData.append('id_verified', 'true');
+                                            formData.append('leverage_document_type', handoverLeverageDocType);
+                                            if (handoverLeverageDocFile) {
+                                                formData.append('leverage_document', handoverLeverageDocFile);
+                                            }
+                                            if (handoverLeverageDocDescription) {
+                                                formData.append('leverage_document_description', handoverLeverageDocDescription);
+                                            }
+
+                                            router.post(
+                                                inspections.handover.url({
+                                                    booking: booking.id,
+                                                }),
+                                                formData,
                                                 {
-                                                    booking:
-                                                        booking.id,
+                                                    forceFormData: true,
+                                                    preserveScroll: true,
+                                                    onFinish: () =>
+                                                        setProcessingAction(null),
                                                 },
-                                            ),
-                                            {
-                                                id_verified:
-                                                    handoverIdVerified,
-                                            },
-                                            {
-                                                preserveScroll:
-                                                    true,
-                                                onFinish: () =>
-                                                    setProcessingAction(
-                                                        null,
-                                                    ),
-                                            },
-                                        );
+                                            );
+                                        } else {
+                                            router.post(
+                                                inspections.handover.url({
+                                                    booking: booking.id,
+                                                }),
+                                                {
+                                                    id_verified: handoverIdVerified,
+                                                },
+                                                {
+                                                    preserveScroll: true,
+                                                    onFinish: () =>
+                                                        setProcessingAction(null),
+                                                },
+                                            );
+                                        }
                                     }}
                                 >
                                     <KeyRound className="mr-1.5 h-4 w-4" />

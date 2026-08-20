@@ -59,7 +59,7 @@ class CreateNewUser implements CreatesNewUsers
                 'business_name' => $ownerType === 'organization' ? $input['business_name'] : null,
                 'national_id' => 'PENDING',
                 'trade_license_number' => $ownerType === 'organization' ? $input['trade_license_number'] : null,
-                'verification_status' => 'pending',
+                'verification_status' => 'incomplete',
             ]);
         }
 

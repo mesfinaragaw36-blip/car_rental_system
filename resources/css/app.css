@@ -154,6 +154,46 @@
         padding: 0 !important;
     }
 
+    header.fixed {
+        display: none !important;
+    }
+
+    main.mx-auto {
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+
+    .receipt-page {
+        background: white !important;
+        padding: 0 !important;
+        min-height: auto !important;
+    }
+
+    .receipt-card {
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+    }
+
+    .receipt-header {
+        background: white !important;
+        color: #1a1a1a !important;
+    }
+
+    .receipt-badge {
+        border: 1px solid #e2e4e7 !important;
+        background: white !important;
+    }
+
+    .receipt-badge .receipt-badge-label {
+        color: #6b7280 !important;
+    }
+
+    .receipt-btn,
+    .receipt-tip {
+        display: none !important;
+    }
+
     body {
         background: #fff !important;
     }

@@ -442,7 +442,7 @@ export default function ShowUser({ user }: Props) {
                             </div>
 
                             {/* Approval Bar */}
-                            {user.owner_profile.verification_status === 'pending' && (
+                            {(user.owner_profile.verification_status === 'pending' || user.owner_profile.verification_status === 'incomplete') && (
                                 <>
                                     <Separator />
                                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">

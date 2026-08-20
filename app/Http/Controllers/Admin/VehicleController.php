@@ -73,12 +73,29 @@ class VehicleController extends Controller
     {
         return Inertia::render('admin/vehicle-create', [
             'carTypes' => CarType::where('is_active', true)->orderBy('brand')->orderBy('model')->get(),
+            'hasCarTypes' => CarType::where('is_active', true)->exists(),
         ]);
     }
 
     public function store(Request $request): RedirectResponse
     {
+        $carTypeCount = CarType::count();
+
+        if ($carTypeCount === 0) {
+            return redirect()->route('admin.vehicles.create')->with('toast', [
+                'type' => 'error',
+                'message' => 'Please create at least one car type before adding a vehicle.',
+            ]);
+        }
+
+        if (empty($request->input('car_type_id'))) {
+            return back()->withErrors([
+                'car_type_id' => 'Please select a car type before adding a vehicle.',
+            ])->withInput();
+        }
+
         $validated = $request->validate([
+            'car_type_id' => 'required|exists:car_types,id',
             'brand' => 'required|string|max:100',
             'model' => 'required|string|max:100',
             'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
@@ -109,6 +126,7 @@ class VehicleController extends Controller
         ]);
 
         $car = Car::create([
+            'car_type_id' => $validated['car_type_id'],
             'brand' => $validated['brand'],
             'model' => $validated['model'],
             'year' => $validated['year'],

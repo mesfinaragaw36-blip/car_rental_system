@@ -15,7 +15,13 @@ class RegisterResponse implements RegisterResponseContract
             return redirect($redirect);
         }
 
-        return redirect('/');
+        $user = $request->user();
+
+        if ($user && $user->role === 'customer') {
+            return to_route('cars.index');
+        }
+
+        return redirect()->intended('/dashboard');
     }
 
     private function isSafeInternalPath(string $path): bool

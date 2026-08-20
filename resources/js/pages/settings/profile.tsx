@@ -1,6 +1,6 @@
 import type { FormComponentOptions } from '@inertiajs/core';
 import { Form, Head, usePage } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import ProfileController from '@/actions/App/Http/Controllers/Settings/ProfileController';
 import DeleteUser from '@/components/delete-user';
 import Heading from '@/components/heading';
@@ -16,6 +16,74 @@ type PageProps = {
     profile?: Record<string, string | number | null>;
     toast?: { type: 'success' | 'error'; message: string };
 };
+
+const LANGUAGES = [
+    'Amharic', 'Oromo', 'Tigrinya', 'Somali', 'Afar',
+    'English', 'Arabic', 'French', 'Swahili', 'Chinese',
+    'Hindi', 'Turkish', 'Spanish', 'Other',
+];
+
+function LanguageSelect({ defaultValue }: { defaultValue: string[] }) {
+    const [selected, setSelected] = useState<string[]>(defaultValue);
+    const [search, setSearch] = useState('');
+    const [open, setOpen] = useState(false);
+
+    const filtered = useMemo(() => {
+        if (!search) return LANGUAGES;
+        const q = search.toLowerCase();
+        return LANGUAGES.filter((l) => l.toLowerCase().includes(q));
+    }, [search]);
+
+    function toggle(lang: string) {
+        setSelected((prev) =>
+            prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang],
+        );
+    }
+
+    return (
+        <div className="space-y-1.5">
+            <input type="hidden" name="proficient_language" value={JSON.stringify(selected)} />
+            <div className="relative">
+                <Input
+                    placeholder="Search languages..."
+                    value={search}
+                    onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+                    onFocus={() => setOpen(true)}
+                    onBlur={() => setTimeout(() => setOpen(false), 200)}
+                />
+                {open && filtered.length > 0 && (
+                    <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                        {filtered.map((lang) => (
+                            <button
+                                key={lang}
+                                type="button"
+                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${selected.includes(lang) ? 'bg-accent font-medium' : ''}`}
+                                onMouseDown={(e) => e.preventDefault()}
+                                onClick={() => toggle(lang)}
+                            >
+                                <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded border">
+                                    {selected.includes(lang) ? '✓' : ''}
+                                </span>
+                                {lang}
+                            </button>
+                        ))}
+                    </div>
+                )}
+            </div>
+            {selected.length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                    {selected.map((lang) => (
+                        <span key={lang} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                            {lang}
+                            <button type="button" onClick={() => toggle(lang)} className="ml-0.5 hover:text-primary/70">×</button>
+                        </span>
+                    ))}
+                </div>
+            )}
+        </div>
+    );
+}
+
 function RefundAccountFields({
     profile,
     errors,
@@ -33,7 +101,7 @@ function RefundAccountFields({
         <div className="rounded-2xl border border-muted p-4 space-y-4">
             <div>
                 <p className="text-sm font-medium">
-                    {isOrganization ? 'Business Bank Account Details' : 'Refund Payment Details'}
+                    {isOrganization ? 'Business Bank Account Details' : 'Payment Details'}
                 </p>
                 <p className="text-xs text-muted-foreground">
                     {isOrganization 
@@ -690,7 +758,7 @@ export default function Profile() {
                                         </>
                                     )}
 
-                                                                <div className="rounded-2xl border border-muted p-4">
+                                                                 <div className="rounded-2xl border border-muted p-4">
                                 <p className="text-sm font-medium text-muted-foreground">
                                     Verification status
                                 </p>
@@ -698,6 +766,28 @@ export default function Profile() {
                                     {profile?.verification_status ??
                                         'pending'}
                                 </p>
+                            </div>
+
+                            <div className="grid gap-2">
+                                <Label htmlFor="owner_address">
+                                    {profile?.is_organization ? 'Business Address' : 'Address'}
+                                </Label>
+
+                                <Input
+                                    id="owner_address"
+                                    className="mt-1 block w-full"
+                                    defaultValue={
+                                        profile?.address ?? ''
+                                    }
+                                    name="address"
+                                    autoComplete="street-address"
+                                    placeholder="Enter your full address (optional)"
+                                />
+
+                                <InputError
+                                    className="mt-2"
+                                    message={errors.address}
+                                />
                             </div>
 
                             <RefundAccountFields profile={profile} errors={errors} />
@@ -891,17 +981,23 @@ export default function Profile() {
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="proficient_language">
-                                            Proficient Language
+                                            Proficient Languages
                                         </Label>
 
-                                        <Input
-                                            id="proficient_language"
-                                            className="mt-1 block w-full"
-                                            defaultValue={
-                                                profile?.proficient_language ?? ''
-                                            }
-                                            name="proficient_language"
-                                            placeholder="e.g. English, Amharic"
+                                        <LanguageSelect
+                                            defaultValue={(() => {
+                                                const val = profile?.proficient_language;
+                                                if (Array.isArray(val)) return val;
+                                                if (typeof val === 'string' && val) {
+                                                    try {
+                                                        const parsed = JSON.parse(val);
+                                                        return Array.isArray(parsed) ? parsed : [];
+                                                    } catch {
+                                                        return [];
+                                                    }
+                                                }
+                                                return [];
+                                            })()}
                                         />
 
                                         <InputError

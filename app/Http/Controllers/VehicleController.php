@@ -114,6 +114,7 @@ class VehicleController extends Controller
         }
 
         $validated = $request->validate([
+            'car_type_id' => 'nullable|exists:car_types,id',
             'brand' => 'required|string|max:100',
             'model' => 'required|string|max:100',
             'year' => 'required|integer|min:1900|max:'.(date('Y') + 1),
@@ -214,6 +215,7 @@ class VehicleController extends Controller
         }
 
         $car = Car::create([
+            'car_type_id' => $validated['car_type_id'] ?? $template?->id,
             'brand' => $validated['brand'],
             'model' => $validated['model'],
             'year' => $validated['year'],

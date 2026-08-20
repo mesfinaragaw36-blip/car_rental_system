@@ -30,6 +30,7 @@ interface Payment {
     amount: string;
     paid_at: string | null;
     booking_id: number;
+    leverage_document_status: string | null;
 
     customer: {
         id: number;
@@ -430,6 +431,25 @@ export default function Payments({
                                                             ] ??
                                                                 payment.type}
                                                         </span>
+
+                                                        {payment.type === 'extra_charge' &&
+                                                            payment.leverage_document_status && (
+                                                                <span
+                                                                    className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                                                                        payment.leverage_document_status === 'released'
+                                                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                                                            : payment.leverage_document_status === 'pending_charges'
+                                                                                ? 'border-amber-200 bg-amber-50 text-amber-700'
+                                                                                : 'border-slate-200 bg-slate-50 text-slate-600'
+                                                                    }`}
+                                                                >
+                                                                    {payment.leverage_document_status === 'released'
+                                                                        ? 'Document Released'
+                                                                        : payment.leverage_document_status === 'pending_charges'
+                                                                            ? 'Document Held'
+                                                                            : payment.leverage_document_status}
+                                                                </span>
+                                                            )}
                                                     </td>
 
                                                     {/* Method */}

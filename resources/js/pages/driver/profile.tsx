@@ -39,7 +39,7 @@ interface DriverProfile {
     location: string;
     gender?: string | null;
     daily_rate?: number | null;
-    proficient_language?: string | null;
+    proficient_language?: string[] | string | null;
     license_file_path?: string | null;
     verification_status?: string;
     average_rating?: number;
@@ -109,7 +109,19 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     const [location, setLocation] = useState(profile?.location ?? '');
     const [gender, setGender] = useState(profile?.gender ?? '');
     const [dailyRate, setDailyRate] = useState(String(profile?.daily_rate ?? ''));
-    const [proficientLanguage, setProficientLanguage] = useState(profile?.proficient_language ?? '');
+    const [proficientLanguage, setProficientLanguage] = useState<string[]>(() => {
+        if (!profile?.proficient_language) return [];
+        if (Array.isArray(profile.proficient_language)) return profile.proficient_language;
+        if (typeof profile.proficient_language === 'string') {
+            try {
+                const parsed = JSON.parse(profile.proficient_language);
+                if (Array.isArray(parsed)) return parsed;
+            } catch {
+                return profile.proficient_language ? [profile.proficient_language] : [];
+            }
+        }
+        return [];
+    });
     const [languageSearch, setLanguageSearch] = useState('');
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
@@ -138,7 +150,7 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
             location,
             gender,
             daily_rate: dailyRate,
-            proficient_language: proficientLanguage,
+            proficient_language: JSON.stringify(proficientLanguage),
             ...(licenseFile && { license_file: licenseFile }),
         };
 
@@ -328,11 +340,11 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                 </div>
 
                                 <div className="space-y-1.5 sm:col-span-2">
-                                    <Label>Proficient Language</Label>
+                                    <Label>Proficient Languages</Label>
                                     <div className="relative">
                                         <Input
                                             placeholder="Search languages..."
-                                            value={showLanguageDropdown ? languageSearch : proficientLanguage}
+                                            value={languageSearch}
                                             onChange={(e) => {
                                                 setLanguageSearch(e.target.value);
                                                 setShowLanguageDropdown(true);
@@ -347,21 +359,48 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
                                                         key={lang}
                                                         type="button"
                                                         className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${
-                                                            proficientLanguage === lang ? 'bg-accent font-medium' : ''
+                                                            proficientLanguage.includes(lang) ? 'bg-accent font-medium' : ''
                                                         }`}
                                                         onMouseDown={(e) => e.preventDefault()}
                                                         onClick={() => {
-                                                            setProficientLanguage(lang);
+                                                            setProficientLanguage((prev) =>
+                                                                prev.includes(lang)
+                                                                    ? prev.filter((l) => l !== lang)
+                                                                    : [...prev, lang]
+                                                            );
                                                             setLanguageSearch('');
-                                                            setShowLanguageDropdown(false);
                                                         }}
                                                     >
+                                                        <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded border">
+                                                            {proficientLanguage.includes(lang) ? '✓' : ''}
+                                                        </span>
                                                         {lang}
                                                     </button>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
+                                    {proficientLanguage.length > 0 && (
+                                        <div className="flex flex-wrap gap-1.5 pt-1">
+                                            {proficientLanguage.map((lang) => (
+                                                <span
+                                                    key={lang}
+                                                    className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                                                >
+                                                    {lang}
+                                                    <button
+                                                        type="button"
+                                                        onClick={() =>
+                                                            setProficientLanguage((prev) => prev.filter((l) => l !== lang))
+                                                        }
+                                                        className="ml-0.5 hover:text-primary/70"
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </span>
+                                            ))}
+                                        </div>
+                                    )}
                                     <InputError message={errors.proficient_language} />
                                 </div>
                             </div>

@@ -23,6 +23,7 @@ interface CarTypeTemplate {
 
 interface Props {
     carTypes: CarTypeTemplate[];
+    hasCarTypes: boolean;
 }
 
 function unionOptions(...lists: (string | null | undefined)[][]): string[] {
@@ -37,8 +38,9 @@ function unionOptions(...lists: (string | null | undefined)[][]): string[] {
     ).sort();
 }
 
-export default function AdminCreateVehicle({ carTypes }: Props) {
+export default function AdminCreateVehicle({ carTypes, hasCarTypes }: Props) {
     const { data, setData, post, processing, errors } = useForm({
+        car_type_id: '',
         brand: '',
         model: '',
         year: '',
@@ -77,6 +79,7 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
     const [uploadFailed, setUploadFailed] = useState(false);
 
     const step1Fields = [
+        'car_type_id',
         'brand',
         'model',
         'year',
@@ -122,6 +125,7 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
     function handleTemplatePick(template: CarTypeTemplate) {
         const label = templateLabel(template);
 
+        setData('car_type_id', String(template.id));
         setData('brand', template.brand);
         setData('model', template.model);
         setData('year', String(template.year));
@@ -211,6 +215,15 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
         setServerErrors({});
         setUploadFailed(false);
 
+        if (!data.car_type_id) {
+            setServerErrors({
+                car_type_id: 'Please select a car type before adding a vehicle.',
+            });
+            setStep(1);
+
+            return;
+        }
+
         if (ownershipDocument && ownershipDocument.size > MAX_DOC_SIZE) {
             setServerErrors({
                 ownership_document: `Document exceeds 10MB limit (${formatSize(ownershipDocument.size)})`,
@@ -221,6 +234,7 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
         }
 
         const formData = new FormData();
+        formData.append('car_type_id', data.car_type_id);
         formData.append('brand', data.brand);
         formData.append('model', data.model);
         formData.append('year', data.year);
@@ -293,6 +307,20 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
     return (
         <>
             <Head title="Add Vehicle" />
+            {!hasCarTypes && (
+                <div className="mx-6 mt-6 rounded-lg border border-amber-300 bg-amber-50 p-4">
+                    <p className="text-sm font-medium text-amber-800">
+                        No car types found. Please{' '}
+                        <a
+                            href={route('admin.car-types.index')}
+                            className="underline hover:text-amber-900"
+                        >
+                            create a car type
+                        </a>{' '}
+                        before adding a vehicle.
+                    </p>
+                </div>
+            )}
             <div className="space-y-6 p-6">
                 <div className="flex items-center justify-between">
                     <h1 className="text-3xl font-bold">Add Vehicle</h1>
@@ -351,8 +379,7 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
                                     <Label htmlFor="vehicle-template-search">
                                         Pick a vehicle model{' '}
                                         <span className="font-normal text-muted-foreground">
-                                            (optional — type to filter, then
-                                            select)
+                                            (required)
                                         </span>
                                     </Label>
                                     <div
@@ -439,6 +466,12 @@ export default function AdminCreateVehicle({ carTypes }: Props) {
                                         Fields below are filled automatically
                                         and can still be edited.
                                     </p>
+                                    <InputError
+                                        message={
+                                            serverErrors.car_type_id ??
+                                            errors.car_type_id
+                                        }
+                                    />
                                 </div>
 
                                 <div className="grid gap-4 md:grid-cols-2">

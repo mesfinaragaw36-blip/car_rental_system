@@ -19,10 +19,19 @@ class BookingCompletionService
         $lateFee = round($lateDays * $lateFeePerDay, 2);
 
         $totalCharges = round($repairCost + $lateFee, 2);
-        $securityDeposit = $booking->securityDepositAmount();
-        $deduction = min($totalCharges, $securityDeposit);
-        $refundAmount = round($securityDeposit - $deduction, 2);
-        $extraCharge = round(max(0.0, $totalCharges - $securityDeposit), 2);
+        $hasSecurityDeposit = $booking->hasPaidSecurityDeposit();
+
+        if ($hasSecurityDeposit) {
+            $securityDeposit = $booking->securityDepositAmount();
+            $deduction = min($totalCharges, $securityDeposit);
+            $refundAmount = round($securityDeposit - $deduction, 2);
+            $extraCharge = round(max(0.0, $totalCharges - $securityDeposit), 2);
+        } else {
+            $securityDeposit = 0.0;
+            $deduction = 0.0;
+            $refundAmount = 0.0;
+            $extraCharge = $totalCharges;
+        }
 
         $driverAssignment = $booking->driverAssignment;
         $driverFee = $driverAssignment?->hasEarnings() ? (float) $driverAssignment->earnings : 0.0;
@@ -31,14 +40,24 @@ class BookingCompletionService
         $commission = round($carGross * (config('commission.rate', 10) / 100), 2);
         $net = round($carGross - $commission, 2);
 
-        DB::transaction(function () use ($booking, $refundAmount, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost) {
+        DB::transaction(function () use ($booking, $refundAmount, $extraCharge, $carGross, $commission, $net, $driverAssignment, $driverFee, $lateDays, $lateFee, $repairCost, $hasSecurityDeposit) {
             $booking->update([
                 'status' => Booking::STATUS_COMPLETED,
                 'late_days' => $lateDays,
                 'late_fee' => $lateFee,
             ]);
 
-            if ($refundAmount > 0) {
+            if ($booking->hasLeverageDocument()) {
+                if ($extraCharge > 0) {
+                    $booking->update([
+                        'leverage_document_status' => 'pending_charges',
+                    ]);
+                } else {
+                    $booking->releaseLeverageDocument();
+                }
+            }
+
+            if ($hasSecurityDeposit && $refundAmount > 0) {
                 $reason = 'Full security deposit refund after a successful return.';
 
                 if ($repairCost > 0 || $lateFee > 0) {
@@ -91,7 +110,7 @@ class BookingCompletionService
 
         $booking->customer?->notifyNow(
             "Booking #{$booking->id} completed",
-            $this->customerMessage($booking, $refundAmount, $deduction, $extraCharge, $totalCharges, $repairCost, $lateFee, $lateDays),
+            $this->customerMessage($booking, $refundAmount, $deduction, $extraCharge, $totalCharges, $repairCost, $lateFee, $lateDays, $hasSecurityDeposit),
             'booking_completed',
             Booking::class,
             $booking->id,
@@ -135,7 +154,8 @@ class BookingCompletionService
         float $totalCharges,
         float $repairCost,
         float $lateFee,
-        int $lateDays
+        int $lateDays,
+        bool $hasSecurityDeposit
     ): string {
         $base = sprintf(
             'Your rental of the %s %s is complete. ',
@@ -143,6 +163,24 @@ class BookingCompletionService
             $booking->car->model
         );
 
+        if ($hasSecurityDeposit) {
+            return $this->securityDepositMessage($base, $totalCharges, $extraCharge, $deduction, $refundAmount, $repairCost, $lateFee, $lateDays, $booking);
+        }
+
+        return $this->leverageDocumentMessage($base, $totalCharges, $extraCharge, $booking);
+    }
+
+    private function securityDepositMessage(
+        string $base,
+        float $totalCharges,
+        float $extraCharge,
+        float $deduction,
+        float $refundAmount,
+        float $repairCost,
+        float $lateFee,
+        int $lateDays,
+        Booking $booking
+    ): string {
         $securityDeposit = $booking->securityDepositAmount();
 
         if ($extraCharge > 0) {
@@ -167,5 +205,21 @@ class BookingCompletionService
             'Your security deposit of ETB %s has been refunded in full to your original payment method.',
             number_format($refundAmount, 2),
         );
+    }
+
+    private function leverageDocumentMessage(
+        string $base,
+        float $totalCharges,
+        float $extraCharge,
+        Booking $booking
+    ): string {
+        if ($extraCharge > 0) {
+            return $base.sprintf(
+                'Repair costs and late fees totaling ETB %s are now due. Please check your Payment History to settle this balance. Your attached leverage document will remain on file until the balance is cleared.',
+                number_format($totalCharges, 2),
+            );
+        }
+
+        return $base.'Your leverage document has been released. Thank you for a successful rental.';
     }
 }

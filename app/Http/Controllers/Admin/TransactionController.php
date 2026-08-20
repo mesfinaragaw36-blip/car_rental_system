@@ -67,7 +67,7 @@ class TransactionController extends Controller
         if ($type === 'all' || $type === 'refund') {
             $refunds = Refund::query()
                 ->with([
-                    'booking.customer:id,name',
+                    'booking.customer:id,name,email,refund_method,cbe_account_number,cbe_account_holder_name,telebirr_number,telebirr_account_holder_name',
                     'booking.owner:id,name',
                     'booking.car:id,brand,model,plate_number',
                 ])
@@ -91,7 +91,7 @@ class TransactionController extends Controller
                     'booking.customer:id,name',
                     'booking.owner:id,name',
                     'booking.car:id,brand,model,plate_number',
-                    'owner:id,name',
+                    'owner:id,name,email,refund_method,cbe_account_number,cbe_account_holder_name,telebirr_number,telebirr_account_holder_name',
                 ])
                 ->latest()
                 ->get()
@@ -212,9 +212,12 @@ class TransactionController extends Controller
      */
     public function processRefund(Refund $refund): RedirectResponse
     {
+        $lockedRefund = null;
+
         try {
-            DB::transaction(function () use ($refund) {
+            DB::transaction(function () use ($refund, &$lockedRefund) {
                 $lockedRefund = Refund::query()
+                    ->with(['booking.customer', 'booking.car'])
                     ->lockForUpdate()
                     ->findOrFail($refund->id);
 
@@ -237,6 +240,28 @@ class TransactionController extends Controller
             }
 
             throw $e;
+        }
+
+        if ($lockedRefund?->booking?->customer) {
+            $customer = $lockedRefund->booking->customer;
+            $car = $lockedRefund->booking->car;
+            $vehicleName = $car ? $car->brand.' '.$car->model : 'your vehicle';
+
+            $customer->notifyNow(
+                "Refund processed - Booking #{$lockedRefund->booking_id}",
+                sprintf(
+                    'Your refund of ETB %s for the %s has been processed and will be sent to your %s account (%s). Please allow 1-3 business days for the transfer.',
+                    number_format((float) $lockedRefund->amount, 2),
+                    $vehicleName,
+                    $customer->refund_method === 'telebirr' ? 'Telebirr' : 'CBE Birr',
+                    $customer->refund_method === 'telebirr'
+                        ? ($customer->telebirr_number ?? 'N/A')
+                        : ($customer->cbe_account_number ?? 'N/A'),
+                ),
+                'refund_processed',
+                Refund::class,
+                $lockedRefund->id,
+            );
         }
 
         return back()->with('toast', [
@@ -530,6 +555,8 @@ class TransactionController extends Controller
      */
     private function refundPayload(Refund $refund): array
     {
+        $customer = $refund->booking?->customer;
+
         return [
             'type' => 'refund',
             'id' => $refund->id,
@@ -548,7 +575,19 @@ class TransactionController extends Controller
 
             'created_at' => $refund->created_at?->toDateTimeString(),
 
-            'customer' => $refund->booking?->customer?->name,
+            'customer' => $customer?->name,
+
+            'customer_email' => $customer?->email,
+
+            'customer_refund_method' => $customer?->refund_method,
+
+            'customer_account_number' => $customer?->refund_method === 'telebirr'
+                ? $customer?->telebirr_number
+                : $customer?->cbe_account_number,
+
+            'customer_account_holder' => $customer?->refund_method === 'telebirr'
+                ? $customer?->telebirr_account_holder_name
+                : $customer?->cbe_account_holder_name,
 
             'owner' => null,
 
@@ -585,6 +624,8 @@ class TransactionController extends Controller
      */
     private function ownerPayoutPayload(OwnerPayout $payout): array
     {
+        $owner = $payout->owner;
+
         return [
             'type' => 'owner_payout',
             'id' => $payout->id,
@@ -605,7 +646,19 @@ class TransactionController extends Controller
 
             'customer' => $payout->booking?->customer?->name,
 
-            'owner' => $payout->owner?->name,
+            'owner' => $owner?->name,
+
+            'owner_email' => $owner?->email,
+
+            'owner_refund_method' => $owner?->refund_method,
+
+            'owner_account_number' => $owner?->refund_method === 'telebirr'
+                ? $owner?->telebirr_number
+                : $owner?->cbe_account_number,
+
+            'owner_account_holder' => $owner?->refund_method === 'telebirr'
+                ? $owner?->telebirr_account_holder_name
+                : $owner?->cbe_account_holder_name,
 
             'driver' => null,
 

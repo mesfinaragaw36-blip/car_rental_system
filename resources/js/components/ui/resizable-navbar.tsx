@@ -15,7 +15,7 @@ function useNavbarScrolled() {
     return useContext(NavbarScrolledContext);
 }
 
-export function Navbar({ children }: { children: ReactNode }) {
+export function Navbar({ children, className }: { children: ReactNode; className?: string }) {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -32,8 +32,9 @@ export function Navbar({ children }: { children: ReactNode }) {
             <header className="fixed inset-x-0 top-0 z-50 w-full px-4 text-sm">
                 <div
                     className={cn(
-                        'mx-auto max-w-7xl transition-all duration-300',
-                        scrolled && 'mt-2 rounded-full border border-black/10 bg-background/80 shadow-lg shadow-black/5 backdrop-blur-xl',
+                        'mx-auto max-w-7xl rounded-full transition-all duration-300',
+                        scrolled && 'mt-2 border border-black/10 bg-background/80 shadow-lg shadow-black/5 backdrop-blur-xl',
+                        className,
                     )}
                 >
                     {children}

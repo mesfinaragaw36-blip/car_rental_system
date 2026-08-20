@@ -355,7 +355,7 @@ export default function Dashboard({
                                         href="/admin/users"
                                     />
 
-                                    <StatCard
+                                    {/* <StatCard
                                         title="Booking Disputes"
                                         value="View"
                                         icon={
@@ -363,7 +363,7 @@ export default function Dashboard({
                                         }
                                         href={disputesIndex.url()}
                                         accent="text-[#FF6B00]"
-                                    />
+                                    /> */}
                                 </div>
 
                                 <div className="grid gap-6 lg:grid-cols-2">

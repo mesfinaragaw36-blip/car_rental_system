@@ -87,7 +87,7 @@ class DriverProfileController extends Controller
             'location' => 'required|string|max:255',
             'gender' => 'required|string|in:Male,Female',
             'daily_rate' => 'required|numeric|min:0',
-            'proficient_language' => 'nullable|string|max:100',
+            'proficient_language' => 'nullable|string|max:500',
             'license_file' => $isNewProfile ? 'required|file|mimes:jpeg,png,jpg,pdf|max:5120' : 'nullable|file|mimes:jpeg,png,jpg,pdf|max:5120',
             'telebirr_phone' => 'nullable|string|max:20',
             'cbe_account' => 'nullable|string|max:50',
@@ -100,7 +100,7 @@ class DriverProfileController extends Controller
             'location' => $validated['location'],
             'gender' => $validated['gender'],
             'daily_rate' => $validated['daily_rate'],
-            'proficient_language' => $validated['proficient_language'] ?? null,
+            'proficient_language' => ! empty($validated['proficient_language']) ? json_decode($validated['proficient_language'], true) : null,
             'telebirr_phone' => $validated['telebirr_phone'] ?? null,
             'cbe_account' => $validated['cbe_account'] ?? null,
         ];

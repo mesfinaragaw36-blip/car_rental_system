@@ -103,7 +103,7 @@ class ProfileController extends Controller
         $user->save();
 
         if ($user->role === 'owner') {
-            $ownerData = Arr::only($validated, ['national_id', 'business_name', 'organization_type', 'organization_type_other', 'tin_number', 'trade_license_number']);
+            $ownerData = Arr::only($validated, ['national_id', 'business_name', 'organization_type', 'organization_type_other', 'tin_number', 'trade_license_number', 'address']);
 
             if ($request->hasFile('national_id_front_file')) {
                 $ownerData['national_id_front_file_path'] = $request->file('national_id_front_file')->store('owner_documents', 'public');
@@ -116,30 +116,53 @@ class ProfileController extends Controller
             $existingProfile = $user->ownerProfile;
             $isOrgOwner = $existingProfile && $existingProfile->owner_type === 'organization';
 
-            // Check if critical org fields changed for re-approval
-            if ($existingProfile && $isOrgOwner) {
-                $criticalOwnerFieldsChanged =
-                    (isset($ownerData['organization_type']) && $existingProfile->organization_type !== $ownerData['organization_type']) ||
-                    (isset($ownerData['tin_number']) && $existingProfile->tin_number !== $ownerData['tin_number']) ||
-                    (isset($ownerData['business_name']) && $existingProfile->business_name !== $ownerData['business_name']) ||
-                    $request->hasFile('national_id_front_file') ||
-                    $request->hasFile('national_id_back_file');
+            if ($isOrgOwner) {
+                // Mark profile completed if all required org fields are filled
+                if (
+                    ! empty($ownerData['organization_type']) &&
+                    ! empty($ownerData['tin_number'])
+                ) {
+                    $ownerData['profile_completed'] = true;
 
-                if ($criticalOwnerFieldsChanged && $existingProfile->verification_status === 'approved') {
-                    $ownerData['verification_status'] = 'pending';
-                    $ownerData['verified_at'] = null;
+                    if ($existingProfile && $existingProfile->verification_status === 'incomplete') {
+                        $ownerData['verification_status'] = 'pending';
+                    }
                 }
-            }
 
-            // Individual owner: re-approve if ID files change
-            if ($existingProfile && ! $isOrgOwner) {
-                $criticalOwnerFieldsChanged =
-                    $request->hasFile('national_id_front_file') ||
-                    $request->hasFile('national_id_back_file');
+                // Check if critical org fields changed for re-approval
+                if ($existingProfile) {
+                    $criticalOwnerFieldsChanged =
+                        (isset($ownerData['organization_type']) && $existingProfile->organization_type !== $ownerData['organization_type']) ||
+                        (isset($ownerData['tin_number']) && $existingProfile->tin_number !== $ownerData['tin_number']) ||
+                        (isset($ownerData['business_name']) && $existingProfile->business_name !== $ownerData['business_name']) ||
+                        $request->hasFile('national_id_front_file') ||
+                        $request->hasFile('national_id_back_file');
 
-                if ($criticalOwnerFieldsChanged && $existingProfile->verification_status === 'approved') {
-                    $ownerData['verification_status'] = 'pending';
-                    $ownerData['verified_at'] = null;
+                    if ($criticalOwnerFieldsChanged && $existingProfile->verification_status === 'approved') {
+                        $ownerData['verification_status'] = 'pending';
+                        $ownerData['verified_at'] = null;
+                    }
+                }
+            } else {
+                // Individual owner: mark profile completed and move from incomplete to pending
+                if ($existingProfile && ! $existingProfile->profile_completed) {
+                    $ownerData['profile_completed'] = true;
+
+                    if ($existingProfile->verification_status === 'incomplete') {
+                        $ownerData['verification_status'] = 'pending';
+                    }
+                }
+
+                // If profile was already approved and owner makes changes, re-approve
+                if ($existingProfile && $existingProfile->verification_status === 'approved') {
+                    $criticalOwnerFieldsChanged =
+                        $request->hasFile('national_id_front_file') ||
+                        $request->hasFile('national_id_back_file');
+
+                    if ($criticalOwnerFieldsChanged) {
+                        $ownerData['verification_status'] = 'pending';
+                        $ownerData['verified_at'] = null;
+                    }
                 }
             }
 
@@ -165,10 +188,17 @@ class ProfileController extends Controller
                 'location',
                 'gender',
                 'daily_rate',
-                'proficient_language',
                 'telebirr_phone',
                 'cbe_account',
             ]);
+
+            // Decode proficient_language JSON array
+            if (isset($validated['proficient_language']) && $validated['proficient_language'] !== null) {
+                $decoded = json_decode($validated['proficient_language'], true);
+                $driverProfileData['proficient_language'] = is_array($decoded) ? $decoded : null;
+            } else {
+                $driverProfileData['proficient_language'] = null;
+            }
 
             // Check if license fields are being changed
             $licenseFieldChanged = false;
