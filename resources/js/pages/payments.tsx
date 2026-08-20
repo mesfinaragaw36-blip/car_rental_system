@@ -87,6 +87,11 @@ const TYPE_STYLES: Record<string, string> = {
 };
 
 function PayNowAction({ payment }: { payment: Payment }) {
+    // Commented out: Pay Repair Cost button removed from Payment History page
+    // Button is available on the Booking Details page instead for better UX
+    return null;
+    
+    /* Original code:
     if (
         payment.type !== 'extra_charge' ||
         payment.payment_status !== 'pending'
@@ -104,9 +109,10 @@ function PayNowAction({ payment }: { payment: Payment }) {
             href={url}
             className="inline-flex items-center rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-red-700"
         >
-            Pay Now
+            Pay Repair Cost
         </a>
     );
+    */
 }
 
 export default function Payments({

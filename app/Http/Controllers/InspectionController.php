@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\Inspection;
 use App\Models\Refund;
@@ -26,7 +27,7 @@ class InspectionController extends Controller
 
     public function index(): Response
     {
-        $bookings = Booking::with(['customer.ownerProfile', 'owner', 'car.images', 'inspections.idVerifiedBy'])
+        $bookings = Booking::with(['customer.ownerProfile', 'owner', 'car.images', 'inspections.idVerifiedBy', 'driverAssignment'])
             ->whereIn('status', ['deposit_paid', 'paid', 'picked_up', 'returned'])
             ->latest('return_date')
             ->get();
@@ -47,6 +48,10 @@ class InspectionController extends Controller
             'return_arrival_confirmed_at' => $booking->return_arrival_confirmed_at?->toDateTimeString(),
             'returned_at' => $booking->returned_at?->toDateTimeString(),
             'late_return_days' => $booking->returnLateDays(),
+            'need_driver' => $booking->need_driver,
+            'driver_accepted' => $booking->need_driver 
+                ? $booking->driverAssignment?->status === BookingDriver::STATUS_ACCEPTED
+                : true,
             'car' => $this->carPayload($booking->car),
             'customer' => $booking->customer ? ['id' => $booking->customer->id, 'name' => $booking->customer->name, 'phone' => $booking->customer->phone, 'national_id' => $booking->customer->ownerProfile?->national_id] : null,
             'owner' => $booking->owner ? ['id' => $booking->owner->id, 'name' => $booking->owner->name, 'phone' => $booking->owner->phone] : null,
@@ -290,6 +295,29 @@ class InspectionController extends Controller
                 'type' => 'error',
                 'message' => 'The pickup inspection must be approved before handing over the vehicle.',
             ]);
+        }
+
+        if ($booking->need_driver) {
+            $driverAssignment = $booking->driverAssignment()
+                ->whereIn('status', [
+                    BookingDriver::STATUS_ASSIGNED,
+                    BookingDriver::STATUS_ACCEPTED,
+                ])
+                ->first();
+
+            if (! $driverAssignment) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'A driver must be assigned before handing over the vehicle.',
+                ]);
+            }
+
+            if ($driverAssignment->status !== BookingDriver::STATUS_ACCEPTED) {
+                return back()->with('toast', [
+                    'type' => 'error',
+                    'message' => 'The assigned driver must accept the assignment before handing over the vehicle.',
+                ]);
+            }
         }
 
         if (! $request->boolean('id_verified')) {

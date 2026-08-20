@@ -6,6 +6,7 @@ use App\Models\Booking;
 use App\Models\BookingDriver;
 use App\Models\Car;
 use App\Models\Inspection;
+use App\Models\Payment;
 use App\Models\Review;
 use App\Models\User;
 use App\Services\BookingCompletionService;
@@ -386,11 +387,10 @@ class BookingController extends Controller
                     $booking->securityDepositAmount()
                 ),
 
-                'extra_charge' => max(
-                    0,
-                    (float) $booking->late_fee
-                    - $booking->securityDepositAmount()
-                ),
+                'extra_charge' => (float) $booking->payments()
+                    ->where('type', Payment::TYPE_EXTRA_CHARGE)
+                    ->where('payment_status', 'pending')
+                    ->sum('amount'),
             ],
 
             'role' => $user->role,

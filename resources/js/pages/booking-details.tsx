@@ -1302,6 +1302,35 @@ export default function BookingDetails({ booking, role }: Props) {
                             </Button>
                         )}
                     {role === 'customer' &&
+                        booking.status === 'completed' &&
+                        booking.extra_charge > 0 && (
+                            <div className="w-full rounded-lg border border-red-200 bg-red-50 p-4 text-sm">
+                                <p className="font-semibold text-red-800">
+                                    Repair Cost Payment Required
+                                </p>
+                                <p className="mt-1 text-red-700">
+                                    Damage or issues were recorded during the return inspection. 
+                                    A repair cost of ETB{' '}
+                                    {Number(booking.extra_charge).toLocaleString(
+                                        'en-US',
+                                        {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        },
+                                    )}{' '}
+                                    is now due. Please settle this balance to complete your booking. 
+                                    Your leverage document will be released once the payment is completed.
+                                </p>
+                                <Button asChild variant="destructive" className="mt-3">
+                                    <Link
+                                        href={`/bookings/${booking.id}/payment/extra-charge`}
+                                    >
+                                        Pay Repair Cost
+                                    </Link>
+                                </Button>
+                            </div>
+                        )}
+                    {role === 'customer' &&
                         booking.status === 'deposit_paid' &&
                         !booking.pickup_inspection_approved && (
                             <div className="w-full rounded-lg border border-accent bg-accent p-4 text-sm text-primary">

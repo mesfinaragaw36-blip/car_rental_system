@@ -113,6 +113,8 @@ interface Booking {
     leverage_document_type: string | null;
     leverage_document_name: string | null;
     leverage_document_status: string | null;
+    need_driver: boolean;
+    driver_accepted: boolean;
     inspections: InspectionRecord[];
 }
 
@@ -1764,12 +1766,24 @@ function BookingDetail({
                                     </label>
                                 </div>
 
+                                {booking.need_driver && !booking.driver_accepted && (
+                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                                        <p className="font-semibold">
+                                            Waiting for Driver Acceptance
+                                        </p>
+                                        <p className="mt-1 text-amber-700">
+                                            The assigned driver must accept this assignment before the vehicle can be handed over.
+                                        </p>
+                                    </div>
+                                )}
+
                                 <Button
                                     size="sm"
                                     disabled={
                                         processingAction !==
                                             null ||
                                         !handoverIdVerified ||
+                                        (booking.need_driver && !booking.driver_accepted) ||
                                         (!booking.has_leverage_document && !booking.has_paid_security_deposit && (!handoverLeverageDocType || !handoverLeverageDocFile))
                                     }
                                     onClick={() => {

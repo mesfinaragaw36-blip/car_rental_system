@@ -10,26 +10,38 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('refund_method', 10)->nullable()->after('address');
-            $table->string('cbe_account_number', 50)->nullable()->after('refund_method');
-            $table->string('cbe_account_holder_name')->nullable()->after('cbe_account_number');
-            $table->string('telebirr_number', 20)->nullable()->after('cbe_account_holder_name');
-            $table->string('telebirr_account_holder_name')->nullable()->after('telebirr_number');
+            if (! Schema::hasColumn('users', 'refund_method')) {
+                $table->string('refund_method', 10)->nullable()->after('address');
+            }
+            if (! Schema::hasColumn('users', 'cbe_account_number')) {
+                $table->string('cbe_account_number', 50)->nullable()->after('refund_method');
+            }
+            if (! Schema::hasColumn('users', 'cbe_account_holder_name')) {
+                $table->string('cbe_account_holder_name')->nullable()->after('cbe_account_number');
+            }
+            if (! Schema::hasColumn('users', 'telebirr_number')) {
+                $table->string('telebirr_number', 20)->nullable()->after('cbe_account_holder_name');
+            }
+            if (! Schema::hasColumn('users', 'telebirr_account_holder_name')) {
+                $table->string('telebirr_account_holder_name')->nullable()->after('telebirr_number');
+            }
         });
 
-        // Migrate existing data
-        $accounts = DB::table('refund_accounts')->get();
-        foreach ($accounts as $account) {
-            DB::table('users')->where('id', $account->user_id)->update([
-                'refund_method' => $account->refund_method,
-                'cbe_account_number' => $account->cbe_account_number,
-                'cbe_account_holder_name' => $account->cbe_account_holder_name,
-                'telebirr_number' => $account->telebirr_number,
-                'telebirr_account_holder_name' => $account->telebirr_account_holder_name,
-            ]);
-        }
+        // Migrate existing data if refund_accounts table exists
+        if (Schema::hasTable('refund_accounts')) {
+            $accounts = DB::table('refund_accounts')->get();
+            foreach ($accounts as $account) {
+                DB::table('users')->where('id', $account->user_id)->update([
+                    'refund_method' => $account->refund_method,
+                    'cbe_account_number' => $account->cbe_account_number,
+                    'cbe_account_holder_name' => $account->cbe_account_holder_name,
+                    'telebirr_number' => $account->telebirr_number,
+                    'telebirr_account_holder_name' => $account->telebirr_account_holder_name,
+                ]);
+            }
 
-        Schema::dropIfExists('refund_accounts');
+            Schema::dropIfExists('refund_accounts');
+        }
     }
 
     public function down(): void
