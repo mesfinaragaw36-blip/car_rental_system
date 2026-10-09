@@ -8,9 +8,11 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\User;
 use App\Services\DriverMatchingService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\CarbonInterface;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -1440,6 +1442,113 @@ class PaymentController extends Controller
                 )
                 ->values(),
         ]);
+    }
+
+    /**
+     * Download the payment receipt as a PDF.
+     */
+    public function download(Payment $payment): HttpResponse
+    {
+        $user = auth()->user();
+
+        $payment->load([
+            'booking.customer',
+            'booking.owner',
+            'booking.car',
+            'booking.payments',
+            'booking.refunds',
+        ]);
+
+        $booking = $payment->booking;
+
+        if (
+            $booking->customer_id !== $user->id &&
+            $booking->owner_id !== $user->id &&
+            $user->role !== 'admin'
+        ) {
+            abort(403);
+        }
+
+        $days = max(1, $booking->pickup_date->diffInDays($booking->return_date));
+        $dailyRate = (float) ($booking->car?->daily_price ?? 0.0);
+        $rentalSubtotal = round($dailyRate * $days, 2);
+        $totalPrice = round((float) $booking->total_price, 2);
+        $driverFee = round((float) ($booking->driver_fee ?? 0.0), 2);
+
+        $paidToDate = $booking->payments
+            ->where('payment_status', 'paid')
+            ->where('type', '!=', Payment::TYPE_SECURITY_DEPOSIT)
+            ->sum(fn (Payment $p) => (float) $p->amount);
+
+        $balanceRemaining = round(max(0.0, $totalPrice - $paidToDate), 2);
+
+        $data = [
+            'companyName' => config('app.name', 'Car Rental'),
+
+            'payment' => [
+                'id' => $payment->id,
+                'type' => $payment->type,
+                'type_label' => match ($payment->type) {
+                    Payment::TYPE_DEPOSIT => 'Booking Deposit',
+                    Payment::TYPE_BALANCE => 'Balance Payment',
+                    Payment::TYPE_SECURITY_DEPOSIT => 'Security Deposit',
+                    Payment::TYPE_EXTRA_CHARGE => 'Extra Charge',
+                    default => 'Payment',
+                },
+                'amount' => $payment->amount,
+                'payment_method' => $payment->payment_method,
+                'transaction_reference' => $payment->transaction_reference,
+                'payment_status' => $payment->payment_status,
+                'paid_at' => $payment->paid_at?->toDateTimeString(),
+            ],
+
+            'booking' => [
+                'id' => $booking->id,
+                'pickup_date' => $booking->pickup_date->toDateString(),
+                'return_date' => $booking->return_date->toDateString(),
+                'pickup_location' => $booking->pickup_location,
+                'return_location' => $booking->return_location,
+                'need_driver' => $booking->need_driver,
+                'total_price' => number_format($totalPrice, 2),
+                'days' => $days,
+                'daily_rate' => number_format($dailyRate, 2),
+                'subtotal' => number_format($rentalSubtotal, 2),
+                'driver_fee' => number_format($driverFee, 2),
+                'deposit_amount' => number_format($booking->depositAmount(), 2),
+                'full_deposit' => number_format($totalPrice, 2),
+                'full_deposit_balance' => number_format($booking->balanceAmount(), 2),
+                'security_deposit' => number_format($booking->securityDepositAmount(), 2),
+                'paid_to_date' => number_format($paidToDate, 2),
+                'balance_remaining' => number_format($balanceRemaining, 2),
+            ],
+
+            'customer' => $booking->customer ? [
+                'name' => $booking->customer->name,
+                'email' => $booking->customer->email,
+                'phone' => $booking->customer->phone,
+            ] : null,
+
+            'car' => $booking->car ? [
+                'brand' => $booking->car->brand,
+                'model' => $booking->car->model,
+                'plate_number' => $booking->car->plate_number,
+            ] : null,
+
+            'refunds' => $booking->refunds
+                ->map(fn (Refund $refund) => [
+                    'id' => $refund->id,
+                    'amount' => number_format((float) $refund->amount, 2),
+                    'reason' => $refund->reason,
+                    'status' => $refund->status,
+                    'processed_at' => $refund->processed_at?->toDateTimeString(),
+                ])
+                ->values()
+                ->all(),
+        ];
+
+        $pdf = Pdf::loadView('receipts.pdf', $data)->setPaper('a4', 'portrait');
+
+        return $pdf->download("receipt-{$payment->id}.pdf");
     }
 
     /**

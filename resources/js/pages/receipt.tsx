@@ -424,18 +424,26 @@ export default function Receipt({
 
                         {/* Footer */}
                         <div className="border-t border-dashed px-6 py-6 text-center">
-                            <Button
-                                onClick={() => window.print()}
-                                className="receipt-btn"
-                            >
-                                <Printer className="mr-2 h-4 w-4" />
-                                Print / Download PDF
-                                <Download className="ml-2 h-4 w-4" />
-                            </Button>
+                            <div className="receipt-btn flex items-center justify-center gap-3">
+                                <Button
+                                    variant="outline"
+                                    onClick={() => window.print()}
+                                >
+                                    <Printer className="mr-2 h-4 w-4" />
+                                    Print
+                                </Button>
 
-                            <p className="receipt-tip mt-2 text-xs text-muted-foreground/60">
-                                Tip: In the print dialog, select 'Save as PDF' to download a PDF copy.
-                            </p>
+                                <a
+                                    href={`/payments/${payment.id}/receipt/download`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    <Button>
+                                        <Download className="mr-2 h-4 w-4" />
+                                        Download PDF
+                                    </Button>
+                                </a>
+                            </div>
 
                             <p className="mt-4 text-sm text-muted-foreground">
                                 Thank you for choosing {name}.

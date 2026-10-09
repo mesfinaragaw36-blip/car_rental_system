@@ -162,6 +162,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/payments/{payment}/receipt', [PaymentController::class, 'receipt'])
         ->name('payments.receipt');
 
+    Route::get('/payments/{payment}/receipt/download', [PaymentController::class, 'download'])
+        ->name('payments.receipt.download');
+
     Route::post('/payments/{payment}/confirm', [PaymentController::class, 'confirm'])
         ->name('payments.confirm')
         ->middleware(['role:admin', 'staff_permission']);
