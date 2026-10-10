@@ -48,7 +48,7 @@ WORKDIR /var/www/html
 COPY . .
 
 # Copy the Aiven CA certificate into the container
-RUN install -m 0644 docker/aiven-ca.pem /etc/ssl/certs/aiven-ca.pem
+RUN install -m 0644 docker/ca.pem /etc/ssl/certs/aiven-ca.pem
 
 # Copy the built React frontend
 COPY --from=frontend /app/public/build ./public/build
