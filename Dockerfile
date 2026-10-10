@@ -1,5 +1,5 @@
 
-# Build the React frontend
+# Stage 1: Build the React frontend
 FROM node:22-bookworm-slim AS frontend
 
 WORKDIR /app
@@ -17,7 +17,7 @@ COPY . .
 RUN npm run build
 
 
-# Run the Laravel application with Apache and PHP
+# Stage 2: Run Laravel with Apache and PHP
 FROM php:8.3-apache
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
@@ -39,16 +39,21 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
        zip \
     && rm -rf /var/lib/apt/lists/*
 
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www/html
 
+# Copy the Laravel application
 COPY . .
 
-# Copy the compiled React/Vite assets
+# Copy the Aiven CA certificate into the container
+RUN install -m 0644 docker/aiven-ca.pem /etc/ssl/certs/aiven-ca.pem
+
+# Copy the built React frontend
 COPY --from=frontend /app/public/build ./public/build
 
-# Install Laravel dependencies and prepare writable directories
+# Install Laravel production dependencies and prepare writable directories
 RUN mkdir -p \
     storage/framework/cache/data \
     storage/framework/sessions \
@@ -62,7 +67,7 @@ RUN mkdir -p \
        --optimize-autoloader \
     && chown -R www-data:www-data storage bootstrap/cache
 
-# Point Apache to Laravel's public directory
+# Configure Apache to serve Laravel's public directory
 RUN sed -ri 's!/var/www/html!/var/www/html/public!g' \
     /etc/apache2/sites-available/000-default.conf \
     && printf '<Directory /var/www/html/public>\nAllowOverride All\nRequire all granted\n</Directory>\n' \
