@@ -107,12 +107,12 @@ function CarGallery({ images }: { images: CarDetailsImage[] }) {
 
     return (
         <div className="relative">
-            <div className="aspect-[16/10] w-full p-2">
+            <div className="aspect-[16/10] w-full overflow-hidden rounded-xl">
                 {currentImage ? (
                     <img
                         src={`/storage/${currentImage.image_path}`}
                         alt=""
-                        className="h-full w-full object-contain"
+                        className="h-full w-full object-cover"
                     />
                 ) : (
                     <div className="flex h-full items-center justify-center">

@@ -312,12 +312,12 @@ export default function BrowseCars({
                                     }}
                                 >
                                     <div className="w-full p-2.5">
-                                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px] p-2">
+                                        <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[14px]">
                                             {image ? (
                                                 <img
                                                     src={`/storage/${image.image_path}`}
                                                     alt={`${car.brand} ${car.model}`}
-                                                    className="h-full w-full object-contain"
+                                                    className="h-full w-full object-cover"
                                                 />
                                             ) : (
                                                 <div className="flex h-full items-center justify-center">
