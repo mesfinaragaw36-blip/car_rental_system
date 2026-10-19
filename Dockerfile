@@ -13,6 +13,7 @@ RUN apt-get update \
 WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 
+COPY --chmod=644 nginx-buffers.conf /etc/nginx/conf.d/buffers.conf
 USER www-data
 
 # PHP deps first (Wayfinder needs PHP + vendor present during the Vite build)
@@ -23,7 +24,7 @@ RUN composer install --no-dev --optimize-autoloader --no-interaction --no-script
 RUN npm install --no-audit --no-fund \
  && npm run build \
  && rm -rf node_modules
- 
+
  # Demo car photos (the seeder stores them in storage, which isn't in git)
 RUN mkdir -p storage/app/public/demo \
  && cp public/images/fleet-*.png storage/app/public/demo/
