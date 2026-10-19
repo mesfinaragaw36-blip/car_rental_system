@@ -1,81 +1,29 @@
+FROM serversideup/php:8.4-fpm-nginx
 
-# Stage 1: Build the React frontend
-FROM node:22-bookworm-slim AS frontend
+USER root
 
-WORKDIR /app
-
-COPY package*.json ./
-
-RUN if [ -f package-lock.json ]; then \
-      npm ci; \
-    else \
-      npm install; \
-    fi
-
-COPY . .
-
-RUN npm run build
-
-
-# Stage 2: Run Laravel with Apache and PHP
-FROM php:8.3-apache
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    unzip \
-    libzip-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpng-dev \
-    libjpeg62-turbo-dev \
-    libfreetype6-dev \
-    && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install \
-       pdo_mysql \
-       mbstring \
-       bcmath \
-       exif \
-       pcntl \
-       gd \
-       zip \
-    && rm -rf /var/lib/apt/lists/*
-
-# Install Composer
-COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
+# Node (needed to build the Vite/React frontend) + PHP gd extension (dompdf)
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends curl ca-certificates gnupg \
+ && curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
+ && apt-get install -y --no-install-recommends nodejs \
+ && rm -rf /var/lib/apt/lists/* \
+ && install-php-extensions gd
 
 WORKDIR /var/www/html
+COPY --chown=www-data:www-data . .
 
-# Copy the Laravel application
-COPY . .
+USER www-data
 
-# Copy the Aiven CA certificate into the container
-RUN install -m 0644 docker/ca.pem /etc/ssl/certs/aiven-ca.pem
+# PHP deps first (Wayfinder needs PHP + vendor present during the Vite build)
+RUN composer install --no-dev --optimize-autoloader --no-interaction --no-scripts \
+ && composer dump-autoload --optimize
 
-# Copy the built React frontend
-COPY --from=frontend /app/public/build ./public/build
+# Frontend build
+RUN npm install --no-audit --no-fund \
+ && npm run build \
+ && rm -rf node_modules
 
-# Install Laravel production dependencies and prepare writable directories
-RUN mkdir -p \
-    storage/framework/cache/data \
-    storage/framework/sessions \
-    storage/framework/views \
-    storage/logs \
-    bootstrap/cache \
-    && composer install \
-       --no-dev \
-       --prefer-dist \
-       --no-interaction \
-       --optimize-autoloader \
-    && chown -R www-data:www-data storage bootstrap/cache
-
-# Configure Apache to serve Laravel's public directory
-RUN sed -ri 's!/var/www/html!/var/www/html/public!g' \
-    /etc/apache2/sites-available/000-default.conf \
-    && printf '<Directory /var/www/html/public>\nAllowOverride All\nRequire all granted\n</Directory>\n' \
-       > /etc/apache2/conf-available/laravel.conf \
-    && a2enmod rewrite headers \
-    && a2enconf laravel
-
-# Render supplies the PORT environment variable
-ENV PORT=10000
-
-CMD ["bash", "-lc", "sed -i \"s/Listen 80/Listen ${PORT}/\" /etc/apache2/ports.conf && sed -i \"s/<VirtualHost \\*:80>/<VirtualHost *:${PORT}>/\" /etc/apache2/sites-available/000-default.conf && apache2-foreground"]
+# Runs migrations + storage:link on container start
+ENV AUTORUN_ENABLED=true \
+    PHP_OPCACHE_ENABLE=1
