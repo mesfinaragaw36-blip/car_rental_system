@@ -13,7 +13,6 @@ RUN apt-get update \
 WORKDIR /var/www/html
 COPY --chown=www-data:www-data . .
 
-COPY --chmod=644 nginx-buffers.conf /etc/nginx/conf.d/buffers.conf
 USER www-data
 
 # PHP deps first (Wayfinder needs PHP + vendor present during the Vite build)
