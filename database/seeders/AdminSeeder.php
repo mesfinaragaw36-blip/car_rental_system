@@ -31,7 +31,7 @@ class AdminSeeder extends Seeder
                 'address' => 'Addis Ababa',
                 'role' => 'admin',
                 'status' => 'active',
-                'password' => Hash::make('password'),
+                'password' => Hash::make('passwordd'),
             ]
         );
     }
