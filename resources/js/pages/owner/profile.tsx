@@ -166,6 +166,7 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                         e.target.value,
                                                 });
                                                 const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+
                                                 if (otherInput) {
                                                     otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
                                                 }

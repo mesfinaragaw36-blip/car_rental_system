@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
 import { User, Star, FileCheck, Shield, MapPin, DollarSign, ChevronLeft, ChevronRight, Languages } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface DriverProfile {
     gender: string | null;
@@ -44,47 +44,59 @@ export default function DriverSelection({
     const [currentPage, setCurrentPage] = useState(1);
 
     useEffect(() => {
-        if (pickupDate && returnDate) {
-            fetchDrivers();
+        if (!pickupDate || !returnDate) {
+            return;
         }
-    }, [pickupDate, returnDate]);
 
-    useEffect(() => {
-        // Reset to page 1 when drivers list changes
-        setCurrentPage(1);
-    }, [drivers.length]);
+        let isMounted = true;
 
-    const fetchDrivers = async () => {
-        setLoading(true);
-        setError('');
+        const fetchDrivers = async () => {
+            setLoading(true);
+            setError('');
 
-        try {
-            const params = new URLSearchParams({
-                pickup_date: pickupDate,
-                return_date: returnDate,
-            });
+            try {
+                const params = new URLSearchParams({
+                    pickup_date: pickupDate,
+                    return_date: returnDate,
+                });
 
-            const response = await fetch(`/api/available-drivers?${params}`, {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/json',
-                },
-            });
+                const response = await fetch(`/api/available-drivers?${params}`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                    },
+                });
 
-            if (!response.ok) {
-                throw new Error('Failed to load drivers');
+                if (!response.ok) {
+                    throw new Error('Failed to load drivers');
+                }
+
+                const data = await response.json();
+
+                if (isMounted) {
+                    setDrivers(data.drivers || []);
+                    setCurrentPage(1);
+                }
+            } catch (err: any) {
+                if (isMounted) {
+                    setError(err.message || 'Failed to load available drivers');
+                    setDrivers([]);
+                    setCurrentPage(1);
+                }
+            } finally {
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
+        };
 
-            const data = await response.json();
-            setDrivers(data.drivers || []);
-        } catch (err: any) {
-            setError(err.message || 'Failed to load available drivers');
-            setDrivers([]);
-        } finally {
-            setLoading(false);
-        }
-    };
+        fetchDrivers();
+
+        return () => {
+            isMounted = false;
+        };
+    }, [pickupDate, returnDate]);
 
     if (loading) {
         return (

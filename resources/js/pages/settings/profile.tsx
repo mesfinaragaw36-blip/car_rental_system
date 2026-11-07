@@ -29,8 +29,12 @@ function LanguageSelect({ defaultValue }: { defaultValue: string[] }) {
     const [open, setOpen] = useState(false);
 
     const filtered = useMemo(() => {
-        if (!search) return LANGUAGES;
+        if (!search) {
+return LANGUAGES;
+}
+
         const q = search.toLowerCase();
+
         return LANGUAGES.filter((l) => l.toLowerCase().includes(q));
     }, [search]);
 
@@ -47,7 +51,9 @@ function LanguageSelect({ defaultValue }: { defaultValue: string[] }) {
                 <Input
                     placeholder="Search languages..."
                     value={search}
-                    onChange={(e) => { setSearch(e.target.value); setOpen(true); }}
+                    onChange={(e) => {
+ setSearch(e.target.value); setOpen(true); 
+}}
                     onFocus={() => setOpen(true)}
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
                 />
@@ -531,8 +537,8 @@ export default function Profile() {
                                                     }
                                                     required
                                                     onChange={(e) => {
-                                                        const select = e.target;
                                                         const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+
                                                         if (otherInput) {
                                                             otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
                                                         }
@@ -987,15 +993,21 @@ export default function Profile() {
                                         <LanguageSelect
                                             defaultValue={(() => {
                                                 const val = profile?.proficient_language;
-                                                if (Array.isArray(val)) return val;
+
+                                                if (Array.isArray(val)) {
+return val;
+}
+
                                                 if (typeof val === 'string' && val) {
                                                     try {
                                                         const parsed = JSON.parse(val);
+
                                                         return Array.isArray(parsed) ? parsed : [];
                                                     } catch {
                                                         return [];
                                                     }
                                                 }
+
                                                 return [];
                                             })()}
                                         />

@@ -1,4 +1,5 @@
 import { Head, Link, useForm, usePage } from '@inertiajs/react';
+import DriverSelection from '@/components/driver-selection';
 import InputError from '@/components/input-error';
 import { StarRating } from '@/components/rating-stars';
 import { Button } from '@/components/ui/button';
@@ -16,7 +17,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { login, register } from '@/routes';
 import { book } from '@/routes/cars';
 import { edit as editProfile } from '@/routes/profile';
-import DriverSelection from '@/components/driver-selection';
 
 interface Car {
     id: number;
@@ -102,6 +102,7 @@ export default function CarDetails({
         : verification_status === 'rejected'
             ? 'Verification Rejected'
             : 'Verification Required';
+
     return (
         <>
             <Head title={`${car.brand} ${car.model}`} />

@@ -20,17 +20,13 @@ import {
     EyeOff,
     Check,
     X,
-    ShieldCheck,
     FileText,
 } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { useCan } from '@/hooks/use-can';
 import { StarRating } from '@/components/rating-stars';
 import { ReviewModal } from '@/components/review-modal';
-import { approve, reject, cancel, complete } from '@/routes/bookings';
-import reviews from '@/routes/bookings/reviews';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
     Dialog,
     DialogContent,
@@ -38,6 +34,9 @@ import {
     DialogTitle,
     DialogDescription,
 } from '@/components/ui/dialog';
+import { useCan } from '@/hooks/use-can';
+import { approve, reject, cancel, complete } from '@/routes/bookings';
+import reviews from '@/routes/bookings/reviews';
 
 interface ReviewTarget {
     key: string;
@@ -1417,6 +1416,7 @@ export default function BookingDetails({ booking, role }: Props) {
                     onReviewTextChange={(text) => setData('review_text', text)}
                     onSubmit={handleReviewSubmit}
                     processing={processing}
+                    error={errors.review_text || errors.rating}
                 />
             </div>
         </>

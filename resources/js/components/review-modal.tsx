@@ -129,6 +129,7 @@ export function ReviewModal({
                             rows={4}
                             className="resize-none"
                         />
+                        {error && <p className="text-sm text-destructive">{error}</p>}
                     </div>
                 </div>
 

@@ -86,6 +86,7 @@ const TYPE_STYLES: Record<string, string> = {
     extra_charge: 'border-red-200 bg-red-50 text-red-700',
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function PayNowAction({ payment }: { payment: Payment }) {
     // Commented out: Pay Repair Cost button removed from Payment History page
     // Button is available on the Booking Details page instead for better UX
@@ -139,10 +140,6 @@ export default function Payments({
 
     const pendingCount = payments.filter(
         (payment) => payment.payment_status === 'pending',
-    ).length;
-
-    const failedCount = payments.filter(
-        (payment) => payment.payment_status === 'failed',
     ).length;
 
     const filteredPayments = payments.filter((payment) => {

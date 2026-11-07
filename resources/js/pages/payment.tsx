@@ -158,6 +158,7 @@ export default function PaymentForm({
 
         if (!method) {
             setError('Please choose a payment method.');
+
             return;
         }
 
@@ -168,6 +169,7 @@ export default function PaymentForm({
             setError(
                 'Please choose a valid payment method: Telebirr or CBE Birr.',
             );
+
             return;
         }
 
@@ -175,6 +177,7 @@ export default function PaymentForm({
             setError(
                 'Transaction reference is required for this payment method.',
             );
+
             return;
         }
 

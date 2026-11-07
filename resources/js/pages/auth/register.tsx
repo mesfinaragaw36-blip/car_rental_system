@@ -182,6 +182,7 @@ export default function Register({ passwordRules }: Props) {
                                     value={selectedRole}
                                     onChange={(e) => {
                                         setSelectedRole(e.target.value);
+
                                         if (e.target.value !== 'owner') {
                                             setOwnerType('');
                                         }

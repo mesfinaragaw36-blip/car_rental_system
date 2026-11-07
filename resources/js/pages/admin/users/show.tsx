@@ -200,7 +200,10 @@ function formatDate(dateStr: string): string {
 }
 
 function organizationTypeLabel(type: string | null): string {
-    if (!type) return '—';
+    if (!type) {
+return '—';
+}
+
     const labels: Record<string, string> = {
         private_limited_company: 'Private Limited Company (PLC)',
         share_company: 'Share Company (S.C.)',
@@ -211,6 +214,7 @@ function organizationTypeLabel(type: string | null): string {
         ngo_non_profit: 'NGO / Non-Profit',
         other: 'Other',
     };
+
     return labels[type] ?? type;
 }
 

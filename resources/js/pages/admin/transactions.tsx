@@ -214,11 +214,13 @@ export default function AdminTransactions({
 
         if (transaction.type === 'refund') {
             setRefundModal(transaction);
+
             return;
         }
 
         if (transaction.type === 'owner_payout') {
             setOwnerPayoutModal(transaction);
+
             return;
         }
 

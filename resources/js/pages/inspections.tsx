@@ -1708,9 +1708,11 @@ function BookingDetail({
                                             accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,application/pdf"
                                             onChange={(e) => {
                                                 const file = e.target.files?.[0] ?? null;
+
                                                 if (file && file.size > 10 * 1024 * 1024) {
                                                     return;
                                                 }
+
                                                 setHandoverLeverageDocFile(file);
                                             }}
                                             className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-blue-700"
@@ -1799,9 +1801,11 @@ function BookingDetail({
                                             const formData = new FormData();
                                             formData.append('id_verified', 'true');
                                             formData.append('leverage_document_type', handoverLeverageDocType);
+
                                             if (handoverLeverageDocFile) {
                                                 formData.append('leverage_document', handoverLeverageDocFile);
                                             }
+
                                             if (handoverLeverageDocDescription) {
                                                 formData.append('leverage_document_description', handoverLeverageDocDescription);
                                             }

@@ -8,7 +8,6 @@ import {
     CheckCircle,
     Activity,
     Truck,
-    AlertTriangle,
 } from 'lucide-react';
 import {
     LineChart,
@@ -28,7 +27,6 @@ import {
     CardHeader,
     CardTitle,
 } from '@/components/ui/card';
-import { index as disputesIndex } from '@/routes/disputes';
 
 interface AdminStats {
     total_users: number;

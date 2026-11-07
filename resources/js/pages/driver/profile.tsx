@@ -1,4 +1,5 @@
-import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { CheckCircle2, Clock, XCircle, Star, Pencil } from 'lucide-react';
 import { useState, useMemo } from 'react';
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
@@ -12,7 +13,6 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { CheckCircle2, Clock, XCircle, ShieldCheck, FileText, Star, Pencil } from 'lucide-react';
 
 const LANGUAGES = [
     'Amharic',
@@ -110,16 +110,26 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     const [gender, setGender] = useState(profile?.gender ?? '');
     const [dailyRate, setDailyRate] = useState(String(profile?.daily_rate ?? ''));
     const [proficientLanguage, setProficientLanguage] = useState<string[]>(() => {
-        if (!profile?.proficient_language) return [];
-        if (Array.isArray(profile.proficient_language)) return profile.proficient_language;
+        if (!profile?.proficient_language) {
+return [];
+}
+
+        if (Array.isArray(profile.proficient_language)) {
+return profile.proficient_language;
+}
+
         if (typeof profile.proficient_language === 'string') {
             try {
                 const parsed = JSON.parse(profile.proficient_language);
-                if (Array.isArray(parsed)) return parsed;
+
+                if (Array.isArray(parsed)) {
+return parsed;
+}
             } catch {
                 return profile.proficient_language ? [profile.proficient_language] : [];
             }
         }
+
         return [];
     });
     const [languageSearch, setLanguageSearch] = useState('');
@@ -129,8 +139,12 @@ export default function DriverProfilePage({ profile, hasActiveAssignments = fals
     const [processing, setProcessing] = useState(false);
 
     const filteredLanguages = useMemo(() => {
-        if (!languageSearch) return LANGUAGES;
+        if (!languageSearch) {
+return LANGUAGES;
+}
+
         const q = languageSearch.toLowerCase();
+
         return LANGUAGES.filter((l) => l.toLowerCase().includes(q));
     }, [languageSearch]);
 
