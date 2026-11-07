@@ -13,12 +13,7 @@ import {
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { receipt } from '@/routes/payments';
 
@@ -81,8 +76,7 @@ const TYPE_LABELS: Record<string, string> = {
 const TYPE_STYLES: Record<string, string> = {
     booking_deposit: 'border-accent bg-accent text-primary',
     balance: 'border-accent bg-accent text-primary',
-    security_deposit:
-        'border-slate-200 bg-slate-100 text-slate-700',
+    security_deposit: 'border-slate-200 bg-slate-100 text-slate-700',
     extra_charge: 'border-red-200 bg-red-50 text-red-700',
 };
 
@@ -91,7 +85,7 @@ function PayNowAction({ payment }: { payment: Payment }) {
     // Commented out: Pay Repair Cost button removed from Payment History page
     // Button is available on the Booking Details page instead for better UX
     return null;
-    
+
     /* Original code:
     if (
         payment.type !== 'extra_charge' ||
@@ -116,10 +110,7 @@ function PayNowAction({ payment }: { payment: Payment }) {
     */
 }
 
-export default function Payments({
-    role,
-    payments = [],
-}: Props) {
+export default function Payments({ role, payments = [] }: Props) {
     const [search, setSearch] = useState('');
 
     const totalPaidAmount = payments
@@ -128,11 +119,7 @@ export default function Payments({
                 payment.payment_status === 'paid' &&
                 payment.type !== 'security_deposit',
         )
-        .reduce(
-            (sum, payment) =>
-                sum + Number.parseFloat(payment.amount),
-            0,
-        );
+        .reduce((sum, payment) => sum + Number.parseFloat(payment.amount), 0);
 
     const paidCount = payments.filter(
         (payment) => payment.payment_status === 'paid',
@@ -149,19 +136,15 @@ export default function Payments({
             return true;
         }
 
-        const bookingId = payment.booking_id
-            .toString()
-            .toLowerCase();
+        const bookingId = payment.booking_id.toString().toLowerCase();
 
-        const customerName =
-            payment.customer?.name?.toLowerCase() ?? '';
+        const customerName = payment.customer?.name?.toLowerCase() ?? '';
 
         const carName = payment.car
             ? `${payment.car.brand} ${payment.car.model}`.toLowerCase()
             : '';
 
-        const plateNumber =
-            payment.car?.plate_number?.toLowerCase() ?? '';
+        const plateNumber = payment.car?.plate_number?.toLowerCase() ?? '';
 
         const paymentType =
             TYPE_LABELS[payment.type]?.toLowerCase() ??
@@ -188,9 +171,7 @@ export default function Payments({
             <div className="space-y-8 p-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold">
-                        Payment History
-                    </h1>
+                    <h1 className="text-3xl font-bold">Payment History</h1>
 
                     <p className="mt-2 text-muted-foreground">
                         {role === 'owner'
@@ -217,13 +198,10 @@ export default function Payments({
 
                                 <p className="mt-0.5 text-2xl font-bold text-emerald-700">
                                     ETB{' '}
-                                    {totalPaidAmount.toLocaleString(
-                                        'en-US',
-                                        {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        },
-                                    )}
+                                    {totalPaidAmount.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}
                                 </p>
                             </div>
                         </CardContent>
@@ -271,9 +249,7 @@ export default function Payments({
                 {/* Search */}
                 <div className="flex flex-col gap-4 rounded-2xl border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 className="font-semibold">
-                            Transactions
-                        </h3>
+                        <h3 className="font-semibold">Transactions</h3>
 
                         <p className="text-sm text-muted-foreground">
                             Search payment records
@@ -286,9 +262,7 @@ export default function Payments({
                         <Input
                             placeholder="Search booking, customer, car..."
                             value={search}
-                            onChange={(event) =>
-                                setSearch(event.target.value)
-                            }
+                            onChange={(event) => setSearch(event.target.value)}
                             className="pl-10"
                         />
                     </div>
@@ -297,9 +271,7 @@ export default function Payments({
                 {/* Transactions */}
                 <Card className="overflow-hidden rounded-2xl shadow-sm">
                     <CardHeader className="border-b bg-gradient-to-r from-slate-50 to-white px-6 py-5">
-                        <CardTitle>
-                            All Transactions
-                        </CardTitle>
+                        <CardTitle>All Transactions</CardTitle>
                     </CardHeader>
 
                     <CardContent className="p-0">
@@ -363,212 +335,202 @@ export default function Payments({
                                     </thead>
 
                                     <tbody>
-                                        {filteredPayments.map(
-                                            (payment) => (
-                                                <tr
-                                                    key={payment.id}
-                                                    className="border-b transition-all duration-200 last:border-0 hover:bg-accent/50"
-                                                >
-                                                    {/* Booking */}
-                                                    <td className="px-6 py-4">
-                                                        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
-                                                            #
-                                                            {
-                                                                payment.booking_id
-                                                            }
-                                                        </span>
-                                                    </td>
+                                        {filteredPayments.map((payment) => (
+                                            <tr
+                                                key={payment.id}
+                                                className="border-b transition-all duration-200 last:border-0 hover:bg-accent/50"
+                                            >
+                                                {/* Booking */}
+                                                <td className="px-6 py-4">
+                                                    <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold">
+                                                        #{payment.booking_id}
+                                                    </span>
+                                                </td>
 
-                                                    {/* Vehicle */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2.5">
-                                                            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
-                                                                <Car className="h-4 w-4 text-primary" />
-                                                            </div>
-
-                                                            <div>
-                                                                <p className="font-medium">
-                                                                    {payment.car
-                                                                        ? `${payment.car.brand} ${payment.car.model}`
-                                                                        : '—'}
-                                                                </p>
-
-                                                                {payment
-                                                                    .car
-                                                                    ?.plate_number && (
-                                                                    <p className="text-xs text-muted-foreground">
-                                                                        {
-                                                                            payment
-                                                                                .car
-                                                                                .plate_number
-                                                                        }
-                                                                    </p>
-                                                                )}
-                                                            </div>
+                                                {/* Vehicle */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2.5">
+                                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-accent">
+                                                            <Car className="h-4 w-4 text-primary" />
                                                         </div>
-                                                    </td>
 
-                                                    {/* Customer */}
-                                                    {role === 'admin' && (
-                                                        <td className="px-6 py-4">
-                                                            {payment
-                                                                .customer
-                                                                ?.name ??
-                                                                '—'}
-                                                        </td>
-                                                    )}
+                                                        <div>
+                                                            <p className="font-medium">
+                                                                {payment.car
+                                                                    ? `${payment.car.brand} ${payment.car.model}`
+                                                                    : '—'}
+                                                            </p>
 
-                                                    {/* Type */}
+                                                            {payment.car
+                                                                ?.plate_number && (
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {
+                                                                        payment
+                                                                            .car
+                                                                            .plate_number
+                                                                    }
+                                                                </p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                </td>
+
+                                                {/* Customer */}
+                                                {role === 'admin' && (
                                                     <td className="px-6 py-4">
-                                                        <span
-                                                            className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
-                                                                TYPE_STYLES[
-                                                                    payment
-                                                                        .type
-                                                                ] ??
-                                                                'border-slate-200 bg-slate-50 text-slate-700'
-                                                            }`}
-                                                        >
-                                                            {TYPE_LABELS[
+                                                        {payment.customer
+                                                            ?.name ?? '—'}
+                                                    </td>
+                                                )}
+
+                                                {/* Type */}
+                                                <td className="px-6 py-4">
+                                                    <span
+                                                        className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${
+                                                            TYPE_STYLES[
                                                                 payment.type
                                                             ] ??
-                                                                payment.type}
-                                                        </span>
+                                                            'border-slate-200 bg-slate-50 text-slate-700'
+                                                        }`}
+                                                    >
+                                                        {TYPE_LABELS[
+                                                            payment.type
+                                                        ] ?? payment.type}
+                                                    </span>
 
-                                                        {payment.type === 'extra_charge' &&
-                                                            payment.leverage_document_status && (
-                                                                <span
-                                                                    className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-medium ${
-                                                                        payment.leverage_document_status === 'released'
-                                                                            ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
-                                                                            : payment.leverage_document_status === 'pending_charges'
-                                                                                ? 'border-amber-200 bg-amber-50 text-amber-700'
-                                                                                : 'border-slate-200 bg-slate-50 text-slate-600'
-                                                                    }`}
-                                                                >
-                                                                    {payment.leverage_document_status === 'released'
-                                                                        ? 'Document Released'
-                                                                        : payment.leverage_document_status === 'pending_charges'
-                                                                            ? 'Document Held'
-                                                                            : payment.leverage_document_status}
-                                                                </span>
-                                                            )}
-                                                    </td>
+                                                    {payment.type ===
+                                                        'extra_charge' &&
+                                                        payment.leverage_document_status && (
+                                                            <span
+                                                                className={`mt-1 inline-block rounded-full border px-2 py-0.5 text-[10px] font-medium ${
+                                                                    payment.leverage_document_status ===
+                                                                    'released'
+                                                                        ? 'border-emerald-200 bg-emerald-50 text-emerald-700'
+                                                                        : payment.leverage_document_status ===
+                                                                            'pending_charges'
+                                                                          ? 'border-amber-200 bg-amber-50 text-amber-700'
+                                                                          : 'border-slate-200 bg-slate-50 text-slate-600'
+                                                                }`}
+                                                            >
+                                                                {payment.leverage_document_status ===
+                                                                'released'
+                                                                    ? 'Document Released'
+                                                                    : payment.leverage_document_status ===
+                                                                        'pending_charges'
+                                                                      ? 'Document Held'
+                                                                      : payment.leverage_document_status}
+                                                            </span>
+                                                        )}
+                                                </td>
 
-                                                    {/* Method */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2 text-muted-foreground">
-                                                            {METHOD_ICONS[
+                                                {/* Method */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 text-muted-foreground">
+                                                        {METHOD_ICONS[
+                                                            payment
+                                                                .payment_method
+                                                        ] ?? (
+                                                            <CreditCard className="h-4 w-4" />
+                                                        )}
+
+                                                        <span>
+                                                            {METHOD_LABELS[
                                                                 payment
                                                                     .payment_method
-                                                            ] ?? (
-                                                                <CreditCard className="h-4 w-4" />
-                                                            )}
+                                                            ] ??
+                                                                payment.payment_method}
+                                                        </span>
+                                                    </div>
+                                                </td>
 
-                                                            <span>
-                                                                {METHOD_LABELS[
-                                                                    payment
-                                                                        .payment_method
-                                                                ] ??
-                                                                    payment.payment_method}
-                                                            </span>
-                                                        </div>
-                                                    </td>
+                                                {/* Amount */}
+                                                <td className="px-6 py-4 font-semibold">
+                                                    ETB{' '}
+                                                    {Number.parseFloat(
+                                                        payment.amount,
+                                                    ).toLocaleString('en-US', {
+                                                        minimumFractionDigits: 2,
+                                                        maximumFractionDigits: 2,
+                                                    })}
+                                                </td>
 
-                                                    {/* Amount */}
-                                                    <td className="px-6 py-4 font-semibold">
-                                                        ETB{' '}
-                                                        {Number.parseFloat(
-                                                            payment.amount,
-                                                        ).toLocaleString(
-                                                            'en-US',
-                                                            {
-                                                                minimumFractionDigits: 2,
-                                                                maximumFractionDigits: 2,
-                                                            },
-                                                        )}
-                                                    </td>
+                                                {/* Date */}
+                                                <td className="px-6 py-4 text-muted-foreground">
+                                                    {payment.paid_at
+                                                        ? new Date(
+                                                              payment.paid_at,
+                                                          ).toLocaleDateString(
+                                                              'en-US',
+                                                              {
+                                                                  month: 'short',
+                                                                  day: 'numeric',
+                                                                  year: 'numeric',
+                                                              },
+                                                          )
+                                                        : '—'}
+                                                </td>
 
-                                                    {/* Date */}
-                                                    <td className="px-6 py-4 text-muted-foreground">
-                                                        {payment.paid_at
-                                                            ? new Date(
-                                                                  payment.paid_at,
-                                                              ).toLocaleDateString(
-                                                                  'en-US',
-                                                                  {
-                                                                      month: 'short',
-                                                                      day: 'numeric',
-                                                                      year: 'numeric',
-                                                                  },
-                                                              )
-                                                            : '—'}
-                                                    </td>
-
-                                                    {/* Status */}
-                                                    <td className="px-6 py-4">
-                                                        <span
-                                                            className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
-                                                                STATUS_STYLES[
-                                                                    payment
-                                                                        .payment_status
-                                                                ] ??
-                                                                'border-slate-200 bg-slate-50 text-slate-700'
-                                                            }`}
-                                                        >
-                                                            {STATUS_ICONS[
+                                                {/* Status */}
+                                                <td className="px-6 py-4">
+                                                    <span
+                                                        className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold ${
+                                                            STATUS_STYLES[
                                                                 payment
                                                                     .payment_status
-                                                            ] ?? (
-                                                                <Clock className="h-4 w-4" />
-                                                            )}
+                                                            ] ??
+                                                            'border-slate-200 bg-slate-50 text-slate-700'
+                                                        }`}
+                                                    >
+                                                        {STATUS_ICONS[
+                                                            payment
+                                                                .payment_status
+                                                        ] ?? (
+                                                            <Clock className="h-4 w-4" />
+                                                        )}
 
-                                                            {payment.payment_status
-                                                                .charAt(
-                                                                    0,
-                                                                )
-                                                                .toUpperCase() +
-                                                                payment.payment_status.slice(
-                                                                    1,
+                                                        {payment.payment_status
+                                                            .charAt(0)
+                                                            .toUpperCase() +
+                                                            payment.payment_status.slice(
+                                                                1,
+                                                            )}
+                                                    </span>
+                                                </td>
+
+                                                {/* Actions */}
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2">
+                                                        <Button
+                                                            asChild
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="h-8 gap-1.5"
+                                                        >
+                                                            <Link
+                                                                href={receipt.url(
+                                                                    {
+                                                                        payment:
+                                                                            payment.id,
+                                                                    },
                                                                 )}
-                                                        </span>
-                                                    </td>
-
-                                                    {/* Actions */}
-                                                    <td className="px-6 py-4">
-                                                        <div className="flex items-center gap-2">
-                                                            <Button
-                                                                asChild
-                                                                variant="outline"
-                                                                size="sm"
-                                                                className="h-8 gap-1.5"
                                                             >
-                                                                <Link
-                                                                    href={receipt.url(
-                                                                        {
-                                                                            payment:
-                                                                                payment.id,
-                                                                        },
-                                                                    )}
-                                                                >
-                                                                    <Eye className="h-4 w-4" />
-                                                                    View
-                                                                </Link>
-                                                            </Button>
+                                                                <Eye className="h-4 w-4" />
+                                                                View
+                                                            </Link>
+                                                        </Button>
 
-                                                            {role ===
-                                                                'customer' && (
-                                                                <PayNowAction
-                                                                    payment={
-                                                                        payment
-                                                                    }
-                                                                />
-                                                            )}
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ),
-                                        )}
+                                                        {role ===
+                                                            'customer' && (
+                                                            <PayNowAction
+                                                                payment={
+                                                                    payment
+                                                                }
+                                                            />
+                                                        )}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>

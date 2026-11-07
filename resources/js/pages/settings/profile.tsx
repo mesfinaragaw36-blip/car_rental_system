@@ -18,9 +18,20 @@ type PageProps = {
 };
 
 const LANGUAGES = [
-    'Amharic', 'Oromo', 'Tigrinya', 'Somali', 'Afar',
-    'English', 'Arabic', 'French', 'Swahili', 'Chinese',
-    'Hindi', 'Turkish', 'Spanish', 'Other',
+    'Amharic',
+    'Oromo',
+    'Tigrinya',
+    'Somali',
+    'Afar',
+    'English',
+    'Arabic',
+    'French',
+    'Swahili',
+    'Chinese',
+    'Hindi',
+    'Turkish',
+    'Spanish',
+    'Other',
 ];
 
 function LanguageSelect({ defaultValue }: { defaultValue: string[] }) {
@@ -30,8 +41,8 @@ function LanguageSelect({ defaultValue }: { defaultValue: string[] }) {
 
     const filtered = useMemo(() => {
         if (!search) {
-return LANGUAGES;
-}
+            return LANGUAGES;
+        }
 
         const q = search.toLowerCase();
 
@@ -40,20 +51,27 @@ return LANGUAGES;
 
     function toggle(lang: string) {
         setSelected((prev) =>
-            prev.includes(lang) ? prev.filter((l) => l !== lang) : [...prev, lang],
+            prev.includes(lang)
+                ? prev.filter((l) => l !== lang)
+                : [...prev, lang],
         );
     }
 
     return (
         <div className="space-y-1.5">
-            <input type="hidden" name="proficient_language" value={JSON.stringify(selected)} />
+            <input
+                type="hidden"
+                name="proficient_language"
+                value={JSON.stringify(selected)}
+            />
             <div className="relative">
                 <Input
                     placeholder="Search languages..."
                     value={search}
                     onChange={(e) => {
- setSearch(e.target.value); setOpen(true); 
-}}
+                        setSearch(e.target.value);
+                        setOpen(true);
+                    }}
                     onFocus={() => setOpen(true)}
                     onBlur={() => setTimeout(() => setOpen(false), 200)}
                 />
@@ -79,9 +97,18 @@ return LANGUAGES;
             {selected.length > 0 && (
                 <div className="flex flex-wrap gap-1.5">
                     {selected.map((lang) => (
-                        <span key={lang} className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+                        <span
+                            key={lang}
+                            className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary"
+                        >
                             {lang}
-                            <button type="button" onClick={() => toggle(lang)} className="ml-0.5 hover:text-primary/70">×</button>
+                            <button
+                                type="button"
+                                onClick={() => toggle(lang)}
+                                className="ml-0.5 hover:text-primary/70"
+                            >
+                                ×
+                            </button>
                         </span>
                     ))}
                 </div>
@@ -104,13 +131,15 @@ function RefundAccountFields({
     const isOrganization = profile?.is_organization === true;
 
     return (
-        <div className="rounded-2xl border border-muted p-4 space-y-4">
+        <div className="space-y-4 rounded-2xl border border-muted p-4">
             <div>
                 <p className="text-sm font-medium">
-                    {isOrganization ? 'Business Bank Account Details' : 'Payment Details'}
+                    {isOrganization
+                        ? 'Business Bank Account Details'
+                        : 'Payment Details'}
                 </p>
                 <p className="text-xs text-muted-foreground">
-                    {isOrganization 
+                    {isOrganization
                         ? 'Enter your business bank account information for payouts'
                         : 'Choose one payout method to use if a refund needs to be issued to you.'}
                 </p>
@@ -184,9 +213,7 @@ function RefundAccountFields({
             {refundMethod === 'telebirr' && (
                 <>
                     <div className="grid gap-2">
-                        <Label htmlFor="telebirr_number">
-                            Telebirr Number
-                        </Label>
+                        <Label htmlFor="telebirr_number">Telebirr Number</Label>
                         <Input
                             id="telebirr_number"
                             className="mt-1 block w-full"
@@ -393,7 +420,10 @@ export default function Profile() {
                                                 verificationStatus.slice(1)}
                                         </span>
                                     </div>
-                                    <RefundAccountFields profile={profile} errors={errors} />
+                                    <RefundAccountFields
+                                        profile={profile}
+                                        errors={errors}
+                                    />
                                     {isApproved ? (
                                         <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
                                             <p className="text-sm text-green-800">
@@ -495,7 +525,8 @@ export default function Profile() {
                                             Owner Type
                                         </p>
                                         <p className="mt-1 text-base font-semibold capitalize">
-                                            {profile?.owner_type ?? 'individual'}
+                                            {profile?.owner_type ??
+                                                'individual'}
                                         </p>
                                     </div>
 
@@ -511,7 +542,8 @@ export default function Profile() {
                                                     id="business_name"
                                                     className="mt-1 block w-full"
                                                     defaultValue={
-                                                        profile?.business_name ?? ''
+                                                        profile?.business_name ??
+                                                        ''
                                                     }
                                                     name="business_name"
                                                     required
@@ -520,7 +552,9 @@ export default function Profile() {
 
                                                 <InputError
                                                     className="mt-2"
-                                                    message={errors.business_name}
+                                                    message={
+                                                        errors.business_name
+                                                    }
                                                 />
                                             </div>
 
@@ -533,14 +567,23 @@ export default function Profile() {
                                                     id="organization_type"
                                                     name="organization_type"
                                                     defaultValue={
-                                                        profile?.organization_type ?? ''
+                                                        profile?.organization_type ??
+                                                        ''
                                                     }
                                                     required
                                                     onChange={(e) => {
-                                                        const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+                                                        const otherInput =
+                                                            document.getElementById(
+                                                                'organization_type_other',
+                                                            ) as HTMLInputElement;
 
                                                         if (otherInput) {
-                                                            otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
+                                                            otherInput.style.display =
+                                                                e.target
+                                                                    .value ===
+                                                                'other'
+                                                                    ? 'block'
+                                                                    : 'none';
                                                         }
                                                     }}
                                                     className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
@@ -549,7 +592,8 @@ export default function Profile() {
                                                         Select type
                                                     </option>
                                                     <option value="private_limited_company">
-                                                        Private Limited Company (PLC)
+                                                        Private Limited Company
+                                                        (PLC)
                                                     </option>
                                                     <option value="share_company">
                                                         Share Company (S.C.)
@@ -567,7 +611,8 @@ export default function Profile() {
                                                         Government Organization
                                                     </option>
                                                     <option value="ngo_non_profit">
-                                                        NGO / Non-Profit Organization
+                                                        NGO / Non-Profit
+                                                        Organization
                                                     </option>
                                                     <option value="other">
                                                         Other
@@ -576,16 +621,24 @@ export default function Profile() {
 
                                                 <InputError
                                                     className="mt-2"
-                                                    message={errors.organization_type}
+                                                    message={
+                                                        errors.organization_type
+                                                    }
                                                 />
-                                                
+
                                                 <Input
                                                     id="organization_type_other"
                                                     type="text"
                                                     name="organization_type_other"
                                                     placeholder="Please specify organization type"
                                                     className="mt-2"
-                                                    style={{display: profile?.organization_type === 'other' ? 'block' : 'none'}}
+                                                    style={{
+                                                        display:
+                                                            profile?.organization_type ===
+                                                            'other'
+                                                                ? 'block'
+                                                                : 'none',
+                                                    }}
                                                 />
                                             </div>
 
@@ -598,7 +651,8 @@ export default function Profile() {
                                                     id="tin_number"
                                                     className="mt-1 block w-full"
                                                     defaultValue={
-                                                        profile?.tin_number ?? ''
+                                                        profile?.tin_number ??
+                                                        ''
                                                     }
                                                     name="tin_number"
                                                     required
@@ -621,7 +675,8 @@ export default function Profile() {
                                                     id="trade_license_number"
                                                     className="mt-1 block w-full"
                                                     defaultValue={
-                                                        profile?.trade_license_number ?? ''
+                                                        profile?.trade_license_number ??
+                                                        ''
                                                     }
                                                     name="trade_license_number"
                                                     required
@@ -630,7 +685,9 @@ export default function Profile() {
 
                                                 <InputError
                                                     className="mt-2"
-                                                    message={errors.trade_license_number}
+                                                    message={
+                                                        errors.trade_license_number
+                                                    }
                                                 />
                                             </div>
                                         </>
@@ -638,7 +695,9 @@ export default function Profile() {
 
                                     <div className="grid gap-2">
                                         <Label htmlFor="phone">
-                                            {profile?.is_organization ? 'Company Contact' : 'Phone number'}
+                                            {profile?.is_organization
+                                                ? 'Company Contact'
+                                                : 'Phone number'}
                                         </Label>
 
                                         <Input
@@ -668,7 +727,8 @@ export default function Profile() {
                                                     id="national_id"
                                                     className="mt-1 block w-full"
                                                     defaultValue={
-                                                        profile?.national_id ?? ''
+                                                        profile?.national_id ??
+                                                        ''
                                                     }
                                                     name="national_id"
                                                     required
@@ -688,8 +748,9 @@ export default function Profile() {
                                                 </Label>
 
                                                 <p className="text-sm text-muted-foreground">
-                                                    Upload a clear photo of the front of
-                                                    your National ID card.
+                                                    Upload a clear photo of the
+                                                    front of your National ID
+                                                    card.
                                                 </p>
 
                                                 <Input
@@ -728,8 +789,9 @@ export default function Profile() {
                                                 </Label>
 
                                                 <p className="text-sm text-muted-foreground">
-                                                    Upload a clear photo of the back of
-                                                    your National ID card.
+                                                    Upload a clear photo of the
+                                                    back of your National ID
+                                                    card.
                                                 </p>
 
                                                 <Input
@@ -764,41 +826,46 @@ export default function Profile() {
                                         </>
                                     )}
 
-                                                                 <div className="rounded-2xl border border-muted p-4">
-                                <p className="text-sm font-medium text-muted-foreground">
-                                    Verification status
-                                </p>
-                                <p className="mt-2 text-base font-semibold">
-                                    {profile?.verification_status ??
-                                        'pending'}
-                                </p>
-                            </div>
+                                    <div className="rounded-2xl border border-muted p-4">
+                                        <p className="text-sm font-medium text-muted-foreground">
+                                            Verification status
+                                        </p>
+                                        <p className="mt-2 text-base font-semibold">
+                                            {profile?.verification_status ??
+                                                'pending'}
+                                        </p>
+                                    </div>
 
-                            <div className="grid gap-2">
-                                <Label htmlFor="owner_address">
-                                    {profile?.is_organization ? 'Business Address' : 'Address'}
-                                </Label>
+                                    <div className="grid gap-2">
+                                        <Label htmlFor="owner_address">
+                                            {profile?.is_organization
+                                                ? 'Business Address'
+                                                : 'Address'}
+                                        </Label>
 
-                                <Input
-                                    id="owner_address"
-                                    className="mt-1 block w-full"
-                                    defaultValue={
-                                        profile?.address ?? ''
-                                    }
-                                    name="address"
-                                    autoComplete="street-address"
-                                    placeholder="Enter your full address (optional)"
-                                />
+                                        <Input
+                                            id="owner_address"
+                                            className="mt-1 block w-full"
+                                            defaultValue={
+                                                profile?.address ?? ''
+                                            }
+                                            name="address"
+                                            autoComplete="street-address"
+                                            placeholder="Enter your full address (optional)"
+                                        />
 
-                                <InputError
-                                    className="mt-2"
-                                    message={errors.address}
-                                />
-                            </div>
+                                        <InputError
+                                            className="mt-2"
+                                            message={errors.address}
+                                        />
+                                    </div>
 
-                            <RefundAccountFields profile={profile} errors={errors} />
-                        </div>
-                    )}
+                                    <RefundAccountFields
+                                        profile={profile}
+                                        errors={errors}
+                                    />
+                                </div>
+                            )}
 
                             {isDriver && (
                                 <div className="space-y-6">
@@ -992,17 +1059,26 @@ export default function Profile() {
 
                                         <LanguageSelect
                                             defaultValue={(() => {
-                                                const val = profile?.proficient_language;
+                                                const val =
+                                                    profile?.proficient_language;
 
                                                 if (Array.isArray(val)) {
-return val;
-}
+                                                    return val;
+                                                }
 
-                                                if (typeof val === 'string' && val) {
+                                                if (
+                                                    typeof val === 'string' &&
+                                                    val
+                                                ) {
                                                     try {
-                                                        const parsed = JSON.parse(val);
+                                                        const parsed =
+                                                            JSON.parse(val);
 
-                                                        return Array.isArray(parsed) ? parsed : [];
+                                                        return Array.isArray(
+                                                            parsed,
+                                                        )
+                                                            ? parsed
+                                                            : [];
                                                     } catch {
                                                         return [];
                                                     }
@@ -1065,7 +1141,10 @@ return val;
                                         />
                                     </div>
 
-                                    <RefundAccountFields profile={profile} errors={errors} />
+                                    <RefundAccountFields
+                                        profile={profile}
+                                        errors={errors}
+                                    />
 
                                     <div className="rounded-2xl border border-muted p-4">
                                         <p className="text-sm font-medium text-muted-foreground">
@@ -1085,12 +1164,19 @@ return val;
 
                             <div className="flex items-center gap-4">
                                 <Button
-                                    disabled={processing || (role === 'owner' && profile?.verification_status === 'pending')}
+                                    disabled={
+                                        processing ||
+                                        (role === 'owner' &&
+                                            profile?.verification_status ===
+                                                'pending')
+                                    }
                                     data-test="update-profile-button"
                                 >
-                                    {role === 'owner' && profile?.verification_status === 'pending'
+                                    {role === 'owner' &&
+                                    profile?.verification_status === 'pending'
                                         ? 'Profile Under Review'
-                                        : role === 'owner' && !profile?.profile_completed
+                                        : role === 'owner' &&
+                                            !profile?.profile_completed
                                           ? 'Submit Profile'
                                           : 'Update Profile'}
                                 </Button>

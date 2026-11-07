@@ -101,7 +101,13 @@ interface FlashProps {
     toast?: { type: 'success' | 'error'; message: string };
 }
 
-function StatusBadge({ label, tone }: { label: string; tone: 'green' | 'red' | 'yellow' | 'blue' | 'slate' }) {
+function StatusBadge({
+    label,
+    tone,
+}: {
+    label: string;
+    tone: 'green' | 'red' | 'yellow' | 'blue' | 'slate';
+}) {
     const tones: Record<string, string> = {
         green: 'bg-green-100 text-green-700 ring-green-600/20',
         red: 'bg-red-100 text-red-700 ring-red-600/20',
@@ -111,7 +117,9 @@ function StatusBadge({ label, tone }: { label: string; tone: 'green' | 'red' | '
     };
 
     return (
-        <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${tones[tone]}`}>
+        <span
+            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ring-inset ${tones[tone]}`}
+        >
             {label}
         </span>
     );
@@ -143,12 +151,22 @@ function toneForRole(role: string): 'blue' | 'yellow' | 'slate' {
     }
 }
 
-function SpecTile({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string | null }) {
+function SpecTile({
+    icon: Icon,
+    label,
+    value,
+}: {
+    icon: React.ElementType;
+    label: string;
+    value: string | null;
+}) {
     return (
         <div className="rounded-xl border border-slate-100 bg-slate-50/70 p-3">
             <Icon className="h-4 w-4 text-primary" />
             <p className="mt-2 text-xs text-slate-500">{label}</p>
-            <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">{value || '—'}</p>
+            <p className="mt-0.5 truncate text-sm font-semibold text-slate-800">
+                {value || '—'}
+            </p>
         </div>
     );
 }
@@ -201,8 +219,8 @@ function formatDate(dateStr: string): string {
 
 function organizationTypeLabel(type: string | null): string {
     if (!type) {
-return '—';
-}
+        return '—';
+    }
 
     const labels: Record<string, string> = {
         private_limited_company: 'Private Limited Company (PLC)',
@@ -234,7 +252,11 @@ export default function ShowUser({ user }: Props) {
     }
 
     function handleDelete(): void {
-        if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+        if (
+            confirm(
+                'Are you sure you want to delete this user? This action cannot be undone.',
+            )
+        ) {
             router.delete(`/admin/users/${user.id}`);
         }
     }
@@ -254,7 +276,9 @@ export default function ShowUser({ user }: Props) {
     }
 
     function handleRejectCustomerIdentity(): void {
-        if (confirm('Are you sure you want to reject this customer identity?')) {
+        if (
+            confirm('Are you sure you want to reject this customer identity?')
+        ) {
             router.post(`/admin/users/${user.id}/reject-customer-identity`);
         }
     }
@@ -308,35 +332,71 @@ export default function ShowUser({ user }: Props) {
                                 </Avatar>
 
                                 <div>
-                                    <h1 className="text-xl font-bold text-slate-900">{user.name}</h1>
+                                    <h1 className="text-xl font-bold text-slate-900">
+                                        {user.name}
+                                    </h1>
                                     <div className="mt-1 flex flex-wrap items-center gap-2">
-                                        <StatusBadge label={user.role.charAt(0).toUpperCase() + user.role.slice(1)} tone={toneForRole(user.role)} />
-                                        <StatusBadge label={user.status.charAt(0).toUpperCase() + user.status.slice(1)} tone={toneForStatus(user.status)} />
+                                        <StatusBadge
+                                            label={
+                                                user.role
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                user.role.slice(1)
+                                            }
+                                            tone={toneForRole(user.role)}
+                                        />
+                                        <StatusBadge
+                                            label={
+                                                user.status
+                                                    .charAt(0)
+                                                    .toUpperCase() +
+                                                user.status.slice(1)
+                                            }
+                                            tone={toneForStatus(user.status)}
+                                        />
                                     </div>
                                 </div>
                             </div>
 
                             <div className="flex items-center gap-2">
                                 <Link href={`/admin/users/${user.id}/edit`}>
-                                    <Button size="sm" variant="outline" disabled={!can('users.edit')}>
+                                    <Button
+                                        size="sm"
+                                        variant="outline"
+                                        disabled={!can('users.edit')}
+                                    >
                                         <Edit className="mr-1.5 h-4 w-4" />
                                         Edit
                                     </Button>
                                 </Link>
 
                                 {user.status === 'active' ? (
-                                    <Button variant="destructive" size="sm" onClick={handleSuspend} disabled={!can('users.manage')}>
+                                    <Button
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={handleSuspend}
+                                        disabled={!can('users.manage')}
+                                    >
                                         <Ban className="mr-1.5 h-4 w-4" />
                                         Suspend
                                     </Button>
                                 ) : (
-                                    <Button size="sm" onClick={handleActivate} disabled={!can('users.manage')}>
+                                    <Button
+                                        size="sm"
+                                        onClick={handleActivate}
+                                        disabled={!can('users.manage')}
+                                    >
                                         <PlayCircle className="mr-1.5 h-4 w-4" />
                                         Activate
                                     </Button>
                                 )}
 
-                                <Button variant="destructive" size="sm" onClick={handleDelete} disabled={!can('users.delete')}>
+                                <Button
+                                    variant="destructive"
+                                    size="sm"
+                                    onClick={handleDelete}
+                                    disabled={!can('users.delete')}
+                                >
                                     <Trash2 className="mr-1.5 h-4 w-4" />
                                     Delete
                                 </Button>
@@ -347,11 +407,31 @@ export default function ShowUser({ user }: Props) {
                     {/* Quick Info Tiles */}
                     <CardContent className="p-6">
                         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                            <SpecTile icon={Mail} label="Email" value={user.email} />
-                            <SpecTile icon={Phone} label="Phone" value={user.phone} />
-                            <SpecTile icon={MapPin} label="Location" value={user.address} />
-                            <SpecTile icon={Calendar} label="Joined" value={formatDate(user.created_at)} />
-                            <SpecTile icon={CreditCard} label="User ID" value={`#${user.id}`} />
+                            <SpecTile
+                                icon={Mail}
+                                label="Email"
+                                value={user.email}
+                            />
+                            <SpecTile
+                                icon={Phone}
+                                label="Phone"
+                                value={user.phone}
+                            />
+                            <SpecTile
+                                icon={MapPin}
+                                label="Location"
+                                value={user.address}
+                            />
+                            <SpecTile
+                                icon={Calendar}
+                                label="Joined"
+                                value={formatDate(user.created_at)}
+                            />
+                            <SpecTile
+                                icon={CreditCard}
+                                label="User ID"
+                                value={`#${user.id}`}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -368,8 +448,17 @@ export default function ShowUser({ user }: Props) {
                                     Owner Profile
                                 </CardTitle>
                                 <StatusBadge
-                                    label={user.owner_profile.verification_status.charAt(0).toUpperCase() + user.owner_profile.verification_status.slice(1)}
-                                    tone={toneForStatus(user.owner_profile.verification_status)}
+                                    label={
+                                        user.owner_profile.verification_status
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                        user.owner_profile.verification_status.slice(
+                                            1,
+                                        )
+                                    }
+                                    tone={toneForStatus(
+                                        user.owner_profile.verification_status,
+                                    )}
                                 />
                             </div>
                         </CardHeader>
@@ -378,52 +467,96 @@ export default function ShowUser({ user }: Props) {
                             {/* Owner Type & Business Name */}
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div>
-                                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Owner Type</p>
-                                    <p className="mt-1 text-sm font-semibold capitalize">{user.owner_profile.owner_type}</p>
+                                    <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                        Owner Type
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold capitalize">
+                                        {user.owner_profile.owner_type}
+                                    </p>
                                 </div>
                                 {user.owner_profile.business_name && (
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Business Name</p>
-                                        <p className="mt-1 text-sm font-semibold">{user.owner_profile.business_name}</p>
-                                    </div>
-                                )}
-                                {user.owner_profile.owner_type === 'organization' && user.owner_profile.organization_type && (
-                                    <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Organization Type</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            Business Name
+                                        </p>
                                         <p className="mt-1 text-sm font-semibold">
-                                            {organizationTypeLabel(user.owner_profile.organization_type)}
-                                            {user.owner_profile.organization_type === 'other' && user.owner_profile.organization_type_other
-                                                ? ` (${user.owner_profile.organization_type_other})`
-                                                : ''}
+                                            {user.owner_profile.business_name}
                                         </p>
                                     </div>
                                 )}
+                                {user.owner_profile.owner_type ===
+                                    'organization' &&
+                                    user.owner_profile.organization_type && (
+                                        <div>
+                                            <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                                Organization Type
+                                            </p>
+                                            <p className="mt-1 text-sm font-semibold">
+                                                {organizationTypeLabel(
+                                                    user.owner_profile
+                                                        .organization_type,
+                                                )}
+                                                {user.owner_profile
+                                                    .organization_type ===
+                                                    'other' &&
+                                                user.owner_profile
+                                                    .organization_type_other
+                                                    ? ` (${user.owner_profile.organization_type_other})`
+                                                    : ''}
+                                            </p>
+                                        </div>
+                                    )}
                                 {user.owner_profile.tin_number && (
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">TIN Number</p>
-                                        <p className="mt-1 font-mono text-sm font-semibold">{user.owner_profile.tin_number}</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            TIN Number
+                                        </p>
+                                        <p className="mt-1 font-mono text-sm font-semibold">
+                                            {user.owner_profile.tin_number}
+                                        </p>
                                     </div>
                                 )}
                                 <div>
-                                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">National ID</p>
-                                    <p className="mt-1 font-mono text-sm font-semibold">{user.owner_profile.national_id || '—'}</p>
+                                    <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                        National ID
+                                    </p>
+                                    <p className="mt-1 font-mono text-sm font-semibold">
+                                        {user.owner_profile.national_id || '—'}
+                                    </p>
                                 </div>
                                 {user.owner_profile.trade_license_number && (
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Trade License</p>
-                                        <p className="mt-1 font-mono text-sm font-semibold">{user.owner_profile.trade_license_number}</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            Trade License
+                                        </p>
+                                        <p className="mt-1 font-mono text-sm font-semibold">
+                                            {
+                                                user.owner_profile
+                                                    .trade_license_number
+                                            }
+                                        </p>
                                     </div>
                                 )}
                                 {user.owner_profile.address && (
                                     <div className="md:col-span-2">
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Address</p>
-                                        <p className="mt-1 text-sm font-semibold">{user.owner_profile.address}</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            Address
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold">
+                                            {user.owner_profile.address}
+                                        </p>
                                     </div>
                                 )}
                                 {user.owner_profile.verified_at && (
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Verified At</p>
-                                        <p className="mt-1 text-sm font-semibold">{formatDate(user.owner_profile.verified_at)}</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            Verified At
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold">
+                                            {formatDate(
+                                                user.owner_profile.verified_at,
+                                            )}
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -432,36 +565,81 @@ export default function ShowUser({ user }: Props) {
 
                             {/* Documents */}
                             <div>
-                                <p className="mb-3 text-sm font-semibold text-slate-700">Documents</p>
+                                <p className="mb-3 text-sm font-semibold text-slate-700">
+                                    Documents
+                                </p>
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    {user.owner_profile.owner_type === 'individual' ? (
+                                    {user.owner_profile.owner_type ===
+                                    'individual' ? (
                                         <>
-                                            <DocumentCard path={user.owner_profile.national_id_front_file_path} label="National ID (Front)" />
-                                            <DocumentCard path={user.owner_profile.national_id_back_file_path} label="National ID (Back)" />
+                                            <DocumentCard
+                                                path={
+                                                    user.owner_profile
+                                                        .national_id_front_file_path
+                                                }
+                                                label="National ID (Front)"
+                                            />
+                                            <DocumentCard
+                                                path={
+                                                    user.owner_profile
+                                                        .national_id_back_file_path
+                                                }
+                                                label="National ID (Back)"
+                                            />
                                         </>
                                     ) : (
-                                        <DocumentCard path={user.owner_profile.business_license_file_path} label="Business License" />
+                                        <DocumentCard
+                                            path={
+                                                user.owner_profile
+                                                    .business_license_file_path
+                                            }
+                                            label="Business License"
+                                        />
                                     )}
                                 </div>
                             </div>
 
                             {/* Approval Bar */}
-                            {(user.owner_profile.verification_status === 'pending' || user.owner_profile.verification_status === 'incomplete') && (
+                            {(user.owner_profile.verification_status ===
+                                'pending' ||
+                                user.owner_profile.verification_status ===
+                                    'incomplete') && (
                                 <>
                                     <Separator />
                                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                                         <div>
-                                            <p className="font-semibold text-amber-900">Approve or reject this owner</p>
+                                            <p className="font-semibold text-amber-900">
+                                                Approve or reject this owner
+                                            </p>
                                             <p className="mt-0.5 text-sm text-amber-700">
-                                                Review the uploaded documents and approve to grant access, or reject if details are invalid.
+                                                Review the uploaded documents
+                                                and approve to grant access, or
+                                                reject if details are invalid.
                                             </p>
                                         </div>
                                         <div className="flex shrink-0 gap-2">
-                                            <Button size="sm" onClick={handleVerifyOwner} disabled={!can('owner_profiles.verify')}>
+                                            <Button
+                                                size="sm"
+                                                onClick={handleVerifyOwner}
+                                                disabled={
+                                                    !can(
+                                                        'owner_profiles.verify',
+                                                    )
+                                                }
+                                            >
                                                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                                                 Approve
                                             </Button>
-                                            <Button variant="destructive" size="sm" onClick={handleRejectOwner} disabled={!can('owner_profiles.verify')}>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={handleRejectOwner}
+                                                disabled={
+                                                    !can(
+                                                        'owner_profiles.verify',
+                                                    )
+                                                }
+                                            >
                                                 <XCircle className="mr-1.5 h-4 w-4" />
                                                 Reject
                                             </Button>
@@ -485,8 +663,18 @@ export default function ShowUser({ user }: Props) {
                                     Customer Identity
                                 </CardTitle>
                                 <StatusBadge
-                                    label={user.customer_identity.verification_status.charAt(0).toUpperCase() + user.customer_identity.verification_status.slice(1)}
-                                    tone={toneForStatus(user.customer_identity.verification_status)}
+                                    label={
+                                        user.customer_identity.verification_status
+                                            .charAt(0)
+                                            .toUpperCase() +
+                                        user.customer_identity.verification_status.slice(
+                                            1,
+                                        )
+                                    }
+                                    tone={toneForStatus(
+                                        user.customer_identity
+                                            .verification_status,
+                                    )}
                                 />
                             </div>
                         </CardHeader>
@@ -494,17 +682,37 @@ export default function ShowUser({ user }: Props) {
                         <CardContent className="space-y-5 p-6">
                             <div className="grid gap-4 md:grid-cols-3">
                                 <div>
-                                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">National ID Number</p>
-                                    <p className="mt-1 font-mono text-sm font-semibold">{user.customer_identity.national_id_number}</p>
+                                    <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                        National ID Number
+                                    </p>
+                                    <p className="mt-1 font-mono text-sm font-semibold">
+                                        {
+                                            user.customer_identity
+                                                .national_id_number
+                                        }
+                                    </p>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Verified By</p>
-                                    <p className="mt-1 text-sm font-semibold">{user.customer_identity.verified_by_name ?? 'Not yet verified'}</p>
+                                    <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                        Verified By
+                                    </p>
+                                    <p className="mt-1 text-sm font-semibold">
+                                        {user.customer_identity
+                                            .verified_by_name ??
+                                            'Not yet verified'}
+                                    </p>
                                 </div>
                                 {user.customer_identity.verified_at && (
                                     <div>
-                                        <p className="text-xs font-medium uppercase tracking-wider text-slate-500">Verified At</p>
-                                        <p className="mt-1 text-sm font-semibold">{formatDate(user.customer_identity.verified_at)}</p>
+                                        <p className="text-xs font-medium tracking-wider text-slate-500 uppercase">
+                                            Verified At
+                                        </p>
+                                        <p className="mt-1 text-sm font-semibold">
+                                            {formatDate(
+                                                user.customer_identity
+                                                    .verified_at,
+                                            )}
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -513,30 +721,70 @@ export default function ShowUser({ user }: Props) {
 
                             {/* Documents */}
                             <div>
-                                <p className="mb-3 text-sm font-semibold text-slate-700">Documents</p>
+                                <p className="mb-3 text-sm font-semibold text-slate-700">
+                                    Documents
+                                </p>
                                 <div className="grid gap-3 sm:grid-cols-2">
-                                    <DocumentCard path={user.customer_identity.national_id_front_path} label="National ID (Front)" />
-                                    <DocumentCard path={user.customer_identity.national_id_back_path} label="National ID (Back)" />
+                                    <DocumentCard
+                                        path={
+                                            user.customer_identity
+                                                .national_id_front_path
+                                        }
+                                        label="National ID (Front)"
+                                    />
+                                    <DocumentCard
+                                        path={
+                                            user.customer_identity
+                                                .national_id_back_path
+                                        }
+                                        label="National ID (Back)"
+                                    />
                                 </div>
                             </div>
 
                             {/* Approval Bar */}
-                            {user.customer_identity.verification_status === 'pending' && (
+                            {user.customer_identity.verification_status ===
+                                'pending' && (
                                 <>
                                     <Separator />
                                     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
                                         <div>
-                                            <p className="font-semibold text-amber-900">Approve or reject this identity</p>
+                                            <p className="font-semibold text-amber-900">
+                                                Approve or reject this identity
+                                            </p>
                                             <p className="mt-0.5 text-sm text-amber-700">
-                                                Verify the uploaded ID matches the user. Approved customers can book vehicles.
+                                                Verify the uploaded ID matches
+                                                the user. Approved customers can
+                                                book vehicles.
                                             </p>
                                         </div>
                                         <div className="flex shrink-0 gap-2">
-                                            <Button size="sm" onClick={handleVerifyCustomerIdentity} disabled={!can('customer_identities.verify')}>
+                                            <Button
+                                                size="sm"
+                                                onClick={
+                                                    handleVerifyCustomerIdentity
+                                                }
+                                                disabled={
+                                                    !can(
+                                                        'customer_identities.verify',
+                                                    )
+                                                }
+                                            >
                                                 <CheckCircle2 className="mr-1.5 h-4 w-4" />
                                                 Approve
                                             </Button>
-                                            <Button variant="destructive" size="sm" onClick={handleRejectCustomerIdentity} disabled={!can('customer_identities.verify')}>
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                onClick={
+                                                    handleRejectCustomerIdentity
+                                                }
+                                                disabled={
+                                                    !can(
+                                                        'customer_identities.verify',
+                                                    )
+                                                }
+                                            >
                                                 <XCircle className="mr-1.5 h-4 w-4" />
                                                 Reject
                                             </Button>
@@ -549,95 +797,188 @@ export default function ShowUser({ user }: Props) {
                 )}
 
                 {/* Driver Profile */}
-                {user.driver_profile && (user.role === 'driver' || user.staff_role_id !== null) && (
-                    <Card>
-                        <CardHeader className="border-b bg-slate-50/50 pb-4">
-                            <div className="flex items-center justify-between">
-                                <CardTitle className="flex items-center gap-2 text-lg">
-                                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
-                                        <Car className="h-4 w-4 text-primary" />
-                                    </div>
-                                    Driver Profile
-                                </CardTitle>
-                                <StatusBadge
-                                    label={user.driver_profile.verification_status.charAt(0).toUpperCase() + user.driver_profile.verification_status.slice(1)}
-                                    tone={toneForStatus(user.driver_profile.verification_status)}
-                                />
-                            </div>
-                        </CardHeader>
+                {user.driver_profile &&
+                    (user.role === 'driver' || user.staff_role_id !== null) && (
+                        <Card>
+                            <CardHeader className="border-b bg-slate-50/50 pb-4">
+                                <div className="flex items-center justify-between">
+                                    <CardTitle className="flex items-center gap-2 text-lg">
+                                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+                                            <Car className="h-4 w-4 text-primary" />
+                                        </div>
+                                        Driver Profile
+                                    </CardTitle>
+                                    <StatusBadge
+                                        label={
+                                            user.driver_profile.verification_status
+                                                .charAt(0)
+                                                .toUpperCase() +
+                                            user.driver_profile.verification_status.slice(
+                                                1,
+                                            )
+                                        }
+                                        tone={toneForStatus(
+                                            user.driver_profile
+                                                .verification_status,
+                                        )}
+                                    />
+                                </div>
+                            </CardHeader>
 
-                        <CardContent className="space-y-5 p-6">
-                            {/* Spec Tiles */}
-                            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
-                                <SpecTile icon={CreditCard} label="License Number" value={user.driver_profile.license_number} />
-                                <SpecTile icon={Shield} label="License Type" value={user.driver_profile.license_type} />
-                                <SpecTile icon={Calendar} label="Experience" value={`${user.driver_profile.experience_years} years`} />
-                                <SpecTile icon={MapPin} label="Location" value={user.driver_profile.location} />
-                                <SpecTile icon={BadgeCheck} label="Availability" value={user.driver_profile.availability} />
-                                {user.driver_profile.proficient_language && (
-                                    <SpecTile icon={BadgeCheck} label="Language" value={user.driver_profile.proficient_language} />
-                                )}
-                            </div>
+                            <CardContent className="space-y-5 p-6">
+                                {/* Spec Tiles */}
+                                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                                    <SpecTile
+                                        icon={CreditCard}
+                                        label="License Number"
+                                        value={
+                                            user.driver_profile.license_number
+                                        }
+                                    />
+                                    <SpecTile
+                                        icon={Shield}
+                                        label="License Type"
+                                        value={user.driver_profile.license_type}
+                                    />
+                                    <SpecTile
+                                        icon={Calendar}
+                                        label="Experience"
+                                        value={`${user.driver_profile.experience_years} years`}
+                                    />
+                                    <SpecTile
+                                        icon={MapPin}
+                                        label="Location"
+                                        value={user.driver_profile.location}
+                                    />
+                                    <SpecTile
+                                        icon={BadgeCheck}
+                                        label="Availability"
+                                        value={user.driver_profile.availability}
+                                    />
+                                    {user.driver_profile
+                                        .proficient_language && (
+                                        <SpecTile
+                                            icon={BadgeCheck}
+                                            label="Language"
+                                            value={
+                                                user.driver_profile
+                                                    .proficient_language
+                                            }
+                                        />
+                                    )}
+                                </div>
 
-                            {/* Payment Information */}
-                            {(user.driver_profile.telebirr_phone || user.driver_profile.cbe_account) && (
-                                <>
-                                    <Separator />
-                                    <div>
-                                        <p className="mb-3 text-sm font-semibold text-slate-700">Payment Information</p>
-                                        <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
-                                            <div className="grid gap-4 sm:grid-cols-2">
-                                                {user.driver_profile.telebirr_phone && (
-                                                    <div>
-                                                        <p className="text-xs font-medium text-blue-600">Telebirr Phone</p>
-                                                        <p className="mt-1 font-mono text-sm font-semibold text-blue-900">{user.driver_profile.telebirr_phone}</p>
-                                                    </div>
-                                                )}
-                                                {user.driver_profile.cbe_account && (
-                                                    <div>
-                                                        <p className="text-xs font-medium text-blue-600">CBE Account</p>
-                                                        <p className="mt-1 font-mono text-sm font-semibold text-blue-900">{user.driver_profile.cbe_account}</p>
-                                                    </div>
-                                                )}
+                                {/* Payment Information */}
+                                {(user.driver_profile.telebirr_phone ||
+                                    user.driver_profile.cbe_account) && (
+                                    <>
+                                        <Separator />
+                                        <div>
+                                            <p className="mb-3 text-sm font-semibold text-slate-700">
+                                                Payment Information
+                                            </p>
+                                            <div className="rounded-xl border border-blue-100 bg-blue-50/50 p-4">
+                                                <div className="grid gap-4 sm:grid-cols-2">
+                                                    {user.driver_profile
+                                                        .telebirr_phone && (
+                                                        <div>
+                                                            <p className="text-xs font-medium text-blue-600">
+                                                                Telebirr Phone
+                                                            </p>
+                                                            <p className="mt-1 font-mono text-sm font-semibold text-blue-900">
+                                                                {
+                                                                    user
+                                                                        .driver_profile
+                                                                        .telebirr_phone
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                    {user.driver_profile
+                                                        .cbe_account && (
+                                                        <div>
+                                                            <p className="text-xs font-medium text-blue-600">
+                                                                CBE Account
+                                                            </p>
+                                                            <p className="mt-1 font-mono text-sm font-semibold text-blue-900">
+                                                                {
+                                                                    user
+                                                                        .driver_profile
+                                                                        .cbe_account
+                                                                }
+                                                            </p>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </>
-                            )}
+                                    </>
+                                )}
 
-                            {/* License Document */}
-                            <div>
-                                <p className="mb-3 text-sm font-semibold text-slate-700">Documents</p>
-                                <DocumentCard path={user.driver_profile.license_file_path ?? null} label="Driving License" />
-                            </div>
+                                {/* License Document */}
+                                <div>
+                                    <p className="mb-3 text-sm font-semibold text-slate-700">
+                                        Documents
+                                    </p>
+                                    <DocumentCard
+                                        path={
+                                            user.driver_profile
+                                                .license_file_path ?? null
+                                        }
+                                        label="Driving License"
+                                    />
+                                </div>
 
-                            {/* Approval Bar */}
-                            {user.driver_profile.verification_status === 'pending' && (
-                                <>
-                                    <Separator />
-                                    <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-                                        <div>
-                                            <p className="font-semibold text-amber-900">Approve or reject this driver</p>
-                                            <p className="mt-0.5 text-sm text-amber-700">
-                                                Review the license document and credentials before approving.
-                                            </p>
+                                {/* Approval Bar */}
+                                {user.driver_profile.verification_status ===
+                                    'pending' && (
+                                    <>
+                                        <Separator />
+                                        <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+                                            <div>
+                                                <p className="font-semibold text-amber-900">
+                                                    Approve or reject this
+                                                    driver
+                                                </p>
+                                                <p className="mt-0.5 text-sm text-amber-700">
+                                                    Review the license document
+                                                    and credentials before
+                                                    approving.
+                                                </p>
+                                            </div>
+                                            <div className="flex shrink-0 gap-2">
+                                                <Button
+                                                    size="sm"
+                                                    onClick={handleVerifyDriver}
+                                                    disabled={
+                                                        !can(
+                                                            'driver_profiles.verify',
+                                                        )
+                                                    }
+                                                >
+                                                    <CheckCircle2 className="mr-1.5 h-4 w-4" />
+                                                    Approve
+                                                </Button>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    onClick={handleRejectDriver}
+                                                    disabled={
+                                                        !can(
+                                                            'driver_profiles.verify',
+                                                        )
+                                                    }
+                                                >
+                                                    <XCircle className="mr-1.5 h-4 w-4" />
+                                                    Reject
+                                                </Button>
+                                            </div>
                                         </div>
-                                        <div className="flex shrink-0 gap-2">
-                                            <Button size="sm" onClick={handleVerifyDriver} disabled={!can('driver_profiles.verify')}>
-                                                <CheckCircle2 className="mr-1.5 h-4 w-4" />
-                                                Approve
-                                            </Button>
-                                            <Button variant="destructive" size="sm" onClick={handleRejectDriver} disabled={!can('driver_profiles.verify')}>
-                                                <XCircle className="mr-1.5 h-4 w-4" />
-                                                Reject
-                                            </Button>
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                        </CardContent>
-                    </Card>
-                )}
+                                    </>
+                                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
                 {/* Driver Reviews */}
                 {user.reviews && user.reviews.length > 0 && (
@@ -648,30 +989,49 @@ export default function ShowUser({ user }: Props) {
                                     <Star className="h-4 w-4 text-primary" />
                                 </div>
                                 Driver Reviews
-                                <Badge variant="secondary" className="ml-1">{user.reviews.length}</Badge>
+                                <Badge variant="secondary" className="ml-1">
+                                    {user.reviews.length}
+                                </Badge>
                             </CardTitle>
                         </CardHeader>
 
                         <CardContent className="p-6">
                             <div className="space-y-3">
                                 {user.reviews.map((r) => (
-                                    <div key={r.id} className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-4">
+                                    <div
+                                        key={r.id}
+                                        className="flex items-start justify-between gap-3 rounded-lg border bg-slate-50/70 p-4"
+                                    >
                                         <div className="min-w-0 flex-1">
                                             <div className="flex items-center gap-2">
-                                                <p className="font-medium">{r.reviewer.name}</p>
-                                                <span className="text-sm text-amber-500">{r.rating} ★</span>
-                                                <span className="text-xs text-muted-foreground">· {formatDate(r.created_at)}</span>
+                                                <p className="font-medium">
+                                                    {r.reviewer.name}
+                                                </p>
+                                                <span className="text-sm text-amber-500">
+                                                    {r.rating} ★
+                                                </span>
+                                                <span className="text-xs text-muted-foreground">
+                                                    · {formatDate(r.created_at)}
+                                                </span>
                                             </div>
                                             {r.review_text && (
-                                                <p className="mt-2 text-sm text-muted-foreground">{r.review_text}</p>
+                                                <p className="mt-2 text-sm text-muted-foreground">
+                                                    {r.review_text}
+                                                </p>
                                             )}
                                         </div>
                                         <Button
                                             variant="destructive"
                                             size="sm"
                                             onClick={() => {
-                                                if (confirm('Delete this review?')) {
-                                                    router.delete(`/admin/reviews/${r.id}`);
+                                                if (
+                                                    confirm(
+                                                        'Delete this review?',
+                                                    )
+                                                ) {
+                                                    router.delete(
+                                                        `/admin/reviews/${r.id}`,
+                                                    );
                                                 }
                                             }}
                                         >

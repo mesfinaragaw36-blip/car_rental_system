@@ -62,7 +62,10 @@ export default function Register({ passwordRules }: Props) {
                         ) : (
                             /* Full Name - For Individual Owner, Customer, Driver */
                             <div className="space-y-1.5">
-                                <Label htmlFor="name" className="font-semibold !text-white">
+                                <Label
+                                    htmlFor="name"
+                                    className="font-semibold !text-white"
+                                >
                                     Full name
                                 </Label>
                                 <div className="relative">
@@ -111,7 +114,10 @@ export default function Register({ passwordRules }: Props) {
                         ) : (
                             /* Phone - For Individual Owner, Customer, Driver */
                             <div className="space-y-1.5">
-                                <Label htmlFor="phone" className="font-semibold !text-white">
+                                <Label
+                                    htmlFor="phone"
+                                    className="font-semibold !text-white"
+                                >
                                     Phone number
                                 </Label>
                                 <div className="relative">
@@ -187,7 +193,7 @@ export default function Register({ passwordRules }: Props) {
                                             setOwnerType('');
                                         }
                                     }}
-                                    className="h-11 w-full appearance-none rounded-xl border border-[#D7F2F8] bg-[#F7FCFF] py-2 pr-9 pl-3 text-sm text-[#16425B] shadow-none transition-all focus-visible:border-[#87CEEB] focus-visible:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#87CEEB]/40"
+                                    className="h-11 w-full appearance-none rounded-xl border border-[#D7F2F8] bg-[#F7FCFF] py-2 pr-9 pl-3 text-sm text-[#16425B] shadow-none transition-all focus-visible:border-[#87CEEB] focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[#87CEEB]/40 focus-visible:outline-none"
                                 >
                                     <option
                                         value=""
@@ -197,17 +203,11 @@ export default function Register({ passwordRules }: Props) {
                                         Select a role…
                                     </option>
 
-                                    <option value="customer">
-                                        Customer
-                                    </option>
+                                    <option value="customer">Customer</option>
 
-                                    <option value="owner">
-                                        Owner
-                                    </option>
+                                    <option value="owner">Owner</option>
 
-                                    <option value="driver">
-                                        Driver
-                                    </option>
+                                    <option value="driver">Driver</option>
                                 </select>
 
                                 <ChevronDown className="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-[#007BA7]" />
@@ -236,7 +236,7 @@ export default function Register({ passwordRules }: Props) {
                                         onChange={(e) =>
                                             setOwnerType(e.target.value)
                                         }
-                                        className="h-11 w-full appearance-none rounded-xl border border-[#D7F2F8] bg-[#F7FCFF] py-2 pr-9 pl-3 text-sm text-[#16425B] shadow-none transition-all focus-visible:border-[#87CEEB] focus-visible:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#87CEEB]/40"
+                                        className="h-11 w-full appearance-none rounded-xl border border-[#D7F2F8] bg-[#F7FCFF] py-2 pr-9 pl-3 text-sm text-[#16425B] shadow-none transition-all focus-visible:border-[#87CEEB] focus-visible:bg-white focus-visible:ring-2 focus-visible:ring-[#87CEEB]/40 focus-visible:outline-none"
                                     >
                                         <option value="" disabled>
                                             Select owner type…
@@ -375,9 +375,7 @@ export default function Register({ passwordRules }: Props) {
                         <div className="relative flex items-center gap-3">
                             <div className="h-px flex-1 !bg-white/15" />
 
-                            <span className="text-xs !text-white/50">
-                                or
-                            </span>
+                            <span className="text-xs !text-white/50">or</span>
 
                             <div className="h-px flex-1 !bg-white/15" />
                         </div>
@@ -385,7 +383,6 @@ export default function Register({ passwordRules }: Props) {
                         {/* Footer */}
                         <p className="text-center text-sm !text-white/70">
                             Already have an account?{' '}
-
                             <TextLink
                                 href={login()}
                                 tabIndex={

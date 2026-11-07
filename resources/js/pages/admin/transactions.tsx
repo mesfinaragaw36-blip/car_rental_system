@@ -138,9 +138,11 @@ export default function AdminTransactions({
     const type = filters.type ?? 'all';
 
     const [selected, setSelected] = useState<Transaction | null>(null);
-    const [driverPayoutModal, setDriverPayoutModal] = useState<Transaction | null>(null);
+    const [driverPayoutModal, setDriverPayoutModal] =
+        useState<Transaction | null>(null);
     const [refundModal, setRefundModal] = useState<Transaction | null>(null);
-    const [ownerPayoutModal, setOwnerPayoutModal] = useState<Transaction | null>(null);
+    const [ownerPayoutModal, setOwnerPayoutModal] =
+        useState<Transaction | null>(null);
 
     function selectType(value: string) {
         router.get(
@@ -891,7 +893,7 @@ export default function AdminTransactions({
                     open={!!driverPayoutModal}
                     onOpenChange={(open) => !open && setDriverPayoutModal(null)}
                 >
-                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Driver Payment Details</DialogTitle>
                         </DialogHeader>
@@ -1022,7 +1024,7 @@ export default function AdminTransactions({
                     open={!!refundModal}
                     onOpenChange={(open) => !open && setRefundModal(null)}
                 >
-                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Payment Details</DialogTitle>
                         </DialogHeader>
@@ -1044,16 +1046,15 @@ export default function AdminTransactions({
                                     <div className="space-y-3">
                                         <DetailRow
                                             label="Customer Name"
-                                            value={
-                                                refundModal.customer || '—'
-                                            }
+                                            value={refundModal.customer || '—'}
                                         />
 
                                         <DetailRow
                                             label="Email"
                                             value={
                                                 <span className="text-sm">
-                                                    {refundModal.customer_email || '—'}
+                                                    {refundModal.customer_email ||
+                                                        '—'}
                                                 </span>
                                             }
                                         />
@@ -1063,11 +1064,13 @@ export default function AdminTransactions({
                                         <DetailRow
                                             label="Refund Method"
                                             value={
-                                                refundModal.customer_refund_method === 'telebirr'
+                                                refundModal.customer_refund_method ===
+                                                'telebirr'
                                                     ? 'Telebirr'
-                                                    : refundModal.customer_refund_method === 'cbe'
-                                                        ? 'CBE Birr'
-                                                        : 'Not set'
+                                                    : refundModal.customer_refund_method ===
+                                                        'cbe'
+                                                      ? 'CBE Birr'
+                                                      : 'Not set'
                                             }
                                         />
 
@@ -1076,7 +1079,9 @@ export default function AdminTransactions({
                                             value={
                                                 refundModal.customer_account_number ? (
                                                     <span className="font-mono text-blue-600">
-                                                        {refundModal.customer_account_number}
+                                                        {
+                                                            refundModal.customer_account_number
+                                                        }
                                                     </span>
                                                 ) : (
                                                     <span className="text-muted-foreground">
@@ -1103,8 +1108,7 @@ export default function AdminTransactions({
                                             label="Refund Amount"
                                             value={
                                                 <span className="text-lg font-bold text-green-600">
-                                                    ETB{' '}
-                                                    {refundModal.amount}
+                                                    ETB {refundModal.amount}
                                                 </span>
                                             }
                                         />
@@ -1136,9 +1140,7 @@ export default function AdminTransactions({
                                     <Button
                                         variant="outline"
                                         className="flex-1"
-                                        onClick={() =>
-                                            setRefundModal(null)
-                                        }
+                                        onClick={() => setRefundModal(null)}
                                     >
                                         Cancel
                                     </Button>
@@ -1160,7 +1162,7 @@ export default function AdminTransactions({
                     open={!!ownerPayoutModal}
                     onOpenChange={(open) => !open && setOwnerPayoutModal(null)}
                 >
-                    <DialogContent className="max-w-md max-h-[85vh] overflow-y-auto">
+                    <DialogContent className="max-h-[85vh] max-w-md overflow-y-auto">
                         <DialogHeader>
                             <DialogTitle>Owner Payout Details</DialogTitle>
                         </DialogHeader>
@@ -1191,7 +1193,8 @@ export default function AdminTransactions({
                                             label="Email"
                                             value={
                                                 <span className="text-sm">
-                                                    {ownerPayoutModal.owner_email || '—'}
+                                                    {ownerPayoutModal.owner_email ||
+                                                        '—'}
                                                 </span>
                                             }
                                         />
@@ -1201,11 +1204,13 @@ export default function AdminTransactions({
                                         <DetailRow
                                             label="Payout Method"
                                             value={
-                                                ownerPayoutModal.owner_refund_method === 'telebirr'
+                                                ownerPayoutModal.owner_refund_method ===
+                                                'telebirr'
                                                     ? 'Telebirr'
-                                                    : ownerPayoutModal.owner_refund_method === 'cbe'
-                                                        ? 'CBE Birr'
-                                                        : 'Not set'
+                                                    : ownerPayoutModal.owner_refund_method ===
+                                                        'cbe'
+                                                      ? 'CBE Birr'
+                                                      : 'Not set'
                                             }
                                         />
 
@@ -1214,7 +1219,9 @@ export default function AdminTransactions({
                                             value={
                                                 ownerPayoutModal.owner_account_number ? (
                                                     <span className="font-mono text-blue-600">
-                                                        {ownerPayoutModal.owner_account_number}
+                                                        {
+                                                            ownerPayoutModal.owner_account_number
+                                                        }
                                                     </span>
                                                 ) : (
                                                     <span className="text-muted-foreground">

@@ -116,7 +116,9 @@ export default function DriverPayments({ assignments = [] }: Props) {
                                         <div className="shrink-0 space-y-1 text-right">
                                             <p className="text-lg font-bold">
                                                 ETB{' '}
-                                                {Number(a.earnings).toLocaleString()}
+                                                {Number(
+                                                    a.earnings,
+                                                ).toLocaleString()}
                                             </p>
                                             <span
                                                 className={`inline-block rounded-full px-3 py-1 text-xs font-medium ${

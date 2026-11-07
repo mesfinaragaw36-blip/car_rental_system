@@ -100,7 +100,7 @@ export function ReviewModal({
                                         className={cn(
                                             'size-8 transition-colors duration-150',
                                             star <= activeStars
-                                                ? 'text-brand fill-brand'
+                                                ? 'fill-brand text-brand'
                                                 : 'text-slate-400',
                                         )}
                                     />
@@ -110,11 +110,14 @@ export function ReviewModal({
                         <p
                             className={cn(
                                 'text-sm font-medium',
-                                rating > 0 ? 'text-brand' : 'text-muted-foreground',
+                                rating > 0
+                                    ? 'text-brand'
+                                    : 'text-muted-foreground',
                             )}
                         >
                             {rating > 0
-                                ? RATING_LABELS[rating] ?? `${rating} star${rating > 1 ? 's' : ''}`
+                                ? (RATING_LABELS[rating] ??
+                                  `${rating} star${rating > 1 ? 's' : ''}`)
                                 : 'Select a rating'}
                         </p>
                     </div>
@@ -129,7 +132,9 @@ export function ReviewModal({
                             rows={4}
                             className="resize-none"
                         />
-                        {error && <p className="text-sm text-destructive">{error}</p>}
+                        {error && (
+                            <p className="text-sm text-destructive">{error}</p>
+                        )}
                     </div>
                 </div>
 
@@ -140,7 +145,11 @@ export function ReviewModal({
                     <Button
                         type="button"
                         onClick={handleSubmit}
-                        disabled={processing || rating === 0 || reviewText.trim() === ''}
+                        disabled={
+                            processing ||
+                            rating === 0 ||
+                            reviewText.trim() === ''
+                        }
                         className="bg-brand text-white hover:bg-brand/90"
                     >
                         {processing ? 'Submitting...' : 'Submit Review'}

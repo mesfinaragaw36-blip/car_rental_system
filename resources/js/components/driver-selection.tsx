@@ -1,4 +1,14 @@
-import { User, Star, FileCheck, Shield, MapPin, DollarSign, ChevronLeft, ChevronRight, Languages } from 'lucide-react';
+import {
+    User,
+    Star,
+    FileCheck,
+    Shield,
+    MapPin,
+    DollarSign,
+    ChevronLeft,
+    ChevronRight,
+    Languages,
+} from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,13 +70,16 @@ export default function DriverSelection({
                     return_date: returnDate,
                 });
 
-                const response = await fetch(`/api/available-drivers?${params}`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
+                const response = await fetch(
+                    `/api/available-drivers?${params}`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            Accept: 'application/json',
+                        },
                     },
-                });
+                );
 
                 if (!response.ok) {
                     throw new Error('Failed to load drivers');
@@ -125,12 +138,15 @@ export default function DriverSelection({
             <Card className="border-amber-200 bg-amber-50">
                 <CardContent className="py-6">
                     <div className="text-center text-amber-800">
-                        <p className="font-medium">No available drivers at this time</p>
+                        <p className="font-medium">
+                            No available drivers at this time
+                        </p>
                         <p className="mt-1 text-sm">
-                            There are no drivers available for your selected dates. 
-                            You can proceed with "System Auto Assign" and a driver 
-                            will be automatically assigned after you pay the deposit 
-                            and the vehicle inspection is approved.
+                            There are no drivers available for your selected
+                            dates. You can proceed with "System Auto Assign" and
+                            a driver will be automatically assigned after you
+                            pay the deposit and the vehicle inspection is
+                            approved.
                         </p>
                     </div>
                 </CardContent>
@@ -174,7 +190,9 @@ export default function DriverSelection({
 
             {drivers.length > 0 && (
                 <div className="text-sm text-muted-foreground">
-                    Showing {startIndex + 1}-{Math.min(endIndex, drivers.length)} of {drivers.length} available driver{drivers.length === 1 ? '' : 's'}
+                    Showing {startIndex + 1}-
+                    {Math.min(endIndex, drivers.length)} of {drivers.length}{' '}
+                    available driver{drivers.length === 1 ? '' : 's'}
                 </div>
             )}
 
@@ -208,7 +226,7 @@ export default function DriverSelection({
                             {driver.profile.gender && (
                                 <div className="flex items-center gap-2">
                                     <User className="h-4 w-4 text-muted-foreground" />
-                                    <span className="capitalize text-muted-foreground">
+                                    <span className="text-muted-foreground capitalize">
                                         {driver.profile.gender}
                                     </span>
                                 </div>
@@ -247,18 +265,26 @@ export default function DriverSelection({
                             )}
 
                             {/* Languages */}
-                            {driver.profile.proficient_language && driver.profile.proficient_language.length > 0 && (
-                                <div className="flex items-center gap-2">
-                                    <Languages className="h-4 w-4 text-purple-500" />
-                                    <div className="flex flex-wrap gap-1">
-                                        {driver.profile.proficient_language.map((lang) => (
-                                            <Badge key={lang} variant="secondary" className="text-xs">
-                                                {lang}
-                                            </Badge>
-                                        ))}
+                            {driver.profile.proficient_language &&
+                                driver.profile.proficient_language.length >
+                                    0 && (
+                                    <div className="flex items-center gap-2">
+                                        <Languages className="h-4 w-4 text-purple-500" />
+                                        <div className="flex flex-wrap gap-1">
+                                            {driver.profile.proficient_language.map(
+                                                (lang) => (
+                                                    <Badge
+                                                        key={lang}
+                                                        variant="secondary"
+                                                        className="text-xs"
+                                                    >
+                                                        {lang}
+                                                    </Badge>
+                                                ),
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                            )}
+                                )}
 
                             {/* Daily Rate */}
                             <div className="flex items-center gap-2">

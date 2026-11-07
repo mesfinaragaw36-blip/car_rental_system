@@ -90,18 +90,18 @@ export default function CarDetails({
             onSuccess: () => {},
         });
     };
-   const verificationMessage =
-    verification_status === 'pending'
-        ? 'Your national ID is currently under review. You can book a car once your verification is approved.'
-        : verification_status === 'rejected'
-          ? 'Your national ID verification was rejected. Please review and resubmit your ID information.'
-          : 'Please submit your national ID to complete verification before booking a car.';
-          const verificationTitle =
-    verification_status === 'pending'
-        ? 'Verification Pending'
-        : verification_status === 'rejected'
-            ? 'Verification Rejected'
-            : 'Verification Required';
+    const verificationMessage =
+        verification_status === 'pending'
+            ? 'Your national ID is currently under review. You can book a car once your verification is approved.'
+            : verification_status === 'rejected'
+              ? 'Your national ID verification was rejected. Please review and resubmit your ID information.'
+              : 'Please submit your national ID to complete verification before booking a car.';
+    const verificationTitle =
+        verification_status === 'pending'
+            ? 'Verification Pending'
+            : verification_status === 'rejected'
+              ? 'Verification Rejected'
+              : 'Verification Required';
 
     return (
         <>
@@ -226,9 +226,7 @@ export default function CarDetails({
                                                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-primary text-sm font-bold text-white">
                                                     {r.reviewer.name
                                                         .split(' ')
-                                                        .map((part) =>
-                                                            part[0],
-                                                        )
+                                                        .map((part) => part[0])
                                                         .slice(0, 2)
                                                         .join('')
                                                         .toUpperCase()}
@@ -372,8 +370,8 @@ export default function CarDetails({
                             </CardHeader>
                             <CardContent className="space-y-4">
                                 <p className="text-sm text-muted-foreground">
-    {verificationMessage}
-</p>
+                                    {verificationMessage}
+                                </p>
                                 <Button asChild>
                                     <Link href={editProfile.url()}>
                                         Go to Profile
@@ -546,7 +544,10 @@ export default function CarDetails({
                                                 }
                                                 className="w-full"
                                                 onClick={() => {
-                                                    setData('need_driver', false);
+                                                    setData(
+                                                        'need_driver',
+                                                        false,
+                                                    );
                                                     setData('driver_id', null);
                                                 }}
                                                 disabled={
@@ -580,9 +581,12 @@ export default function CarDetails({
                                                             ? 'default'
                                                             : 'outline'
                                                     }
-                                                    className="h-auto flex-col items-start gap-2 whitespace-normal p-4 text-left"
+                                                    className="h-auto flex-col items-start gap-2 p-4 text-left whitespace-normal"
                                                     onClick={() => {
-                                                        setData('driver_id', -1);
+                                                        setData(
+                                                            'driver_id',
+                                                            -1,
+                                                        );
                                                     }}
                                                 >
                                                     <div className="font-semibold">
@@ -598,19 +602,24 @@ export default function CarDetails({
                                                 <Button
                                                     type="button"
                                                     variant={
-                                                        data.driver_id !== null &&
+                                                        data.driver_id !==
+                                                            null &&
                                                         data.driver_id !== -1
                                                             ? 'default'
                                                             : 'outline'
                                                     }
-                                                    className="h-auto flex-col items-start gap-2 whitespace-normal p-4 text-left"
+                                                    className="h-auto flex-col items-start gap-2 p-4 text-left whitespace-normal"
                                                     onClick={() => {
                                                         if (
                                                             data.driver_id ===
                                                                 -1 ||
-                                                            data.driver_id === null
+                                                            data.driver_id ===
+                                                                null
                                                         ) {
-                                                            setData('driver_id', 0);
+                                                            setData(
+                                                                'driver_id',
+                                                                0,
+                                                            );
                                                         }
                                                     }}
                                                 >
@@ -641,7 +650,10 @@ export default function CarDetails({
                                                         : data.driver_id
                                                 }
                                                 onDriverSelect={(driverId) =>
-                                                    setData('driver_id', driverId)
+                                                    setData(
+                                                        'driver_id',
+                                                        driverId,
+                                                    )
                                                 }
                                             />
                                         )}

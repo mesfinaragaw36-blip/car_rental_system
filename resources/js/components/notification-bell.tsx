@@ -27,7 +27,8 @@ interface SharedNotifications {
 
 export function NotificationBell() {
     const pageProps = usePage().props as Record<string, unknown>;
-    const shared = (pageProps.sharedNotifications ?? pageProps.notifications) as SharedNotifications | undefined;
+    const shared = (pageProps.sharedNotifications ??
+        pageProps.notifications) as SharedNotifications | undefined;
 
     const unreadCount = shared?.unread_count ?? 0;
     const latest = shared?.latest ?? [];

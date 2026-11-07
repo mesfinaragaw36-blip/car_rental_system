@@ -97,10 +97,7 @@ const DEFAULT_COLORS = [
     'Yellow',
 ];
 
-export default function ConfigurationsIndex({
-    items,
-    pagination,
-}: Props) {
+export default function ConfigurationsIndex({ items, pagination }: Props) {
     const can = useCan();
 
     const [dialogOpen, setDialogOpen] = useState(false);

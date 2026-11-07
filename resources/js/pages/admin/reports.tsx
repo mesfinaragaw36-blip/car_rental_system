@@ -347,7 +347,7 @@ function MetricCard({
 }) {
     return (
         <div className="border border-[#D7F2F8] bg-white p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-[#7F8D9A]">
+            <p className="text-xs font-semibold tracking-wide text-[#7F8D9A] uppercase">
                 {label}
             </p>
 
@@ -377,7 +377,7 @@ function ReportTable({
                         {headers.map((header) => (
                             <th
                                 key={header}
-                                className="px-4 py-3 text-left text-[11px] font-bold uppercase tracking-wide text-[#5E6A76]"
+                                className="px-4 py-3 text-left text-[11px] font-bold tracking-wide text-[#5E6A76] uppercase"
                             >
                                 {header}
                             </th>
@@ -443,8 +443,7 @@ export default function Reports({
     const [from, setFrom] = useState(filters.from ?? '');
     const [to, setTo] = useState(filters.to ?? '');
 
-    const [activeSection, setActiveSection] =
-        useState<SectionKey>('executive');
+    const [activeSection, setActiveSection] = useState<SectionKey>('executive');
 
     const [customerPage, setCustomerPage] = useState(1);
     const [ownerPage, setOwnerPage] = useState(1);
@@ -539,23 +538,11 @@ export default function Reports({
         pageSize,
     );
 
-    const paginatedOwners = PaginatedRows(
-        topOwners,
-        ownerPage,
-        pageSize,
-    );
+    const paginatedOwners = PaginatedRows(topOwners, ownerPage, pageSize);
 
-    const paginatedDrivers = PaginatedRows(
-        topDrivers,
-        driverPage,
-        pageSize,
-    );
+    const paginatedDrivers = PaginatedRows(topDrivers, driverPage, pageSize);
 
-    const paginatedCars = PaginatedRows(
-        topCars,
-        carPage,
-        pageSize,
-    );
+    const paginatedCars = PaginatedRows(topCars, carPage, pageSize);
 
     const paginatedRevenue = PaginatedRows(
         revenueByDate,
@@ -589,7 +576,6 @@ export default function Reports({
 
             <div className="min-h-screen bg-[#F7FCFF] px-4 py-6 text-[#16425B] sm:px-6 lg:px-8">
                 <div className="mx-auto max-w-7xl">
-
                     {/* PAGE HEADER */}
                     <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div>
@@ -654,7 +640,7 @@ export default function Reports({
                             <div className="flex-1">
                                 <label
                                     htmlFor="from"
-                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#5E6A76]"
+                                    className="mb-1.5 block text-xs font-semibold tracking-wide text-[#5E6A76] uppercase"
                                 >
                                     From
                                 </label>
@@ -666,14 +652,14 @@ export default function Reports({
                                     onChange={(event) =>
                                         setFrom(event.target.value)
                                     }
-                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] outline-none transition focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
+                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] transition outline-none focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
                                 />
                             </div>
 
                             <div className="flex-1">
                                 <label
                                     htmlFor="to"
-                                    className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-[#5E6A76]"
+                                    className="mb-1.5 block text-xs font-semibold tracking-wide text-[#5E6A76] uppercase"
                                 >
                                     To
                                 </label>
@@ -685,7 +671,7 @@ export default function Reports({
                                     onChange={(event) =>
                                         setTo(event.target.value)
                                     }
-                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] outline-none transition focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
+                                    className="h-10 w-full rounded-lg border border-[#D7F2F8] bg-[#F7FCFF] px-3 text-sm text-[#16425B] transition outline-none focus:border-[#007BA7] focus:ring-2 focus:ring-[#E5F8FC]"
                                 />
                             </div>
 
@@ -715,8 +701,7 @@ export default function Reports({
                     <div className="mb-6 overflow-x-auto rounded-2xl border border-[#D7F2F8] bg-white shadow-sm">
                         <div className="flex min-w-max">
                             {REPORT_SECTIONS.map((section) => {
-                                const isActive =
-                                    section.key === activeSection;
+                                const isActive = section.key === activeSection;
 
                                 return (
                                     <button
@@ -745,7 +730,6 @@ export default function Reports({
 
                     {/* ACTIVE REPORT */}
                     <article className="overflow-hidden rounded-2xl border border-[#D7F2F8] bg-white shadow-sm">
-
                         {/* REPORT HEADER */}
                         <header className="border-b-2 border-[#007BA7] bg-[#F7FCFF] px-6 py-7 sm:px-8">
                             <div className="flex flex-col gap-5 sm:flex-row sm:items-start sm:justify-between">
@@ -756,7 +740,7 @@ export default function Reports({
                                         </div>
 
                                         <div>
-                                            <p className="text-xs font-bold uppercase tracking-[0.2em] text-[#16425B]">
+                                            <p className="text-xs font-bold tracking-[0.2em] text-[#16425B] uppercase">
                                                 Ethio Car Rental
                                             </p>
 
@@ -780,9 +764,7 @@ export default function Reports({
                                         type="button"
                                         variant="outline"
                                         size="sm"
-                                        onClick={() =>
-                                            exportCsv(activeSection)
-                                        }
+                                        onClick={() => exportCsv(activeSection)}
                                         className="gap-2 border-[#D7F2F8] bg-white text-[#16425B] hover:bg-[#E8F8FC] hover:text-[#007BA7]"
                                     >
                                         <Download className="h-4 w-4" />
@@ -793,16 +775,13 @@ export default function Reports({
                         </header>
 
                         <div className="p-6 sm:p-8">
-
                             {/* EXECUTIVE SUMMARY */}
                             {activeSection === 'executive' && (
                                 <section>
                                     <SectionHeader
                                         title="Executive Summary"
                                         description="High-level overview of the rental business during the selected period."
-                                        icon={
-                                            <FileText className="h-4 w-4" />
-                                        }
+                                        icon={<FileText className="h-4 w-4" />}
                                     />
 
                                     <div className="grid grid-cols-1 gap-px overflow-hidden rounded-xl border border-[#D7F2F8] bg-[#D7F2F8] sm:grid-cols-2 lg:grid-cols-4">
@@ -833,7 +812,10 @@ export default function Reports({
 
                                     <div className="mt-6">
                                         <ReportTable
-                                            headers={['Executive Metric', 'Value']}
+                                            headers={[
+                                                'Executive Metric',
+                                                'Value',
+                                            ]}
                                             rows={[
                                                 [
                                                     'Confirmed Bookings',
@@ -887,10 +869,7 @@ export default function Reports({
                                     />
 
                                     <ReportTable
-                                        headers={[
-                                            'Financial Item',
-                                            'Amount',
-                                        ]}
+                                        headers={['Financial Item', 'Amount']}
                                         rows={[
                                             [
                                                 'Rental Revenue',
@@ -1053,8 +1032,7 @@ export default function Reports({
                                                 Payments by Type
                                             </h3>
 
-                                            {paymentTypeEntries.length ===
-                                            0 ? (
+                                            {paymentTypeEntries.length === 0 ? (
                                                 <EmptyReportState />
                                             ) : (
                                                 <ReportTable
@@ -1299,9 +1277,7 @@ export default function Reports({
                                                 totalPages={
                                                     paginatedCustomers.totalPages
                                                 }
-                                                totalItems={
-                                                    topCustomers.length
-                                                }
+                                                totalItems={topCustomers.length}
                                                 onPageChange={setCustomerPage}
                                             />
                                         </>
@@ -1425,10 +1401,7 @@ export default function Reports({
                                     />
 
                                     <ReportTable
-                                        headers={[
-                                            'Inspection Result',
-                                            'Count',
-                                        ]}
+                                        headers={['Inspection Result', 'Count']}
                                         rows={[
                                             [
                                                 'Total Inspections',
@@ -1501,13 +1474,10 @@ export default function Reports({
                             <footer className="mt-10 border-t-2 border-[#D7F2F8] pt-5">
                                 <div className="flex flex-col gap-2 text-xs text-[#7F8D9A] sm:flex-row sm:items-center sm:justify-between">
                                     <p>
-                                        Ethio Car Rental · Administrative
-                                        Report
+                                        Ethio Car Rental · Administrative Report
                                     </p>
 
-                                    <p>
-                                        Generated on {reportGeneratedAt}
-                                    </p>
+                                    <p>Generated on {reportGeneratedAt}</p>
                                 </div>
                             </footer>
                         </div>

@@ -56,7 +56,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={1}
                                     autoComplete="email"
                                     placeholder="you@example.com"
-                                    className="h-11 rounded-xl pl-9 !border-[#D7F2F8] !bg-[#F7FCFF] !text-[#16425B] placeholder:!text-[#5E6A76]/50 shadow-none transition-all focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
+                                    className="h-11 rounded-xl !border-[#D7F2F8] !bg-[#F7FCFF] pl-9 !text-[#16425B] shadow-none transition-all placeholder:!text-[#5E6A76]/50 focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
                                 />
                             </div>
 
@@ -94,7 +94,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     tabIndex={2}
                                     autoComplete="current-password"
                                     placeholder="••••••••"
-                                    className="h-11 rounded-xl pl-9 !border-[#D7F2F8] !bg-[#F7FCFF] !text-[#16425B] placeholder:!text-[#5E6A76]/50 shadow-none transition-all focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
+                                    className="h-11 rounded-xl !border-[#D7F2F8] !bg-[#F7FCFF] pl-9 !text-[#16425B] shadow-none transition-all placeholder:!text-[#5E6A76]/50 focus-visible:!border-[#87CEEB] focus-visible:!bg-white focus-visible:!ring-2 focus-visible:!ring-[#87CEEB]/40"
                                 />
                             </div>
 
@@ -107,7 +107,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                 id="remember"
                                 name="remember"
                                 tabIndex={3}
-                                className="!border-white/40 data-[state=checked]:!border-[#87CEEB] data-[state=checked]:!bg-[#87CEEB] focus-visible:!ring-[#87CEEB]/30"
+                                className="!border-white/40 focus-visible:!ring-[#87CEEB]/30 data-[state=checked]:!border-[#87CEEB] data-[state=checked]:!bg-[#87CEEB]"
                             />
 
                             <Label
@@ -139,9 +139,7 @@ export default function Login({ status, canResetPassword }: Props) {
                         <div className="relative my-1 flex items-center gap-3">
                             <div className="h-px flex-1 !bg-white/15" />
 
-                            <span className="text-xs !text-white/50">
-                                or
-                            </span>
+                            <span className="text-xs !text-white/50">or</span>
 
                             <div className="h-px flex-1 !bg-white/15" />
                         </div>
@@ -149,7 +147,6 @@ export default function Login({ status, canResetPassword }: Props) {
                         {/* Register */}
                         <p className="text-center text-sm !text-white/70">
                             Don&apos;t have an account?{' '}
-
                             <TextLink
                                 href={register()}
                                 tabIndex={6}

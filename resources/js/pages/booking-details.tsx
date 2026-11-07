@@ -591,7 +591,7 @@ export default function BookingDetails({ booking, role }: Props) {
                         </CardContent>
                     </Card>
 
-                   {role === 'admin' && (
+                    {role === 'admin' && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -618,7 +618,7 @@ export default function BookingDetails({ booking, role }: Props) {
                         </Card>
                     )}
 
-                   {role === 'admin' && (
+                    {role === 'admin' && (
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
@@ -816,7 +816,8 @@ export default function BookingDetails({ booking, role }: Props) {
                         <Card>
                             <CardHeader>
                                 <CardTitle className="flex items-center gap-2">
-                                    <Files className="h-5 w-5" /> Driver Information
+                                    <Files className="h-5 w-5" /> Driver
+                                    Information
                                 </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-3 text-sm">
@@ -824,74 +825,152 @@ export default function BookingDetails({ booking, role }: Props) {
                                     <>
                                         {/* Driver Name & Rating */}
                                         <div>
-                                            <p className="font-semibold text-base">
+                                            <p className="text-base font-semibold">
                                                 {booking.driver.name}
                                             </p>
-                                            {booking.driver.average_rating !== undefined && booking.driver.review_count !== undefined && booking.driver.review_count > 0 && (
-                                                <div className="mt-1 flex items-center gap-1.5 text-xs">
-                                                    <span className="text-yellow-500">★</span>
-                                                    <span className="font-medium">
-                                                        {booking.driver.average_rating.toFixed(1)}
-                                                    </span>
-                                                    <span className="text-muted-foreground">
-                                                        ({booking.driver.review_count} {booking.driver.review_count === 1 ? 'review' : 'reviews'})
-                                                    </span>
-                                                </div>
-                                            )}
+                                            {booking.driver.average_rating !==
+                                                undefined &&
+                                                booking.driver.review_count !==
+                                                    undefined &&
+                                                booking.driver.review_count >
+                                                    0 && (
+                                                    <div className="mt-1 flex items-center gap-1.5 text-xs">
+                                                        <span className="text-yellow-500">
+                                                            ★
+                                                        </span>
+                                                        <span className="font-medium">
+                                                            {booking.driver.average_rating.toFixed(
+                                                                1,
+                                                            )}
+                                                        </span>
+                                                        <span className="text-muted-foreground">
+                                                            (
+                                                            {
+                                                                booking.driver
+                                                                    .review_count
+                                                            }{' '}
+                                                            {booking.driver
+                                                                .review_count ===
+                                                            1
+                                                                ? 'review'
+                                                                : 'reviews'}
+                                                            )
+                                                        </span>
+                                                    </div>
+                                                )}
                                         </div>
 
                                         {/* Contact & Basic Info */}
                                         <div className="space-y-1.5 border-t pt-2">
                                             <div className="flex items-start justify-between">
-                                                <span className="text-muted-foreground">Phone</span>
-                                                <span className="font-medium">{booking.driver.phone}</span>
+                                                <span className="text-muted-foreground">
+                                                    Phone
+                                                </span>
+                                                <span className="font-medium">
+                                                    {booking.driver.phone}
+                                                </span>
                                             </div>
                                             {booking.driver.gender && (
                                                 <div className="flex items-start justify-between">
-                                                    <span className="text-muted-foreground">Gender</span>
-                                                    <span className="font-medium">{booking.driver.gender}</span>
+                                                    <span className="text-muted-foreground">
+                                                        Gender
+                                                    </span>
+                                                    <span className="font-medium">
+                                                        {booking.driver.gender}
+                                                    </span>
                                                 </div>
                                             )}
                                             {booking.driver.location && (
                                                 <div className="flex items-start justify-between">
-                                                    <span className="text-muted-foreground">Location</span>
-                                                    <span className="font-medium">{booking.driver.location}</span>
+                                                    <span className="text-muted-foreground">
+                                                        Location
+                                                    </span>
+                                                    <span className="font-medium">
+                                                        {
+                                                            booking.driver
+                                                                .location
+                                                        }
+                                                    </span>
                                                 </div>
                                             )}
-                                            {booking.driver.proficient_language && booking.driver.proficient_language.length > 0 && (
-                                                <div className="flex items-start justify-between gap-2">
-                                                    <span className="shrink-0 text-muted-foreground">Languages</span>
-                                                    <div className="flex flex-wrap justify-end gap-1">
-                                                        {booking.driver.proficient_language.map((lang) => (
-                                                            <span key={lang} className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
-                                                                {lang}
-                                                            </span>
-                                                        ))}
+                                            {booking.driver
+                                                .proficient_language &&
+                                                booking.driver
+                                                    .proficient_language
+                                                    .length > 0 && (
+                                                    <div className="flex items-start justify-between gap-2">
+                                                        <span className="shrink-0 text-muted-foreground">
+                                                            Languages
+                                                        </span>
+                                                        <div className="flex flex-wrap justify-end gap-1">
+                                                            {booking.driver.proficient_language.map(
+                                                                (lang) => (
+                                                                    <span
+                                                                        key={
+                                                                            lang
+                                                                        }
+                                                                        className="inline-flex rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+                                                                    >
+                                                                        {lang}
+                                                                    </span>
+                                                                ),
+                                                            )}
+                                                        </div>
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
                                         </div>
 
                                         {/* License & Experience */}
-                                        {(booking.driver.license_number || booking.driver.license_type || booking.driver.experience_years !== undefined) && (
+                                        {(booking.driver.license_number ||
+                                            booking.driver.license_type ||
+                                            booking.driver.experience_years !==
+                                                undefined) && (
                                             <div className="space-y-1.5 border-t pt-2">
-                                                {booking.driver.license_number && (
+                                                {booking.driver
+                                                    .license_number && (
                                                     <div className="flex items-start justify-between">
-                                                        <span className="text-muted-foreground">License Number</span>
-                                                        <span className="font-medium font-mono">{booking.driver.license_number}</span>
+                                                        <span className="text-muted-foreground">
+                                                            License Number
+                                                        </span>
+                                                        <span className="font-mono font-medium">
+                                                            {
+                                                                booking.driver
+                                                                    .license_number
+                                                            }
+                                                        </span>
                                                     </div>
                                                 )}
-                                                {booking.driver.license_type && (
+                                                {booking.driver
+                                                    .license_type && (
                                                     <div className="flex items-start justify-between">
-                                                        <span className="text-muted-foreground">License Type</span>
-                                                        <span className="font-medium">{booking.driver.license_type}</span>
-                                                    </div>
-                                                )}
-                                                {booking.driver.experience_years !== undefined && (
-                                                    <div className="flex items-start justify-between">
-                                                        <span className="text-muted-foreground">Experience</span>
+                                                        <span className="text-muted-foreground">
+                                                            License Type
+                                                        </span>
                                                         <span className="font-medium">
-                                                            {booking.driver.experience_years} {booking.driver.experience_years === 1 ? 'year' : 'years'}
+                                                            {
+                                                                booking.driver
+                                                                    .license_type
+                                                            }
+                                                        </span>
+                                                    </div>
+                                                )}
+                                                {booking.driver
+                                                    .experience_years !==
+                                                    undefined && (
+                                                    <div className="flex items-start justify-between">
+                                                        <span className="text-muted-foreground">
+                                                            Experience
+                                                        </span>
+                                                        <span className="font-medium">
+                                                            {
+                                                                booking.driver
+                                                                    .experience_years
+                                                            }{' '}
+                                                            {booking.driver
+                                                                .experience_years ===
+                                                            1
+                                                                ? 'year'
+                                                                : 'years'}
                                                         </span>
                                                     </div>
                                                 )}
@@ -899,12 +978,19 @@ export default function BookingDetails({ booking, role }: Props) {
                                         )}
 
                                         {/* Daily Rate */}
-                                        {booking.driver.daily_rate !== undefined && (
+                                        {booking.driver.daily_rate !==
+                                            undefined && (
                                             <div className="border-t pt-2">
                                                 <div className="flex items-start justify-between">
-                                                    <span className="text-muted-foreground">Daily Rate</span>
+                                                    <span className="text-muted-foreground">
+                                                        Daily Rate
+                                                    </span>
                                                     <span className="font-semibold text-primary">
-                                                        ETB {Number(booking.driver.daily_rate).toLocaleString()}
+                                                        ETB{' '}
+                                                        {Number(
+                                                            booking.driver
+                                                                .daily_rate,
+                                                        ).toLocaleString()}
                                                     </span>
                                                 </div>
                                             </div>
@@ -1308,19 +1394,24 @@ export default function BookingDetails({ booking, role }: Props) {
                                     Repair Cost Payment Required
                                 </p>
                                 <p className="mt-1 text-red-700">
-                                    Damage or issues were recorded during the return inspection. 
-                                    A repair cost of ETB{' '}
-                                    {Number(booking.extra_charge).toLocaleString(
-                                        'en-US',
-                                        {
-                                            minimumFractionDigits: 2,
-                                            maximumFractionDigits: 2,
-                                        },
-                                    )}{' '}
-                                    is now due. Please settle this balance to complete your booking. 
-                                    Your leverage document will be released once the payment is completed.
+                                    Damage or issues were recorded during the
+                                    return inspection. A repair cost of ETB{' '}
+                                    {Number(
+                                        booking.extra_charge,
+                                    ).toLocaleString('en-US', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })}{' '}
+                                    is now due. Please settle this balance to
+                                    complete your booking. Your leverage
+                                    document will be released once the payment
+                                    is completed.
                                 </p>
-                                <Button asChild variant="destructive" className="mt-3">
+                                <Button
+                                    asChild
+                                    variant="destructive"
+                                    className="mt-3"
+                                >
                                     <Link
                                         href={`/bookings/${booking.id}/payment/extra-charge`}
                                     >
@@ -1346,12 +1437,18 @@ export default function BookingDetails({ booking, role }: Props) {
                         )}
                 </div>
 
-                <Dialog open={paymentModalOpen} onOpenChange={setPaymentModalOpen}>
+                <Dialog
+                    open={paymentModalOpen}
+                    onOpenChange={setPaymentModalOpen}
+                >
                     <DialogContent className="sm:max-w-md">
                         <DialogHeader>
-                            <DialogTitle>How would you like to proceed?</DialogTitle>
+                            <DialogTitle>
+                                How would you like to proceed?
+                            </DialogTitle>
                             <DialogDescription>
-                                Choose how to handle the security deposit for this booking.
+                                Choose how to handle the security deposit for
+                                this booking.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -1359,7 +1456,9 @@ export default function BookingDetails({ booking, role }: Props) {
                             <button
                                 onClick={() => {
                                     setPaymentModalOpen(false);
-                                    router.visit(`/bookings/${booking.id}/payment/pickup?security_deposit=true`);
+                                    router.visit(
+                                        `/bookings/${booking.id}/payment/pickup?security_deposit=true`,
+                                    );
                                 }}
                                 className="flex w-full items-start gap-4 rounded-xl border-2 border-emerald-200 bg-emerald-50 p-4 text-left transition hover:border-emerald-400 hover:shadow-md"
                             >
@@ -1367,11 +1466,18 @@ export default function BookingDetails({ booking, role }: Props) {
                                     <CreditCard className="h-5 w-5 text-emerald-700" />
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-emerald-900">Pay Security Deposit</p>
+                                    <p className="font-semibold text-emerald-900">
+                                        Pay Security Deposit
+                                    </p>
                                     <p className="mt-1 text-sm text-emerald-700">
-                                        Pay the rental balance plus a refundable security deposit of ETB{' '}
-                                        {booking.security_deposit_amount?.toLocaleString('en-US', { minimumFractionDigits: 2 }) ?? '0'}.
-                                        Fully refunded if no damages on return.
+                                        Pay the rental balance plus a refundable
+                                        security deposit of ETB{' '}
+                                        {booking.security_deposit_amount?.toLocaleString(
+                                            'en-US',
+                                            { minimumFractionDigits: 2 },
+                                        ) ?? '0'}
+                                        . Fully refunded if no damages on
+                                        return.
                                     </p>
                                 </div>
                             </button>
@@ -1379,7 +1485,9 @@ export default function BookingDetails({ booking, role }: Props) {
                             <button
                                 onClick={() => {
                                     setPaymentModalOpen(false);
-                                    router.visit(`/bookings/${booking.id}/payment/pickup?security_deposit=false`);
+                                    router.visit(
+                                        `/bookings/${booking.id}/payment/pickup?security_deposit=false`,
+                                    );
                                 }}
                                 className="flex w-full items-start gap-4 rounded-xl border-2 border-blue-200 bg-blue-50 p-4 text-left transition hover:border-blue-400 hover:shadow-md"
                             >
@@ -1387,10 +1495,14 @@ export default function BookingDetails({ booking, role }: Props) {
                                     <FileText className="h-5 w-5 text-blue-700" />
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-blue-900">Attach Leverage Document</p>
+                                    <p className="font-semibold text-blue-900">
+                                        Attach Leverage Document
+                                    </p>
                                     <p className="mt-1 text-sm text-blue-700">
-                                        Pay only the rental balance. Upload a leverage document (check, property document, etc.)
-                                        as a guarantee instead of paying the security deposit upfront.
+                                        Pay only the rental balance. Upload a
+                                        leverage document (check, property
+                                        document, etc.) as a guarantee instead
+                                        of paying the security deposit upfront.
                                     </p>
                                 </div>
                             </button>

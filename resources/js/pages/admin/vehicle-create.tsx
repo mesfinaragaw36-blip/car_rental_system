@@ -217,7 +217,8 @@ export default function AdminCreateVehicle({ carTypes, hasCarTypes }: Props) {
 
         if (!data.car_type_id) {
             setServerErrors({
-                car_type_id: 'Please select a car type before adding a vehicle.',
+                car_type_id:
+                    'Please select a car type before adding a vehicle.',
             });
             setStep(1);
 

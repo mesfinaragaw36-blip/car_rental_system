@@ -68,7 +68,12 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
     rejected: <XCircle className="h-4 w-4" />,
 };
 
-export default function Assignments({ assignments = [], profileComplete = false, profileApproved = false, profileStatus = 'incomplete' }: Props) {
+export default function Assignments({
+    assignments = [],
+    profileComplete = false,
+    profileApproved = false,
+    profileStatus = 'incomplete',
+}: Props) {
     const pendingCount = assignments.filter(
         (assignment) => assignment.status === 'assigned',
     ).length;
@@ -118,13 +123,15 @@ export default function Assignments({ assignments = [], profileComplete = false,
                     <Card className="border-amber-200 bg-amber-50">
                         <CardContent className="p-4">
                             <div className="flex items-start gap-3">
-                                <ShieldCheck className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                                <ShieldCheck className="mt-0.5 h-5 w-5 flex-shrink-0 text-amber-600" />
                                 <div>
                                     <h3 className="font-semibold text-amber-900">
                                         Complete Your Profile
                                     </h3>
                                     <p className="mt-1 text-sm text-amber-700">
-                                        Please complete all required fields in your driver profile to accept assignments.
+                                        Please complete all required fields in
+                                        your driver profile to accept
+                                        assignments.
                                     </p>
                                     <Link
                                         href="/settings/profile"
@@ -142,13 +149,16 @@ export default function Assignments({ assignments = [], profileComplete = false,
                     <Card className="border-yellow-300 bg-yellow-100">
                         <CardContent className="p-4">
                             <div className="flex items-start gap-3">
-                                <Clock className="h-5 w-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+                                <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-yellow-700" />
                                 <div>
                                     <h3 className="font-semibold text-yellow-900">
                                         Profile Information Updated
                                     </h3>
                                     <p className="mt-1 text-sm text-yellow-800">
-                                        You have updated your license information. Your profile is waiting for admin approval before you can accept new assignments.
+                                        You have updated your license
+                                        information. Your profile is waiting for
+                                        admin approval before you can accept new
+                                        assignments.
                                     </p>
                                 </div>
                             </div>
@@ -160,13 +170,15 @@ export default function Assignments({ assignments = [], profileComplete = false,
                     <Card className="border-red-200 bg-red-50">
                         <CardContent className="p-4">
                             <div className="flex items-start gap-3">
-                                <XCircle className="h-5 w-5 text-red-600 flex-shrink-0 mt-0.5" />
+                                <XCircle className="mt-0.5 h-5 w-5 flex-shrink-0 text-red-600" />
                                 <div>
                                     <h3 className="font-semibold text-red-900">
                                         Profile Needs Changes
                                     </h3>
                                     <p className="mt-1 text-sm text-red-700">
-                                        Your profile submission was not approved. Please review and update your information.
+                                        Your profile submission was not
+                                        approved. Please review and update your
+                                        information.
                                     </p>
                                 </div>
                             </div>
@@ -174,23 +186,29 @@ export default function Assignments({ assignments = [], profileComplete = false,
                     </Card>
                 )}
 
-                {profileComplete && !profileApproved && profileStatus !== 'pending' && profileStatus !== 'rejected' && (
-                    <Card className="border-blue-200 bg-blue-50">
-                        <CardContent className="p-4">
-                            <div className="flex items-start gap-3">
-                                <Clock className="h-5 w-5 text-blue-600 flex-shrink-0 mt-0.5" />
-                                <div>
-                                    <h3 className="font-semibold text-blue-900">
-                                        Profile Under Review
-                                    </h3>
-                                    <p className="mt-1 text-sm text-blue-700">
-                                        Your driver profile is under review by admin. You can view assignments but cannot accept them until approved.
-                                    </p>
+                {profileComplete &&
+                    !profileApproved &&
+                    profileStatus !== 'pending' &&
+                    profileStatus !== 'rejected' && (
+                        <Card className="border-blue-200 bg-blue-50">
+                            <CardContent className="p-4">
+                                <div className="flex items-start gap-3">
+                                    <Clock className="mt-0.5 h-5 w-5 flex-shrink-0 text-blue-600" />
+                                    <div>
+                                        <h3 className="font-semibold text-blue-900">
+                                            Profile Under Review
+                                        </h3>
+                                        <p className="mt-1 text-sm text-blue-700">
+                                            Your driver profile is under review
+                                            by admin. You can view assignments
+                                            but cannot accept them until
+                                            approved.
+                                        </p>
+                                    </div>
                                 </div>
-                            </div>
-                        </CardContent>
-                    </Card>
-                )}
+                            </CardContent>
+                        </Card>
+                    )}
 
                 {/* Statistics */}
                 <div className="grid gap-4 sm:grid-cols-3">

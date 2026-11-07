@@ -1,4 +1,3 @@
-
 import { Head, router, useForm } from '@inertiajs/react';
 import {
     ArrowDownToLine,
@@ -148,9 +147,7 @@ function StatusBadge({
     );
 }
 
-function deliveryTone(
-    status: DeliveryStatus,
-): 'green' | 'red' | 'yellow' {
+function deliveryTone(status: DeliveryStatus): 'green' | 'red' | 'yellow' {
     if (status === 'arrived') {
         return 'green';
     }
@@ -232,9 +229,9 @@ function CarGallery({ images }: { images: CarImage[] }) {
 }
 
 function DeliveryPanel({ booking }: { booking: Booking }) {
-    const [processing, setProcessing] = useState<
-        'arrived' | 'failed' | null
-    >(null);
+    const [processing, setProcessing] = useState<'arrived' | 'failed' | null>(
+        null,
+    );
 
     const status = booking.car_delivery_status;
 
@@ -275,7 +272,6 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                             Owner car delivery
-
                             <StatusBadge
                                 label={status.replace('_', ' ')}
                                 tone={deliveryTone(status)}
@@ -330,8 +326,8 @@ function DeliveryPanel({ booking }: { booking: Booking }) {
 
                 {status === 'failed' && (
                     <p className="w-full text-sm text-red-600">
-                        The owner and admins have been notified. The booking
-                        has been cancelled and the customer's payment has been
+                        The owner and admins have been notified. The booking has
+                        been cancelled and the customer's payment has been
                         queued for refund.
                     </p>
                 )}
@@ -392,20 +388,12 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                     <div>
                         <p className="flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground">
                             Customer car return
-
                             <StatusBadge
                                 label={
-                                    status === 'arrived'
-                                        ? 'arrived'
-                                        : 'pending'
+                                    status === 'arrived' ? 'arrived' : 'pending'
                                 }
-                                tone={
-                                    status === 'arrived'
-                                        ? 'green'
-                                        : 'yellow'
-                                }
+                                tone={status === 'arrived' ? 'green' : 'yellow'}
                             />
-
                             {lateDays > 0 && status === 'pending' && (
                                 <StatusBadge
                                     label={`Late by ${lateDays} day${
@@ -444,9 +432,7 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                         >
                             <CheckCircle2 className="mr-1.5 h-4 w-4" />
 
-                            {processing
-                                ? 'Confirming...'
-                                : 'Car Arrived'}
+                            {processing ? 'Confirming...' : 'Car Arrived'}
                         </Button>
 
                         <Button
@@ -458,9 +444,7 @@ function ReturnArrivalPanel({ booking }: { booking: Booking }) {
                         >
                             <XCircle className="mr-1.5 h-4 w-4" />
 
-                            {processing
-                                ? 'Marking...'
-                                : 'Car Not Returned'}
+                            {processing ? 'Marking...' : 'Car Not Returned'}
                         </Button>
                     </div>
                 )}
@@ -481,26 +465,20 @@ function SnapshotDiff({
     };
 }) {
     const mileageDiff =
-        pickup.mileage_reading !== null &&
-        current.mileage.trim() !== ''
+        pickup.mileage_reading !== null && current.mileage.trim() !== ''
             ? Math.max(
                   0,
-                  Number(current.mileage) -
-                      Number(pickup.mileage_reading),
+                  Number(current.mileage) - Number(pickup.mileage_reading),
               )
             : null;
 
     const fuelDiff =
-        pickup.fuel_level !== null &&
-        current.fuel.trim() !== ''
-            ? Number(current.fuel) -
-              Number(pickup.fuel_level)
+        pickup.fuel_level !== null && current.fuel.trim() !== ''
+            ? Number(current.fuel) - Number(pickup.fuel_level)
             : null;
 
     const submitted = current.damages.filter(
-        (d) =>
-            d.area.trim() !== '' ||
-            d.description.trim() !== '',
+        (d) => d.area.trim() !== '' || d.description.trim() !== '',
     );
 
     const pickupDamageKeys = new Set(
@@ -549,9 +527,7 @@ function SnapshotDiff({
 
                 <p>
                     New damages:{' '}
-                    <span className="font-semibold">
-                        {newDamages.length}
-                    </span>
+                    <span className="font-semibold">{newDamages.length}</span>
                 </p>
             </div>
 
@@ -559,22 +535,19 @@ function SnapshotDiff({
                 <ul className="mt-2 list-inside list-disc text-red-700">
                     {newDamages.map((damage, i) => (
                         <li key={i}>
-                            <span className="font-medium">
-                                {damage.area}
-                            </span>{' '}
-                            - {damage.description}
+                            <span className="font-medium">{damage.area}</span> -{' '}
+                            {damage.description}
                         </li>
                     ))}
                 </ul>
             )}
 
-            {newDamages.length === 0 &&
-                submitted.length === 0 && (
-                    <p className="mt-2 text-primary">
-                        No new damages reported yet. Remember to record
-                        any damages found during the return inspection.
-                    </p>
-                )}
+            {newDamages.length === 0 && submitted.length === 0 && (
+                <p className="mt-2 text-primary">
+                    No new damages reported yet. Remember to record any damages
+                    found during the return inspection.
+                </p>
+            )}
         </div>
     );
 }
@@ -588,19 +561,12 @@ function InspectionForm({
     type: 'pickup' | 'return';
     onClose?: () => void;
 }) {
-    const {
-        data,
-        setData,
-        processing,
-        errors,
-        reset,
-    } = useForm({
+    const { data, setData, processing, errors, reset } = useForm({
         type,
         status: 'approved',
         mileage_reading: '',
         fuel_level: '',
-        estimated_value:
-            booking.car.estimated_value?.toString() ?? '',
+        estimated_value: booking.car.estimated_value?.toString() ?? '',
         damages: [
             {
                 area: '',
@@ -612,8 +578,7 @@ function InspectionForm({
     });
 
     const pickup = booking.inspections.find(
-        (inspection) =>
-            inspection.type === 'pickup',
+        (inspection) => inspection.type === 'pickup',
     );
 
     const addDamage = () => {
@@ -647,50 +612,29 @@ function InspectionForm({
     const removeDamage = (index: number) => {
         setData(
             'damages',
-            data.damages.filter(
-                (_, i) => i !== index,
-            ),
+            data.damages.filter((_, i) => i !== index),
         );
     };
 
-    const damagesToSubmit =
-        data.damages.filter(
-            (damage) =>
-                damage.area.trim() !== '' ||
-                damage.description.trim() !== '',
-        );
+    const damagesToSubmit = data.damages.filter(
+        (damage) =>
+            damage.area.trim() !== '' || damage.description.trim() !== '',
+    );
 
-    const submitWith = (
-        status: 'approved' | 'issues_found',
-    ) => {
+    const submitWith = (status: 'approved' | 'issues_found') => {
         const formData = new FormData();
 
         formData.append('type', type);
         formData.append('status', status);
-        formData.append(
-            'mileage_reading',
-            data.mileage_reading,
-        );
-        formData.append(
-            'fuel_level',
-            data.fuel_level,
-        );
-        formData.append(
-            'estimated_value',
-            data.estimated_value,
-        );
+        formData.append('mileage_reading', data.mileage_reading);
+        formData.append('fuel_level', data.fuel_level);
+        formData.append('estimated_value', data.estimated_value);
         formData.append('notes', data.notes);
 
         damagesToSubmit.forEach((d, i) => {
-            formData.append(
-                `damages[${i}][area]`,
-                d.area,
-            );
+            formData.append(`damages[${i}][area]`, d.area);
 
-            formData.append(
-                `damages[${i}][description]`,
-                d.description,
-            );
+            formData.append(`damages[${i}][description]`, d.description);
         });
 
         data.photos.forEach((photo) => {
@@ -719,20 +663,13 @@ function InspectionForm({
         <div className="space-y-4 rounded-xl border border-border bg-background/60 p-4">
             <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
                 <ClipboardCheck className="h-4 w-4 text-primary" />
-                Record{' '}
-                {type === 'pickup'
-                    ? 'Pickup'
-                    : 'Return'}{' '}
-                Inspection
+                Record {type === 'pickup' ? 'Pickup' : 'Return'} Inspection
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
                 <div className="space-y-2">
                     <Label>
-                        {type === 'pickup'
-                            ? 'Mileage'
-                            : 'Return mileage'}{' '}
-                        (km)
+                        {type === 'pickup' ? 'Mileage' : 'Return mileage'} (km)
                     </Label>
 
                     <Input
@@ -740,10 +677,7 @@ function InspectionForm({
                         min={0}
                         value={data.mileage_reading}
                         onChange={(e) =>
-                            setData(
-                                'mileage_reading',
-                                e.target.value,
-                            )
+                            setData('mileage_reading', e.target.value)
                         }
                         placeholder="e.g. 45230"
                     />
@@ -763,12 +697,7 @@ function InspectionForm({
                         min={0}
                         max={100}
                         value={data.fuel_level}
-                        onChange={(e) =>
-                            setData(
-                                'fuel_level',
-                                e.target.value,
-                            )
-                        }
+                        onChange={(e) => setData('fuel_level', e.target.value)}
                         placeholder="e.g. 75"
                     />
 
@@ -784,29 +713,21 @@ function InspectionForm({
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50/70 p-4">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                         <div className="max-w-sm space-y-1">
-                            <Label>
-                                Estimated car value (ETB)
-                            </Label>
+                            <Label>Estimated car value (ETB)</Label>
 
                             <Input
                                 type="number"
                                 min={0}
-                                value={
-                                    data.estimated_value
-                                }
+                                value={data.estimated_value}
                                 onChange={(e) =>
-                                    setData(
-                                        'estimated_value',
-                                        e.target.value,
-                                    )
+                                    setData('estimated_value', e.target.value)
                                 }
                                 placeholder="e.g. 2500000"
                             />
 
                             <p className="text-xs text-muted-foreground">
-                                Used to calculate the 10%
-                                security deposit (minimum
-                                1,000 ETB).
+                                Used to calculate the 10% security deposit
+                                (minimum 1,000 ETB).
                             </p>
                         </div>
 
@@ -826,14 +747,12 @@ function InspectionForm({
                                 <p className="text-xs text-muted-foreground">
                                     10% of ETB{' '}
                                     {Number(
-                                        booking.car
-                                            .estimated_value,
+                                        booking.car.estimated_value,
                                     ).toLocaleString()}
                                 </p>
                             ) : (
                                 <p className="text-xs text-muted-foreground">
-                                    Enter the value to update
-                                    the deposit.
+                                    Enter the value to update the deposit.
                                 </p>
                             )}
                         </div>
@@ -862,75 +781,56 @@ function InspectionForm({
                     </Button>
                 </div>
 
-                {data.damages.map(
-                    (damage, index) => (
-                        <div
-                            key={index}
-                            className="grid gap-2 md:grid-cols-[1fr_2fr_auto]"
+                {data.damages.map((damage, index) => (
+                    <div
+                        key={index}
+                        className="grid gap-2 md:grid-cols-[1fr_2fr_auto]"
+                    >
+                        <Input
+                            value={damage.area}
+                            onChange={(e) =>
+                                updateDamage(index, 'area', e.target.value)
+                            }
+                            placeholder="Area (e.g. front bumper)"
+                        />
+
+                        <Input
+                            value={damage.description}
+                            onChange={(e) =>
+                                updateDamage(
+                                    index,
+                                    'description',
+                                    e.target.value,
+                                )
+                            }
+                            placeholder="Description"
+                        />
+
+                        <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => removeDamage(index)}
                         >
-                            <Input
-                                value={damage.area}
-                                onChange={(e) =>
-                                    updateDamage(
-                                        index,
-                                        'area',
-                                        e.target.value,
-                                    )
-                                }
-                                placeholder="Area (e.g. front bumper)"
-                            />
-
-                            <Input
-                                value={
-                                    damage.description
-                                }
-                                onChange={(e) =>
-                                    updateDamage(
-                                        index,
-                                        'description',
-                                        e.target.value,
-                                    )
-                                }
-                                placeholder="Description"
-                            />
-
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() =>
-                                    removeDamage(
-                                        index,
-                                    )
-                                }
-                            >
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                            </Button>
-                        </div>
-                    ),
-                )}
+                            <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                    </div>
+                ))}
             </div>
 
-            {type === 'return' &&
-                pickup &&
-                pickup.status === 'approved' && (
-                    <SnapshotDiff
-                        pickup={pickup}
-                        current={{
-                            mileage:
-                                data.mileage_reading,
-                            fuel: data.fuel_level,
-                            damages:
-                                damagesToSubmit,
-                        }}
-                    />
-                )}
+            {type === 'return' && pickup && pickup.status === 'approved' && (
+                <SnapshotDiff
+                    pickup={pickup}
+                    current={{
+                        mileage: data.mileage_reading,
+                        fuel: data.fuel_level,
+                        damages: damagesToSubmit,
+                    }}
+                />
+            )}
 
             <div className="space-y-2">
-                <Label>
-                    Evidence Photos (Before / After
-                    inspection)
-                </Label>
+                <Label>Evidence Photos (Before / After inspection)</Label>
 
                 <Input
                     type="file"
@@ -938,20 +838,13 @@ function InspectionForm({
                     accept="image/*"
                     onChange={(e) => {
                         if (e.target.files) {
-                            setData(
-                                'photos',
-                                Array.from(
-                                    e.target.files,
-                                ),
-                            );
+                            setData('photos', Array.from(e.target.files));
                         }
                     }}
                 />
 
                 {errors.photos && (
-                    <p className="text-xs text-red-600">
-                        {errors.photos}
-                    </p>
+                    <p className="text-xs text-red-600">{errors.photos}</p>
                 )}
             </div>
 
@@ -960,35 +853,24 @@ function InspectionForm({
 
                 <Textarea
                     value={data.notes}
-                    onChange={(e) =>
-                        setData(
-                            'notes',
-                            e.target.value,
-                        )
-                    }
+                    onChange={(e) => setData('notes', e.target.value)}
                     placeholder="Additional observations..."
                     rows={3}
                 />
 
                 {errors.notes && (
-                    <p className="text-xs text-red-600">
-                        {errors.notes}
-                    </p>
+                    <p className="text-xs text-red-600">{errors.notes}</p>
                 )}
             </div>
 
             <div className="flex flex-wrap gap-2">
                 <Button
-                    onClick={() =>
-                        submitWith('approved')
-                    }
+                    onClick={() => submitWith('approved')}
                     disabled={processing}
                 >
                     <CheckCircle2 className="mr-1.5 h-4 w-4" />
 
-                    {processing
-                        ? 'Saving...'
-                        : 'Approve'}
+                    {processing ? 'Saving...' : 'Approve'}
                 </Button>
 
                 <Button
@@ -1041,29 +923,21 @@ function InspectionBadges({
                     className="rounded-lg border border-border bg-background p-3 text-sm"
                 >
                     <div className="flex flex-wrap items-center justify-between gap-2">
-                        <span className="flex items-center gap-1.5 font-semibold capitalize text-foreground">
-                            {inspection.type ===
-                            'pickup' ? (
+                        <span className="flex items-center gap-1.5 font-semibold text-foreground capitalize">
+                            {inspection.type === 'pickup' ? (
                                 <ArrowDownToLine className="h-4 w-4 text-primary" />
                             ) : (
                                 <Gauge className="h-4 w-4 text-primary" />
                             )}
-
-                            {inspection.type}{' '}
-                            inspection
+                            {inspection.type} inspection
                         </span>
 
                         <StatusBadge
-                            label={inspection.status.replace(
-                                '_',
-                                ' ',
-                            )}
+                            label={inspection.status.replace('_', ' ')}
                             tone={
-                                inspection.status ===
-                                'approved'
+                                inspection.status === 'approved'
                                     ? 'green'
-                                    : inspection.status ===
-                                        'issues_found'
+                                    : inspection.status === 'issues_found'
                                       ? 'red'
                                       : 'yellow'
                             }
@@ -1075,22 +949,18 @@ function InspectionBadges({
                             ? `${new Date(
                                   inspection.conducted_at,
                               ).toLocaleString()} by ${
-                                  inspection.conducted_by_name ??
-                                  'staff'
+                                  inspection.conducted_by_name ?? 'staff'
                               }`
                             : 'Conducted'}
 
-                        {inspection.mileage_reading !==
-                            null &&
+                        {inspection.mileage_reading !== null &&
                             ` · ${inspection.mileage_reading.toLocaleString()} km`}
 
-                        {inspection.fuel_level !==
-                            null &&
+                        {inspection.fuel_level !== null &&
                             ` · ${inspection.fuel_level}% fuel`}
                     </p>
 
-                    {inspection.type ===
-                        'pickup' && (
+                    {inspection.type === 'pickup' && (
                         <div className="mt-2">
                             {inspection.id_verified ? (
                                 <div className="flex items-center gap-1.5 text-sm">
@@ -1103,9 +973,7 @@ function InspectionBadges({
                                     {inspection.id_verified_by_name && (
                                         <span className="text-muted-foreground">
                                             · by{' '}
-                                            {
-                                                inspection.id_verified_by_name
-                                            }
+                                            {inspection.id_verified_by_name}
                                         </span>
                                     )}
 
@@ -1123,35 +991,25 @@ function InspectionBadges({
                                     <X className="h-3.5 w-3.5 text-amber-600" />
 
                                     <span className="font-medium text-amber-700">
-                                        ID Verification
-                                        Pending
+                                        ID Verification Pending
                                     </span>
                                 </div>
                             )}
                         </div>
                     )}
 
-                    {inspection.damages &&
-                        inspection.damages.length >
-                            0 && (
-                            <ul className="mt-2 list-inside list-disc text-red-600">
-                                {inspection.damages.map(
-                                    (damage, i) => (
-                                        <li key={i}>
-                                            <span className="font-medium">
-                                                {
-                                                    damage.area
-                                                }
-                                            </span>{' '}
-                                            -{' '}
-                                            {
-                                                damage.description
-                                            }
-                                        </li>
-                                    ),
-                                )}
-                            </ul>
-                        )}
+                    {inspection.damages && inspection.damages.length > 0 && (
+                        <ul className="mt-2 list-inside list-disc text-red-600">
+                            {inspection.damages.map((damage, i) => (
+                                <li key={i}>
+                                    <span className="font-medium">
+                                        {damage.area}
+                                    </span>{' '}
+                                    - {damage.description}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
 
                     {inspection.notes && (
                         <p className="mt-2 text-muted-foreground">
@@ -1159,54 +1017,40 @@ function InspectionBadges({
                         </p>
                     )}
 
-                    {inspection.photos &&
-                        inspection.photos.length >
-                            0 && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {inspection.photos.map(
-                                    (path, i) => (
-                                        <a
-                                            key={i}
-                                            href={`/storage/${path}`}
-                                            target="_blank"
-                                            rel="noreferrer"
-                                            className="block h-16 w-16 overflow-hidden rounded-md border border-border shadow-sm hover:opacity-90"
-                                        >
-                                            <img
-                                                src={`/storage/${path}`}
-                                                alt="Evidence"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </a>
-                                    ),
-                                )}
-                            </div>
-                        )}
+                    {inspection.photos && inspection.photos.length > 0 && (
+                        <div className="mt-3 flex flex-wrap gap-2">
+                            {inspection.photos.map((path, i) => (
+                                <a
+                                    key={i}
+                                    href={`/storage/${path}`}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="block h-16 w-16 overflow-hidden rounded-md border border-border shadow-sm hover:opacity-90"
+                                >
+                                    <img
+                                        src={`/storage/${path}`}
+                                        alt="Evidence"
+                                        className="h-full w-full object-cover"
+                                    />
+                                </a>
+                            ))}
+                        </div>
+                    )}
                 </div>
             ))}
         </div>
     );
 }
 
-function CompletionCard({
-    booking,
-}: {
-    booking: Booking;
-}) {
-    const [repairCost, setRepairCost] =
-        useState('');
-    const [processing, setProcessing] =
-        useState(false);
+function CompletionCard({ booking }: { booking: Booking }) {
+    const [repairCost, setRepairCost] = useState('');
+    const [processing, setProcessing] = useState(false);
 
-    const returnInspection =
-        booking.inspections.find(
-            (inspection) =>
-                inspection.type === 'return',
-        );
+    const returnInspection = booking.inspections.find(
+        (inspection) => inspection.type === 'return',
+    );
 
-    const hasIssues =
-        returnInspection?.status ===
-        'issues_found';
+    const hasIssues = returnInspection?.status === 'issues_found';
 
     const handleComplete = () => {
         if (hasIssues && !repairCost.trim()) {
@@ -1219,13 +1063,10 @@ function CompletionCard({
             inspections.complete.url({
                 booking: booking.id,
             }),
-            hasIssues
-                ? { repair_cost: repairCost }
-                : {},
+            hasIssues ? { repair_cost: repairCost } : {},
             {
                 preserveScroll: true,
-                onFinish: () =>
-                    setProcessing(false),
+                onFinish: () => setProcessing(false),
             },
         );
     };
@@ -1247,19 +1088,14 @@ function CompletionCard({
                             type="number"
                             min={0}
                             value={repairCost}
-                            onChange={(e) =>
-                                setRepairCost(
-                                    e.target.value,
-                                )
-                            }
+                            onChange={(e) => setRepairCost(e.target.value)}
                             placeholder="e.g. 2000"
                             className="w-56"
                         />
 
                         {!repairCost.trim() && (
                             <p className="text-xs text-red-600">
-                                Required when damages
-                                are found.
+                                Required when damages are found.
                             </p>
                         )}
                     </div>
@@ -1269,8 +1105,7 @@ function CompletionCard({
                     onClick={handleComplete}
                     disabled={
                         !returnInspection ||
-                        (hasIssues &&
-                            !repairCost.trim()) ||
+                        (hasIssues && !repairCost.trim()) ||
                         processing
                     }
                 >
@@ -1293,68 +1128,45 @@ function BookingDetail({
 }) {
     const car = booking.car;
 
-    const hasPickup =
-        booking.inspections.some(
-            (inspection) =>
-                inspection.type === 'pickup',
-        );
+    const hasPickup = booking.inspections.some(
+        (inspection) => inspection.type === 'pickup',
+    );
 
-    const pickupApproved =
-        booking.inspections.some(
-            (inspection) =>
-                inspection.type === 'pickup' &&
-                inspection.status === 'approved',
-        );
+    const pickupApproved = booking.inspections.some(
+        (inspection) =>
+            inspection.type === 'pickup' && inspection.status === 'approved',
+    );
 
-    const hasReturnInspection =
-        booking.inspections.some(
-            (inspection) =>
-                inspection.type === 'return',
-        );
+    const hasReturnInspection = booking.inspections.some(
+        (inspection) => inspection.type === 'return',
+    );
 
-    const [
-        processingAction,
-        setProcessingAction,
-    ] = useState<
+    const [processingAction, setProcessingAction] = useState<
         'handover' | 'returned' | null
     >(null);
 
-    const [
-        handoverIdVerified,
-        setHandoverIdVerified,
-    ] = useState(false);
+    const [handoverIdVerified, setHandoverIdVerified] = useState(false);
 
-    const [
-        handoverLeverageDocType,
-        setHandoverLeverageDocType,
-    ] = useState('');
+    const [handoverLeverageDocType, setHandoverLeverageDocType] = useState('');
 
-    const [
-        handoverLeverageDocFile,
-        setHandoverLeverageDocFile,
-    ] = useState<File | null>(null);
+    const [handoverLeverageDocFile, setHandoverLeverageDocFile] =
+        useState<File | null>(null);
 
-    const [
-        handoverLeverageDocDescription,
-        setHandoverLeverageDocDescription,
-    ] = useState('');
+    const [handoverLeverageDocDescription, setHandoverLeverageDocDescription] =
+        useState('');
 
     const showPickupForm =
         inspectionType === 'pickup' &&
         !hasPickup &&
-        booking.car_delivery_status ===
-            'arrived';
+        booking.car_delivery_status === 'arrived';
 
     const showReturnForm =
         inspectionType === 'return' &&
         !hasReturnInspection &&
-        booking.return_arrival_status ===
-            'arrived';
+        booking.return_arrival_status === 'arrived';
 
     const images = [...car.images].sort(
-        (a, b) =>
-            Number(b.is_primary) -
-            Number(a.is_primary),
+        (a, b) => Number(b.is_primary) - Number(a.is_primary),
     );
 
     const specs: Array<{
@@ -1417,13 +1229,9 @@ function BookingDetail({
                         </h2>
 
                         <StatusBadge
-                            label={booking.status.replace(
-                                '_',
-                                ' ',
-                            )}
+                            label={booking.status.replace('_', ' ')}
                             tone={
-                                booking.status ===
-                                'deposit_paid'
+                                booking.status === 'deposit_paid'
                                     ? 'blue'
                                     : 'slate'
                             }
@@ -1434,11 +1242,7 @@ function BookingDetail({
                         </span>
                     </div>
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={onClose}
-                    >
+                    <Button variant="ghost" size="sm" onClick={onClose}>
                         <X className="mr-1 h-4 w-4" />
                         Close
                     </Button>
@@ -1447,25 +1251,19 @@ function BookingDetail({
 
             <CardContent className="space-y-6 p-5">
                 <div className="grid gap-6 lg:grid-cols-2">
-                    <CarGallery
-                        images={images}
-                    />
+                    <CarGallery images={images} />
 
                     <div className="space-y-4">
                         <div className="flex flex-wrap items-baseline justify-between gap-2">
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    {car.year} ·{' '}
-                                    {car.category} ·{' '}
+                                    {car.year} · {car.category} ·{' '}
                                     {car.plate_number}
                                 </p>
 
                                 <p className="mt-1 text-2xl font-bold text-foreground">
                                     ETB{' '}
-                                    {Number(
-                                        car.daily_price,
-                                    ).toLocaleString()}
-
+                                    {Number(car.daily_price).toLocaleString()}
                                     <span className="text-sm font-normal text-muted-foreground">
                                         {' '}
                                         / day
@@ -1520,15 +1318,11 @@ function BookingDetail({
 
                             <div className="mt-3 flex flex-wrap items-center gap-4 text-muted-foreground">
                                 <span>
-                                    Customer:{' '}
-                                    {booking.customer
-                                        ?.name ?? 'N/A'}
+                                    Customer: {booking.customer?.name ?? 'N/A'}
                                 </span>
 
                                 <span>
-                                    Owner:{' '}
-                                    {booking.owner
-                                        ?.name ?? 'N/A'}
+                                    Owner: {booking.owner?.name ?? 'N/A'}
                                 </span>
 
                                 {booking.security_deposit_amount && (
@@ -1544,10 +1338,7 @@ function BookingDetail({
 
                         <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-4">
                             {specs.map((spec) => (
-                                <SpecTile
-                                    key={spec.label}
-                                    {...spec}
-                                />
+                                <SpecTile key={spec.label} {...spec} />
                             ))}
                         </div>
 
@@ -1566,46 +1357,29 @@ function BookingDetail({
                 </div>
 
                 <div className="space-y-4 border-t border-border pt-5">
-                    {inspectionType ===
-                        'pickup' && (
-                        <DeliveryPanel
-                            booking={booking}
-                        />
+                    {inspectionType === 'pickup' && (
+                        <DeliveryPanel booking={booking} />
                     )}
 
-                    {inspectionType ===
-                        'return' && (
-                        <ReturnArrivalPanel
-                            booking={booking}
-                        />
+                    {inspectionType === 'return' && (
+                        <ReturnArrivalPanel booking={booking} />
                     )}
 
-                    <InspectionBadges
-                        inspections={
-                            booking.inspections
-                        }
-                    />
+                    <InspectionBadges inspections={booking.inspections} />
 
                     {showPickupForm && (
                         <div className="pt-2">
-                            <InspectionForm
-                                booking={booking}
-                                type="pickup"
-                            />
+                            <InspectionForm booking={booking} type="pickup" />
                         </div>
                     )}
 
                     {showReturnForm && (
                         <div className="pt-2">
-                            <InspectionForm
-                                booking={booking}
-                                type="return"
-                            />
+                            <InspectionForm booking={booking} type="return" />
                         </div>
                     )}
 
-                    {inspectionType ===
-                        'pickup' &&
+                    {inspectionType === 'pickup' &&
                         booking.status === 'paid' &&
                         pickupApproved && (
                             <div className="space-y-3 rounded-lg border border-border bg-background p-4">
@@ -1616,30 +1390,23 @@ function BookingDetail({
 
                                     <div className="flex-1">
                                         <p className="text-sm font-semibold text-foreground">
-                                            Customer Identity
-                                            Verification
+                                            Customer Identity Verification
                                         </p>
 
                                         <p className="mt-1 text-sm text-muted-foreground">
                                             {booking.customer ? (
                                                 <>
                                                     <span className="font-medium text-foreground">
-                                                        {
-                                                            booking
-                                                                .customer
-                                                                .name
-                                                        }
+                                                        {booking.customer.name}
                                                     </span>
 
-                                                    {booking
-                                                        .customer
+                                                    {booking.customer
                                                         .national_id ? (
                                                         <>
                                                             {' · '}
 
                                                             <span className="font-mono">
-                                                                National
-                                                                ID:{' '}
+                                                                National ID:{' '}
                                                                 {
                                                                     booking
                                                                         .customer
@@ -1649,8 +1416,8 @@ function BookingDetail({
                                                         </>
                                                     ) : (
                                                         <span className="ml-1.5 inline-flex items-center rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
-                                                            No National
-                                                            ID on file
+                                                            No National ID on
+                                                            file
                                                         </span>
                                                     )}
                                                 </>
@@ -1670,75 +1437,114 @@ function BookingDetail({
                                                 Leverage Document Submitted
                                             </span>
                                             <p className="mt-1 text-xs text-blue-600">
-                                                Type: {booking.leverage_document_type === 'check' ? 'Check' : booking.leverage_document_type === 'property_document' ? 'Property Document' : 'Other'}
-                                                {booking.leverage_document_name && ` — ${booking.leverage_document_name}`}
-                                                {booking.leverage_document_status === 'held' && ' (Held)'}
-                                                {booking.leverage_document_status === 'released' && ' (Released)'}
-                                                {booking.leverage_document_status === 'pending_charges' && ' (Pending Charges)'}
+                                                Type:{' '}
+                                                {booking.leverage_document_type ===
+                                                'check'
+                                                    ? 'Check'
+                                                    : booking.leverage_document_type ===
+                                                        'property_document'
+                                                      ? 'Property Document'
+                                                      : 'Other'}
+                                                {booking.leverage_document_name &&
+                                                    ` — ${booking.leverage_document_name}`}
+                                                {booking.leverage_document_status ===
+                                                    'held' && ' (Held)'}
+                                                {booking.leverage_document_status ===
+                                                    'released' && ' (Released)'}
+                                                {booking.leverage_document_status ===
+                                                    'pending_charges' &&
+                                                    ' (Pending Charges)'}
                                             </p>
                                         </div>
                                     </div>
                                 )}
 
-                                {!booking.has_leverage_document && !booking.has_paid_security_deposit && (
-                                    <div className="space-y-3 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-4">
-                                        <div className="flex items-center gap-2">
-                                            <FileText className="h-4 w-4 text-blue-600" />
-                                            <span className="text-sm font-semibold text-blue-800">
-                                                Leverage Document Required
-                                            </span>
-                                        </div>
-                                        <p className="text-xs text-blue-700">
-                                            The customer chose to provide a leverage document instead of paying the security deposit. Collect and upload it now.
-                                        </p>
+                                {!booking.has_leverage_document &&
+                                    !booking.has_paid_security_deposit && (
+                                        <div className="space-y-3 rounded-lg border-2 border-dashed border-blue-300 bg-blue-50 p-4">
+                                            <div className="flex items-center gap-2">
+                                                <FileText className="h-4 w-4 text-blue-600" />
+                                                <span className="text-sm font-semibold text-blue-800">
+                                                    Leverage Document Required
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-blue-700">
+                                                The customer chose to provide a
+                                                leverage document instead of
+                                                paying the security deposit.
+                                                Collect and upload it now.
+                                            </p>
 
-                                        <select
-                                            value={handoverLeverageDocType}
-                                            onChange={(e) => setHandoverLeverageDocType(e.target.value)}
-                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                        >
-                                            <option value="">Select document type</option>
-                                            <option value="check">Check</option>
-                                            <option value="property_document">Property Document</option>
-                                            <option value="other">Other</option>
-                                        </select>
-
-                                        <input
-                                            type="file"
-                                            accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,application/pdf"
-                                            onChange={(e) => {
-                                                const file = e.target.files?.[0] ?? null;
-
-                                                if (file && file.size > 10 * 1024 * 1024) {
-                                                    return;
+                                            <select
+                                                value={handoverLeverageDocType}
+                                                onChange={(e) =>
+                                                    setHandoverLeverageDocType(
+                                                        e.target.value,
+                                                    )
                                                 }
+                                                className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            >
+                                                <option value="">
+                                                    Select document type
+                                                </option>
+                                                <option value="check">
+                                                    Check
+                                                </option>
+                                                <option value="property_document">
+                                                    Property Document
+                                                </option>
+                                                <option value="other">
+                                                    Other
+                                                </option>
+                                            </select>
 
-                                                setHandoverLeverageDocFile(file);
-                                            }}
-                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-blue-700"
-                                        />
+                                            <input
+                                                type="file"
+                                                accept="image/jpeg,image/png,image/jpg,image/gif,image/webp,application/pdf"
+                                                onChange={(e) => {
+                                                    const file =
+                                                        e.target.files?.[0] ??
+                                                        null;
 
-                                        <input
-                                            type="text"
-                                            placeholder="Description (optional, e.g. Check #12345 from Dashen Bank)"
-                                            value={handoverLeverageDocDescription}
-                                            onChange={(e) => setHandoverLeverageDocDescription(e.target.value)}
-                                            className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                                        />
-                                    </div>
-                                )}
+                                                    if (
+                                                        file &&
+                                                        file.size >
+                                                            10 * 1024 * 1024
+                                                    ) {
+                                                        return;
+                                                    }
+
+                                                    setHandoverLeverageDocFile(
+                                                        file,
+                                                    );
+                                                }}
+                                                className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-600 file:px-3 file:py-1 file:text-xs file:font-semibold file:text-white hover:file:bg-blue-700"
+                                            />
+
+                                            <input
+                                                type="text"
+                                                placeholder="Description (optional, e.g. Check #12345 from Dashen Bank)"
+                                                value={
+                                                    handoverLeverageDocDescription
+                                                }
+                                                onChange={(e) =>
+                                                    setHandoverLeverageDocDescription(
+                                                        e.target.value,
+                                                    )
+                                                }
+                                                className="w-full rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            />
+                                        </div>
+                                    )}
 
                                 <div className="flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-3">
                                     <input
                                         type="checkbox"
                                         id="handover_id_verified"
-                                        checked={
-                                            handoverIdVerified
-                                        }
+                                        checked={handoverIdVerified}
                                         onChange={(e) =>
                                             setHandoverIdVerified(
-                                                e.target
-                                                    .checked,
+                                                e.target.checked,
                                             )
                                         }
                                         className="mt-0.5 h-4 w-4 rounded border-slate-300 accent-primary focus:ring-2 focus:ring-primary"
@@ -1749,49 +1555,48 @@ function BookingDetail({
                                         className="flex-1 cursor-pointer text-sm text-foreground"
                                     >
                                         <span className="font-semibold">
-                                            I confirm that the
-                                            customer's National
-                                            ID has been physically
-                                            checked and matches
-                                            the customer.
+                                            I confirm that the customer's
+                                            National ID has been physically
+                                            checked and matches the customer.
                                         </span>
 
                                         <p className="mt-1 text-xs text-muted-foreground">
-                                            This verification is
-                                            mandatory before
-                                            handing over the
-                                            vehicle and will be
-                                            recorded with your
-                                            staff ID and
-                                            timestamp.
+                                            This verification is mandatory
+                                            before handing over the vehicle and
+                                            will be recorded with your staff ID
+                                            and timestamp.
                                         </p>
                                     </label>
                                 </div>
 
-                                {booking.need_driver && !booking.driver_accepted && (
-                                    <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-                                        <p className="font-semibold">
-                                            Waiting for Driver Acceptance
-                                        </p>
-                                        <p className="mt-1 text-amber-700">
-                                            The assigned driver must accept this assignment before the vehicle can be handed over.
-                                        </p>
-                                    </div>
-                                )}
+                                {booking.need_driver &&
+                                    !booking.driver_accepted && (
+                                        <div className="rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                                            <p className="font-semibold">
+                                                Waiting for Driver Acceptance
+                                            </p>
+                                            <p className="mt-1 text-amber-700">
+                                                The assigned driver must accept
+                                                this assignment before the
+                                                vehicle can be handed over.
+                                            </p>
+                                        </div>
+                                    )}
 
                                 <Button
                                     size="sm"
                                     disabled={
-                                        processingAction !==
-                                            null ||
+                                        processingAction !== null ||
                                         !handoverIdVerified ||
-                                        (booking.need_driver && !booking.driver_accepted) ||
-                                        (!booking.has_leverage_document && !booking.has_paid_security_deposit && (!handoverLeverageDocType || !handoverLeverageDocFile))
+                                        (booking.need_driver &&
+                                            !booking.driver_accepted) ||
+                                        (!booking.has_leverage_document &&
+                                            !booking.has_paid_security_deposit &&
+                                            (!handoverLeverageDocType ||
+                                                !handoverLeverageDocFile))
                                     }
                                     onClick={() => {
-                                        setProcessingAction(
-                                            'handover',
-                                        );
+                                        setProcessingAction('handover');
 
                                         const needsLeverageUpload =
                                             !booking.has_leverage_document &&
@@ -1799,15 +1604,29 @@ function BookingDetail({
 
                                         if (needsLeverageUpload) {
                                             const formData = new FormData();
-                                            formData.append('id_verified', 'true');
-                                            formData.append('leverage_document_type', handoverLeverageDocType);
+                                            formData.append(
+                                                'id_verified',
+                                                'true',
+                                            );
+                                            formData.append(
+                                                'leverage_document_type',
+                                                handoverLeverageDocType,
+                                            );
 
                                             if (handoverLeverageDocFile) {
-                                                formData.append('leverage_document', handoverLeverageDocFile);
+                                                formData.append(
+                                                    'leverage_document',
+                                                    handoverLeverageDocFile,
+                                                );
                                             }
 
-                                            if (handoverLeverageDocDescription) {
-                                                formData.append('leverage_document_description', handoverLeverageDocDescription);
+                                            if (
+                                                handoverLeverageDocDescription
+                                            ) {
+                                                formData.append(
+                                                    'leverage_document_description',
+                                                    handoverLeverageDocDescription,
+                                                );
                                             }
 
                                             router.post(
@@ -1819,7 +1638,9 @@ function BookingDetail({
                                                     forceFormData: true,
                                                     preserveScroll: true,
                                                     onFinish: () =>
-                                                        setProcessingAction(null),
+                                                        setProcessingAction(
+                                                            null,
+                                                        ),
                                                 },
                                             );
                                         } else {
@@ -1828,12 +1649,15 @@ function BookingDetail({
                                                     booking: booking.id,
                                                 }),
                                                 {
-                                                    id_verified: handoverIdVerified,
+                                                    id_verified:
+                                                        handoverIdVerified,
                                                 },
                                                 {
                                                     preserveScroll: true,
                                                     onFinish: () =>
-                                                        setProcessingAction(null),
+                                                        setProcessingAction(
+                                                            null,
+                                                        ),
                                                 },
                                             );
                                         }
@@ -1841,67 +1665,48 @@ function BookingDetail({
                                 >
                                     <KeyRound className="mr-1.5 h-4 w-4" />
 
-                                    {processingAction ===
-                                    'handover'
+                                    {processingAction === 'handover'
                                         ? 'Handing over...'
                                         : 'Hand Over Keys (Mark Picked Up)'}
                                 </Button>
                             </div>
                         )}
 
-                    {inspectionType ===
-                        'return' &&
-                        booking.status ===
-                            'picked_up' &&
+                    {inspectionType === 'return' &&
+                        booking.status === 'picked_up' &&
                         hasReturnInspection && (
                             <Button
                                 className="w-full"
                                 variant="secondary"
-                                disabled={
-                                    processingAction !==
-                                    null
-                                }
+                                disabled={processingAction !== null}
                                 onClick={() => {
-                                    setProcessingAction(
-                                        'returned',
-                                    );
+                                    setProcessingAction('returned');
 
                                     router.post(
-                                        inspections.returned.url(
-                                            {
-                                                booking:
-                                                    booking.id,
-                                            },
-                                        ),
+                                        inspections.returned.url({
+                                            booking: booking.id,
+                                        }),
                                         {},
                                         {
-                                            preserveScroll:
-                                                true,
+                                            preserveScroll: true,
                                             onFinish: () =>
-                                                setProcessingAction(
-                                                    null,
-                                                ),
+                                                setProcessingAction(null),
                                         },
                                     );
                                 }}
                             >
                                 <PackageCheck className="mr-1.5 h-4 w-4" />
 
-                                {processingAction ===
-                                'returned'
+                                {processingAction === 'returned'
                                     ? 'Marking...'
                                     : 'Mark Returned'}
                             </Button>
                         )}
 
-                    {inspectionType ===
-                        'return' &&
-                        booking.status ===
-                            'returned' && (
+                    {inspectionType === 'return' &&
+                        booking.status === 'returned' && (
                             <div className="rounded-xl border border-border bg-background/60 p-4">
-                                <CompletionCard
-                                    booking={booking}
-                                />
+                                <CompletionCard booking={booking} />
                             </div>
                         )}
                 </div>
@@ -1924,32 +1729,22 @@ function InspectionCard({
     const car = booking.car;
 
     const image =
-        car.images.find(
-            (img) => img.is_primary,
-        )?.image_path ??
+        car.images.find((img) => img.is_primary)?.image_path ??
         car.images?.[0]?.image_path;
 
     const needsInspection =
         inspectionType === 'pickup'
             ? !booking.inspections.some(
-                  (inspection) =>
-                      inspection.type ===
-                      'pickup',
+                  (inspection) => inspection.type === 'pickup',
               )
             : !booking.inspections.some(
-                  (inspection) =>
-                      inspection.type ===
-                      'return',
+                  (inspection) => inspection.type === 'return',
               );
 
-    const pickupApproved =
-        booking.inspections.some(
-            (inspection) =>
-                inspection.type ===
-                    'pickup' &&
-                inspection.status ===
-                    'approved',
-        );
+    const pickupApproved = booking.inspections.some(
+        (inspection) =>
+            inspection.type === 'pickup' && inspection.status === 'approved',
+    );
 
     const readyForHandover =
         inspectionType === 'pickup' &&
@@ -1960,8 +1755,7 @@ function InspectionCard({
         <GlareCard
             className={cn(
                 'w-full cursor-pointer',
-                active &&
-                    'ring-2 ring-primary',
+                active && 'ring-2 ring-primary',
             )}
             onClick={onSelect}
         >
@@ -1995,8 +1789,7 @@ function InspectionCard({
                 <div className="mt-3 flex items-start justify-between gap-3 px-1 pb-1">
                     <div className="min-w-0">
                         <h3 className="truncate text-xs font-bold text-foreground">
-                            {car.brand}{' '}
-                            {car.model}
+                            {car.brand} {car.model}
                         </h3>
 
                         <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
@@ -2010,10 +1803,7 @@ function InspectionCard({
 
                     <div className="shrink-0 text-right">
                         <p className="text-sm font-bold text-foreground">
-                            ETB{' '}
-                            {Number(
-                                car.daily_price,
-                            ).toLocaleString()}
+                            ETB {Number(car.daily_price).toLocaleString()}
                         </p>
 
                         <p className="text-[10px] font-medium text-muted-foreground">
@@ -2031,17 +1821,11 @@ export default function Inspections({
     return_queue,
     awaiting_completion,
 }: Props) {
-    const [
-        tab,
-        setTab,
-    ] = useState<
-        'pickup' | 'return' | 'completion'
-    >('pickup');
+    const [tab, setTab] = useState<'pickup' | 'return' | 'completion'>(
+        'pickup',
+    );
 
-    const [
-        selectedId,
-        setSelectedId,
-    ] = useState<number | null>(null);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
 
     const tabs = [
         {
@@ -2061,21 +1845,12 @@ export default function Inspections({
         },
     ] as const;
 
-    const active =
-        tabs.find(
-            (item) => item.key === tab,
-        ) ?? tabs[0];
+    const active = tabs.find((item) => item.key === tab) ?? tabs[0];
 
-    const inspectionType =
-        tab === 'completion'
-            ? 'return'
-            : tab;
+    const inspectionType = tab === 'completion' ? 'return' : tab;
 
     const selectedBooking =
-        active.queue.find(
-            (booking) =>
-                booking.id === selectedId,
-        ) ?? null;
+        active.queue.find((booking) => booking.id === selectedId) ?? null;
 
     return (
         <>
@@ -2088,10 +1863,8 @@ export default function Inspections({
                     </h1>
 
                     <p className="mt-2 text-muted-foreground">
-                        Select a vehicle to confirm
-                        delivery, inspect it before
-                        handover and at return, then
-                        mark returned bookings as
+                        Select a vehicle to confirm delivery, inspect it before
+                        handover and at return, then mark returned bookings as
                         completed.
                     </p>
                 </div>
@@ -2103,18 +1876,11 @@ export default function Inspections({
                                 <Button
                                     key={item.key}
                                     variant={
-                                        tab ===
-                                        item.key
-                                            ? 'default'
-                                            : 'outline'
+                                        tab === item.key ? 'default' : 'outline'
                                     }
                                     onClick={() => {
-                                        setTab(
-                                            item.key,
-                                        );
-                                        setSelectedId(
-                                            null,
-                                        );
+                                        setTab(item.key);
+                                        setSelectedId(null);
                                     }}
                                 >
                                     {item.label}
@@ -2122,61 +1888,44 @@ export default function Inspections({
                             ))}
                         </div>
 
-                        {active.queue.length ===
-                        0 ? (
+                        {active.queue.length === 0 ? (
                             <Card className="border-border bg-card">
                                 <CardContent className="py-16 text-center">
                                     <Check className="mx-auto h-12 w-12 text-green-500" />
 
                                     <p className="mt-4 text-lg font-semibold text-foreground">
-                                        No bookings in
-                                        this queue.
+                                        No bookings in this queue.
                                     </p>
 
                                     <p className="mt-2 text-sm text-muted-foreground">
-                                        {tab ===
-                                            'pickup' &&
+                                        {tab === 'pickup' &&
                                             'Bookings with a paid deposit awaiting the pre-handover inspection will appear here.'}
 
-                                        {tab ===
-                                            'return' &&
+                                        {tab === 'return' &&
                                             'Picked up bookings awaiting the return inspection will appear here.'}
 
-                                        {tab ===
-                                            'completion' &&
+                                        {tab === 'completion' &&
                                             'Returned bookings awaiting final completion will appear here.'}
                                     </p>
                                 </CardContent>
                             </Card>
                         ) : (
                             <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                                {active.queue.map(
-                                    (booking) => (
-                                        <InspectionCard
-                                            key={
-                                                booking.id
-                                            }
-                                            booking={
-                                                booking
-                                            }
-                                            inspectionType={
-                                                inspectionType
-                                            }
-                                            active={
-                                                booking.id ===
-                                                selectedId
-                                            }
-                                            onSelect={() =>
-                                                setSelectedId(
-                                                    booking.id ===
-                                                        selectedId
-                                                        ? null
-                                                        : booking.id,
-                                                )
-                                            }
-                                        />
-                                    ),
-                                )}
+                                {active.queue.map((booking) => (
+                                    <InspectionCard
+                                        key={booking.id}
+                                        booking={booking}
+                                        inspectionType={inspectionType}
+                                        active={booking.id === selectedId}
+                                        onSelect={() =>
+                                            setSelectedId(
+                                                booking.id === selectedId
+                                                    ? null
+                                                    : booking.id,
+                                            )
+                                        }
+                                    />
+                                ))}
                             </div>
                         )}
                     </>
@@ -2184,17 +1933,9 @@ export default function Inspections({
 
                 {selectedBooking && (
                     <BookingDetail
-                        booking={
-                            selectedBooking
-                        }
-                        inspectionType={
-                            inspectionType
-                        }
-                        onClose={() =>
-                            setSelectedId(
-                                null,
-                            )
-                        }
+                        booking={selectedBooking}
+                        inspectionType={inspectionType}
+                        onClose={() => setSelectedId(null)}
                     />
                 )}
             </div>

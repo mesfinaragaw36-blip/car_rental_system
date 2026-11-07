@@ -86,11 +86,7 @@ const STATS = [
     { value: '24/7', label: 'Support' },
 ];
 
-const TRUST_POINTS = [
-    'No hidden fees',
-    'Verified vehicles',
-    'Instant booking',
-];
+const TRUST_POINTS = ['No hidden fees', 'Verified vehicles', 'Instant booking'];
 
 function Reveal({
     children,
@@ -183,8 +179,7 @@ export default function Welcome({ cars = [] }: Props) {
     const isGuest = !role;
     const isConsumer = role === 'customer' || role === 'driver';
 
-    const dashboardUrl =
-        !isGuest && !isConsumer ? getDashboardUrl() : null;
+    const dashboardUrl = !isGuest && !isConsumer ? getDashboardUrl() : null;
 
     const navItems = isConsumer
         ? [
@@ -234,7 +229,6 @@ export default function Welcome({ cars = [] }: Props) {
             <Head title="Welcome — Ethio Car Rental" />
 
             <div className="min-h-screen bg-[#F7FCFF] text-[#16425B]">
-
                 {/* =====================================================
                     NAVBAR
                 ====================================================== */}
@@ -283,9 +277,7 @@ export default function Welcome({ cars = [] }: Props) {
                                 <a
                                     key={item.name}
                                     href={item.link}
-                                    onClick={() =>
-                                        setIsMobileMenuOpen(false)
-                                    }
+                                    onClick={() => setIsMobileMenuOpen(false)}
                                     className="rounded-xl px-4 py-3 font-medium text-[#16425B]/70 transition-colors hover:bg-[#E8F8FC] hover:text-[#007BA7]"
                                 >
                                     {item.name}
@@ -294,9 +286,7 @@ export default function Welcome({ cars = [] }: Props) {
 
                             {!user && (
                                 <div
-                                    onClick={() =>
-                                        setIsMobileMenuOpen(false)
-                                    }
+                                    onClick={() => setIsMobileMenuOpen(false)}
                                     className="mt-3 flex flex-col gap-3 border-t border-[#D7F2F8] pt-4"
                                 >
                                     <NavbarButton
@@ -324,7 +314,6 @@ export default function Welcome({ cars = [] }: Props) {
                 ====================================================== */}
 
                 <section className="relative flex min-h-[780px] w-full overflow-hidden bg-[#16425B] px-6 pt-28 pb-16 lg:min-h-[850px]">
-
                     {/* Background pattern */}
                     <div
                         className="pointer-events-none absolute inset-0 opacity-[0.05]"
@@ -336,16 +325,14 @@ export default function Welcome({ cars = [] }: Props) {
                     />
 
                     {/* Blue glow */}
-                    <div className="pointer-events-none absolute -left-40 top-1/3 h-[520px] w-[520px] rounded-full bg-[#00C4CC]/20 blur-[130px]" />
+                    <div className="pointer-events-none absolute top-1/3 -left-40 h-[520px] w-[520px] rounded-full bg-[#00C4CC]/20 blur-[130px]" />
 
-                    <div className="pointer-events-none absolute -right-32 top-20 h-[520px] w-[520px] rounded-full bg-[#87CEEB]/15 blur-[140px]" />
+                    <div className="pointer-events-none absolute top-20 -right-32 h-[520px] w-[520px] rounded-full bg-[#87CEEB]/15 blur-[140px]" />
 
                     <div className="relative z-10 mx-auto grid w-full max-w-7xl flex-1 items-center lg:grid-cols-[0.9fr_1.1fr] lg:gap-8">
-
                         {/* LEFT HERO CONTENT */}
 
                         <div className="py-10 text-center lg:py-0 lg:text-left">
-
                             <div className="inline-flex animate-in items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-[0.2em] text-[#BCEBFA] uppercase backdrop-blur-md duration-700 fade-in slide-in-from-bottom-4">
                                 <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#87CEEB]" />
                                 Available across Ethiopia
@@ -359,14 +346,13 @@ export default function Welcome({ cars = [] }: Props) {
                                 </span>
                             </h1>
 
-                            <p className="mx-auto mt-6 max-w-xl animate-in text-base leading-7 text-white/70 duration-700 fade-in slide-in-from-bottom-4 delay-200 sm:text-lg lg:mx-0">
+                            <p className="mx-auto mt-6 max-w-xl animate-in text-base leading-7 text-white/70 delay-200 duration-700 fade-in slide-in-from-bottom-4 sm:text-lg lg:mx-0">
                                 The simplest way to rent a vehicle or earn by
                                 listing yours. Verified owners, flexible
                                 bookings, zero hassle.
                             </p>
 
-                            <div className="mt-9 flex animate-in flex-col items-center gap-3 duration-700 fade-in slide-in-from-bottom-4 delay-300 sm:flex-row lg:justify-start">
-
+                            <div className="mt-9 flex animate-in flex-col items-center gap-3 delay-300 duration-700 fade-in slide-in-from-bottom-4 sm:flex-row lg:justify-start">
                                 {isConsumer ? (
                                     <>
                                         <a
@@ -418,7 +404,7 @@ export default function Welcome({ cars = [] }: Props) {
                                 )}
                             </div>
 
-                            <div className="mt-9 flex animate-in flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/65 duration-700 fade-in slide-in-from-bottom-4 delay-500 lg:justify-start">
+                            <div className="mt-9 flex animate-in flex-wrap items-center justify-center gap-x-6 gap-y-3 text-sm text-white/65 delay-500 duration-700 fade-in slide-in-from-bottom-4 lg:justify-start">
                                 {TRUST_POINTS.map((point) => (
                                     <span
                                         key={point}
@@ -436,19 +422,18 @@ export default function Welcome({ cars = [] }: Props) {
                         ================================================== */}
 
                         <div className="relative mx-auto mt-6 flex h-[470px] w-full max-w-2xl items-center justify-center lg:mt-0 lg:h-[650px]">
-
                             {/* Large soft ambient glow behind everything */}
-                            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[440px] w-[640px] -translate-x-1/2 -translate-y-[45%] rounded-full bg-[#87CEEB]/20 blur-[120px]" />
+                            <div className="pointer-events-none absolute top-1/2 left-1/2 h-[440px] w-[640px] -translate-x-1/2 -translate-y-[45%] rounded-full bg-[#87CEEB]/20 blur-[120px]" />
 
                             {/* Secondary teal glow, offset for depth */}
-                            <div className="pointer-events-none absolute left-[62%] top-[58%] h-[300px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00C4CC]/15 blur-[100px]" />
+                            <div className="pointer-events-none absolute top-[58%] left-[62%] h-[300px] w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[#00C4CC]/15 blur-[100px]" />
 
                             {/* Elliptical "ground" shadow the car sits on */}
                             <div className="pointer-events-none absolute bottom-[9%] left-1/2 h-[46px] w-[78%] -translate-x-1/2 rounded-[50%] bg-black/35 blur-2xl lg:bottom-[11%] lg:h-[56px]" />
 
                             {/* Radiating light rays for a "showroom spotlight" feel */}
                             <div
-                                className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 opacity-[0.12] lg:h-[600px] lg:w-[600px]"
+                                className="pointer-events-none absolute top-1/2 left-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 opacity-[0.12] lg:h-[600px] lg:w-[600px]"
                                 style={{
                                     backgroundImage:
                                         'conic-gradient(from 0deg, transparent 0deg, #FFFFFF 4deg, transparent 10deg, transparent 40deg, #FFFFFF 44deg, transparent 50deg, transparent 80deg, #FFFFFF 84deg, transparent 90deg, transparent 130deg, #FFFFFF 134deg, transparent 140deg, transparent 190deg, #FFFFFF 194deg, transparent 200deg, transparent 260deg, #FFFFFF 264deg, transparent 270deg, transparent 320deg, #FFFFFF 324deg, transparent 330deg)',
@@ -457,25 +442,24 @@ export default function Welcome({ cars = [] }: Props) {
                             />
 
                             {/* Thin accent ring for structure */}
-                            <div className="pointer-events-none absolute left-1/2 top-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#87CEEB]/20 lg:h-[480px] lg:w-[480px]" />
+                            <div className="pointer-events-none absolute top-1/2 left-1/2 h-[400px] w-[400px] -translate-x-1/2 -translate-y-1/2 rounded-full border border-[#87CEEB]/20 lg:h-[480px] lg:w-[480px]" />
 
                             {/* Decorative accent dots */}
-                            <div className="absolute right-[8%] top-[16%] h-2 w-2 rounded-full bg-[#87CEEB] shadow-[0_0_20px_#87CEEB]" />
-                            <div className="absolute left-[10%] top-[30%] h-1.5 w-1.5 rounded-full bg-[#00C4CC]" />
-                            <div className="absolute bottom-[22%] right-[13%] h-1.5 w-1.5 rounded-full bg-[#BCEBFA]" />
+                            <div className="absolute top-[16%] right-[8%] h-2 w-2 rounded-full bg-[#87CEEB] shadow-[0_0_20px_#87CEEB]" />
+                            <div className="absolute top-[30%] left-[10%] h-1.5 w-1.5 rounded-full bg-[#00C4CC]" />
+                            <div className="absolute right-[13%] bottom-[22%] h-1.5 w-1.5 rounded-full bg-[#BCEBFA]" />
 
                             {/* CAR IMAGE — larger, edge-bleeding, angled like a showroom hero shot */}
                             <div className="relative z-10 w-full max-w-[680px] translate-x-2 animate-in duration-1000 zoom-in-95 fade-in lg:translate-x-6">
                                 <img
                                     src={HERO_CAR_IMAGE}
                                     alt="Featured premium car"
-                                    className="relative z-10 mx-auto w-full scale-110 object-contain drop-shadow-[0_45px_55px_rgba(0,0,0,0.5)] animate-float lg:scale-125"
+                                    className="relative z-10 mx-auto w-full scale-110 animate-float object-contain drop-shadow-[0_45px_55px_rgba(0,0,0,0.5)] lg:scale-125"
                                 />
                             </div>
 
                             {/* Floating rating card */}
                             <div className="absolute bottom-[7%] left-[2%] z-20 flex items-center gap-3 rounded-2xl border border-white/20 bg-white/95 px-5 py-4 shadow-2xl backdrop-blur-md">
-
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#E5F8FC]">
                                     <Star
                                         size={17}
@@ -495,7 +479,7 @@ export default function Welcome({ cars = [] }: Props) {
                             </div>
 
                             {/* Floating verified badge */}
-                            <div className="absolute right-[2%] top-[12%] z-20 flex items-center gap-2 rounded-full border border-white/20 bg-[#16425B]/80 px-4 py-2.5 shadow-xl backdrop-blur-md">
+                            <div className="absolute top-[12%] right-[2%] z-20 flex items-center gap-2 rounded-full border border-white/20 bg-[#16425B]/80 px-4 py-2.5 shadow-xl backdrop-blur-md">
                                 <CheckCircle
                                     size={15}
                                     className="text-[#87CEEB]"
@@ -507,7 +491,7 @@ export default function Welcome({ cars = [] }: Props) {
                             </div>
 
                             {/* Small stat chip for extra polish */}
-                            <div className="absolute left-[0%] top-[6%] z-20 hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-md sm:flex">
+                            <div className="absolute top-[6%] left-[0%] z-20 hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-2 backdrop-blur-md sm:flex">
                                 <Gauge size={13} className="text-[#87CEEB]" />
                                 <span className="text-[11px] font-semibold tracking-wide text-white">
                                     500+ vehicles live
@@ -517,9 +501,8 @@ export default function Welcome({ cars = [] }: Props) {
                     </div>
 
                     {/* Bottom availability */}
-                    <div className="absolute bottom-7 left-0 right-0 z-20">
+                    <div className="absolute right-0 bottom-7 left-0 z-20">
                         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 lg:px-8">
-
                             <div className="hidden items-center gap-3 sm:flex">
                                 <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/15 bg-white/10 backdrop-blur-md">
                                     <MapPin
@@ -529,7 +512,7 @@ export default function Welcome({ cars = [] }: Props) {
                                 </div>
 
                                 <div>
-                                    <p className="text-[10px] uppercase tracking-[0.2em] text-white/40">
+                                    <p className="text-[10px] tracking-[0.2em] text-white/40 uppercase">
                                         Available across
                                     </p>
 
@@ -541,7 +524,7 @@ export default function Welcome({ cars = [] }: Props) {
 
                             <a
                                 href="#fleet"
-                                className="ml-auto flex items-center gap-2 text-xs uppercase tracking-[0.2em] text-white/50 transition hover:text-[#87CEEB]"
+                                className="ml-auto flex items-center gap-2 text-xs tracking-[0.2em] text-white/50 uppercase transition hover:text-[#87CEEB]"
                             >
                                 Explore our fleet
                                 <ArrowRight size={14} />
@@ -556,7 +539,6 @@ export default function Welcome({ cars = [] }: Props) {
 
                 <section className="border-y border-[#BCEBFA] bg-[#E8F8FC]">
                     <div className="mx-auto grid max-w-7xl grid-cols-2 sm:grid-cols-4">
-
                         {STATS.map((stat, index) => (
                             <Reveal key={stat.label} delay={index * 90}>
                                 <div className="border-r border-[#BCEBFA] px-6 py-10 text-center last:border-r-0 lg:py-12">
@@ -582,7 +564,6 @@ export default function Welcome({ cars = [] }: Props) {
                     className="scroll-mt-24 bg-[#F7FCFF] py-24 lg:py-28"
                 >
                     <div className="mx-auto max-w-7xl px-6">
-
                         <Reveal className="mx-auto max-w-2xl text-center">
                             <p className="text-[11px] font-semibold tracking-[0.25em] text-[#007BA7] uppercase">
                                 Why Ethio Car Rental
@@ -601,7 +582,6 @@ export default function Welcome({ cars = [] }: Props) {
                         </Reveal>
 
                         <div className="mt-14 grid overflow-hidden rounded-3xl border border-[#D7F2F8] bg-[#D7F2F8] sm:grid-cols-2 lg:grid-cols-4">
-
                             {FEATURES.map(
                                 ({ icon: Icon, title, desc }, index) => (
                                     <Reveal
@@ -610,7 +590,6 @@ export default function Welcome({ cars = [] }: Props) {
                                         className="h-full"
                                     >
                                         <div className="group h-full border-r border-[#D7F2F8] bg-white p-8 transition-all duration-300 hover:bg-[#F7FCFF]">
-
                                             <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#E5F8FC] text-[#007BA7] transition-all duration-300 group-hover:scale-110 group-hover:bg-[#CDEFF7]">
                                                 <Icon className="h-5 w-5" />
                                             </div>
@@ -639,7 +618,6 @@ export default function Welcome({ cars = [] }: Props) {
                     className="scroll-mt-24 bg-[#E8F8FC] py-24 lg:py-28"
                 >
                     <div className="mx-auto max-w-7xl px-6">
-
                         <Reveal className="mx-auto max-w-2xl text-center">
                             <p className="text-[11px] font-semibold tracking-[0.25em] text-[#007BA7] uppercase">
                                 Our Fleet
@@ -657,7 +635,6 @@ export default function Welcome({ cars = [] }: Props) {
 
                         {cars.length > 0 ? (
                             <div className="mt-14 grid gap-7 sm:grid-cols-2 lg:grid-cols-3">
-
                                 {cars.map((car, index) => {
                                     const image =
                                         car.images?.find(
@@ -677,7 +654,6 @@ export default function Welcome({ cars = [] }: Props) {
                                             >
                                                 {/* Image */}
                                                 <div className="relative aspect-[4/3] overflow-hidden bg-[#E5F8FC]">
-
                                                     {image ? (
                                                         <img
                                                             src={`/storage/${image.image_path}`}
@@ -694,13 +670,13 @@ export default function Welcome({ cars = [] }: Props) {
                                                     <div className="absolute inset-0 bg-gradient-to-t from-[#16425B]/45 via-transparent to-transparent opacity-60" />
 
                                                     {/* Category */}
-                                                    <span className="absolute left-4 top-4 rounded-full border border-white/20 bg-[#007BA7]/90 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-white uppercase backdrop-blur-md">
+                                                    <span className="absolute top-4 left-4 rounded-full border border-white/20 bg-[#007BA7]/90 px-3 py-1.5 text-[10px] font-semibold tracking-wider text-white uppercase backdrop-blur-md">
                                                         {car.category}
                                                     </span>
 
                                                     {/* Booked */}
                                                     {car.is_currently_booked && (
-                                                        <span className="absolute right-4 top-4 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
+                                                        <span className="absolute top-4 right-4 rounded-full bg-red-500 px-3 py-1.5 text-xs font-semibold text-white shadow-lg">
                                                             Booked
                                                         </span>
                                                     )}
@@ -708,9 +684,7 @@ export default function Welcome({ cars = [] }: Props) {
 
                                                 {/* Details */}
                                                 <div className="p-6">
-
                                                     <div className="flex items-start justify-between gap-4">
-
                                                         <div className="min-w-0">
                                                             <p className="text-[10px] font-semibold tracking-[0.18em] text-[#007BA7] uppercase">
                                                                 {car.year} ·{' '}
@@ -723,7 +697,9 @@ export default function Welcome({ cars = [] }: Props) {
                                                             </h3>
 
                                                             <p className="mt-1.5 text-sm text-[#5E6A76]">
-                                                                {car.transmission}{' '}
+                                                                {
+                                                                    car.transmission
+                                                                }{' '}
                                                                 ·{' '}
                                                                 {car.fuel_type}
                                                             </p>
@@ -761,7 +737,6 @@ export default function Welcome({ cars = [] }: Props) {
                                                     )}
 
                                                     <div className="mt-5 flex items-end justify-between border-t border-[#D7F2F8] pt-5">
-
                                                         <div>
                                                             <p className="text-xs text-[#7F8D9A]">
                                                                 Starting from
@@ -819,7 +794,6 @@ export default function Welcome({ cars = [] }: Props) {
                     className="scroll-mt-24 bg-[#16425B] py-24 text-white lg:py-28"
                 >
                     <div className="mx-auto max-w-6xl px-6">
-
                         <Reveal className="mx-auto max-w-2xl text-center">
                             <p className="text-[11px] font-semibold tracking-[0.25em] text-[#87CEEB] uppercase">
                                 How it works
@@ -836,35 +810,28 @@ export default function Welcome({ cars = [] }: Props) {
                         </Reveal>
 
                         <div className="mt-16 grid gap-8 md:grid-cols-3">
+                            {STEPS.map(({ step, title, desc }, index) => (
+                                <Reveal key={step} delay={index * 100}>
+                                    <div className="group relative rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#87CEEB]/30 hover:bg-white/10">
+                                        <span className="text-5xl font-extrabold text-[#87CEEB]/30 transition-colors group-hover:text-[#87CEEB]/60">
+                                            {step}
+                                        </span>
 
-                            {STEPS.map(
-                                ({ step, title, desc }, index) => (
-                                    <Reveal
-                                        key={step}
-                                        delay={index * 100}
-                                    >
-                                        <div className="group relative rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-sm transition-all duration-300 hover:-translate-y-1 hover:border-[#87CEEB]/30 hover:bg-white/10">
+                                        <h3 className="mt-8 text-xl font-bold">
+                                            {title}
+                                        </h3>
 
-                                            <span className="text-5xl font-extrabold text-[#87CEEB]/30 transition-colors group-hover:text-[#87CEEB]/60">
-                                                {step}
-                                            </span>
+                                        <p className="mt-3 text-sm leading-7 text-white/60">
+                                            {desc}
+                                        </p>
 
-                                            <h3 className="mt-8 text-xl font-bold">
-                                                {title}
-                                            </h3>
-
-                                            <p className="mt-3 text-sm leading-7 text-white/60">
-                                                {desc}
-                                            </p>
-
-                                            <div className="mt-8 flex items-center gap-2 text-xs font-semibold tracking-wider text-[#87CEEB] uppercase">
-                                                <CheckCircle size={14} />
-                                                Easy & secure
-                                            </div>
+                                        <div className="mt-8 flex items-center gap-2 text-xs font-semibold tracking-wider text-[#87CEEB] uppercase">
+                                            <CheckCircle size={14} />
+                                            Easy & secure
                                         </div>
-                                    </Reveal>
-                                ),
-                            )}
+                                    </div>
+                                </Reveal>
+                            ))}
                         </div>
                     </div>
                 </section>
@@ -875,8 +842,7 @@ export default function Welcome({ cars = [] }: Props) {
 
                 {isGuest && (
                     <section className="relative mx-6 my-8 overflow-hidden rounded-[2rem] bg-[#007BA7] px-6 py-16 text-center shadow-2xl shadow-[#007BA7]/15 sm:px-16">
-
-                        <div className="pointer-events-none absolute -right-32 -top-32 h-[350px] w-[350px] rounded-full bg-[#87CEEB]/25 blur-[80px]" />
+                        <div className="pointer-events-none absolute -top-32 -right-32 h-[350px] w-[350px] rounded-full bg-[#87CEEB]/25 blur-[80px]" />
 
                         <div className="pointer-events-none absolute -bottom-40 -left-32 h-[350px] w-[350px] rounded-full bg-[#16425B]/30 blur-[90px]" />
 
@@ -895,7 +861,6 @@ export default function Welcome({ cars = [] }: Props) {
                             </p>
 
                             <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
-
                                 <Link
                                     href={register()}
                                     className="rounded-full bg-white px-7 py-3.5 text-sm font-semibold text-[#007BA7] shadow-lg transition-all hover:-translate-y-0.5 hover:bg-[#F7FCFF] hover:shadow-xl"
@@ -924,7 +889,6 @@ export default function Welcome({ cars = [] }: Props) {
                     className="scroll-mt-24 border-t border-[#D7F2F8] bg-[#E8F8FC] px-6 py-8"
                 >
                     <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-5 sm:flex-row">
-
                         <div className="flex items-center gap-3 font-semibold text-[#16425B]">
                             <img
                                 src="/images/logo.png"
@@ -933,9 +897,7 @@ export default function Welcome({ cars = [] }: Props) {
                             />
 
                             <div>
-                                <p className="text-sm">
-                                    Ethio Car Rental
-                                </p>
+                                <p className="text-sm">Ethio Car Rental</p>
 
                                 <p className="text-[9px] font-medium tracking-[0.2em] text-[#7F8D9A] uppercase">
                                     Premium mobility

@@ -27,12 +27,12 @@ export default function AppLayout({
 
     const isCustomer = role === 'customer';
     const isStorefrontPage = STOREFRONT_PAGES.includes(componentName);
-    const isCustomerPage = isCustomer && (
-        isStorefrontPage ||
-        fullComponent.startsWith('settings/') ||
-        fullComponent.startsWith('notifications/') ||
-        componentName === 'car-type-request-status'
-    );
+    const isCustomerPage =
+        isCustomer &&
+        (isStorefrontPage ||
+            fullComponent.startsWith('settings/') ||
+            fullComponent.startsWith('notifications/') ||
+            componentName === 'car-type-request-status');
 
     if (isCustomerPage) {
         return <StorefrontLayout>{children}</StorefrontLayout>;

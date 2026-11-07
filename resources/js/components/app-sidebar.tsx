@@ -46,7 +46,11 @@ const PERMISSION_ROUTE_MAP: Record<string, string[]> = {
     'car-types.view': ['/admin/car-types/configurations'],
 
     // Driver permissions
-    'driver.access': ['/driver/assignments', '/driver/trip-history', '/driver/payments'],
+    'driver.access': [
+        '/driver/assignments',
+        '/driver/trip-history',
+        '/driver/payments',
+    ],
 };
 
 function getNavItems(

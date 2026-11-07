@@ -195,17 +195,11 @@ function dayLabel(dateStr: string): string {
         month: 'long',
         day: 'numeric',
         year:
-            date.getFullYear() === today.getFullYear()
-                ? undefined
-                : 'numeric',
+            date.getFullYear() === today.getFullYear() ? undefined : 'numeric',
     });
 }
 
-function NotificationRow({
-    notification,
-}: {
-    notification: AppNotification;
-}) {
+function NotificationRow({ notification }: { notification: AppNotification }) {
     const meta = typeMeta(notification.type);
     const Icon = meta.icon;
     const unread = !notification.read_at;
@@ -236,9 +230,7 @@ function NotificationRow({
         }
     };
 
-    const markRead = (
-        event: React.MouseEvent<HTMLButtonElement>,
-    ) => {
+    const markRead = (event: React.MouseEvent<HTMLButtonElement>) => {
         event.stopPropagation();
 
         if (unread) {
@@ -314,7 +306,7 @@ function NotificationRow({
                         <button
                             type="button"
                             onClick={markRead}
-                            className="text-xs font-medium text-slate-400 opacity-0 transition-opacity hover:text-slate-700 group-hover:opacity-100 focus:opacity-100 focus:outline-none"
+                            className="text-xs font-medium text-slate-400 opacity-0 transition-opacity group-hover:opacity-100 hover:text-slate-700 focus:opacity-100 focus:outline-none"
                         >
                             Mark as read
                         </button>
@@ -443,13 +435,9 @@ export default function NotificationsIndex({
                             variant="outline"
                             className="border-primary/15 bg-white/60 shadow-sm hover:bg-white"
                             onClick={() =>
-                                router.post(
-                                    readAll.url(),
-                                    undefined,
-                                    {
-                                        preserveScroll: true,
-                                    },
-                                )
+                                router.post(readAll.url(), undefined, {
+                                    preserveScroll: true,
+                                })
                             }
                         >
                             <CheckCheck className="mr-2 h-4 w-4 text-primary" />
@@ -463,7 +451,7 @@ export default function NotificationsIndex({
                     <div className="rounded-2xl border border-slate-200/70 bg-white/50 p-4 shadow-sm">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">
                                     Total
                                 </p>
 
@@ -481,7 +469,7 @@ export default function NotificationsIndex({
                     <div className="rounded-2xl border border-primary/10 bg-primary/[0.035] p-4 shadow-sm">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">
                                     Unread
                                 </p>
 
@@ -499,7 +487,7 @@ export default function NotificationsIndex({
                     <div className="rounded-2xl border border-emerald-100/80 bg-emerald-50/35 p-4 shadow-sm">
                         <div className="flex items-center justify-between">
                             <div>
-                                <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+                                <p className="text-xs font-medium tracking-wide text-slate-400 uppercase">
                                     Read
                                 </p>
 
@@ -540,9 +528,7 @@ export default function NotificationsIndex({
                                 key={tab.key}
                                 size="sm"
                                 variant={
-                                    filter === tab.key
-                                        ? 'default'
-                                        : 'ghost'
+                                    filter === tab.key ? 'default' : 'ghost'
                                 }
                                 className={cn(
                                     'rounded-lg',
@@ -579,8 +565,8 @@ export default function NotificationsIndex({
 
                         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-slate-500">
                             Booking, payment, vehicle, and inspection updates
-                            will appear here when there is something new to
-                            show you.
+                            will appear here when there is something new to show
+                            you.
                         </p>
                     </div>
                 ) : (
@@ -588,7 +574,7 @@ export default function NotificationsIndex({
                         {groups.map(([label, items]) => (
                             <section key={label}>
                                 <div className="mb-3 flex items-center gap-3">
-                                    <h2 className="text-xs font-bold uppercase tracking-[0.12em] text-slate-400">
+                                    <h2 className="text-xs font-bold tracking-[0.12em] text-slate-400 uppercase">
                                         {label}
                                     </h2>
 
@@ -617,9 +603,7 @@ export default function NotificationsIndex({
                             className="bg-white/60"
                             disabled={!notifications.prev_page_url}
                             onClick={() =>
-                                goToPage(
-                                    notifications.prev_page_url,
-                                )
+                                goToPage(notifications.prev_page_url)
                             }
                         >
                             <ChevronLeft className="mr-1 h-4 w-4" />
@@ -637,9 +621,7 @@ export default function NotificationsIndex({
                             className="bg-white/60"
                             disabled={!notifications.next_page_url}
                             onClick={() =>
-                                goToPage(
-                                    notifications.next_page_url,
-                                )
+                                goToPage(notifications.next_page_url)
                             }
                         >
                             Next

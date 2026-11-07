@@ -280,54 +280,53 @@ export function CarDetailsModal({
                         </div>
                     )}
 
-                    {car.recent_reviews &&
-                        car.recent_reviews.length > 0 && (
-                            <div className="mt-6">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-semibold text-slate-900">
-                                        Customer Reviews
-                                    </h3>
-                                    {car.average_rating !== undefined && (
-                                        <span className="flex items-center gap-1.5 text-sm text-slate-600">
+                    {car.recent_reviews && car.recent_reviews.length > 0 && (
+                        <div className="mt-6">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-semibold text-slate-900">
+                                    Customer Reviews
+                                </h3>
+                                {car.average_rating !== undefined && (
+                                    <span className="flex items-center gap-1.5 text-sm text-slate-600">
+                                        <StarRating
+                                            value={car.average_rating}
+                                            size="sm"
+                                        />
+                                        <span className="text-xs text-slate-500">
+                                            {car.average_rating} ·{' '}
+                                            {car.review_count ?? 0} review
+                                            {(car.review_count ?? 0) === 1
+                                                ? ''
+                                                : 's'}
+                                        </span>
+                                    </span>
+                                )}
+                            </div>
+                            <div className="mt-3 space-y-3">
+                                {car.recent_reviews.map((r) => (
+                                    <div
+                                        key={r.id}
+                                        className="rounded-xl border border-slate-100 bg-slate-50/50 p-4"
+                                    >
+                                        <div className="flex items-start justify-between gap-3">
+                                            <p className="text-sm font-medium text-slate-800">
+                                                {r.reviewer.name}
+                                            </p>
                                             <StarRating
-                                                value={car.average_rating}
+                                                value={r.rating}
                                                 size="sm"
                                             />
-                                            <span className="text-xs text-slate-500">
-                                                {car.average_rating} ·{' '}
-                                                {car.review_count ?? 0} review
-                                                {(car.review_count ?? 0) === 1
-                                                    ? ''
-                                                    : 's'}
-                                            </span>
-                                        </span>
-                                    )}
-                                </div>
-                                <div className="mt-3 space-y-3">
-                                    {car.recent_reviews.map((r) => (
-                                        <div
-                                            key={r.id}
-                                            className="rounded-xl border border-slate-100 bg-slate-50/50 p-4"
-                                        >
-                                            <div className="flex items-start justify-between gap-3">
-                                                <p className="text-sm font-medium text-slate-800">
-                                                    {r.reviewer.name}
-                                                </p>
-                                                <StarRating
-                                                    value={r.rating}
-                                                    size="sm"
-                                                />
-                                            </div>
-                                            {r.review_text && (
-                                                <p className="mt-2 text-sm leading-relaxed text-slate-600">
-                                                    {r.review_text}
-                                                </p>
-                                            )}
                                         </div>
-                                    ))}
-                                </div>
+                                        {r.review_text && (
+                                            <p className="mt-2 text-sm leading-relaxed text-slate-600">
+                                                {r.review_text}
+                                            </p>
+                                        )}
+                                    </div>
+                                ))}
                             </div>
-                        )}
+                        </div>
+                    )}
                 </div>
 
                 {actions && (

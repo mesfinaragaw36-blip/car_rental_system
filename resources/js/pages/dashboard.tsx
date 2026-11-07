@@ -21,12 +21,7 @@ import {
     Cell,
     CartesianGrid,
 } from 'recharts';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AdminStats {
     total_users: number;
@@ -141,9 +136,7 @@ function StatCard({
                     {title}
                 </CardTitle>
 
-                <span className={accent ?? 'text-[#007BA7]'}>
-                    {icon}
-                </span>
+                <span className={accent ?? 'text-[#007BA7]'}>{icon}</span>
             </CardHeader>
 
             <CardContent>
@@ -190,13 +183,7 @@ function formatMonth(ym: string): string {
     } '${y.slice(2)}`;
 }
 
-function GroupedBarChart({
-    data,
-    max,
-}: {
-    data: MonthlyData[];
-    max: number;
-}) {
+function GroupedBarChart({ data, max }: { data: MonthlyData[]; max: number }) {
     if (data.length === 0) {
         return null;
     }
@@ -287,9 +274,7 @@ export default function Dashboard({
             <Head title="Dashboard" />
 
             <div className="min-h-full space-y-6 bg-[#F7FCFF] p-6 text-[#16425B]">
-                <h1 className="text-3xl font-bold text-[#16425B]">
-                    Dashboard
-                </h1>
+                <h1 className="text-3xl font-bold text-[#16425B]">Dashboard</h1>
 
                 {/* =====================================================
                     ADMIN DASHBOARD
@@ -340,9 +325,7 @@ export default function Dashboard({
                                     <StatCard
                                         title="Active Bookings"
                                         value={s.active_bookings}
-                                        icon={
-                                            <Activity className="h-4 w-4" />
-                                        }
+                                        icon={<Activity className="h-4 w-4" />}
                                         href="/bookings"
                                     />
 
@@ -734,9 +717,7 @@ export default function Dashboard({
                                     <StatCard
                                         title="Rented"
                                         value={s.rented_vehicles}
-                                        icon={
-                                            <BookOpen className="h-4 w-4" />
-                                        }
+                                        icon={<BookOpen className="h-4 w-4" />}
                                         accent="text-[#007BA7]"
                                     />
 
@@ -753,9 +734,7 @@ export default function Dashboard({
                                     <StatCard
                                         title="Active Bookings"
                                         value={s.active_bookings}
-                                        icon={
-                                            <Activity className="h-4 w-4" />
-                                        }
+                                        icon={<Activity className="h-4 w-4" />}
                                         href="/bookings"
                                     />
 
@@ -781,9 +760,7 @@ export default function Dashboard({
                                     {/* FLEET STATUS */}
                                     <Card>
                                         <CardHeader className="border-b border-[#D7F2F8] bg-[#E8F8FC]">
-                                            <CardTitle>
-                                                Fleet Status
-                                            </CardTitle>
+                                            <CardTitle>Fleet Status</CardTitle>
                                         </CardHeader>
 
                                         <CardContent>
@@ -851,8 +828,7 @@ export default function Dashboard({
                                             </CardTitle>
 
                                             <p className="text-sm text-[#5E6A76]">
-                                                Your earnings from paid
-                                                bookings
+                                                Your earnings from paid bookings
                                             </p>
                                         </CardHeader>
 
@@ -947,9 +923,7 @@ export default function Dashboard({
                                 {/* RECENT BOOKINGS */}
                                 <Card>
                                     <CardHeader className="flex flex-row items-center justify-between border-b border-[#D7F2F8] bg-[#E8F8FC]">
-                                        <CardTitle>
-                                            Recent Bookings
-                                        </CardTitle>
+                                        <CardTitle>Recent Bookings</CardTitle>
 
                                         <Link
                                             href="/bookings"
@@ -1124,7 +1098,6 @@ export default function Dashboard({
                                                                 <span className="font-medium">
                                                                     Customer:{' '}
                                                                 </span>
-
                                                                 {
                                                                     assignment
                                                                         .customer
@@ -1143,7 +1116,6 @@ export default function Dashboard({
                                                                     <span className="font-medium text-[#16425B]">
                                                                         Pickup:{' '}
                                                                     </span>
-
                                                                     {
                                                                         assignment
                                                                             .booking
@@ -1161,7 +1133,6 @@ export default function Dashboard({
                                                                     <span className="font-medium text-[#16425B]">
                                                                         Return:{' '}
                                                                     </span>
-
                                                                     {
                                                                         assignment
                                                                             .booking

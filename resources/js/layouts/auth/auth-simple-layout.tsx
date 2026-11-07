@@ -3,11 +3,7 @@ import { CheckCircle, Sparkles } from 'lucide-react';
 import { home } from '@/routes';
 import type { AuthLayoutProps } from '@/types';
 
-const TRUST_POINTS = [
-    'No hidden fees',
-    'Verified vehicles',
-    'Instant booking',
-];
+const TRUST_POINTS = ['No hidden fees', 'Verified vehicles', 'Instant booking'];
 
 const HERO_CAR_IMAGE = '/images/hero-car.png';
 
@@ -33,31 +29,25 @@ export default function AuthSimpleLayout({
                 />
 
                 {/* Glows */}
-                <div className="pointer-events-none absolute left-[-140px] top-1/4 h-[420px] w-[420px] rounded-full bg-[#00C4CC]/20 blur-[120px]" />
+                <div className="pointer-events-none absolute top-1/4 left-[-140px] h-[420px] w-[420px] rounded-full bg-[#00C4CC]/20 blur-[120px]" />
 
                 <div className="pointer-events-none absolute -right-24 bottom-0 h-[360px] w-[360px] rounded-full bg-[#87CEEB]/15 blur-[120px]" />
 
                 <div className="relative z-10 flex flex-col items-center text-center">
                     <span className="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-[11px] font-semibold tracking-widest text-[#BCEBFA] uppercase backdrop-blur-md">
-                        <Sparkles
-                            size={13}
-                            className="text-[#87CEEB]"
-                        />
+                        <Sparkles size={13} className="text-[#87CEEB]" />
                         Available across Ethiopia
                     </span>
 
                     <h2 className="mt-6 text-4xl leading-[1.05] font-semibold tracking-tight text-white xl:text-6xl">
                         Rent a car,
                         <br />
-                        <span className="text-[#87CEEB]">
-                            your way.
-                        </span>
+                        <span className="text-[#87CEEB]">your way.</span>
                     </h2>
 
                     <p className="mt-4 max-w-sm text-base leading-7 text-white/70">
-                        The simplest way to rent a vehicle or earn by
-                        listing yours — verified owners, flexible
-                        bookings.
+                        The simplest way to rent a vehicle or earn by listing
+                        yours — verified owners, flexible bookings.
                     </p>
 
                     <div className="relative mt-8 w-full max-w-md">
@@ -87,8 +77,8 @@ export default function AuthSimpleLayout({
                 </div>
 
                 <p className="relative z-10 text-xs text-white/50">
-                    &copy; {new Date().getFullYear()} {name}. All
-                    rights reserved.
+                    &copy; {new Date().getFullYear()} {name}. All rights
+                    reserved.
                 </p>
             </div>
 
@@ -114,11 +104,11 @@ export default function AuthSimpleLayout({
 
                     {/* Heading */}
                     <div className="space-y-1.5 text-center">
-                        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-[#87CEEB]">
+                        <p className="text-xs font-semibold tracking-[0.25em] text-[#87CEEB] uppercase">
                             Account access
                         </p>
 
-                        <h1 className="text-3xl font-semibold tracking-tight text-white text-balance">
+                        <h1 className="text-3xl font-semibold tracking-tight text-balance text-white">
                             {title}
                         </h1>
 

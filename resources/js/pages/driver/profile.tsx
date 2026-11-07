@@ -95,43 +95,58 @@ function verificationBanner(status: string | undefined) {
     }
 }
 
-export default function DriverProfilePage({ profile, hasActiveAssignments = false }: Props) {
+export default function DriverProfilePage({
+    profile,
+    hasActiveAssignments = false,
+}: Props) {
     const { props: p } = usePage<{
         toast?: { type: string; message: string };
     }>();
     const toast = p.toast;
     const isNew = !profile;
-    const banner = profile ? verificationBanner(profile.verification_status) : null;
+    const banner = profile
+        ? verificationBanner(profile.verification_status)
+        : null;
 
-    const [licenseNumber, setLicenseNumber] = useState(profile?.license_number ?? '');
+    const [licenseNumber, setLicenseNumber] = useState(
+        profile?.license_number ?? '',
+    );
     const [licenseType, setLicenseType] = useState(profile?.license_type ?? '');
-    const [experienceYears, setExperienceYears] = useState(String(profile?.experience_years ?? ''));
+    const [experienceYears, setExperienceYears] = useState(
+        String(profile?.experience_years ?? ''),
+    );
     const [location, setLocation] = useState(profile?.location ?? '');
     const [gender, setGender] = useState(profile?.gender ?? '');
-    const [dailyRate, setDailyRate] = useState(String(profile?.daily_rate ?? ''));
-    const [proficientLanguage, setProficientLanguage] = useState<string[]>(() => {
-        if (!profile?.proficient_language) {
-return [];
-}
-
-        if (Array.isArray(profile.proficient_language)) {
-return profile.proficient_language;
-}
-
-        if (typeof profile.proficient_language === 'string') {
-            try {
-                const parsed = JSON.parse(profile.proficient_language);
-
-                if (Array.isArray(parsed)) {
-return parsed;
-}
-            } catch {
-                return profile.proficient_language ? [profile.proficient_language] : [];
+    const [dailyRate, setDailyRate] = useState(
+        String(profile?.daily_rate ?? ''),
+    );
+    const [proficientLanguage, setProficientLanguage] = useState<string[]>(
+        () => {
+            if (!profile?.proficient_language) {
+                return [];
             }
-        }
 
-        return [];
-    });
+            if (Array.isArray(profile.proficient_language)) {
+                return profile.proficient_language;
+            }
+
+            if (typeof profile.proficient_language === 'string') {
+                try {
+                    const parsed = JSON.parse(profile.proficient_language);
+
+                    if (Array.isArray(parsed)) {
+                        return parsed;
+                    }
+                } catch {
+                    return profile.proficient_language
+                        ? [profile.proficient_language]
+                        : [];
+                }
+            }
+
+            return [];
+        },
+    );
     const [languageSearch, setLanguageSearch] = useState('');
     const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
     const [licenseFile, setLicenseFile] = useState<File | null>(null);
@@ -140,8 +155,8 @@ return parsed;
 
     const filteredLanguages = useMemo(() => {
         if (!languageSearch) {
-return LANGUAGES;
-}
+            return LANGUAGES;
+        }
 
         const q = languageSearch.toLowerCase();
 
@@ -195,17 +210,24 @@ return LANGUAGES;
 
                 {hasActiveAssignments && !isNew && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-                        <p className="font-semibold text-amber-900">License Information Update Restricted</p>
+                        <p className="font-semibold text-amber-900">
+                            License Information Update Restricted
+                        </p>
                         <p className="mt-1 text-sm text-amber-700">
-                            You cannot update your license information while you have active assignments.
-                            Please complete or reject your current assignments first.
+                            You cannot update your license information while you
+                            have active assignments. Please complete or reject
+                            your current assignments first.
                         </p>
                     </div>
                 )}
 
                 {!isNew && banner && (
-                    <div className={`flex items-start gap-3 rounded-lg border p-4 ${banner.classes}`}>
-                        <banner.icon className={`mt-0.5 h-5 w-5 shrink-0 ${banner.iconClass}`} />
+                    <div
+                        className={`flex items-start gap-3 rounded-lg border p-4 ${banner.classes}`}
+                    >
+                        <banner.icon
+                            className={`mt-0.5 h-5 w-5 shrink-0 ${banner.iconClass}`}
+                        />
                         <div>
                             <p className="font-semibold">{banner.title}</p>
                             <p className="mt-1 text-sm">{banner.message}</p>
@@ -222,7 +244,9 @@ return LANGUAGES;
                                         <Star className="h-5 w-5 text-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-sm text-muted-foreground">Average Rating</p>
+                                        <p className="text-sm text-muted-foreground">
+                                            Average Rating
+                                        </p>
                                         <p className="text-2xl font-bold">
                                             {profile.average_rating} ★
                                             <span className="ml-1 text-sm font-normal text-muted-foreground">
@@ -233,21 +257,33 @@ return LANGUAGES;
                                 </CardContent>
                             </Card>
                         )}
-                        {profile.recent_reviews && profile.recent_reviews.length > 0 && (
-                            <Card>
-                                <CardContent className="p-5">
-                                    <p className="text-sm text-muted-foreground">Recent Reviews</p>
-                                    <div className="mt-2 space-y-2">
-                                        {profile.recent_reviews.slice(0, 3).map((r) => (
-                                            <div key={r.id} className="flex items-center justify-between text-sm">
-                                                <span className="font-medium">{r.reviewer.name}</span>
-                                                <span className="text-amber-500">{r.rating} ★</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        )}
+                        {profile.recent_reviews &&
+                            profile.recent_reviews.length > 0 && (
+                                <Card>
+                                    <CardContent className="p-5">
+                                        <p className="text-sm text-muted-foreground">
+                                            Recent Reviews
+                                        </p>
+                                        <div className="mt-2 space-y-2">
+                                            {profile.recent_reviews
+                                                .slice(0, 3)
+                                                .map((r) => (
+                                                    <div
+                                                        key={r.id}
+                                                        className="flex items-center justify-between text-sm"
+                                                    >
+                                                        <span className="font-medium">
+                                                            {r.reviewer.name}
+                                                        </span>
+                                                        <span className="text-amber-500">
+                                                            {r.rating} ★
+                                                        </span>
+                                                    </div>
+                                                ))}
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            )}
                     </div>
                 )}
 
@@ -262,16 +298,24 @@ return LANGUAGES;
                         <form onSubmit={handleSubmit} className="space-y-4">
                             <div className="grid gap-4 sm:grid-cols-2">
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="license_number">License Number</Label>
+                                    <Label htmlFor="license_number">
+                                        License Number
+                                    </Label>
                                     <Input
                                         id="license_number"
                                         placeholder="e.g. DL-123456"
                                         value={licenseNumber}
-                                        onChange={(e) => setLicenseNumber(e.target.value)}
-                                        disabled={hasActiveAssignments && !isNew}
+                                        onChange={(e) =>
+                                            setLicenseNumber(e.target.value)
+                                        }
+                                        disabled={
+                                            hasActiveAssignments && !isNew
+                                        }
                                         required
                                     />
-                                    <InputError message={errors.license_number} />
+                                    <InputError
+                                        message={errors.license_number}
+                                    />
                                 </div>
 
                                 <div className="space-y-1.5">
@@ -279,16 +323,26 @@ return LANGUAGES;
                                     <Select
                                         value={licenseType}
                                         onValueChange={setLicenseType}
-                                        disabled={hasActiveAssignments && !isNew}
+                                        disabled={
+                                            hasActiveAssignments && !isNew
+                                        }
                                     >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select license type" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="አውቶ">አውቶ</SelectItem>
-                                            <SelectItem value="ህዝብ">ህዝብ</SelectItem>
-                                            <SelectItem value="ደረቅ ጭነት">ደረቅ ጭነት</SelectItem>
-                                            <SelectItem value="ፈሳሽ ጭነት">ፈሳሽ ጭነት</SelectItem>
+                                            <SelectItem value="አውቶ">
+                                                አውቶ
+                                            </SelectItem>
+                                            <SelectItem value="ህዝብ">
+                                                ህዝብ
+                                            </SelectItem>
+                                            <SelectItem value="ደረቅ ጭነት">
+                                                ደረቅ ጭነት
+                                            </SelectItem>
+                                            <SelectItem value="ፈሳሽ ጭነት">
+                                                ፈሳሽ ጭነት
+                                            </SelectItem>
                                             <SelectItem value="ግንባታ መሣሪያዎች / ኮንስትራክሽን">
                                                 ግንባታ መሣሪያዎች / ኮንስትራክሽን
                                             </SelectItem>
@@ -298,7 +352,9 @@ return LANGUAGES;
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="experience_years">Experience (Years)</Label>
+                                    <Label htmlFor="experience_years">
+                                        Experience (Years)
+                                    </Label>
                                     <Input
                                         id="experience_years"
                                         type="number"
@@ -306,19 +362,27 @@ return LANGUAGES;
                                         max="50"
                                         placeholder="e.g. 3"
                                         value={experienceYears}
-                                        onChange={(e) => setExperienceYears(e.target.value)}
+                                        onChange={(e) =>
+                                            setExperienceYears(e.target.value)
+                                        }
                                         required
                                     />
-                                    <InputError message={errors.experience_years} />
+                                    <InputError
+                                        message={errors.experience_years}
+                                    />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="location">Location / City</Label>
+                                    <Label htmlFor="location">
+                                        Location / City
+                                    </Label>
                                     <Input
                                         id="location"
                                         placeholder="e.g. Addis Ababa"
                                         value={location}
-                                        onChange={(e) => setLocation(e.target.value)}
+                                        onChange={(e) =>
+                                            setLocation(e.target.value)
+                                        }
                                         required
                                     />
                                     <InputError message={errors.location} />
@@ -326,20 +390,29 @@ return LANGUAGES;
 
                                 <div className="space-y-1.5">
                                     <Label>Gender</Label>
-                                    <Select value={gender} onValueChange={setGender}>
+                                    <Select
+                                        value={gender}
+                                        onValueChange={setGender}
+                                    >
                                         <SelectTrigger className="w-full">
                                             <SelectValue placeholder="Select gender" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="Male">Male</SelectItem>
-                                            <SelectItem value="Female">Female</SelectItem>
+                                            <SelectItem value="Male">
+                                                Male
+                                            </SelectItem>
+                                            <SelectItem value="Female">
+                                                Female
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                     <InputError message={errors.gender} />
                                 </div>
 
                                 <div className="space-y-1.5">
-                                    <Label htmlFor="daily_rate">Daily Rate (ETB)</Label>
+                                    <Label htmlFor="daily_rate">
+                                        Daily Rate (ETB)
+                                    </Label>
                                     <Input
                                         id="daily_rate"
                                         type="number"
@@ -347,7 +420,9 @@ return LANGUAGES;
                                         step="0.01"
                                         placeholder="e.g. 500"
                                         value={dailyRate}
-                                        onChange={(e) => setDailyRate(e.target.value)}
+                                        onChange={(e) =>
+                                            setDailyRate(e.target.value)
+                                        }
                                         required
                                     />
                                     <InputError message={errors.daily_rate} />
@@ -360,39 +435,82 @@ return LANGUAGES;
                                             placeholder="Search languages..."
                                             value={languageSearch}
                                             onChange={(e) => {
-                                                setLanguageSearch(e.target.value);
+                                                setLanguageSearch(
+                                                    e.target.value,
+                                                );
                                                 setShowLanguageDropdown(true);
                                             }}
-                                            onFocus={() => setShowLanguageDropdown(true)}
-                                            onBlur={() => setTimeout(() => setShowLanguageDropdown(false), 200)}
+                                            onFocus={() =>
+                                                setShowLanguageDropdown(true)
+                                            }
+                                            onBlur={() =>
+                                                setTimeout(
+                                                    () =>
+                                                        setShowLanguageDropdown(
+                                                            false,
+                                                        ),
+                                                    200,
+                                                )
+                                            }
                                         />
-                                        {showLanguageDropdown && filteredLanguages.length > 0 && (
-                                            <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                                                {filteredLanguages.map((lang) => (
-                                                    <button
-                                                        key={lang}
-                                                        type="button"
-                                                        className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${
-                                                            proficientLanguage.includes(lang) ? 'bg-accent font-medium' : ''
-                                                        }`}
-                                                        onMouseDown={(e) => e.preventDefault()}
-                                                        onClick={() => {
-                                                            setProficientLanguage((prev) =>
-                                                                prev.includes(lang)
-                                                                    ? prev.filter((l) => l !== lang)
-                                                                    : [...prev, lang]
-                                                            );
-                                                            setLanguageSearch('');
-                                                        }}
-                                                    >
-                                                        <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded border">
-                                                            {proficientLanguage.includes(lang) ? '✓' : ''}
-                                                        </span>
-                                                        {lang}
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {showLanguageDropdown &&
+                                            filteredLanguages.length > 0 && (
+                                                <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                                                    {filteredLanguages.map(
+                                                        (lang) => (
+                                                            <button
+                                                                key={lang}
+                                                                type="button"
+                                                                className={`w-full px-3 py-2 text-left text-sm hover:bg-accent ${
+                                                                    proficientLanguage.includes(
+                                                                        lang,
+                                                                    )
+                                                                        ? 'bg-accent font-medium'
+                                                                        : ''
+                                                                }`}
+                                                                onMouseDown={(
+                                                                    e,
+                                                                ) =>
+                                                                    e.preventDefault()
+                                                                }
+                                                                onClick={() => {
+                                                                    setProficientLanguage(
+                                                                        (
+                                                                            prev,
+                                                                        ) =>
+                                                                            prev.includes(
+                                                                                lang,
+                                                                            )
+                                                                                ? prev.filter(
+                                                                                      (
+                                                                                          l,
+                                                                                      ) =>
+                                                                                          l !==
+                                                                                          lang,
+                                                                                  )
+                                                                                : [
+                                                                                      ...prev,
+                                                                                      lang,
+                                                                                  ],
+                                                                    );
+                                                                    setLanguageSearch(
+                                                                        '',
+                                                                    );
+                                                                }}
+                                                            >
+                                                                <span className="mr-2 inline-flex h-4 w-4 items-center justify-center rounded border">
+                                                                    {proficientLanguage.includes(
+                                                                        lang,
+                                                                    )
+                                                                        ? '✓'
+                                                                        : ''}
+                                                                </span>
+                                                                {lang}
+                                                            </button>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
                                     </div>
                                     {proficientLanguage.length > 0 && (
                                         <div className="flex flex-wrap gap-1.5 pt-1">
@@ -405,7 +523,14 @@ return LANGUAGES;
                                                     <button
                                                         type="button"
                                                         onClick={() =>
-                                                            setProficientLanguage((prev) => prev.filter((l) => l !== lang))
+                                                            setProficientLanguage(
+                                                                (prev) =>
+                                                                    prev.filter(
+                                                                        (l) =>
+                                                                            l !==
+                                                                            lang,
+                                                                    ),
+                                                            )
                                                         }
                                                         className="ml-0.5 hover:text-primary/70"
                                                     >
@@ -415,19 +540,26 @@ return LANGUAGES;
                                             ))}
                                         </div>
                                     )}
-                                    <InputError message={errors.proficient_language} />
+                                    <InputError
+                                        message={errors.proficient_language}
+                                    />
                                 </div>
                             </div>
 
                             <div className="space-y-1.5">
                                 <Label htmlFor="license_file">
-                                    License Document <span className="text-red-500">*</span>
+                                    License Document{' '}
+                                    <span className="text-red-500">*</span>
                                 </Label>
                                 <Input
                                     id="license_file"
                                     type="file"
                                     accept="image/*,.pdf"
-                                    onChange={(e) => setLicenseFile(e.target.files?.[0] || null)}
+                                    onChange={(e) =>
+                                        setLicenseFile(
+                                            e.target.files?.[0] || null,
+                                        )
+                                    }
                                     disabled={hasActiveAssignments && !isNew}
                                     required={!profile?.license_file_path}
                                 />
@@ -445,13 +577,22 @@ return LANGUAGES;
                                     </p>
                                 )}
                                 <p className="text-sm text-muted-foreground">
-                                    Upload a clear photo or scan of your driving license (Required for verification)
+                                    Upload a clear photo or scan of your driving
+                                    license (Required for verification)
                                 </p>
                                 <InputError message={errors.license_file} />
                             </div>
 
-                            <Button type="submit" className="w-full" disabled={processing}>
-                                {processing ? 'Saving...' : isNew ? 'Create Profile' : 'Update Profile'}
+                            <Button
+                                type="submit"
+                                className="w-full"
+                                disabled={processing}
+                            >
+                                {processing
+                                    ? 'Saving...'
+                                    : isNew
+                                      ? 'Create Profile'
+                                      : 'Update Profile'}
                             </Button>
                         </form>
                     </CardContent>

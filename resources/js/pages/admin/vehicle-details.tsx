@@ -200,7 +200,9 @@ export default function VehicleDetails({ vehicle }: Props) {
         (a, b) => Number(b.is_primary) - Number(a.is_primary),
     );
 
-    const [expandedReviewId, setExpandedReviewId] = useState<number | null>(null);
+    const [expandedReviewId, setExpandedReviewId] = useState<number | null>(
+        null,
+    );
 
     const specs: Array<{
         icon: LucideIcon;
@@ -542,7 +544,9 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                             <p
                                                                 className={cn(
                                                                     'text-sm text-muted-foreground',
-                                                                    expandedReviewId !== r.id && 'line-clamp-2',
+                                                                    expandedReviewId !==
+                                                                        r.id &&
+                                                                        'line-clamp-2',
                                                                 )}
                                                             >
                                                                 {r.review_text}
@@ -551,14 +555,16 @@ export default function VehicleDetails({ vehicle }: Props) {
                                                                 type="button"
                                                                 onClick={() =>
                                                                     setExpandedReviewId(
-                                                                        expandedReviewId === r.id
+                                                                        expandedReviewId ===
+                                                                            r.id
                                                                             ? null
                                                                             : r.id,
                                                                     )
                                                                 }
                                                                 className="mt-1 text-xs font-medium text-primary hover:underline"
                                                             >
-                                                                {expandedReviewId === r.id
+                                                                {expandedReviewId ===
+                                                                r.id
                                                                     ? 'Show less'
                                                                     : 'Read more'}
                                                             </button>

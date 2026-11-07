@@ -29,7 +29,10 @@ type Props = {
 };
 
 const organizationTypes = [
-    { value: 'private_limited_company', label: 'Private Limited Company (PLC)' },
+    {
+        value: 'private_limited_company',
+        label: 'Private Limited Company (PLC)',
+    },
     { value: 'share_company', label: 'Share Company (S.C.)' },
     { value: 'sole_proprietorship', label: 'Sole Proprietorship' },
     { value: 'partnership', label: 'Partnership' },
@@ -43,7 +46,10 @@ const organizationTypes = [
 ];
 
 export default function OwnerProfile({ ownerProfile }: Props) {
-    const { errors, toast } = usePage<{ errors: Record<string, string>; toast?: { type: string; message: string } }>().props;
+    const { errors, toast } = usePage<{
+        errors: Record<string, string>;
+        toast?: { type: string; message: string };
+    }>().props;
     const [formData, setFormData] = useState({
         organization_type: ownerProfile.organization_type || '',
         tin_number: ownerProfile.tin_number || '',
@@ -103,21 +109,25 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                 )}
 
                 {/* Profile Status */}
-                {ownerProfile.verification_status === 'pending' && ownerProfile.profile_completed && (
-                    <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-                        <div className="flex items-start gap-3">
-                            <FileText className="mt-0.5 h-5 w-5 text-blue-600" />
-                            <div className="flex-1">
-                                <h3 className="font-semibold text-blue-900">
-                                    Profile Under Review
-                                </h3>
-                                <p className="mt-1 text-sm text-blue-800">
-                                    Your profile has been submitted and is currently under review by an administrator. You will be notified once it is approved.
-                                </p>
+                {ownerProfile.verification_status === 'pending' &&
+                    ownerProfile.profile_completed && (
+                        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                            <div className="flex items-start gap-3">
+                                <FileText className="mt-0.5 h-5 w-5 text-blue-600" />
+                                <div className="flex-1">
+                                    <h3 className="font-semibold text-blue-900">
+                                        Profile Under Review
+                                    </h3>
+                                    <p className="mt-1 text-sm text-blue-800">
+                                        Your profile has been submitted and is
+                                        currently under review by an
+                                        administrator. You will be notified once
+                                        it is approved.
+                                    </p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )}
 
                 {!ownerProfile.profile_completed && (
                     <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
@@ -128,8 +138,8 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                     Profile Incomplete
                                 </h3>
                                 <p className="mt-1 text-sm text-amber-800">
-                                    You need to complete your profile before
-                                    you can add vehicles to the platform.
+                                    You need to complete your profile before you
+                                    can add vehicles to the platform.
                                 </p>
                             </div>
                         </div>
@@ -165,10 +175,17 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                     organization_type:
                                                         e.target.value,
                                                 });
-                                                const otherInput = document.getElementById('organization_type_other') as HTMLInputElement;
+                                                const otherInput =
+                                                    document.getElementById(
+                                                        'organization_type_other',
+                                                    ) as HTMLInputElement;
 
                                                 if (otherInput) {
-                                                    otherInput.style.display = e.target.value === 'other' ? 'block' : 'none';
+                                                    otherInput.style.display =
+                                                        e.target.value ===
+                                                        'other'
+                                                            ? 'block'
+                                                            : 'none';
                                                 }
                                             }}
                                             required
@@ -192,14 +209,20 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                             </p>
                                         )}
                                     </div>
-                                    
+
                                     <Input
                                         id="organization_type_other"
                                         type="text"
                                         name="organization_type_other"
                                         placeholder="Please specify organization type"
                                         className="mt-2"
-                                        style={{display: formData.organization_type === 'other' ? 'block' : 'none'}}
+                                        style={{
+                                            display:
+                                                formData.organization_type ===
+                                                'other'
+                                                    ? 'block'
+                                                    : 'none',
+                                        }}
                                     />
                                 </>
                             )}
@@ -226,10 +249,10 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                         '',
                                                     );
                                                 // if (value.length <= 10) {
-                                                    setFormData({
-                                                        ...formData,
-                                                        tin_number: value,
-                                                    });
+                                                setFormData({
+                                                    ...formData,
+                                                    tin_number: value,
+                                                });
                                                 // }
                                             }}
                                             required
@@ -320,7 +343,8 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                                     accept=".pdf,.jpg,.jpeg,.png"
                                                     onChange={(e) =>
                                                         setBusinessLicense(
-                                                            e.target.files?.[0] ||
+                                                            e.target
+                                                                .files?.[0] ||
                                                                 null,
                                                         )
                                                     }
@@ -334,7 +358,6 @@ export default function OwnerProfile({ ownerProfile }: Props) {
                                             </p>
                                         )}
                                     </div>
-
                                 </>
                             )}
                         </div>
@@ -342,11 +365,7 @@ export default function OwnerProfile({ ownerProfile }: Props) {
 
                     {/* Submit Button */}
                     <div className="flex justify-end gap-4">
-                        <Button
-                            type="submit"
-                            disabled={isSubmitting}
-                            size="lg"
-                        >
+                        <Button type="submit" disabled={isSubmitting} size="lg">
                             {isSubmitting
                                 ? 'Saving...'
                                 : ownerProfile.profile_completed
@@ -360,6 +379,4 @@ export default function OwnerProfile({ ownerProfile }: Props) {
     );
 }
 
-OwnerProfile.layout = (page: React.ReactNode) => (
-    <AppLayout>{page}</AppLayout>
-);
+OwnerProfile.layout = (page: React.ReactNode) => <AppLayout>{page}</AppLayout>;

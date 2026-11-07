@@ -11,12 +11,7 @@ import { useState } from 'react';
 
 import InputError from '@/components/input-error';
 import { Button } from '@/components/ui/button';
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -66,10 +61,7 @@ const METHODS = [
     },
 ] as const;
 
-const COMPANY_ACCOUNTS: Record<
-    string,
-    { label: string; value: string }[]
-> = {
+const COMPANY_ACCOUNTS: Record<string, { label: string; value: string }[]> = {
     Telebirr: [
         {
             label: 'Account Name',
@@ -126,9 +118,7 @@ export default function PaymentForm({
     const [error, setError] = useState('');
     const [processing, setProcessing] = useState(false);
 
-    const selectedMethod = METHODS.find(
-        (item) => item.value === method,
-    );
+    const selectedMethod = METHODS.find((item) => item.value === method);
 
     const showRefInput = selectedMethod?.needsRef ?? false;
 
@@ -141,9 +131,7 @@ export default function PaymentForm({
         ? (booking.extra_charge_amount ?? 0)
         : isPickup
           ? (booking.balance_amount ?? 0) +
-            (pay_security_deposit
-                ? (booking.security_deposit_amount ?? 0)
-                : 0)
+            (pay_security_deposit ? (booking.security_deposit_amount ?? 0) : 0)
           : (booking.balance_amount ?? 0) +
             (booking.security_deposit_amount ?? 0);
 
@@ -162,10 +150,7 @@ export default function PaymentForm({
             return;
         }
 
-        if (
-            method !== 'Telebirr' &&
-            method !== 'CBE Birr'
-        ) {
+        if (method !== 'Telebirr' && method !== 'CBE Birr') {
             setError(
                 'Please choose a valid payment method: Telebirr or CBE Birr.',
             );
@@ -192,15 +177,11 @@ export default function PaymentForm({
 
         const payload: Record<string, string> = {
             payment_method: method,
-            transaction_reference: showRefInput
-                ? transactionRef.trim()
-                : '',
+            transaction_reference: showRefInput ? transactionRef.trim() : '',
         };
 
         if (isPickup) {
-            payload.security_deposit = pay_security_deposit
-                ? 'true'
-                : 'false';
+            payload.security_deposit = pay_security_deposit ? 'true' : 'false';
         }
 
         router.post(endpoint, payload, {
@@ -341,8 +322,7 @@ export default function PaymentForm({
                                 </span>
 
                                 <span className="text-xl font-bold">
-                                    ETB{' '}
-                                    {formatETB(booking.total_price)}
+                                    ETB {formatETB(booking.total_price)}
                                 </span>
                             </div>
 
@@ -393,7 +373,8 @@ export default function PaymentForm({
                                             <span className="font-medium">
                                                 ETB{' '}
                                                 {formatETB(
-                                                    booking.security_deposit_amount ?? 0,
+                                                    booking.security_deposit_amount ??
+                                                        0,
                                                 )}
                                             </span>
                                         </div>
@@ -405,15 +386,26 @@ export default function PaymentForm({
                                         </span>
 
                                         <span className="text-3xl font-bold text-green-600">
-                                            ETB{' '}
-                                            {formatETB(totalDueNow)}
+                                            ETB {formatETB(totalDueNow)}
                                         </span>
                                     </div>
 
                                     {!pay_security_deposit && (
                                         <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm text-blue-800">
-                                            <p className="font-medium">Security Deposit: ETB {formatETB(booking.security_deposit_amount ?? 0)}</p>
-                                            <p className="mt-1">You will provide a leverage document (check, property document, etc.) as security guarantee instead of paying the security deposit upfront.</p>
+                                            <p className="font-medium">
+                                                Security Deposit: ETB{' '}
+                                                {formatETB(
+                                                    booking.security_deposit_amount ??
+                                                        0,
+                                                )}
+                                            </p>
+                                            <p className="mt-1">
+                                                You will provide a leverage
+                                                document (check, property
+                                                document, etc.) as security
+                                                guarantee instead of paying the
+                                                security deposit upfront.
+                                            </p>
                                         </div>
                                     )}
                                 </>
@@ -425,8 +417,7 @@ export default function PaymentForm({
                                         </span>
 
                                         <span className="font-medium">
-                                            ETB{' '}
-                                            {formatETB(balanceDue)}
+                                            ETB {formatETB(balanceDue)}
                                         </span>
                                     </div>
 
@@ -458,10 +449,7 @@ export default function PaymentForm({
                     </CardHeader>
 
                     <CardContent>
-                        <form
-                            onSubmit={handleSubmit}
-                            className="space-y-6"
-                        >
+                        <form onSubmit={handleSubmit} className="space-y-6">
                             {/* Methods */}
                             <div>
                                 <Label className="mb-3 block">
@@ -474,9 +462,7 @@ export default function PaymentForm({
                                             type="button"
                                             key={item.value}
                                             onClick={() =>
-                                                handleMethodChange(
-                                                    item.value,
-                                                )
+                                                handleMethodChange(item.value)
                                             }
                                             disabled={processing}
                                             className={`rounded-xl border p-5 text-left transition-all duration-200 ${
@@ -514,8 +500,7 @@ export default function PaymentForm({
                                         </p>
 
                                         <p className="text-2xl font-bold text-primary">
-                                            ETB{' '}
-                                            {formatETB(paymentAmount)}
+                                            ETB {formatETB(paymentAmount)}
                                         </p>
                                     </div>
 
@@ -534,30 +519,30 @@ export default function PaymentForm({
                                             </p>
 
                                             <div className="mt-2 space-y-2">
-                                                {COMPANY_ACCOUNTS[
-                                                    method
-                                                ].map((row) => (
-                                                    <div
-                                                        key={row.label}
-                                                        className="flex justify-between gap-4 text-sm"
-                                                    >
-                                                        <span className="text-muted-foreground">
-                                                            {row.label}
-                                                        </span>
+                                                {COMPANY_ACCOUNTS[method].map(
+                                                    (row) => (
+                                                        <div
+                                                            key={row.label}
+                                                            className="flex justify-between gap-4 text-sm"
+                                                        >
+                                                            <span className="text-muted-foreground">
+                                                                {row.label}
+                                                            </span>
 
-                                                        <span className="text-right font-semibold">
-                                                            {row.value}
-                                                        </span>
-                                                    </div>
-                                                ))}
+                                                            <span className="text-right font-semibold">
+                                                                {row.value}
+                                                            </span>
+                                                        </div>
+                                                    ),
+                                                )}
                                             </div>
 
                                             <p className="mt-3 text-xs text-primary">
-                                                Complete the payment first,
-                                                then enter the transaction
-                                                reference below. The payment
-                                                will remain pending until an
-                                                administrator verifies it.
+                                                Complete the payment first, then
+                                                enter the transaction reference
+                                                below. The payment will remain
+                                                pending until an administrator
+                                                verifies it.
                                             </p>
                                         </div>
                                     )}
