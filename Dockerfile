@@ -31,3 +31,9 @@ RUN mkdir -p storage/app/public/demo \
 # Runs migrations + storage:link on container start
 ENV AUTORUN_ENABLED=true \
     PHP_OPCACHE_ENABLE=1
+
+USER root
+RUN chmod +x /var/www/html/docker/entrypoint.sh
+USER www-data
+
+ENTRYPOINT ["/var/www/html/docker/entrypoint.sh"]
